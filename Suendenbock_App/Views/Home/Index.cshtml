@@ -1,8 +1,45 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+@model List<MagicClassModel>
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <div class="card text-center">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="true" href="#">Magieklassen</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Charakter-Liste</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            @{
+                foreach(MagicClassModel magicClass in Model)
+                {
+                    <div class="card mb-3" style="max-width: 540px;">
+                        <div class="row g-0">
+                            <div class="col-md-4">
+                                <img src="@magicClass.ImagePath" class="img-fluid rounded-start" alt="...">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">@magicClass.Bezeichnung</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            
+            <h5 class="card-title">Special title treatment</h5>
+            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+    </div>
 </div>

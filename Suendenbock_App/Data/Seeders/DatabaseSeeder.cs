@@ -24,82 +24,82 @@ namespace Suendenbock_App.Data.Seeders
                     new MagicClassModel
                     {
                         Bezeichnung = "Feuer",
-                        ImagePath = "/images/fire.png"
+                        ImagePath = "/images/magicclass/fire.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Wasser",
-                        ImagePath = "/images/water.png"
+                        ImagePath = "/images/magicclass/water.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Eis",
-                        ImagePath = "/images/ice.png"
+                        ImagePath = "/images/magicclass/ice.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Tür",
-                        ImagePath = "/images/door.png"
+                        ImagePath = "/images/magicclass/door.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Barriere",
-                        ImagePath = "/images/barrier.png"
+                        ImagePath = "/images/magicclass/barrier.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Holz",
-                        ImagePath = "/images/wood.png"
+                        ImagePath = "/images/magicclass/wood.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Schatten",
-                        ImagePath = "/images/shadow.png"
+                        ImagePath = "/images/magicclass/shadow.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Dunkel",
-                        ImagePath = "/images/dark.png"
+                        ImagePath = "/images/magicclass/dark.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Licht",
-                        ImagePath = "/images/light.png"
+                        ImagePath = "/images/magicclass/light.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Wind",
-                        ImagePath = "/images/wind.png"
+                        ImagePath = "/images/magicclass/wind.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Erde",
-                        ImagePath = "/images/earth.png"
+                        ImagePath = "/images/magicclass/earth.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Elektro",
-                        ImagePath = "/images/electric.png"
+                        ImagePath = "/images/magicclass/electric.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Nebel",
-                        ImagePath = "/images/fog.png"
+                        ImagePath = "/images/magicclass/fog.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Illusion",
-                        ImagePath = "/images/illusion.png"
+                        ImagePath = "/images/magicclass/illusion.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Nekromantie",
-                        ImagePath = "/images/necromancy.png"
+                        ImagePath = "/images/magicclass/necromancy.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Heilig",
-                        ImagePath = "/images/holy.png"
+                        ImagePath = "/images/magicclass/holy.png"
                     }
                 );
             }
