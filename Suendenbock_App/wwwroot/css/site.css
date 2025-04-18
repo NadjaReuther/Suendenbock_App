@@ -23,8 +23,8 @@ body {
 }
 
 .magic-icon {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 25px;
 }
 .text-very-small {
     font-size: 0.75rem;
@@ -58,7 +58,7 @@ body {
     box-shadow: 0 4px 12px rgba(0, 180, 90, 0.4);
 }
 .card-hover-yellow:hover {
-    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.8);
 }
 .card-hover-brown:hover {
     box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4);

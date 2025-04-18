@@ -75,7 +75,7 @@ namespace Suendenbock_App.Data.Seeders
                     {
                         Bezeichnung = "Eis",
                         ImagePath = "/images/magicclass/ice.png",
-                        LightCardsId = 3
+                        LightCardsId = 2
                     },
                     new MagicClassModel
                     {
@@ -87,13 +87,13 @@ namespace Suendenbock_App.Data.Seeders
                     {
                         Bezeichnung = "Barriere",
                         ImagePath = "/images/magicclass/barrier.png",
-                        LightCardsId = 7
+                        LightCardsId = 2
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Holz",
                         ImagePath = "/images/magicclass/wood.png",
-                        LightCardsId = 4
+                        LightCardsId = 6
                     },
                     new MagicClassModel
                     {
@@ -129,7 +129,7 @@ namespace Suendenbock_App.Data.Seeders
                     {
                         Bezeichnung = "Elektro",
                         ImagePath = "/images/magicclass/electric.png",
-                        LightCardsId = 3
+                        LightCardsId = 5
                     },
                     new MagicClassModel
                     {
@@ -141,7 +141,7 @@ namespace Suendenbock_App.Data.Seeders
                     {
                         Bezeichnung = "Illusion",
                         ImagePath = "/images/magicclass/illusion.png",
-                        LightCardsId = 3
+                        LightCardsId = 6
                     },
                     new MagicClassModel
                     {
@@ -153,7 +153,7 @@ namespace Suendenbock_App.Data.Seeders
                     {
                         Bezeichnung = "Heilig",
                         ImagePath = "/images/magicclass/holy.png",
-                        LightCardsId = 4
+                        LightCardsId = 5
                     }
                 );
             }
