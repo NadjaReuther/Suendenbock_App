@@ -24,20 +24,82 @@ namespace Suendenbock_App.Data.Seeders
                     new MagicClassModel
                     {
                         Bezeichnung = "Feuer",
-                        Description = "Feuer ist ein Element, das mit Zerstörung und Leidenschaft assoziiert wird.",
                         ImagePath = "/images/fire.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Wasser",
-                        Description = "Wasser steht für Fluss, Anpassungsfähigkeit und Heilung.",
                         ImagePath = "/images/water.png"
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Eis",
-                        Description = "Eis ist ein Element, das mit Zerstörung und Kälte assoziiert wird.",
-                        ImagePath = "/images/fire.png"
+                        ImagePath = "/images/ice.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Tür",
+                        ImagePath = "/images/door.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Barriere",
+                        ImagePath = "/images/barrier.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Holz",
+                        ImagePath = "/images/wood.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Schatten",
+                        ImagePath = "/images/shadow.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Dunkel",
+                        ImagePath = "/images/dark.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Licht",
+                        ImagePath = "/images/light.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Wind",
+                        ImagePath = "/images/wind.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Erde",
+                        ImagePath = "/images/earth.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Elektro",
+                        ImagePath = "/images/electric.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Nebel",
+                        ImagePath = "/images/fog.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Illusion",
+                        ImagePath = "/images/illusion.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Nekromantie",
+                        ImagePath = "/images/necromancy.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Heilig",
+                        ImagePath = "/images/holy.png"
                     }
                 );
             }
