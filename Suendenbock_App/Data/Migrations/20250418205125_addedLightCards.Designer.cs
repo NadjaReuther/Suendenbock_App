@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250418205125_addedLightCards")]
+    partial class addedLightCards
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,8 +248,6 @@ namespace Suendenbock_App.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LightCardsId");
-
                     b.ToTable("Guilds");
                 });
 
@@ -283,12 +284,7 @@ namespace Suendenbock_App.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("LightCardsId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("LightCardsId");
 
                     b.ToTable("MagicClasses");
                 });
@@ -342,35 +338,6 @@ namespace Suendenbock_App.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.GuildModel", b =>
-                {
-                    b.HasOne("Suendenbock_App.Models.LightCards", "LightCard")
-                        .WithMany("Guilds")
-                        .HasForeignKey("LightCardsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LightCard");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.MagicClassModel", b =>
-                {
-                    b.HasOne("Suendenbock_App.Models.LightCards", "LightCard")
-                        .WithMany("MagicClasses")
-                        .HasForeignKey("LightCardsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LightCard");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.LightCards", b =>
-                {
-                    b.Navigation("Guilds");
-
-                    b.Navigation("MagicClasses");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models;
 
@@ -18,12 +19,15 @@ namespace Suendenbock_App.Controllers
 
         public IActionResult Index()
         {
-            var allMagicClasses = _context.MagicClasses.ToList();
+            var allMagicClasses = _context.MagicClasses
+                .Include(mc => mc.LightCard)
+                .ToList();
             var allGuilds = _context.Guilds.ToList();
+            
             var viewModel = new HomeViewModel
             {
                 MagicClasses = allMagicClasses,
-                Guilds = allGuilds
+                Guilds = allGuilds,
             };      
             return View(viewModel);
         }

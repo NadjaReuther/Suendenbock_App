@@ -11,9 +11,47 @@ namespace Suendenbock_App.Data.Seeders
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             context.Database.Migrate();
 
+            SeedLightCards(context);
             SeedMagicClass(context);
 
             context.SaveChanges();
+        }
+
+        private static void SeedLightCards(ApplicationDbContext context)
+        {
+            if (!context.LightCards.Any())
+            {
+                context.LightCards.AddRange(
+                    new LightCards
+                    {
+                        cssClass = "card-hover-red",
+                    },
+                    new LightCards
+                    {
+                        cssClass = "card-hover-blue",
+                    },
+                    new LightCards
+                    {
+                        cssClass = "card-hover-violett",
+                    },
+                    new LightCards
+                    {
+                        cssClass = "card-hover-green",
+                    },
+                    new LightCards
+                    {
+                        cssClass = "card-hover-yellow",
+                    },
+                    new LightCards
+                    {
+                        cssClass = "card-hover-brown",
+                    },
+                    new LightCards
+                    {
+                        cssClass = "card-hover-shadow",
+                    }
+                );
+            }
         }
 
         private static void SeedMagicClass(ApplicationDbContext context)
@@ -24,82 +62,98 @@ namespace Suendenbock_App.Data.Seeders
                     new MagicClassModel
                     {
                         Bezeichnung = "Feuer",
-                        ImagePath = "/images/magicclass/fire.png"
+                        ImagePath = "/images/magicclass/fire.png",
+                        LightCardsId = 1
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Wasser",
-                        ImagePath = "/images/magicclass/water.png"
+                        ImagePath = "/images/magicclass/water.png",
+                        LightCardsId = 2
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Eis",
-                        ImagePath = "/images/magicclass/ice.png"
+                        ImagePath = "/images/magicclass/ice.png",
+                        LightCardsId = 3
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Tür",
-                        ImagePath = "/images/magicclass/door.png"
+                        ImagePath = "/images/magicclass/door.png",
+                        LightCardsId = 6
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Barriere",
-                        ImagePath = "/images/magicclass/barrier.png"
+                        ImagePath = "/images/magicclass/barrier.png",
+                        LightCardsId = 7
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Holz",
-                        ImagePath = "/images/magicclass/wood.png"
+                        ImagePath = "/images/magicclass/wood.png",
+                        LightCardsId = 4
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Schatten",
-                        ImagePath = "/images/magicclass/shadow.png"
+                        ImagePath = "/images/magicclass/shadow.png",
+                        LightCardsId = 7
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Dunkel",
-                        ImagePath = "/images/magicclass/dark.png"
+                        ImagePath = "/images/magicclass/dark.png",
+                        LightCardsId = 7
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Licht",
-                        ImagePath = "/images/magicclass/light.png"
+                        ImagePath = "/images/magicclass/light.png",
+                        LightCardsId = 5
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Wind",
-                        ImagePath = "/images/magicclass/wind.png"
+                        ImagePath = "/images/magicclass/wind.png",
+                        LightCardsId = 7
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Erde",
-                        ImagePath = "/images/magicclass/earth.png"
+                        ImagePath = "/images/magicclass/earth.png",
+                        LightCardsId = 6
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Elektro",
-                        ImagePath = "/images/magicclass/electric.png"
+                        ImagePath = "/images/magicclass/electric.png",
+                        LightCardsId = 3
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Nebel",
-                        ImagePath = "/images/magicclass/fog.png"
+                        ImagePath = "/images/magicclass/fog.png",
+                        LightCardsId = 7
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Illusion",
-                        ImagePath = "/images/magicclass/illusion.png"
+                        ImagePath = "/images/magicclass/illusion.png",
+                        LightCardsId = 3
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Nekromantie",
-                        ImagePath = "/images/magicclass/necromancy.png"
+                        ImagePath = "/images/magicclass/necromancy.png",
+                        LightCardsId = 7
                     },
                     new MagicClassModel
                     {
                         Bezeichnung = "Heilig",
-                        ImagePath = "/images/magicclass/holy.png"
+                        ImagePath = "/images/magicclass/holy.png",
+                        LightCardsId = 4
                     }
                 );
             }

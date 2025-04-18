@@ -35,5 +35,34 @@ body {
 }
 
 .card {
-    min-height: 80%;
+    min-height: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+
+/* Hover-Schatten je nach Magieklasse */
+.card-hover-red:hover {
+    box-shadow: 0 4px 12px rgba(255, 80, 0, 0.4);
+}
+
+.card-hover-blue:hover {
+    box-shadow: 0 4px 12px rgba(0, 150, 255, 0.4);
+}
+
+.card-hover-violett:hover {
+    box-shadow: 0 4px 12px rgb(128, 0, 128, 0.4);
+}
+
+.card-hover-green:hover {
+    box-shadow: 0 4px 12px rgba(0, 180, 90, 0.4);
+}
+.card-hover-yellow:hover {
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+.card-hover-brown:hover {
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4);
+}
+.card-hover-shadow:hover {
+    box-shadow: 0 4px 12px rgba(20, 20, 20, 0.5);
 }
