@@ -104,5 +104,24 @@ namespace Suendenbock_App.Data.Seeders
                 );
             }
         }
+
+        private static void SeedGuilds(ApplicationDbContext context)
+        {
+            if (!context.Guilds.Any())
+            {
+                context.Guilds.AddRange(
+                    new GuildModel
+                    {
+                        Name = "Bärenklaue",
+                        ImagePath = "/images/guild/baerenklaue.png"
+                    },
+                    new GuildModel
+                    {
+                        Name = "Feuerhand",
+                        ImagePath = "/images/guild/feuerhand.png"
+                    }
+                );
+            }
+        }
     }
 }

@@ -19,7 +19,13 @@ namespace Suendenbock_App.Controllers
         public IActionResult Index()
         {
             var allMagicClasses = _context.MagicClasses.ToList();
-            return View(allMagicClasses);
+            var allGuilds = _context.Guilds.ToList();
+            var viewModel = new HomeViewModel
+            {
+                MagicClasses = allMagicClasses,
+                Guilds = allGuilds
+            };      
+            return View(viewModel);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

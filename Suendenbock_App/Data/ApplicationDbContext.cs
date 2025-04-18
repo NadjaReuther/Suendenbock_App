@@ -7,6 +7,7 @@ namespace Suendenbock_App.Data
     public class ApplicationDbContext : IdentityDbContext
     {
         public DbSet<MagicClassModel> MagicClasses { get; set; }
+        public DbSet<GuildModel> Guilds { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
