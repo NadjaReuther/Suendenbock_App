@@ -13,6 +13,8 @@ namespace Suendenbock_App.Data.Seeders
 
             SeedLightCards(context);
             SeedMagicClass(context);
+            SeedGuilds(context);
+            SeedReligions(context);
 
             context.SaveChanges();
         }
@@ -167,12 +169,42 @@ namespace Suendenbock_App.Data.Seeders
                     new GuildModel
                     {
                         Name = "Bärenklaue",
-                        ImagePath = "/images/guild/baerenklaue.png"
+                        ImagePath = "/images/guild/baerenklaue.png",
+                        LightCardsId = 6
                     },
                     new GuildModel
                     {
-                        Name = "Feuerhand",
-                        ImagePath = "/images/guild/feuerhand.png"
+                        Name = "Wolkenbruch",
+                        ImagePath = "/images/guild/wolkenbruch.png",
+                        LightCardsId = 7
+                    }
+                );
+            }
+        }
+        private static void SeedReligions(ApplicationDbContext context)
+        {
+            if (!context.Religions.Any())
+            {
+                context.Religions.AddRange(
+                    new ReligionModel
+                    {
+                        Type = "Lutheranisch"
+                    },
+                    new ReligionModel
+                    {
+                        Type = "Katholisch"
+                    },
+                    new ReligionModel
+                    {
+                        Type = "alte Götter"
+                    },
+                    new ReligionModel
+                    {
+                        Type = "calvinistisch"
+                    },
+                    new ReligionModel
+                    {
+                        Type = "orthodox"
                     }
                 );
             }
