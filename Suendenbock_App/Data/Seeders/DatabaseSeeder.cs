@@ -32,6 +32,12 @@ namespace Suendenbock_App.Data.Seeders
                         Bezeichnung = "Wasser",
                         Description = "Wasser steht für Fluss, Anpassungsfähigkeit und Heilung.",
                         ImagePath = "/images/water.png"
+                    },
+                    new MagicClassModel
+                    {
+                        Bezeichnung = "Eis",
+                        Description = "Eis ist ein Element, das mit Zerstörung und Kälte assoziiert wird.",
+                        ImagePath = "/images/fire.png"
                     }
                 );
             }
