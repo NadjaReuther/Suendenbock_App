@@ -1,0 +1,79 @@
+﻿.steckbrief-background {
+    background: url('/images/character/background.png') no-repeat center center;
+    background-size: cover;
+    margin: 0;
+    min-height: 100vh;
+    padding: 3rem 0;
+    font-family: 'MedievalSharp', cursive;
+}
+
+.steckbrief-container {
+    background-color: rgba(255, 248, 220, 0.95);
+    border: 3px solid #6e4b1f;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 0 15px #3c2f1c;
+    max-width: 750px;
+    margin: auto;
+}
+
+.steckbrief-title {
+    font-family: 'Uncial Antiqua', serif;
+    font-size: 2.8rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+label {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background-color: #6e4b1f;
+    border: none;
+}
+
+    .btn-primary:hover {
+        background-color: #4e3516;
+    }
+
+input[type="text"],
+input[type="date"],
+select {
+    background-color: transparent;
+    border: 1px solid #6e4b1f;
+}
+@keyframes glow-flash {
+    0%, 100% {
+        opacity: 1;
+        text-shadow: 0 0 5px #9fefb5, 0 0 10px #9fefb5;
+    }
+
+    50% {
+        opacity: 0.5;
+        text-shadow: 0 0 2px #6fde92, 0 0 4px #6fde92;
+    }
+}
+
+.btn-wachs {
+    color: #cac4c4;
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-shadow: 2px 2px 4px black;
+    background: url('/images/character/wachs.png') no-repeat center;
+    background-size: contain;
+    width: 120px;
+    height: 120px;
+    border: none;
+    margin: 1rem auto;
+    display: block;
+    cursor: pointer;
+    filter: drop-shadow(0 0 10px #333333);
+    transform: scale(1.08);
+    transition: filter 0.3s ease;
+}
+
+    .btn-wachs:hover {
+        filter: drop-shadow(0 0 5px #ff4444);
+    }
