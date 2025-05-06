@@ -6,7 +6,7 @@
 <div class="row">
     <div class="col-4">
         <div class="card m-1 p-2">
-            <a asp-controller="Character" asp-action="CreateForm" class="btn btn-outline-success">neuer Charakter</a>
+            <a asp-controller="Character" asp-action="Form" class="btn btn-outline-success">neuer Charakter</a>
             <table>
                 <thead>
                     <tr>
@@ -23,8 +23,8 @@
                                 <td>@character.Vorname</td>
                                 <td>@character.Nachname</td>
                                 <td>
-                                    <a asp-controller="Character" asp-action="EditForm" asp-route-id="@character.Id" class="btn btn-outline-primary">Bearbeiten</a>
-                                    <a asp-controller="Character" asp-action="Delete" asp-route-id="@character.Id" class="btn btn-outline-danger">Löschen</a>
+                                    <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id" class=""><img width="30" height="30" src="/images/icons/edit.png"/></a>
+                                    <a asp-controller="Character" asp-action="Delete" asp-route-id="@character.Id" class=""><img width="30" height="30" src="/images/icons/trash.png"/></a>
                                 </td>
                             </tr>
                         }
@@ -35,7 +35,7 @@
     </div>
     <div class="col-4">
         <div class="card m-1 p-2">
-            <a asp-controller="MagicClass" asp-action="CreateForm" class="btn btn-outline-success">neue Magieklasse</a>
+            <a asp-controller="MagicClass" asp-action="Form" class="btn btn-outline-success">neue Magieklasse</a>
             <table>
                 <thead>
                     <tr>
@@ -50,8 +50,8 @@
                             <tr>
                                 <td>@magicClass.Bezeichnung</td>
                                 <td>
-                                    <a asp-controller="Character" asp-action="EditForm" asp-route-id="@magicClass.Id" class="btn btn-outline-primary">Bearbeiten</a>
-                                    <a asp-controller="Character" asp-action="Delete" asp-route-id="@magicClass.Id" class="btn btn-outline-danger">Löschen</a>
+                                    <a asp-controller="MagicClass" asp-action="Form" asp-route-id="@magicClass.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
+                                    <a asp-controller="MagicClass" asp-action="Delete" asp-route-id="@magicClass.Id" class=""><img width="30" height="30" src="/images/icons/trash.png" /></a>
                                 </td>
                             </tr>
                         }
@@ -62,7 +62,7 @@
     </div>
     <div class="col-4">
         <div class="card m-1 p-2">
-            <a asp-controller="Guild" asp-action="CreateForm" class="btn btn-outline-success">neue Gilde</a>
+            <a asp-controller="Guild" asp-action="Form" class="btn btn-outline-success">neue Gilde</a>
             <table>
                 <thead>
                     <tr>
@@ -77,8 +77,8 @@
 							<tr>
 								<td>@guild.Name</td>
 								<td>
-									<a asp-controller="Character" asp-action="EditForm" asp-route-id="@guild.Id" class="btn btn-outline-primary">Bearbeiten</a>
-									<a asp-controller="Character" asp-action="Delete" asp-route-id="@guild.Id" class="btn btn-outline-danger">Löschen</a>
+                                    <a asp-controller="Guild" asp-action="Form" asp-route-id="@guild.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
+                                    <a asp-controller="Guild" asp-action="Delete" asp-route-id="@guild.Id" class=""><img width="30" height="30" src="/images/icons/trash.png" /></a>
 								</td>
 							</tr>
 						}

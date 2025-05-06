@@ -1,0 +1,34 @@
+﻿@model List<GuildModel>
+@{
+    ViewData["Title"] = "Gilde erstellen";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+}
+<div class="steckbrief-background">
+    <div class="steckbrief-container">
+        <div class="steckbrief-title">Gilde</div>
+        <form asp-controller="Guild" asp-action="CreateEdit">
+            <div class="mb-3">
+                <label for="gildenname" class="form-label">Gildenname</label>
+                <input type="text" class="form-control" id="gildenname" name="gildenname">
+            </div>
+
+            <div class="mb-3">
+                <select class="form-select" id="lightClassId" name="lightClassId">
+                    <option value="" disabled selected hidden>Highlighting auswählen...</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+				<textarea class="form-control" id="beschreibung" name="beschreibung" rows="3"></textarea>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn-wachs">Gebilligt</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
 #nullable disable
 
-namespace Suendenbock_App.Data.Migrations
+namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250418152456_addedGuild")]
-    partial class addedGuild
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,6 +224,52 @@ namespace Suendenbock_App.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.CharacterModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Geburtsdatum")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Geschlecht")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("GuildId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("MagicClassId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nachname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ReligionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Vorname")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GuildId");
+
+                    b.HasIndex("MagicClassId");
+
+                    b.HasIndex("ReligionId");
+
+                    b.ToTable("Characters");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.GuildModel", b =>
                 {
                     b.Property<int>("Id")
@@ -235,9 +278,16 @@ namespace Suendenbock_App.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LightCardsId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -245,7 +295,26 @@ namespace Suendenbock_App.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LightCardsId");
+
                     b.ToTable("Guilds");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.LightCards", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("cssClass")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LightCards");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.MagicClassModel", b =>
@@ -264,9 +333,31 @@ namespace Suendenbock_App.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("LightCardsId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("LightCardsId");
+
                     b.ToTable("MagicClasses");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.ReligionModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Religions");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -318,6 +409,71 @@ namespace Suendenbock_App.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.CharacterModel", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.GuildModel", "Guild")
+                        .WithMany("Characters")
+                        .HasForeignKey("GuildId");
+
+                    b.HasOne("Suendenbock_App.Models.MagicClassModel", "MagicClass")
+                        .WithMany("Characters")
+                        .HasForeignKey("MagicClassId");
+
+                    b.HasOne("Suendenbock_App.Models.ReligionModel", "Religion")
+                        .WithMany("Characters")
+                        .HasForeignKey("ReligionId");
+
+                    b.Navigation("Guild");
+
+                    b.Navigation("MagicClass");
+
+                    b.Navigation("Religion");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.GuildModel", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.LightCards", "LightCard")
+                        .WithMany("Guilds")
+                        .HasForeignKey("LightCardsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LightCard");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.MagicClassModel", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.LightCards", "LightCard")
+                        .WithMany("MagicClasses")
+                        .HasForeignKey("LightCardsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LightCard");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.GuildModel", b =>
+                {
+                    b.Navigation("Characters");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.LightCards", b =>
+                {
+                    b.Navigation("Guilds");
+
+                    b.Navigation("MagicClasses");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.MagicClassModel", b =>
+                {
+                    b.Navigation("Characters");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.ReligionModel", b =>
+                {
+                    b.Navigation("Characters");
                 });
 #pragma warning restore 612, 618
         }

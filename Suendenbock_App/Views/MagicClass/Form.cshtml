@@ -1,0 +1,40 @@
+﻿@model List<MagicClassModel>
+@{
+	ViewData["Title"] = "Magieklasse erstellen";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+	<link href="/css/character.css" rel="stylesheet" />
+	<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+	}
+
+<div class="steckbrief-background">
+    <div class="steckbrief-container">
+        <div class="steckbrief-title">Charakter</div>
+        <form asp-controller="MagicClass" asp-action="CreateEdit">
+            <div class="mt-5 mb-3">
+                <label for="vorname" class="form-label">Magieklasse</label>
+                <input type="text" class="form-control" id="bezeichnung" name="bezeichnung" required>
+            </div>
+
+            <!--Todo Lightcards als kleine rectangle in Farbe-->
+            <div class="mb-3">
+                <select class="form-select" id="magicClassId" name="magicClassId">
+                    <option value="" disabled selected hidden>Magieklasse auswählen...</option>
+                    
+                </select>
+            </div>
+            <!--hier kommt noch zum hochladen einbau von Icons-->
+            <div class="mb-3">
+                <select class="form-select" id="guildId" name="guildId">
+                    <option value="" disabled selected hidden>Gilde auswählen...</option>
+                    
+                </select>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn-wachs">Gebilligt</button>
+            </div>
+        </form>
+    </div>
+</div>

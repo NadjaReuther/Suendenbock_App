@@ -1,28 +1,31 @@
 ﻿@model List<CharacterModel>
+@{
+    ViewData["Title"] = "Charakter erstellen";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 @section Styles {
-    <link href="/css/character.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+<link href="/css/character.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
 <div class="steckbrief-background">
     <div class="steckbrief-container">
         <div class="steckbrief-title">Charakter</div>
-        <form>
+        <form asp-controller="Character" asp-action="CreateEdit">
             <div class="mt-5 mb-3">
                 <label for="vorname" class="form-label">Vorname</label>
-                <input type="text" class="form-control" id="vorname" name="vorname">
+                <input type="text" class="form-control" id="vorname" name="vorname" required>
             </div>
 
             <div class="mb-3">
                 <label for="nachname" class="form-label">Nachname</label>
-                <input type="text" class="form-control" id="nachname" name="nachname">
+                <input type="text" class="form-control" id="nachname" name="nachname" required>
             </div>
 
             <div class="mb-3">
                 <select class="form-select" id="geschlecht" name="geschlecht">
                     <option value="" disabled selected hidden>Geschlecht auswählen...</option>
-                    <option value="männlich">Männlich</option>
-                    <option value="weiblich">Weiblich</option>
-                    <option value="divers">Divers</option>
+                    <option value="männlich">männlich</option>
+                    <option value="weiblich">weiblich</option>
                 </select>
             </div>
 
@@ -34,28 +37,36 @@
             <div class="mb-3">
                 <select class="form-select" id="magicClassId" name="magicClassId">
                     <option value="" disabled selected hidden>Magieklasse auswählen...</option>
-                    <option value="1">Feuermagier</option>
-                    <option value="2">Heiler</option>
-                    <option value="3">Illusionist</option>
-                    <!-- weitere Optionen -->
+                    @{
+                        foreach (var magicclass in ViewBag.MagicClasses)
+                        {
+                            <option value="@magicclass.Id">@magicclass.Bezeichnung</option>
+                        }
+                    }
                 </select>
             </div>
 
             <div class="mb-3">
                 <select class="form-select" id="guildId" name="guildId">
                     <option value="" disabled selected hidden>Gilde auswählen...</option>
-                    <option value="1">Die Schatten</option>
-                    <option value="2">Der Orden des Lichts</option>
-                    <!-- weitere Optionen -->
+                    @{
+                        foreach (var guild in ViewBag.Guilds)
+                        {
+                            <option value="@guild.Id">@guild.Name</option>
+                        }
+                    }
                 </select>
             </div>
 
             <div class="mb-3">
                 <select class="form-select" id="religionId" name="religionId">
                     <option value="" disabled selected hidden>Religion auswählen...</option>
-                    <option value="1">Glaube an den Allvater</option>
-                    <option value="2">Pfad der Elemente</option>
-                    <!-- weitere Optionen -->
+                    @{
+                        foreach (var religion in ViewBag.Religions)
+                        {
+                            <option value="@religion.Id">@religion.Type</option>
+                        }
+                    }
                 </select>
             </div>
 

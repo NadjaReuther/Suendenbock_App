@@ -12,6 +12,8 @@ namespace Suendenbock_App.Data.Seeders
             context.Database.Migrate();
 
             SeedLightCards(context);
+            context.SaveChanges();
+
             SeedMagicClass(context);
             SeedGuilds(context);
             SeedReligions(context);
@@ -170,13 +172,29 @@ namespace Suendenbock_App.Data.Seeders
                     {
                         Name = "Bärenklaue",
                         ImagePath = "/images/guild/baerenklaue.png",
-                        LightCardsId = 6
+                        LightCardsId = 6,
+                        Description = "ist die Gilde von Brönn"
                     },
                     new GuildModel
                     {
                         Name = "Wolkenbruch",
                         ImagePath = "/images/guild/wolkenbruch.png",
-                        LightCardsId = 7
+                        LightCardsId = 7,
+                        Description = "sind wir"
+                    },
+                    new GuildModel
+                    {
+                        Name = "Schneesturm",
+                        ImagePath = "/images/guild/schneesturm.png",
+                        LightCardsId = 2,
+                        Description = "krasse Scheisser"
+                    },
+                    new GuildModel
+                    {
+                        Name = "Schwerthieb",
+                        ImagePath = "/images/guild/schwerthieb.png",
+                        LightCardsId = 7,
+                        Description = "irgendwas mit Upiren"
                     }
                 );
             }

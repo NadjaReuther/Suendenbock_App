@@ -6,8 +6,8 @@
         public string Nachname { get; set; }
         public string Vorname { get; set; }
         public string Geschlecht { get; set; }
-        public string Geburtsdatum { get; set; }
-        public string ImagePath { get; set; }
+        public string? Geburtsdatum { get; set; }
+        public string? ImagePath { get; set; }
 
         //Foreign Keys
         public int? MagicClassId { get; set; }
