@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Suendenbock_App.Data;
-using Suendenbock_App.Models;
+using Suendenbock_App.Models.Domain;
 
 namespace Suendenbock_App.Controllers
 {
@@ -37,7 +37,7 @@ namespace Suendenbock_App.Controllers
             // Return the view for creating a new character
             return View();
         }
-        public IActionResult CreateEdit(CharacterModel character)
+        public IActionResult CreateEdit(Character character)
         {
 
             if (character.Id == 0)

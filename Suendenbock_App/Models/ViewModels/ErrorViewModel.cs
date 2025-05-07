@@ -1,4 +1,4 @@
-namespace Suendenbock_App.Models
+namespace Suendenbock_App.Models.ViewModels
 {
     public class ErrorViewModel
     {

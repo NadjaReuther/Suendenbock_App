@@ -26,31 +26,31 @@ namespace Suendenbock_App.Data.Seeders
             if (!context.LightCards.Any())
             {
                 context.LightCards.AddRange(
-                    new LightCards
+                    new LightCard
                     {
                         cssClass = "card-hover-red",
                     },
-                    new LightCards
+                    new LightCard
                     {
                         cssClass = "card-hover-blue",
                     },
-                    new LightCards
+                    new LightCard
                     {
                         cssClass = "card-hover-violett",
                     },
-                    new LightCards
+                    new LightCard
                     {
                         cssClass = "card-hover-green",
                     },
-                    new LightCards
+                    new LightCard
                     {
                         cssClass = "card-hover-yellow",
                     },
-                    new LightCards
+                    new LightCard
                     {
                         cssClass = "card-hover-brown",
                     },
-                    new LightCards
+                    new LightCard
                     {
                         cssClass = "card-hover-shadow",
                     }

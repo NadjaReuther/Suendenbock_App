@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Suendenbock_App.Data;
-using Suendenbock_App.Models;
+using Suendenbock_App.Models.Domain;
 
 namespace Suendenbock_App.Controllers
 {
@@ -33,7 +33,7 @@ namespace Suendenbock_App.Controllers
             // Return the view for creating a new character
             return View();
         }
-        public IActionResult CreateEdit(GuildModel guild)
+        public IActionResult CreateEdit(Guild guild)
         {
             if(guild.Id == 0)
             {

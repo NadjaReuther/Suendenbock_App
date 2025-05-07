@@ -1,6 +1,6 @@
-﻿namespace Suendenbock_App.Models
+﻿namespace Suendenbock_App.Models.Domain
 {
-    public class CharacterModel
+    public class Character
     {
         public int Id { get; set; }
         public string Nachname { get; set; }
@@ -15,9 +15,9 @@
         public int? ReligionId { get; set; }
 
         //Navigation Properties
-        public virtual MagicClassModel MagicClass { get; set; } //character has one magic class
-        public virtual GuildModel Guild { get; set; } //character has one guild
-        public virtual ReligionModel Religion { get; set; } //character has one religion
+        public virtual MagicClass? MagicClass { get; set; } //character has one magic class
+        public virtual Guild? Guild { get; set; } //character has one guild
+        public virtual Religion? Religion { get; set; } //character has one religion
 
     }
 }

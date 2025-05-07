@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Suendenbock_App.Data;
-using Suendenbock_App.Models;
+using Suendenbock_App.Models.Domain;
 
 namespace Suendenbock_App.Controllers
 {
@@ -38,7 +38,7 @@ namespace Suendenbock_App.Controllers
             }
         }
 
-        public IActionResult CreateEdit(MagicClassModel magicClass)
+        public IActionResult CreateEdit(MagicClass magicClass)
         {
             if (magicClass.Id == 0)
             {
