@@ -7,10 +7,11 @@
         public string ImagePath { get; set; } = string.Empty;
 
         //Foreign Key
-        public int LightCardsId { get; set; }
+        public int LightCardId { get; set; }
 
         //Navigation Properties
         public virtual LightCard? LightCard { get; set; }  // Navigation Property Magicclass has a LightCard
-        public virtual ICollection<Character> Characters { get; set; } = new List<Character>(); // MagicClass has many Characters
+        public virtual ICollection<Specialization> Specializations { get; set; } = new List<Specialization>(); // MagicClass has many Specializations
+        public virtual ICollection<CharacterMagicClass> CharacterMagicClasses{ get; set; } = new List<CharacterMagicClass>(); // MagicClass has many Characters
     }
 }
