@@ -66,3 +66,38 @@ body {
 .card-hover-shadow:hover {
     box-shadow: 0 4px 12px rgba(20, 20, 20, 0.5);
 }
+
+/**
+    * CSS für die Familienbaumdarstellung
+ */
+.family-tree {
+    position: relative;
+}
+
+.family-card {
+    margin-bottom: 15px;
+    border: 2px solid #ddd;
+    transition: all 0.3s;
+}
+
+.root-card {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.parent-card {
+    border-color: #28a745;
+}
+
+.sibling-card {
+    border-color: #ffc107;
+}
+
+.descendant-card {
+    border-color: #dc3545;
+}
+
+.family-card:hover {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+}

@@ -1,0 +1,128 @@
+﻿@model FamilyTreeViewModel
+@{
+    ViewData["Title"] = "Familienstammbaum";
+}
+<div class="container">
+    <h1 class="text-center mb-5">Familienstammbaum: @Model.RootCharacter.Vorname @Model.RootCharacter.Nachname</h1>
+
+    <div class="row">
+        <div class="col-md-12 text-center mb-4">
+            <!-- Dropdown zur Auswahl eines anderen Charakters-->
+            <form asp-controller="Home" asp-action="FamilyTree" method="get" class="mb-4">
+                <div class="input-group">
+                    <select class="form-select" name="characterId" onchange="this.form.submit()">
+                        <option value="">Charakter auswählen...</option>
+                        @foreach (var character in await Context.RequestServices
+                        .GetRequiredService<ApplicationDbContext>()
+                          .Characters.OrderBy(c => c.Nachname).ThenBy(c => c.Vorname).ToListAsync())
+                        {
+                            <option value="@character.Id" 
+                            @(character.Id == Model.RootCharacter.Id ? "selected" : "")>
+                                @character.Vorname @character.Nachname
+                            </option>
+                        }
+                    </select>
+                    <button class="btn btn-primary" type="submit">Anzeigen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="family-tree">
+        <!-- Vorfahren -->
+        @if (Model.Ancestors.Any())
+        {
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <h3>Eltern</h3>
+                    <div class="row justify-content-center">
+                        @foreach (var ancestor in Model.Ancestor)
+                        {
+                            <div class="col-md-4">
+                                <div class="card family-card parent-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a asp-action="FamilyTree" asp-route-characterId="@ancestor.Id">
+                                                @ancestor.Vorname @ancestor.Nachname
+                                            </a>
+                                        </h5>
+                                        <p class="card-text">
+                                            @(ancestor.VaterId == Model.RootCharacter.Id ? "Vater" : "Mutter")
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        <!-- ausgewählter Charakter in der Mitte -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <div class="card family-card root-card mx-auto" style="max-width:300px;">
+                    <div class="card-body">
+                        <h4 class="card-title">@Model.RootCharacter.Vorname @Model.RootCharacter.Nachname</h4>
+                        <p class="card-text">
+                            <strong>Geschlecht:</strong> @Model.RootCharacter.Geschlecht<br />
+                            <strong>Gilde:</strong> @(Model.RootCharacter.Guild?.Name ?? "Keine")<br />
+                            <strong>Religion:</strong> @(Model.RootCharacter.Religion?.Type ?? "Keine")<br />
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Geschwister -->
+        @if (Model.SIblings.Any())
+        {
+            <div class="row mb-4">
+                <div class="col-12 text-center">
+                    <h3>Geschwister</h3>
+                    <div class="row justify-content-center">
+                        @foreach (var sibling in Model.Siblings)
+                        {
+                            <div class="col-md-3">
+                                <div class="card family-card sibling-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a asp-action="FamilyTree" asp-route-characterId="@sibling.Id">
+                                                @sibling.Vorname @sibling.Nachname
+                                            </a>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Nachkommen -->
+        @if (Model.Descendants.Any())
+        {
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h3>Kinder</h3>
+                    <div class="row justify-content-center">
+                        @foreach (var descendant in Model.Descendants)
+                        {
+                            <div class="col-md-3">
+								<div class="card family-card descendant-card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+										    <a asp-action="FamilyTree" asp-route-characterId="@descendant.Id">
+											    @descendant.Vorname @descendant.Nachname
+										    </a>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+

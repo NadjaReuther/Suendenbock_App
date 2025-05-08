@@ -13,7 +13,7 @@
                     @foreach (var magiclass in Model.MagicClasses)
                     {
                         <div class="col">
-                            <div class="card h-100 @magiclass.LightCard.cssClass">
+                            <div class="card h-100 @magiclass.LightCard.CssClass">
                                 <div class="card-body d-flex align-items-center">
                                     <img src="@magiclass.ImagePath" class="magic-icon me-2" alt="@magiclass.Bezeichnung">
                                     <span class="mb-0">@magiclass.Bezeichnung</span>
@@ -23,7 +23,7 @@
                     }
                 </div>
             </section>
-		</div>
+        </div>
         <div class="col">
             <section>
                 <h2 class="section-title">Gilden</h2>
@@ -45,5 +45,62 @@
                 </div>
             </section>
         </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-md-8">
+            <section>
+                <h2 class="section-title">Neueste Charakter</h2>
+                <div class="row row-cols-1 row-cols-md-3 g4">
+                    @foreach (var character in Model.Characters)
+                    {
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">@character.Vorname @character.Nachname</h5>
+                                    <ul class="list-unstyled">
+                                        <li><strong>Geschlecht:</strong> @character.Geschlecht</li>
+                                        <li><strong>Gilde:</strong> @(character.Guild?.Name ?? "Keine")</li>
+                                        <li><strong>Religion:</strong> @(character.Religion?.Type ?? "Keine")</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        </div>
+        <div class="col-md-4">
+            <section>
+                <h2 class="section-title">Statistiken</h2>
+                <div class="card mb-3">
+                    <div class="card-header">Verteilung nach Magieklassen</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var stat in Model.MagicClassStats)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @stat.Key
+									<span class="badge bg-primary rounded-pill">@stat.Value</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">Verteilung nach Geschlecht</div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            @foreach (var stat in Model.GenderStats)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+									@stat.Key
+									<span class="badge bg-primary rounded-pill">@stat.Value</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+           </section>
+       </div>
     </div>
 </div>
