@@ -38,9 +38,15 @@ namespace Suendenbock_App.Controllers
                 .GroupBy(cmc => cmc.MagicClassId)
                 .Select(g => new { MagicClassId = g.Key, Count = g.Count() })
                 .ToDictionary(
-                    x => _context.MagicClasses.Find(x.MagicClassId)?.Bezeichnung ?? "Unbekannt",
+                    x => _context.MagicClasses.FirstOrDefault(mc => mc.Id == x.MagicClassId)?.Bezeichnung ?? "Unbekannt",
                 x => x.Count);
 
+            // Charaktere ohne Magieklasse hinzufügen
+            var charactersWithoutMagic = _context.Characters.Count(c => !c.CharacterMagicClasses.Any());
+            if (charactersWithoutMagic > 0)
+            {
+                magicClassStats.Add("Keine Magieklasse", charactersWithoutMagic);
+            }
             // Geschlechter-Statistik
             var genderStats = _context.Characters
                 .GroupBy(c => c.Geschlecht)

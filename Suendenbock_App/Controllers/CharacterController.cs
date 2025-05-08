@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
 
@@ -26,18 +27,28 @@ namespace Suendenbock_App.Controllers
             if (id > 0)
             {
                 // Load character data for editing
-                var character = _context.Characters.Find(id);
+                var character = _context.Characters
+                    .Include(c => c.CharacterMagicClasses)
+                    .FirstOrDefault(c => c.Id == id);
+
                 if (character == null)
                 {
                     return NotFound();
                 }
+                // Get selected magic classes
+                ViewBag.SelectedMagicClasses = character.CharacterMagicClasses
+                    .Select(cmc => cmc.MagicClassId)
+                    .ToArray();
                 // Return the view with the character data
                 return View(character);
             }
             // Return the view for creating a new character
-            return View();
+            // Initialize selected magic classes as an empty array
+            ViewBag.SelectedMagicClasses = new int[0];
+            return View(new Character());
         }
-        public IActionResult CreateEdit(Character character)
+        [HttpPost]
+        public IActionResult CreateEdit(Character character, int[] selectedMagicClasses)
         {
 
             if (character.Id == 0)
@@ -50,6 +61,20 @@ namespace Suendenbock_App.Controllers
                 }
                 // Create new character
                 _context.Characters.Add(character);
+                _context.SaveChanges();
+
+                //add MagicClass
+                if(selectedMagicClasses != null && selectedMagicClasses.Length > 0)
+                {
+                    foreach (var magicClassId in selectedMagicClasses)
+                    {
+                        _context.CharacterMagicClasses.Add(new CharacterMagicClass
+                        {
+                            CharacterId = character.Id,
+                            MagicClassId = magicClassId
+                        });
+                    }
+                }
             }
             else
             {
@@ -69,7 +94,22 @@ namespace Suendenbock_App.Controllers
                 characterToUpdate.Geschlecht = character.Geschlecht;
                 //characterToUpdate.Geburtsdatum = character.Geburtsdatum;
                 //characterToUpdate.ImagePath = character.ImagePath;
-                characterToUpdate.MagicClassId = character.MagicClassId;
+
+                //Update magic classes - first remove all existing
+                _context.CharacterMagicClasses.RemoveRange(characterToUpdate.CharacterMagicClasses);
+                //add MagicClass
+                if (selectedMagicClasses != null && selectedMagicClasses.Length > 0)
+                {
+                    foreach (var magicClassId in selectedMagicClasses)
+                    {
+                        _context.CharacterMagicClasses.Add(new CharacterMagicClass
+                        {
+                            CharacterId = character.Id,
+                            MagicClassId = magicClassId
+                        });
+                    }
+                }
+
                 characterToUpdate.GuildId = character.GuildId;
                 characterToUpdate.ReligionId = character.ReligionId;
             }

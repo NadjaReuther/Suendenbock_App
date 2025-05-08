@@ -13,6 +13,7 @@
                     <tr>
                         <th>Vorname</th>
                         <th>Nachname</th>
+                        <th>Magie</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -23,6 +24,17 @@
                             <tr>
                                 <td>@character.Vorname</td>
                                 <td>@character.Nachname</td>
+                                <td>
+                                    @if (character.CharacterMagicClasses.Any())
+                                    {
+                                        <span>
+                                            @string.Join(", ", character.CharacterMagicClasses.Select(cmc => cmc.MagicClass.Bezeichnung))
+                                        </span>
+                                    } else
+                                    {
+                                        <span>keine Magie</span>
+                                    }
+                                </td>
                                 <td>
                                     <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id" class=""><img width="30" height="30" src="/images/icons/edit.png"/></a>
                                     <a asp-controller="Character" asp-action="Delete" asp-route-id="@character.Id" class=""><img width="30" height="30" src="/images/icons/trash.png"/></a>

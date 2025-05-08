@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Suendenbock_App.Models;
+using Suendenbock_App.Models.Domain;
 
 namespace Suendenbock_App.Data.Seeders
 {
@@ -28,31 +28,31 @@ namespace Suendenbock_App.Data.Seeders
                 context.LightCards.AddRange(
                     new LightCard
                     {
-                        cssClass = "card-hover-red",
+                        CssClass = "card-hover-red",
                     },
                     new LightCard
                     {
-                        cssClass = "card-hover-blue",
+                        CssClass = "card-hover-blue",
                     },
                     new LightCard
                     {
-                        cssClass = "card-hover-violett",
+                        CssClass = "card-hover-violett",
                     },
                     new LightCard
                     {
-                        cssClass = "card-hover-green",
+                        CssClass = "card-hover-green",
                     },
                     new LightCard
                     {
-                        cssClass = "card-hover-yellow",
+                        CssClass = "card-hover-yellow",
                     },
                     new LightCard
                     {
-                        cssClass = "card-hover-brown",
+                        CssClass = "card-hover-brown",
                     },
                     new LightCard
                     {
-                        cssClass = "card-hover-shadow",
+                        CssClass = "card-hover-shadow",
                     }
                 );
             }
@@ -63,101 +63,95 @@ namespace Suendenbock_App.Data.Seeders
             if (!context.MagicClasses.Any())
             {
                 context.MagicClasses.AddRange(
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Feuer",
                         ImagePath = "/images/magicclass/fire.png",
-                        LightCardsId = 1
+                        LightCardId = 1
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Wasser",
                         ImagePath = "/images/magicclass/water.png",
-                        LightCardsId = 2
+                        LightCardId = 2
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Eis",
                         ImagePath = "/images/magicclass/ice.png",
-                        LightCardsId = 2
+                        LightCardId = 2
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Tür",
                         ImagePath = "/images/magicclass/door.png",
-                        LightCardsId = 6
+                        LightCardId = 6
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Barriere",
                         ImagePath = "/images/magicclass/barrier.png",
-                        LightCardsId = 2
+                        LightCardId = 2
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Holz",
                         ImagePath = "/images/magicclass/wood.png",
-                        LightCardsId = 6
+                        LightCardId = 6
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Schatten",
                         ImagePath = "/images/magicclass/shadow.png",
-                        LightCardsId = 7
+                        LightCardId = 7
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
-                        Bezeichnung = "Dunkel",
+                        Bezeichnung = "Zwielicht",
                         ImagePath = "/images/magicclass/dark.png",
-                        LightCardsId = 7
+                        LightCardId = 7
                     },
-                    new MagicClassModel
-                    {
-                        Bezeichnung = "Licht",
-                        ImagePath = "/images/magicclass/light.png",
-                        LightCardsId = 5
-                    },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Wind",
                         ImagePath = "/images/magicclass/wind.png",
-                        LightCardsId = 7
+                        LightCardId = 7
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Erde",
                         ImagePath = "/images/magicclass/earth.png",
-                        LightCardsId = 6
+                        LightCardId = 6
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Elektro",
                         ImagePath = "/images/magicclass/electric.png",
-                        LightCardsId = 5
+                        LightCardId = 5
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Nebel",
                         ImagePath = "/images/magicclass/fog.png",
-                        LightCardsId = 7
+                        LightCardId = 7
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Illusion",
                         ImagePath = "/images/magicclass/illusion.png",
-                        LightCardsId = 6
+                        LightCardId = 6
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Nekromantie",
                         ImagePath = "/images/magicclass/necromancy.png",
-                        LightCardsId = 7
+                        LightCardId = 7
                     },
-                    new MagicClassModel
+                    new MagicClass
                     {
                         Bezeichnung = "Heilig",
                         ImagePath = "/images/magicclass/holy.png",
-                        LightCardsId = 5
+                        LightCardId = 5
                     }
                 );
             }
@@ -168,32 +162,32 @@ namespace Suendenbock_App.Data.Seeders
             if (!context.Guilds.Any())
             {
                 context.Guilds.AddRange(
-                    new GuildModel
+                    new Guild
                     {
                         Name = "Bärenklaue",
                         ImagePath = "/images/guild/baerenklaue.png",
-                        LightCardsId = 6,
+                        LightCardId = 6,
                         Description = "ist die Gilde von Brönn"
                     },
-                    new GuildModel
+                    new Guild
                     {
                         Name = "Wolkenbruch",
                         ImagePath = "/images/guild/wolkenbruch.png",
-                        LightCardsId = 7,
+                        LightCardId = 7,
                         Description = "sind wir"
                     },
-                    new GuildModel
+                    new Guild
                     {
                         Name = "Schneesturm",
                         ImagePath = "/images/guild/schneesturm.png",
-                        LightCardsId = 2,
+                        LightCardId = 2,
                         Description = "krasse Scheisser"
                     },
-                    new GuildModel
+                    new Guild
                     {
                         Name = "Schwerthieb",
                         ImagePath = "/images/guild/schwerthieb.png",
-                        LightCardsId = 7,
+                        LightCardId = 7,
                         Description = "irgendwas mit Upiren"
                     }
                 );
@@ -204,23 +198,23 @@ namespace Suendenbock_App.Data.Seeders
             if (!context.Religions.Any())
             {
                 context.Religions.AddRange(
-                    new ReligionModel
+                    new Religion
                     {
                         Type = "Lutheranisch"
                     },
-                    new ReligionModel
+                    new Religion
                     {
                         Type = "Katholisch"
                     },
-                    new ReligionModel
+                    new Religion
                     {
                         Type = "alte Götter"
                     },
-                    new ReligionModel
+                    new Religion
                     {
                         Type = "calvinistisch"
                     },
-                    new ReligionModel
+                    new Religion
                     {
                         Type = "orthodox"
                     }

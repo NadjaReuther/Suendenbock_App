@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Suendenbock_App.Data;
-using Suendenbock_App.Models;
+using Suendenbock_App.Models.ViewModels;
 
 namespace Suendenbock_App.Controllers
 {

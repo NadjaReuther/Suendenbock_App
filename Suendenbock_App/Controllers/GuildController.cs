@@ -52,7 +52,7 @@ namespace Suendenbock_App.Controllers
                 // Update character properties
                 guildToUpdate.Name = guild.Name;
                 guildToUpdate.ImagePath = guild.ImagePath;
-                guildToUpdate.LightCardsId = guild.LightCardsId;
+                guildToUpdate.LightCardId = guild.LightCardId;
             }
             _context.SaveChanges();
             return RedirectToAction("Index");

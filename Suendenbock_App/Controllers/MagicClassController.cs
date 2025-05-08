@@ -55,7 +55,7 @@ namespace Suendenbock_App.Controllers
                 }
                 magicClassToUpdate.Bezeichnung = magicClass.Bezeichnung;
                 magicClassToUpdate.ImagePath = magicClass.ImagePath;
-                magicClassToUpdate.LightCardsId = magicClass.LightCardsId;
+                magicClassToUpdate.LightCardId = magicClass.LightCardId;
             }
             _context.SaveChanges();
             return RedirectToAction("Index");

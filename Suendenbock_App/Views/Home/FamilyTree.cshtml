@@ -1,4 +1,6 @@
-﻿@model FamilyTreeViewModel
+﻿@using Suendenbock_App.Models.ViewModels
+@using Suendenbock_App.Data;
+@model FamilyTreeViewModel
 @{
     ViewData["Title"] = "Familienstammbaum";
 }
@@ -12,12 +14,11 @@
                 <div class="input-group">
                     <select class="form-select" name="characterId" onchange="this.form.submit()">
                         <option value="">Charakter auswählen...</option>
-                        @foreach (var character in await Context.RequestServices
+                        @foreach (var character in Context.RequestServices
                         .GetRequiredService<ApplicationDbContext>()
-                          .Characters.OrderBy(c => c.Nachname).ThenBy(c => c.Vorname).ToListAsync())
+                          .Characters.OrderBy(c => c.Nachname).ThenBy(c => c.Vorname).ToList())
                         {
-                            <option value="@character.Id" 
-                            @(character.Id == Model.RootCharacter.Id ? "selected" : "")>
+                            <option value="@character.Id" selected="@(character.Id == Model.RootCharacter.Id)">
                                 @character.Vorname @character.Nachname
                             </option>
                         }
@@ -36,7 +37,7 @@
                 <div class="col-12 text-center">
                     <h3>Eltern</h3>
                     <div class="row justify-content-center">
-                        @foreach (var ancestor in Model.Ancestor)
+                        @foreach (var ancestor in Model.Ancestors)
                         {
                             <div class="col-md-4">
                                 <div class="card family-card parent-card">
@@ -73,7 +74,7 @@
             </div>
         </div>
         <!-- Geschwister -->
-        @if (Model.SIblings.Any())
+        @if (Model.Siblings.Any())
         {
             <div class="row mb-4">
                 <div class="col-12 text-center">
