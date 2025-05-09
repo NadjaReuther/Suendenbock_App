@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.ViewModels;
 
@@ -16,7 +17,7 @@ namespace Suendenbock_App.Controllers
         }
         public IActionResult Index()
         {
-            var allMagicClasses = _context.MagicClasses.ToList();
+            var allMagicClasses = _context.MagicClasses.Include(mc => mc.Specializations).ToList();
             var allGuilds = _context.Guilds.ToList();
             var allCharacters = _context.Characters.ToList();
             var viewModel = new AdminViewModel

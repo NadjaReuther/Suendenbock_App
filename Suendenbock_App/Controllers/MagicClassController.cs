@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
 
@@ -20,7 +21,10 @@ namespace Suendenbock_App.Controllers
             if (id > 0)
             {
                 // Load data for editing
-                var magicClass = _context.MagicClasses.Find(id);
+                var magicClass = _context.MagicClasses
+                    .Include(mc => mc.Specializations)
+                    .FirstOrDefault(mc => mc.Id == id);
+
                 if (magicClass == null)
                 {
                     return NotFound();
@@ -28,27 +32,46 @@ namespace Suendenbock_App.Controllers
                 else
                 {
                     // Return the view with the magic class data
+                    ViewBag.Specializations = magicClass.Specializations.ToList();
                     return View(magicClass);
                 }
             }
             else
             {
                 // Return the view for creating a new magic class
+                ViewBag.Specializations = new List<Specialization>();
                 return View();
             }
         }
 
-        public IActionResult CreateEdit(MagicClass magicClass)
+        public IActionResult CreateEdit(MagicClass magicClass, List<Specialization> specializations)
         {
             if (magicClass.Id == 0)
             {
                 // Create new magic class
                 _context.MagicClasses.Add(magicClass);
+                _context.SaveChanges();
+
+                // Add the specializations for the new magic class
+                if(specializations != null)
+                {
+                    foreach (var specialization in specializations)
+                    {
+                        if (!string.IsNullOrEmpty(specialization.Name))
+                        {
+                            specialization.MagicClassId = magicClass.Id;
+                            _context.Specializations.Add(specialization);
+                        }
+                    }
+                }
             }
             else
             {
                 // Edit existing magic class
-                var magicClassToUpdate = _context.MagicClasses.Find(magicClass.Id);
+                var magicClassToUpdate = _context.MagicClasses
+                    .Include(mc => mc.Specializations)
+                    .FirstOrDefault(mc => mc.Id == magicClass.Id);
+
                 if (magicClassToUpdate == null)
                 {
                     return NotFound();
@@ -56,6 +79,22 @@ namespace Suendenbock_App.Controllers
                 magicClassToUpdate.Bezeichnung = magicClass.Bezeichnung;
                 magicClassToUpdate.ImagePath = magicClass.ImagePath;
                 magicClassToUpdate.LightCardId = magicClass.LightCardId;
+
+                // Update specializations
+                _context.Specializations.RemoveRange(magicClassToUpdate.Specializations);
+
+                // Add the new specializations
+                if (specializations != null && specializations.Any())
+                {
+                    foreach (var specialization in specializations)
+                    {
+                        if (!string.IsNullOrEmpty(specialization.Name))
+                        {
+                            specialization.MagicClassId = magicClass.Id;
+                            _context.Specializations.Add(specialization);
+                        }
+                    }
+                }
             }
             _context.SaveChanges();
             return RedirectToAction("Index");

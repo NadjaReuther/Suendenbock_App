@@ -39,41 +39,62 @@
                 <label class="form-label">Magieklassen</label>
                 <div class="card p-3">
                     <div class="row">
-                    @foreach (var magicclass in ViewBag.MagicClasses)
-                    {
-                        bool isSelected = false;
-
-                        // Prüfe, ob das Array existiert und nicht null ist
-                        if (ViewBag.SelectedMagicClasses != null)
+                        @foreach (var magicclass in ViewBag.MagicClasses)
                         {
-                            // Durchlaufe die ausgewählten IDs und prüfe, ob die aktuelle MagicClass enthalten ist
-                            foreach (var id in ViewBag.SelectedMagicClasses)
+                            bool isSelected = false;
+
+                            // Prüfe, ob das Array existiert und nicht null ist
+                            if (ViewBag.SelectedMagicClasses != null)
                             {
-                                if (id.Equals(magicclass.Id))
+                                // Durchlaufe die ausgewählten IDs und prüfe, ob die aktuelle MagicClass enthalten ist
+                                foreach (var id in ViewBag.SelectedMagicClasses)
                                 {
-                                    isSelected = true;
-                                    break;
+                                    if (id.Equals(magicclass.Id))
+                                    {
+                                        isSelected = true;
+                                        break;
+                                    }
                                 }
                             }
-                        }
 
-                        <div class="col-md-4 col-sm-6 mb-2">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox"
-                                       name="selectedMagicClasses"
-                                       value="@magicclass.Id"
-                                       id="magic-@magicclass.Id"
-                                @(isSelected ? "checked" : "")>
-                                <label class="form-check-label" for="magic-@magicclass.Id">
-                                    @magicclass.Bezeichnung
-                                </label>
+                            <div class="col-md-4 col-sm-6 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox"
+                                    name="selectedMagicClasses"
+                                    value="@magicclass.Id"
+                                    id="magic-@magicclass.Id"
+                                    @(isSelected ? "checked" : "")>
+                                    <label class="form-check-label" for="magic-@magicclass.Id">
+                                        @magicclass.Bezeichnung
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                    }
+                        }
                     </div>
                 </div>
             </div>
-
+            <div class="mb-3">
+                <label class="form-label">Spezialisierung</label>
+                <div class="card p-3">
+                    <div class="row specializations-container">
+                        @foreach (var specialization in ViewBag.Specializations)
+                        {
+                            <div class="col-md-4 col-sm-6 mb-2 specialization-item" 
+                                data-magic-class-id="@specialization.MagicClassId" style="display:none;">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" 
+                                        name="specializationId_@specialization.MagicClassId"
+                                        value="@specialization.Id"
+                                        id="spec-@specialization.Id" />
+                                    <label class="form-check-label" for="spec-@specialization.Id">
+										@specialization.Name
+                                    </label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
             <div class="mb-3">
                 <select class="form-select" id="guildId" name="guildId">
                     <option value="" disabled selected hidden>Gilde auswählen...</option>
@@ -104,3 +125,23 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+		$(document).ready(function() {
+            function toggleSpecializations() {
+                $('.specialization-item').hide();
+				$('input[name="selectedMagicClasses"]:checked').each(function() {
+					var magicClassId = $(this).val();
+					$('.specialization-item[data-magic-class-id="' + magicClassId + '"]').show();
+				});
+            }
+
+			toggleSpecializations();
+
+			$('input[name="selectedMagicClasses"]').change(function() {
+				toggleSpecializations();
+			});
+		});
+	</script>
+}

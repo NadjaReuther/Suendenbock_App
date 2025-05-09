@@ -61,7 +61,15 @@
                         foreach (var magicClass in Model.MagicClasses)
                         {
                             <tr>
-                                <td>@magicClass.Bezeichnung</td>
+                                <td>
+                                    <div>@magicClass.Bezeichnung</div>
+								    @if (magicClass.Specializations.Any())
+								    {
+									    <small class="text-muted">
+										    Spezialisierungen: @string.Join(", ", magicClass.Specializations.Select(s => s.Name))
+									    </small>
+								    }
+                                </td>
                                 <td>
                                     <a asp-controller="MagicClass" asp-action="Form" asp-route-id="@magicClass.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
                                     <a asp-controller="MagicClass" asp-action="Delete" asp-route-id="@magicClass.Id" class=""><img width="30" height="30" src="/images/icons/trash.png" /></a>

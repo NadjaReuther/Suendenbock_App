@@ -22,6 +22,7 @@ namespace Suendenbock_App.Controllers
             ViewBag.MagicClasses = _context.MagicClasses.ToList();
             ViewBag.Guilds = _context.Guilds.ToList();
             ViewBag.Religions = _context.Religions.ToList();
+            ViewBag.Specializations = _context.Specializations.Include(s => s.MagicClass).ToList();
 
 
             // Check if id is provided for editing
@@ -108,10 +109,18 @@ namespace Suendenbock_App.Controllers
                 {
                     foreach (var magicClassId in selectedMagicClasses)
                     {
+                        string specializationKey = $"Specialization_{magicClassId}";
+                        int? specializationId = null;
+
+                        if(Request.Form.ContainsKey(specializationKey) && !string.IsNullOrEmpty(Request.Form[specializationKey]))
+                        {
+                            specializationId = int.Parse(Request.Form[specializationKey]);
+                        }
                         _context.CharacterMagicClasses.Add(new CharacterMagicClass
                         {
                             CharacterId = character.Id,
-                            MagicClassId = magicClassId
+                            MagicClassId = magicClassId,
+                            SpecializationId = specializationId
                         });
                     }
                 }
