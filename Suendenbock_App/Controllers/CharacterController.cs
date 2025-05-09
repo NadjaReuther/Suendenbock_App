@@ -23,6 +23,7 @@ namespace Suendenbock_App.Controllers
             ViewBag.Guilds = _context.Guilds.ToList();
             ViewBag.Religions = _context.Religions.ToList();
 
+
             // Check if id is provided for editing
             if (id > 0)
             {
@@ -31,21 +32,26 @@ namespace Suendenbock_App.Controllers
                     .Include(c => c.CharacterMagicClasses)
                     .FirstOrDefault(c => c.Id == id);
 
+
                 if (character == null)
                 {
                     return NotFound();
                 }
                 // Get selected magic classes
-                ViewBag.SelectedMagicClasses = character.CharacterMagicClasses
+                var selectedIds = character.CharacterMagicClasses
                     .Select(cmc => cmc.MagicClassId)
                     .ToArray();
+
+                System.Diagnostics.Debug.WriteLine($"Type of SelectedMagicClasses: {selectedIds.GetType().FullName}");
+
+                ViewBag.SelectedMagicClasses = selectedIds;
                 // Return the view with the character data
                 return View(character);
             }
             // Return the view for creating a new character
             // Initialize selected magic classes as an empty array
             ViewBag.SelectedMagicClasses = new int[0];
-            return View(new Character());
+            return View();
         }
         [HttpPost]
         public IActionResult CreateEdit(Character character, int[] selectedMagicClasses)

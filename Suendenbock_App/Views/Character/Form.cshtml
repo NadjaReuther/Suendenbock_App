@@ -36,19 +36,41 @@
             </div>
 
             <div class="mb-3">
-				<label class="form-label">Magieklassen</label>
+                <label class="form-label">Magieklassen</label>
                 <div class="card p-3">
+                    <div class="row">
                     @foreach (var magicclass in ViewBag.MagicClasses)
                     {
-                        bool isSelected = ViewBag.SelectedMagicClasses.contains(magicclass.Id);
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="selectedMagicClasses" value="@magicclass.Id"
-								   id="magic-@magicclass.Id" Selected="@(isSelected ? "checked" : "")">
-                            <label class="form-check-label" for="magic-@magicclass.Id">
-								@magicclass.Bezeichnung
-                            </label>
+                        bool isSelected = false;
+
+                        // Prüfe, ob das Array existiert und nicht null ist
+                        if (ViewBag.SelectedMagicClasses != null)
+                        {
+                            // Durchlaufe die ausgewählten IDs und prüfe, ob die aktuelle MagicClass enthalten ist
+                            foreach (var id in ViewBag.SelectedMagicClasses)
+                            {
+                                if (id.Equals(magicclass.Id))
+                                {
+                                    isSelected = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        <div class="col-md-4 col-sm-6 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       name="selectedMagicClasses"
+                                       value="@magicclass.Id"
+                                       id="magic-@magicclass.Id"
+                                @(isSelected ? "checked" : "")>
+                                <label class="form-check-label" for="magic-@magicclass.Id">
+                                    @magicclass.Bezeichnung
+                                </label>
+                            </div>
                         </div>
                     }
+                    </div>
                 </div>
             </div>
 
