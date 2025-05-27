@@ -4,7 +4,6 @@
     {
         public int Id { get; set; }
         public string CssClass { get; set; } = string.Empty;
-        public virtual ICollection<MagicClass> MagicClasses { get; set; } = new List<MagicClass>(); // LightCard has many MagicClasses
-        public virtual ICollection<Guild> Guilds { get; set; } = new List<Guild>(); // LightCard has many Guilds
+        public virtual ICollection<Obermagie> Obermagie { get; set; } = new List<Obermagie>(); // LightCard has one or more Obermagie
     }
 }

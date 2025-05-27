@@ -10,15 +10,20 @@ namespace Suendenbock_App.Data.Seeders
             if (!context.LightCards.Any())
             {
                 context.LightCards.AddRange(
-                    new LightCard { CssClass = "card-hover-red" },
-                    new LightCard { CssClass = "card-hover-blue" },
-                    new LightCard { CssClass = "card-hover-violett" },
-                    new LightCard { CssClass = "card-hover-green" },
-                    new LightCard { CssClass = "card-hover-yellow" },
-                    new LightCard { CssClass = "card-hover-brown" },
-                    new LightCard { CssClass = "card-hover-shadow" },
-                    new LightCard { CssClass = "card-hover-silver" },
-                    new LightCard { CssClass = "card-hover-gold" }
+                    new LightCard { CssClass = "dunkel" },
+                    new LightCard { CssClass = "luft" },
+                    new LightCard { CssClass = "wasser" },
+                    new LightCard { CssClass = "seele" },
+                    new LightCard { CssClass = "flora" },
+                    new LightCard { CssClass = "fauna" },
+                    new LightCard { CssClass = "licht" },
+                    new LightCard { CssClass = "schmerz" },
+                    new LightCard { CssClass = "kunst" },
+                    new LightCard { CssClass = "geist" },
+                    new LightCard { CssClass = "feuer" },
+                    new LightCard { CssClass = "zeit" },
+                    new LightCard { CssClass = "mantik" },
+                    new LightCard { CssClass = "daemmerung" }
                 );
                 context.SaveChanges();
             }

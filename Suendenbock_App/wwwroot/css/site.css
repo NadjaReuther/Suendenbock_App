@@ -42,32 +42,102 @@ body {
 
 
 /* Hover-Schatten je nach Magieklasse */
-.card-red-hover:hover {
-    box-shadow: 0 4px 12px rgba(255, 80, 0, 0.4);
+.dunkel-hover:hover {
+    box-shadow: 0 4px 12px #372334;
 }
 
-.card-blue-hover:hover {
-    box-shadow: 0 4px 12px rgba(0, 150, 255, 0.4);
+.luft-hover:hover {
+    box-shadow: 0 4px 12px #abb8d4;
 }
 
-.card-violett-hover:hover {
-    box-shadow: 0 4px 12px rgb(128, 0, 128, 0.4);
+.wasser-hover:hover {
+    box-shadow: 0 4px 12px #19879f;
 }
 
-.card-green-hover:hover {
-    box-shadow: 0 4px 12px rgba(0, 180, 90, 0.4);
+.seele-hover:hover {
+    box-shadow: 0 4px 12px #d46aab;
 }
-.card-yellow-hover:hover {
-    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.8);
+.flora-hover:hover {
+    box-shadow: 0 4px 12px #226d22;
 }
-.card-brown-hover:hover {
-    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4);
+.fauna-hover:hover {
+    box-shadow: 0 4px 12px #604136;
 }
-.card-shadow-hover:hover {
-    box-shadow: 0 4px 12px rgba(20, 20, 20, 0.5);
+.licht-hover:hover {
+    box-shadow: 0 4px 12px #f8ecd0;
+}
+.schmerz-hover:hover {
+    box-shadow: 0 4px 12px #963742;
+}
+.geist-hover:hover {
+    box-shadow: 0 4px 12px #431b92;
+}
+.feuer-hover:hover {
+    box-shadow: 0 4px 12px #bb2929;
+}
+.zeit-hover:hover {
+    box-shadow: 0 4px 12px #bd9a4c;
+}
+.mantik-hover:hover {
+    box-shadow: 0 4px 12px #597476;
+}
+.daemmerung-hover:hover {
+    box-shadow: 0 4px 12px #989693;
 }
 
 /* Lightcard je nach Magieklasse */
+.dunkel {
+    background-color: #372334;
+}
+
+.luft {
+    background-color: #abb8d4;
+}
+
+.wasser {
+    background-color: #19879f;
+}
+
+.seele {
+    background-color: #d46aab;
+}
+
+.flora {
+    background-color: #226d22;
+}
+
+.fauna {
+    background-color: #604136;
+}
+
+.licht {
+    background-color: #f8ecd0;
+}
+
+.schmerz {
+    background-color: #963742;
+}
+
+.geist {
+    background-color: #431b92;
+}
+
+.feuer {
+    background-color: #bb2929;
+}
+
+.zeit {
+    background-color: #bd9a4c;
+}
+
+.mantik {
+    background-color: #597476;
+}
+
+.daemmerung {
+    background-color: #989693;
+}
+
 .card-red {
     background-color: rgba(255, 80, 0, 0.4);
 }
