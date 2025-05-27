@@ -4,116 +4,290 @@
     ViewData["Title"] = "Charakter erstellen";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 @section Styles {
-<link href="/css/character.css" rel="stylesheet" />
-<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
+
 <div class="steckbrief-background">
     <div class="steckbrief-container">
         <div class="steckbrief-title">Charakter</div>
-        <form asp-controller="Character" asp-action="CreateEdit">
+
+        <form asp-controller="Character" asp-action="CreateEdit" method="post">
+            @* Verstecktes Feld für die ID bei Bearbeitung *@
+            @if (Model != null && Model.Id > 0)
+            {
+                <input type="hidden" name="Id" value="@Model.Id" />
+            }
+
             <div class="mt-5 mb-3">
                 <label for="vorname" class="form-label">Vorname</label>
-                <input type="text" class="form-control" id="vorname" name="vorname" value="@Model.Vorname" required>
+                <input type="text" class="form-control" id="vorname" name="vorname"
+                       value="@(Model != null ? Model.Vorname : "")" required>
             </div>
 
             <div class="mb-3">
                 <label for="nachname" class="form-label">Nachname</label>
-                <input type="text" class="form-control" id="nachname" name="nachname" value="@Model.Nachname" required>
+                <input type="text" class="form-control" id="nachname" name="nachname"
+                       value="@(Model != null ? Model.Nachname : "")" required>
             </div>
 
             <div class="mb-3">
+                <label for="geschlecht" class="form-label">Geschlecht</label>
                 <select class="form-select" id="geschlecht" name="geschlecht">
-                    <option value="" disabled selected hidden>Geschlecht auswählen...</option>
-                    <option value="männlich">männlich</option>
-                    <option value="weiblich">weiblich</option>
-                </select>
-            </div>
+                    <option value="" disabled selected>Geschlecht auswählen...</option>
 
-            <div class="mb-3">
-                <label for="geburtsdatum" class="form-label">Geburtsdatum</label>
-                <input type="date" class="form-control" id="geburtsdatum" name="geburtsdatum">
-            </div>
+                    @if (Model != null && Model.Geschlecht == "männlich")
+                    {
+                        <option value="männlich" selected>männlich</option>
+                    }
+                    else
+                    {
+                        <option value="männlich">männlich</option>
+                    }
 
-            <div class="mb-3">
-                <label class="form-label">Magieklassen</label>
-                <div class="card p-3">
-                    <div class="row">
-                        @foreach (var magicclass in ViewBag.MagicClasses)
-                        {
-                            bool isSelected = false;
-
-                            // Prüfe, ob das Array existiert und nicht null ist
-                            if (ViewBag.SelectedMagicClasses != null)
-                            {
-                                // Durchlaufe die ausgewählten IDs und prüfe, ob die aktuelle MagicClass enthalten ist
-                                foreach (var id in ViewBag.SelectedMagicClasses)
-                                {
-                                    if (id.Equals(magicclass.Id))
-                                    {
-                                        isSelected = true;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            <div class="col-md-4 col-sm-6 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox"
-                                    name="selectedMagicClasses"
-                                    value="@magicclass.Id"
-                                    id="magic-@magicclass.Id"
-                                    @(isSelected ? "checked" : "")>
-                                    <label class="form-check-label" for="magic-@magicclass.Id">
-                                        @magicclass.Bezeichnung
-                                    </label>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Spezialisierung</label>
-                <div class="card p-3">
-                    <div class="row specializations-container">
-                        @foreach (var specialization in ViewBag.Specializations)
-                        {
-                            <div class="col-md-4 col-sm-6 mb-2 specialization-item" 
-                                data-magic-class-id="@specialization.MagicClassId" style="display:none;">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" 
-                                        name="specializationId_@specialization.MagicClassId"
-                                        value="@specialization.Id"
-                                        id="spec-@specialization.Id" />
-                                    <label class="form-check-label" for="spec-@specialization.Id">
-										@specialization.Name
-                                    </label>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-            <div class="mb-3">
-                <select class="form-select" id="guildId" name="guildId">
-                    <option value="" disabled selected hidden>Gilde auswählen...</option>
-                    @{
-                        foreach (var guild in ViewBag.Guilds)
-                        {
-                            <option value="@guild.Id">@guild.Name</option>
-                        }
+                    @if (Model != null && Model.Geschlecht == "weiblich")
+                    {
+                        <option value="weiblich" selected>weiblich</option>
+                    }
+                    else
+                    {
+                        <option value="weiblich">weiblich</option>
                     }
                 </select>
             </div>
 
             <div class="mb-3">
+                <label for="geburtsdatum" class="form-label">Geburtsdatum</label>
+                <input type="date" class="form-control" id="geburtsdatum" name="geburtsdatum"
+                       value="@(Model != null ? Model.Geburtsdatum : "")">
+            </div>
+
+            <!-- Eltern-Dropdowns hinzufügen -->
+            <div class="row">
+                <!-- Vater-Dropdown -->
+                <div class="col-md-6 mb-3">
+                    <label for="vaterId" class="form-label">Vater</label>
+                    <select class="form-select" id="vaterId" name="vaterId">
+                        <option value="">Keinen Vater auswählen</option>
+                        @if (ViewBag.Characters != null)
+                        {
+                            foreach (var character in ViewBag.Characters)
+                            {
+                                if (character.Geschlecht == "männlich")
+                                {
+                                    // Verhindern, dass ein Charakter sich selbst als Vater wählt
+                                    if (Model != null && Model.Id == character.Id)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (Model != null && Model.VaterId.HasValue && Model.VaterId.Value == character.Id)
+                                    {
+                                        <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@character.Id">@character.Vorname @character.Nachname</option>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+
+                <!-- Mutter-Dropdown -->
+                <div class="col-md-6 mb-3">
+                    <label for="mutterId" class="form-label">Mutter</label>
+                    <select class="form-select" id="mutterId" name="mutterId">
+                        <option value="">Keine Mutter auswählen</option>
+                        @if (ViewBag.Characters != null)
+                        {
+                            foreach (var character in ViewBag.Characters)
+                            {
+                                if (character.Geschlecht == "weiblich")
+                                {
+                                    // Verhindern, dass ein Charakter sich selbst als Mutter wählt
+                                    if (Model != null && Model.Id == character.Id)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (Model != null && Model.MutterId.HasValue && Model.MutterId.Value == character.Id)
+                                    {
+                                        <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@character.Id">@character.Vorname @character.Nachname</option>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+                
+            <!-- Magieklassen -->
+            <div class="mb-3">
+                <label class="form-label">Magieklassen</label>
+                <div class="card p-3">
+                    <div class="row">
+                        @if (ViewBag.MagicClasses != null)
+                        {
+                            foreach (var magicclass in ViewBag.MagicClasses)
+                            {
+                                bool isSelected = false;
+
+                                // Prüfe, ob SelectedMagicClasses existiert und nicht null ist
+                                if (ViewBag.SelectedMagicClasses != null)
+                                {
+                                    // Durchlaufe die ausgewählten IDs und prüfe, ob die aktuelle MagicClass enthalten ist
+                                    foreach (var id in ViewBag.SelectedMagicClasses)
+                                    {
+                                        if (id.Equals(magicclass.Id))
+                                        {
+                                            isSelected = true;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                <div class="col-md-4 col-sm-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="selectedMagicClasses"
+                                               value="@magicclass.Id"
+                                               id="magic-@magicclass.Id"
+                                               @(isSelected ? "checked" : "")>
+                                        <label class="form-check-label" for="magic-@magicclass.Id">
+                                            @magicclass.Bezeichnung
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spezialisierungen -->
+            <div class="mb-3">
+                <label class="form-label">Spezialisierungen</label>
+                <div class="card p-3">
+                    <div class="row specializations-container">
+                        @{
+                            // Dictionary für ausgewählte Spezialisierungen
+                            var selectedSpecs = new Dictionary<int, int>();
+
+                            // Dictionary befüllen, wenn ViewBag.SelectedSpecializations existiert
+                            if (ViewBag.SelectedSpecializations != null)
+                            {
+                                selectedSpecs = ViewBag.SelectedSpecializations;
+                            }
+
+                            // Magieklassen in lokale Variablen umwandeln
+                            var magicClasses = new List<MagicClass>();
+                            if (ViewBag.MagicClasses != null)
+                            {
+                                magicClasses = ViewBag.MagicClasses;
+                            }
+
+                            // Spezialisierungen in lokale Variablen umwandeln
+                            var specializations = new List<Specialization>();
+                            if (ViewBag.Specializations != null)
+                            {
+                                specializations = ViewBag.Specializations;
+                            }
+
+                            // Jetzt können wir LINQ-Methoden auf den typisierten Listen verwenden
+                            var specsGrouped = specializations.GroupBy(s => s.MagicClassId);
+                        }
+
+                        @if (specsGrouped.Any())
+                        {
+                            @foreach (var group in specsGrouped)
+                            {
+                                int magicClassId = group.Key;
+                                var magicClass = magicClasses.FirstOrDefault(m => m.Id == magicClassId);
+
+                                if (magicClass != null)
+                                {
+                                    <div class="col-12 specialization-group border p-2 mt-2" data-magic-class-id="@magicClassId" style="display:none;">
+                                        <h5 class="bg-light p-2">Spezialisierungen für @magicClass.Bezeichnung</h5>
+                                        <div class="row">
+                                            @foreach (var specialization in group)
+                                            {
+                                                bool isSpecSelected = selectedSpecs.ContainsKey(magicClassId) &&
+                                                selectedSpecs[magicClassId] == specialization.Id;
+
+                                                <div class="col-md-4 col-sm-6 mb-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio"
+                                                               name="specializationId_@magicClassId"
+                                                               value="@specialization.Id"
+                                                               id="spec-@specialization.Id"
+                                                               @(isSpecSelected ? "checked" : "") />
+                                                        <label class="form-check-label" for="spec-@specialization.Id">
+                                                            @specialization.Name
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                Keine Spezialisierungen vorhanden oder keine MagicClass mit Spezialisierungen ausgewählt.
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+            <!-- Guild-Dropdown -->
+            <div class="mb-3">
+                <label for="guildId" class="form-label">Gilde</label>
+                <select class="form-select" id="guildId" name="guildId">
+                    <option value="" disabled selected>Gilde auswählen...</option>
+                    @if (ViewBag.Guilds != null)
+                    {
+                        foreach (var guild in ViewBag.Guilds)
+                        {
+                            if (Model != null && Model.GuildId.HasValue && Model.GuildId.Value == guild.Id)
+                            {
+                                <option value="@guild.Id" selected>@guild.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@guild.Id">@guild.Name</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Religion-Dropdown -->
+            <div class="mb-3">
+                <label for="religionId" class="form-label">Religion</label>
                 <select class="form-select" id="religionId" name="religionId">
-                    <option value="" disabled selected hidden>Religion auswählen...</option>
-                    @{
+                    <option value="" disabled selected>Religion auswählen...</option>
+                    @if (ViewBag.Religions != null)
+                    {
                         foreach (var religion in ViewBag.Religions)
                         {
-                            <option value="@religion.Id">@religion.Type</option>
+                            if (Model != null && Model.ReligionId.HasValue && Model.ReligionId.Value == religion.Id)
+                            {
+                                <option value="@religion.Id" selected>@religion.Type</option>
+                            }
+                            else
+                            {
+                                <option value="@religion.Id">@religion.Type</option>
+                            }
                         }
                     }
                 </select>
@@ -128,20 +302,25 @@
 
 @section Scripts {
     <script>
-		$(document).ready(function() {
+        $(document).ready(function() {
             function toggleSpecializations() {
-                $('.specialization-item').hide();
-				$('input[name="selectedMagicClasses"]:checked').each(function() {
-					var magicClassId = $(this).val();
-					$('.specialization-item[data-magic-class-id="' + magicClassId + '"]').show();
-				});
+                // Alle Spezialisierungsgruppen ausblenden
+                $('.specialization-group').hide();
+
+                // Für jede ausgewählte Magieklasse die entsprechende Spezialisierungsgruppe anzeigen
+                $('input[name="selectedMagicClasses"]:checked').each(function() {
+                    var magicClassId = $(this).val();
+                    $('.specialization-group[data-magic-class-id="' + magicClassId + '"]').show();
+                });
             }
 
-			toggleSpecializations();
+            // Beim Laden der Seite Spezialisierungen aktualisieren
+            toggleSpecializations();
 
-			$('input[name="selectedMagicClasses"]').change(function() {
-				toggleSpecializations();
-			});
-		});
-	</script>
+            // Bei Änderung der Magieklassen-Auswahl Spezialisierungen aktualisieren
+            $('input[name="selectedMagicClasses"]').change(function() {
+                toggleSpecializations();
+            });
+        });
+    </script>
 }

@@ -24,6 +24,9 @@ namespace Suendenbock_App.Controllers
             ViewBag.Religions = _context.Religions.ToList();
             ViewBag.Specializations = _context.Specializations.Include(s => s.MagicClass).ToList();
 
+            // Neu: Liste aller Charaktere für die Eltern-Dropdowns
+            ViewBag.Characters = _context.Characters.ToList();
+
 
             // Check if id is provided for editing
             if (id > 0)
@@ -31,6 +34,7 @@ namespace Suendenbock_App.Controllers
                 // Load character data for editing
                 var character = _context.Characters
                     .Include(c => c.CharacterMagicClasses)
+                        .ThenInclude(cmc => cmc.Specialization)
                     .FirstOrDefault(c => c.Id == id);
 
 
@@ -43,15 +47,21 @@ namespace Suendenbock_App.Controllers
                     .Select(cmc => cmc.MagicClassId)
                     .ToArray();
 
-                System.Diagnostics.Debug.WriteLine($"Type of SelectedMagicClasses: {selectedIds.GetType().FullName}");
-
                 ViewBag.SelectedMagicClasses = selectedIds;
+                
+                ViewBag.SelectedSpecializations = character.CharacterMagicClasses
+                    .Where(cmc => cmc.SpecializationId.HasValue)
+                    .ToDictionary(
+                        cmc => cmc.MagicClassId, 
+                        cmc => cmc.SpecializationId.Value
+                    );
                 // Return the view with the character data
                 return View(character);
             }
             // Return the view for creating a new character
             // Initialize selected magic classes as an empty array
             ViewBag.SelectedMagicClasses = new int[0];
+            ViewBag.SelectedSpecializations = new Dictionary<int, int>();
             return View();
         }
         [HttpPost]

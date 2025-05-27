@@ -67,6 +67,35 @@ body {
     box-shadow: 0 4px 12px rgba(20, 20, 20, 0.5);
 }
 
+/* Lightcard je nach Magieklasse */
+.card-hover-red {
+    background-color: rgba(255, 80, 0, 0.4);
+}
+
+.card-hover-blue {
+    background-color: rgba(0, 150, 255, 0.4);
+}
+
+.card-hover-violett {
+    background-color: rgb(128, 0, 128, 0.4);
+}
+
+.card-hover-green {
+    background-color: rgba(0, 180, 90, 0.4);
+}
+
+.card-hover-yellow {
+    background-color: rgba(255, 215, 0, 0.8);
+}
+
+.card-hover-brown {
+    background-color: rgba(139, 69, 19, 0.4);
+}
+
+.card-hover-shadow {
+    background-color: rgba(20, 20, 20, 0.5);
+}
+
 /**
     * CSS für die Familienbaumdarstellung
  */

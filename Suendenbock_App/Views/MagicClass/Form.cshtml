@@ -1,78 +1,186 @@
 ﻿@using Suendenbock_App.Models.Domain
-@model List<MagicClass>
+@model MagicClass
 @{
-	ViewData["Title"] = "Magieklasse erstellen";
-	Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Magieklasse erstellen";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @section Styles {
-	<link href="/css/character.css" rel="stylesheet" />
-	<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-	}
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <style>
+        /* Stil für die Radiobuttons */
+        .lightcard-radio-container input[type="radio"] {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
 
+            .lightcard-radio-container input[type="radio"]:checked {
+                border: 2px solid black;
+            }
+    </style>
+}
 <div class="steckbrief-background">
     <div class="steckbrief-container">
-        <div class="steckbrief-title">Charakter</div>
+        <div class="steckbrief-title">Magieklasse</div>
         <form asp-controller="MagicClass" asp-action="CreateEdit">
+            <input type="hidden" name="Id" value="@Model.Id" />
+
             <div class="mt-5 mb-3">
-                <label for="vorname" class="form-label">Magieklasse</label>
-                <input type="text" class="form-control" id="bezeichnung" name="bezeichnung" required>
+                <label for="bezeichnung" class="form-label">Magieklasse</label>
+                <input type="text" class="form-control" id="bezeichnung" name="Bezeichnung" value="@Model.Bezeichnung" required>
             </div>
 
-            <!--Todo Lightcards als kleine rectangle in Farbe-->
+            <!-- Für die Lightcard-Auswahl mit Farbdarstellung -->
             <div class="mb-3">
-                <select class="form-select" id="magicClassId" name="magicClassId">
-                    <option value="" disabled selected hidden>Magieklasse auswählen...</option>
-                    
-                </select>
+                <label class="form-label">Lightcard Farbe</label>
+                <div class="lightcards-container lightcard-radio-container">
+                    @if(ViewBag.LightCards != null)
+                    {
+                        foreach (var lightCard in ViewBag.LightCards)
+                        {
+                            <input class="@lightCard.CssClass" type="radio"
+                                   name="LightCardId"
+                                   id="lightcard-@lightCard.Id"
+                                   value="@lightCard.Id"
+                                   @(Model.LightCardId == lightCard.Id ? "checked" : "")>
+                        }
+                    }
+                </div>
             </div>
+
             <div class="mb-3">
                 <label class="form-label">Spezialisierungen</label>
                 <div class="specializations-container">
-                    <div class="specialization-item mb-2">
-                        <div class="row">
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="specializations[0].Name" placeholder="Name der Spezialisierung">
+                    @if (Model.Id > 0 && Model.Specializations != null && Model.Specializations.Any())
+                    {
+                        int index = 0;
+                        @foreach (var spec in Model.Specializations)
+                        {
+                            index++;
+                            <div class="specialization-item mb-2">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control" name="specializations[@(spec.Id)].Name"
+                                               value="@spec.Name" placeholder="Name der Spezialisierung">
+                                        <input type="hidden" name="specializations[@(spec.Id)].Id" value="@spec.Id">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="specializations[@(spec.Id)].Description"
+                                               value="@spec.Description" placeholder="Beschreibung (optional)">
+                                    </div>                                  
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control" name="specializations[0].Description" placeholder="Beschreibung (optional)">
+                            if (index < 2)
+                            {
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control" name="specializations[1].Name" placeholder="Name der Spezialisierung">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="specializations[1].Description" placeholder="Beschreibung (optional)">
+                                    </div>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <div class="specialization-item mb-2">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="specializations[0].Name" placeholder="Name der Spezialisierung">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" name="specializations[0].Description" placeholder="Beschreibung (optional)">
+                                </div>
+                                <div class="col-md-1">
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSpecialization(this)">-</button>
+                                </div>
                             </div>
-							<div class="col-md-1">
-								<button type="button" class="btn btn-danger btn-sm" onclick="removeSpecialization(this)">-</button>
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <input type="text" class="form-control" name="specializations[1].Name" placeholder="Name der Spezialisierung">
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" name="specializations[1].Description" placeholder="Beschreibung (optional)">
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
-					<button type="button" class="btn btn-primary btn-sm mt-2" onclick="addSpecialization()">+</button>
             </div>
+
             <div class="text-center">
                 <button type="submit" class="btn-wachs">Gebilligt</button>
             </div>
         </form>
     </div>
 </div>
-
 @section Scripts {
     <script>
         function addSpecialization() {
             const container = document.querySelector('.specializations-container');
-			const count = container.children.length;
-			const newItem = container.children[0].cloneNode(true);
+            const allSpecItems = container.querySelectorAll('.specialization-item');
+            const count = allSpecItems.length;
 
-            //update Names of input fields
-			newItem.querySelector('input[name$=".Name"]').name = `specializations[${count}].Name`;
-			newItem.querySelector('input[name$=".Description"]').name = `specializations[${count}].Description`;
+            // Erstelle entweder neue Spezialisierung oder clone das erste Element
+            let newItem;
+            if (allSpecItems.length > 0) {
+                newItem = allSpecItems[0].cloneNode(true);
 
-			// Clear the input values
-			newItem.querySelectorAll('input').forEach(input => input.value = '');
+                // Aktualisiere den Namen der Eingabefelder
+                const nameInput = newItem.querySelector('input[name$=".Name"]');
+                const descInput = newItem.querySelector('input[name$=".Description"]');
 
-			// Append the new item to the container
-			container.appendChild(newItem);
+                // Verwende "new_" als Präfix für neue Elemente, die noch keine ID haben
+                nameInput.name = `specializations[${count}].Name`;
+                descInput.name = `specializations[${count}].Description`;
+
+                // Lösche alle Hidden-Felder für ID, falls vorhanden
+                const hiddenFields = newItem.querySelectorAll('input[type="hidden"]');
+                hiddenFields.forEach(field => field.remove());
+
+                // Leere die Eingabefelder
+                nameInput.value = '';
+                descInput.value = '';
+            } else {
+                // Falls keine vorhandenen Elemente existieren, erstelle ein neues Element
+                newItem = document.createElement('div');
+                newItem.className = 'specialization-item mb-2';
+                newItem.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="specializations[${count}].Name" placeholder="Name der Spezialisierung">
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" name="specializations[${count}].Description" placeholder="Beschreibung (optional)">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeSpecialization(this)">-</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Füge das neue Element dem Container hinzu
+            container.appendChild(newItem);
         }
 
-		function removeSpecialization(button) {
-			const container = document.querySelector('.specializations-container');
-			if (container.children.length > 1) {
-				container.removeChild(button.closest('.specialization-item'));
-			}
-		}
-</script>
+        function removeSpecialization(button) {
+            const container = document.querySelector('.specializations-container');
+            if (container.children.length > 1) {
+                container.removeChild(button.closest('.specialization-item'));
+            } else {
+                // Wenn es das letzte Element ist, leere einfach die Felder
+                const item = button.closest('.specialization-item');
+                item.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
+            }
+        }
+    </script>
 }

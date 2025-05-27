@@ -16,8 +16,13 @@ namespace Suendenbock_App.Controllers
         {
             return View();
         }
+
         public IActionResult Form(int id)
         {
+            // Load data for dropdowns
+            ViewBag.MagicClasses = _context.MagicClasses.ToList();
+            ViewBag.LightCards = _context.LightCards.ToList();
+            ViewBag.Specializations = _context.Specializations.Include(s => s.MagicClass).ToList();
             if (id > 0)
             {
                 // Load data for editing
@@ -40,7 +45,7 @@ namespace Suendenbock_App.Controllers
             {
                 // Return the view for creating a new magic class
                 ViewBag.Specializations = new List<Specialization>();
-                return View();
+                return View(new MagicClass());
             }
         }
 
@@ -53,7 +58,7 @@ namespace Suendenbock_App.Controllers
                 _context.SaveChanges();
 
                 // Add the specializations for the new magic class
-                if(specializations != null)
+                if (specializations != null)
                 {
                     foreach (var specialization in specializations)
                     {
@@ -97,7 +102,24 @@ namespace Suendenbock_App.Controllers
                 }
             }
             _context.SaveChanges();
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", "Admin");
+        }
+        
+        public IActionResult Delete(int id)
+        {
+            var magicClass = _context.MagicClasses
+                .Include(mc => mc.Specializations)
+                .FirstOrDefault(mc => mc.Id == id);
+            if (magicClass == null)
+            {
+                return NotFound();
+            }
+            // Remove related specializations
+            _context.Specializations.RemoveRange(magicClass.Specializations);
+            // Remove the magic class
+            _context.MagicClasses.Remove(magicClass);
+            _context.SaveChanges();
+            return RedirectToAction("Index", "Admin");
         }
     }
 }
