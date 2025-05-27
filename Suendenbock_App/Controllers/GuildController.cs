@@ -22,13 +22,13 @@ namespace Suendenbock_App.Controllers
             if (id > 0)
             {
                 // Load character data for editing
-                var character = _context.Characters.Find(id);
-                if (character == null)
+                var guild = _context.Guilds.Find(id);
+                if (guild == null)
                 {
                     return NotFound();
                 }
                 // Return the view with the character data
-                return View(character);
+                return View(guild);
             }
             // Return the view for creating a new character
             return View();

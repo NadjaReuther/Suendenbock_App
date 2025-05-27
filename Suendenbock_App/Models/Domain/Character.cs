@@ -6,8 +6,17 @@
         public string Nachname { get; set; } = string.Empty;
         public string Vorname { get; set; } = string.Empty;
         public string Geschlecht { get; set; } = string.Empty;
+        public int Bodyheight { get; set; } = 0; // Default value for Bodyheight
         public string? Geburtsdatum { get; set; }
         public string? ImagePath { get; set; }
+        //Forein Keys für Rasse, Eindruck, Stand, Beruf, Blutgruppe, Haus, Herkunftsland
+        public int? RasseId { get; set; }
+        public int? EindruckId { get; set; }
+        public int? StandId { get; set; }
+        public int? BerufId { get; set; }
+        public int? BlutgruppeId { get; set; }
+        public int? HausId { get; set; }
+        public int? HerkunftslandId { get; set; }
 
         //Foreign Keys für Eltern (optional)
         public int? VaterId { get; set; }
