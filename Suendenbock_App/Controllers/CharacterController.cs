@@ -64,7 +64,6 @@ namespace Suendenbock_App.Controllers
             ViewBag.SelectedSpecializations = new Dictionary<int, int>();
             return View();
         }
-        [HttpPost]
         public IActionResult CreateEdit(Character character, int[] selectedMagicClasses)
         {
 

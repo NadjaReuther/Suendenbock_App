@@ -34,7 +34,7 @@
                                 </td>
                                 <td>
                                     <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id" class=""><img width="30" height="30" src="/images/icons/edit.png"/></a>
-                                    <button class="btn" onclick="deleteContent(@character.Id, 'character')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
+                                    <button class="btn" onclick="deleteContent(@character.Id, 'Character')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
                                 </td>
                             </tr>
                         }
@@ -69,7 +69,7 @@
                                 </td>
                                 <td>
                                     <a asp-controller="MagicClass" asp-action="Form" asp-route-id="@magicClass.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
-                                    <button class="btn" onclick="deleteContent(@magicClass.Id, 'character')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
+                                    <button class="btn" onclick="deleteContent(@magicClass.Id, 'MagicClass')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
                                 </td>
                             </tr>
                         }
@@ -96,7 +96,7 @@
 								<td>@guild.Name</td>
 								<td>
                                     <a asp-controller="Guild" asp-action="Form" asp-route-id="@guild.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
-                                    <button class="btn" onclick="deleteContent(@guild.Id, 'character')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
+                                    <button class="btn" onclick="deleteContent(@guild.Id, 'Guild')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
 								</td>
 							</tr>
 						}
@@ -109,11 +109,6 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            $('#adminTable').DataTable();
-        });
-
-
         function deleteContent(Id,controllerName) {
             Swal.fire({
                 title: "Wollen Sie wirklich den Eintrag löschen?",
@@ -123,7 +118,7 @@
                 if (result.isConfirmed) {
                     $.ajax({
                         type: "POST",
-                        url: "@Url.Action("Delete", "MagicClass")",
+                        url: "/" + controllerName + "/Delete",
                         data: { id: Id },
                         success: function (msg) {
                             Swal.fire("Eintrag gelöscht", "", "success").then((result) => {
@@ -137,8 +132,6 @@
                 }
             });
         }
-
-
     </script>
     }
 

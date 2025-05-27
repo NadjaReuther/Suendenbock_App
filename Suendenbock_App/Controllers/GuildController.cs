@@ -35,7 +35,7 @@ namespace Suendenbock_App.Controllers
         }
         public IActionResult CreateEdit(Guild guild)
         {
-            if(guild.Id == 0)
+            if (guild.Id == 0)
             {
                 // Create new character
                 _context.Guilds.Add(guild);
@@ -54,6 +54,19 @@ namespace Suendenbock_App.Controllers
                 guildToUpdate.ImagePath = guild.ImagePath;
                 guildToUpdate.LightCardId = guild.LightCardId;
             }
+            _context.SaveChanges();
+            return RedirectToAction("Index");
+        }
+        public IActionResult Delete(int id)
+        {
+            // Load the guild to delete
+            var guild = _context.Guilds.Find(id);
+            if (guild == null)
+            {
+                return NotFound();
+            }
+            // Remove the guild from the context
+            _context.Guilds.Remove(guild);
             _context.SaveChanges();
             return RedirectToAction("Index");
         }
