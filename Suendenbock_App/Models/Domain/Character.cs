@@ -9,7 +9,7 @@
         public int Bodyheight { get; set; } = 0; // Default value for Bodyheight
         public string? Geburtsdatum { get; set; }
         public string? ImagePath { get; set; }
-        //Forein Keys für Rasse, Eindruck, Stand, Beruf, Blutgruppe, Haus, Herkunftsland
+        //Forein Keys für Rasse, Eindruck, Stand, Beruf, Blutgruppe, Haus, Herkunftsland, Lebensstatus
         public int? RasseId { get; set; }
         public int? EindruckId { get; set; }
         public int? StandId { get; set; }
@@ -17,6 +17,7 @@
         public int? BlutgruppeId { get; set; }
         public int? HausId { get; set; }
         public int? HerkunftslandId { get; set; }
+        public int? LebensstatusId { get; set; } //Foreign Key für Lebensstatus
 
         //Foreign Keys für Eltern (optional)
         public int? VaterId { get; set; }
@@ -35,6 +36,6 @@
         public virtual Religion? Religion { get; set; } //character has one religion
 
         //Navigation Property für MagicClasses (1:n)
-        public virtual ICollection<CharacterMagicClass> CharacterMagicClasses { get; set; } = new List<CharacterMagicClass>(); //character has many magic classes
+        public virtual ICollection<MagicClass> MagicClasses { get; set; } = new List<MagicClass>(); //character has many magic classes
     }
 }

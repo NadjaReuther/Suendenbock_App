@@ -44,12 +44,12 @@ namespace Suendenbock_App.Controllers
             else
             {
                 // Return the view for creating a new magic class
-                ViewBag.Specializations = new List<Specialization>();
+                ViewBag.Specializations = new List<MagicClassSpecialization>();
                 return View(new MagicClass());
             }
         }
 
-        public IActionResult CreateEdit(MagicClass magicClass, List<Specialization> specializations)
+        public IActionResult CreateEdit(MagicClass magicClass, List<MagicClassSpecialization> specializations)
         {
             if (magicClass.Id == 0)
             {

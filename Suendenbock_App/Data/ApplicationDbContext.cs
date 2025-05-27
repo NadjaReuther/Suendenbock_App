@@ -12,7 +12,7 @@ namespace Suendenbock_App.Data
         public DbSet<Religion> Religions { get; set; }
         public DbSet<Character> Characters { get; set; }
         public DbSet<CharacterMagicClass> CharacterMagicClasses { get; set; }
-        public DbSet<Specialization> Specializations { get; set; }
+        public DbSet<MagicClassSpecialization> Specializations { get; set; }
 
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

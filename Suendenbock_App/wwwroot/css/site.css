@@ -42,57 +42,57 @@ body {
 
 
 /* Hover-Schatten je nach Magieklasse */
-.card-hover-red:hover {
+.card-red-hover:hover {
     box-shadow: 0 4px 12px rgba(255, 80, 0, 0.4);
 }
 
-.card-hover-blue:hover {
+.card-blue-hover:hover {
     box-shadow: 0 4px 12px rgba(0, 150, 255, 0.4);
 }
 
-.card-hover-violett:hover {
+.card-violett-hover:hover {
     box-shadow: 0 4px 12px rgb(128, 0, 128, 0.4);
 }
 
-.card-hover-green:hover {
+.card-green-hover:hover {
     box-shadow: 0 4px 12px rgba(0, 180, 90, 0.4);
 }
-.card-hover-yellow:hover {
+.card-yellow-hover:hover {
     box-shadow: 0 4px 12px rgba(255, 215, 0, 0.8);
 }
-.card-hover-brown:hover {
+.card-brown-hover:hover {
     box-shadow: 0 4px 12px rgba(139, 69, 19, 0.4);
 }
-.card-hover-shadow:hover {
+.card-shadow-hover:hover {
     box-shadow: 0 4px 12px rgba(20, 20, 20, 0.5);
 }
 
 /* Lightcard je nach Magieklasse */
-.card-hover-red {
+.card-red {
     background-color: rgba(255, 80, 0, 0.4);
 }
 
-.card-hover-blue {
+.card-blue {
     background-color: rgba(0, 150, 255, 0.4);
 }
 
-.card-hover-violett {
+.card-violett {
     background-color: rgb(128, 0, 128, 0.4);
 }
 
-.card-hover-green {
+.card-green {
     background-color: rgba(0, 180, 90, 0.4);
 }
 
-.card-hover-yellow {
+.card-yellow {
     background-color: rgba(255, 215, 0, 0.8);
 }
 
-.card-hover-brown {
+.card-brown {
     background-color: rgba(139, 69, 19, 0.4);
 }
 
-.card-hover-shadow {
+.card-shadow {
     background-color: rgba(20, 20, 20, 0.5);
 }
 

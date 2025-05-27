@@ -11,15 +11,23 @@ namespace Suendenbock_App.Data.Seeders
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             context.Database.Migrate();
 
-            SeedLightCards(context);
-            context.SaveChanges();
+            try
+            {
+                //Basis-Entitäten zuerst (ohne Abhängigkeiten)
+                Console.WriteLine("Seeding Basis-Entitäten...");
+                LightCardSeeder.Seed(context);
+                ReligionSeeder.Seed(context);
+                AbenteuerrangSeeder.Seed(context);
+                AnmeldungsstatusSeeder.Seed(context);
+                EindruckSeeder.Seed(context);
+                StandSeeder.Seed(context);
+                HausSeeder.Seed(context);
+                BlutgruppeSeeder.Seed(context);
+                HerkunftslandSeeder.Seed(context);
 
-            SeedMagicClass(context);
-            SeedGuilds(context);
-            SeedReligions(context);
+                // 2. MagicClasses (abhängig von LightCards)
+                Console.WriteLine("Seeding MagicClasses...");
 
-            context.SaveChanges();
-        }
 
         private static void SeedLightCards(ApplicationDbContext context)
         {
