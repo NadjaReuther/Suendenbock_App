@@ -28,17 +28,16 @@ namespace Suendenbock_App.Controllers
             {
                 // Load data for editing
                 var magicClass = _context.MagicClasses
-                    .Include(mc => mc.MagicClassSpecializations).ToList();
+                    .Include(mc => mc.MagicClassSpecializations)
+                    .FirstOrDefault(mc => mc.Id == id);
+
                 if (magicClass == null)
                 {
                     return NotFound();
                 }
-                else
-                {
-                    // Return the view with the magic class data
-                    ViewBag.Specializations = magicClass.Specializations.ToList();
-                    return View(magicClass);
-                }
+                // Return the view with the magic class data
+                ViewBag.Specializations = magicClass.MagicClassSpecializations.ToList();
+                return View(magicClass);                
             }
             else
             {
@@ -84,7 +83,7 @@ namespace Suendenbock_App.Controllers
                 magicClassToUpdate.ImagePath = magicClass.ImagePath;
 
                 // Update specializations
-                _context.MagicClassSpecializations.RemoveRange(magicClassToUpdate.Specializations);
+                _context.MagicClassSpecializations.RemoveRange(magicClassToUpdate.MagicClassSpecializations);
 
                 // Add the new specializations
                 if (specializations != null && specializations.Any())
@@ -113,7 +112,7 @@ namespace Suendenbock_App.Controllers
                 return NotFound();
             }
             // Remove related specializations
-            _context.MagicClassSpecializations.RemoveRange(magicClass.Specializations);
+            _context.MagicClassSpecializations.RemoveRange(magicClass.MagicClassSpecializations);
             // Remove the magic class
             _context.MagicClasses.Remove(magicClass);
             _context.SaveChanges();

@@ -39,9 +39,9 @@ namespace Suendenbock_App.Data
             base.OnModelCreating(builder);
             // Define the MagicClassSpecialization relationship
             builder.Entity<MagicClassSpecialization>()
-                .HasOne(mcs => mcs.MagicClass)
-                .WithMany(mc => mc.MagicClassSpecializations)
-                .HasForeignKey(mcs => mcs.MagicClassId);
+               .HasOne(mcs => mcs.MagicClass)
+               .WithMany(mc => mc.MagicClassSpecializations)
+               .HasForeignKey(mcs => mcs.MagicClassId);
             // Define the composite key for CharacterMagicClass
             builder.Entity<CharacterMagicClass>()
                 .HasKey(cm => new { cm.CharacterId, cm.MagicClassId });
