@@ -8,7 +8,8 @@
 
         // Foreign Key
         public int MagicClassId { get; set; }
-        // Navigation Property
+        // Navigation Property MagicClassSpecialization has a MagicClass
+
         public virtual MagicClass? MagicClass { get; set; }
 
     }

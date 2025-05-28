@@ -21,7 +21,8 @@ namespace Suendenbock_App.Controllers
         public IActionResult Index()
         {
             var allMagicClasses = _context.MagicClasses
-                .Include(mc => mc.LightCard)
+                .Include(mc => mc.Obermagie)
+                .ThenInclude(o => o.LightCard)
                 .ToList();
             var allGuilds = _context.Guilds.ToList();
 

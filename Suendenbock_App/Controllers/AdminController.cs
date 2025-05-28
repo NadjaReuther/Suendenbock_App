@@ -17,10 +17,9 @@ namespace Suendenbock_App.Controllers
         }
         public IActionResult Index()
         {
-            var allMagicClasses = _context.MagicClasses.Include(mc => mc.Specializations).ToList();
+            var allMagicClasses = _context.MagicClasses.ToList();
             var allGuilds = _context.Guilds.ToList();
-            var allCharacters = _context.Characters.Include(c => c.CharacterMagicClasses)
-                .ThenInclude(cmc => cmc.Specialization).ToList();
+            var allCharacters = _context.Characters.Include(c => c.CharacterMagicClasses).ToList();
             var viewModel = new AdminViewModel
             {
                 MagicClasses = allMagicClasses,

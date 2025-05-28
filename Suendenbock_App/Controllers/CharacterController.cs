@@ -22,7 +22,7 @@ namespace Suendenbock_App.Controllers
             ViewBag.MagicClasses = _context.MagicClasses.ToList();
             ViewBag.Guilds = _context.Guilds.ToList();
             ViewBag.Religions = _context.Religions.ToList();
-            ViewBag.Specializations = _context.Specializations.Include(s => s.MagicClass).ToList();
+            ViewBag.Specializations = _context.MagicClassSpecializations.Include(s => s.MagicClass).ToList();
 
             // Neu: Liste aller Charaktere für die Eltern-Dropdowns
             ViewBag.Characters = _context.Characters.ToList();
@@ -34,7 +34,7 @@ namespace Suendenbock_App.Controllers
                 // Load character data for editing
                 var character = _context.Characters
                     .Include(c => c.CharacterMagicClasses)
-                        .ThenInclude(cmc => cmc.Specialization)
+                        .ThenInclude(cmc => cmc.MagicClassSpecialization)
                     .FirstOrDefault(c => c.Id == id);
 
 
@@ -50,10 +50,10 @@ namespace Suendenbock_App.Controllers
                 ViewBag.SelectedMagicClasses = selectedIds;
                 
                 ViewBag.SelectedSpecializations = character.CharacterMagicClasses
-                    .Where(cmc => cmc.SpecializationId.HasValue)
+                    .Where(cmc => cmc.MagicClassSpecializationId.HasValue)
                     .ToDictionary(
                         cmc => cmc.MagicClassId, 
-                        cmc => cmc.SpecializationId.Value
+                        cmc => cmc.MagicClassSpecializationId.Value
                     );
                 // Return the view with the character data
                 return View(character);
@@ -129,7 +129,7 @@ namespace Suendenbock_App.Controllers
                         {
                             CharacterId = character.Id,
                             MagicClassId = magicClassId,
-                            SpecializationId = specializationId
+                            MagicClassSpecializationId = specializationId
                         });
                     }
                 }

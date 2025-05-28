@@ -60,10 +60,10 @@
                             <tr>
                                 <td>
                                     <div>@magicClass.Bezeichnung</div>
-								    @if (magicClass.Specializations.Any())
+								    @if (magicClass.MagicClassSpecializations.Any())
 								    {
 									    <small class="text-muted">
-										    Spezialisierungen: @string.Join(", ", magicClass.Specializations.Select(s => s.Name))
+										    Spezialisierungen: @string.Join(", ", magicClass.MagicClassSpecializations.Select(s => s.Name))
 									    </small>
 								    }
                                 </td>

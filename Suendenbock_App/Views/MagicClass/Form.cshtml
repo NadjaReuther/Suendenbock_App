@@ -36,31 +36,13 @@
                 <input type="text" class="form-control" id="bezeichnung" name="Bezeichnung" value="@Model.Bezeichnung" required>
             </div>
 
-            <!-- Für die Lightcard-Auswahl mit Farbdarstellung -->
-            <div class="mb-3">
-                <label class="form-label">Lightcard Farbe</label>
-                <div class="lightcards-container lightcard-radio-container">
-                    @if(ViewBag.LightCards != null)
-                    {
-                        foreach (var lightCard in ViewBag.LightCards)
-                        {
-                            <input class="@lightCard.CssClass" type="radio"
-                                   name="LightCardId"
-                                   id="lightcard-@lightCard.Id"
-                                   value="@lightCard.Id"
-                                   @(Model.LightCardId == lightCard.Id ? "checked" : "")>
-                        }
-                    }
-                </div>
-            </div>
-
             <div class="mb-3">
                 <label class="form-label">Spezialisierungen</label>
                 <div class="specializations-container">
-                    @if (Model.Id > 0 && Model.Specializations != null && Model.Specializations.Any())
+                    @if (Model.Id > 0 && Model.MagicClassSpecializations != null && Model.MagicClassSpecializations.Any())
                     {
                         int index = 0;
-                        @foreach (var spec in Model.Specializations)
+                        @foreach (var spec in Model.MagicClassSpecializations)
                         {
                             index++;
                             <div class="specialization-item mb-2">

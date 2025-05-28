@@ -20,16 +20,15 @@ namespace Suendenbock_App.Controllers
         public IActionResult Form(int id)
         {
             // Load data for dropdowns
+            ViewBag.Obermagies = _context.Obermagien.ToList();
             ViewBag.MagicClasses = _context.MagicClasses.ToList();
             ViewBag.LightCards = _context.LightCards.ToList();
-            ViewBag.Specializations = _context.Specializations.Include(s => s.MagicClass).ToList();
+            ViewBag.Specializations = _context.MagicClassSpecializations.Include(s => s.MagicClass).ToList();
             if (id > 0)
             {
                 // Load data for editing
                 var magicClass = _context.MagicClasses
-                    .Include(mc => mc.Specializations)
-                    .FirstOrDefault(mc => mc.Id == id);
-
+                    .Include(mc => mc.MagicClassSpecializations).ToList();
                 if (magicClass == null)
                 {
                     return NotFound();
@@ -65,7 +64,7 @@ namespace Suendenbock_App.Controllers
                         if (!string.IsNullOrEmpty(specialization.Name))
                         {
                             specialization.MagicClassId = magicClass.Id;
-                            _context.Specializations.Add(specialization);
+                            _context.MagicClassSpecializations.Add(specialization);
                         }
                     }
                 }
@@ -74,7 +73,7 @@ namespace Suendenbock_App.Controllers
             {
                 // Edit existing magic class
                 var magicClassToUpdate = _context.MagicClasses
-                    .Include(mc => mc.Specializations)
+                    .Include(mc => mc.MagicClassSpecializations)
                     .FirstOrDefault(mc => mc.Id == magicClass.Id);
 
                 if (magicClassToUpdate == null)
@@ -83,10 +82,9 @@ namespace Suendenbock_App.Controllers
                 }
                 magicClassToUpdate.Bezeichnung = magicClass.Bezeichnung;
                 magicClassToUpdate.ImagePath = magicClass.ImagePath;
-                magicClassToUpdate.LightCardId = magicClass.LightCardId;
 
                 // Update specializations
-                _context.Specializations.RemoveRange(magicClassToUpdate.Specializations);
+                _context.MagicClassSpecializations.RemoveRange(magicClassToUpdate.Specializations);
 
                 // Add the new specializations
                 if (specializations != null && specializations.Any())
@@ -96,7 +94,7 @@ namespace Suendenbock_App.Controllers
                         if (!string.IsNullOrEmpty(specialization.Name))
                         {
                             specialization.MagicClassId = magicClass.Id;
-                            _context.Specializations.Add(specialization);
+                            _context.MagicClassSpecializations.Add(specialization);
                         }
                     }
                 }
@@ -108,14 +106,14 @@ namespace Suendenbock_App.Controllers
         public IActionResult Delete(int id)
         {
             var magicClass = _context.MagicClasses
-                .Include(mc => mc.Specializations)
+                .Include(mc => mc.MagicClassSpecializations)
                 .FirstOrDefault(mc => mc.Id == id);
             if (magicClass == null)
             {
                 return NotFound();
             }
             // Remove related specializations
-            _context.Specializations.RemoveRange(magicClass.Specializations);
+            _context.MagicClassSpecializations.RemoveRange(magicClass.Specializations);
             // Remove the magic class
             _context.MagicClasses.Remove(magicClass);
             _context.SaveChanges();

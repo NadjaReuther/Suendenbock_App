@@ -11,6 +11,10 @@
         // Navigation Property
         // MagicClass has a Obermagie
         public virtual Obermagie? Obermagie { get; set; }
+        // MagicClass has many CharacterMagicClasses
+        public virtual ICollection<CharacterMagicClass> CharacterMagicClasses { get; set; } = new List<CharacterMagicClass>();
+        //MagicClass has many MagicClassSpecializations
+        public virtual ICollection<MagicClass> MagicClasses { get; set;} = new List<MagicClass>();
 
     }
 }
