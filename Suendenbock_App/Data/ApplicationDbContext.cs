@@ -6,13 +6,6 @@ namespace Suendenbock_App.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
-        public DbSet<MagicClass> MagicClasses { get; set; }
-        public DbSet<Guild> Guilds { get; set; }
-        public DbSet<LightCard> LightCards { get; set; }
-        public DbSet<Religion> Religions { get; set; }
-        public DbSet<Character> Characters { get; set; }
-        public DbSet<CharacterMagicClass> CharacterMagicClasses { get; set; }
-        public DbSet<MagicClassSpecialization> MagicClassSpecializations { get; set; }
         public DbSet<Obermagie> Obermagien { get; set; }
         public DbSet<Anmeldungsstatus> Anmeldungsstati { get; set; }
         public DbSet<Abenteuerrang> Abenteuerraenge { get; set; }
@@ -23,11 +16,20 @@ namespace Suendenbock_App.Data
         public DbSet<Herkunftsland> Herkunftslaender { get; set; }
         public DbSet<Infanterierang> Infanterieraenge { get; set; }
         public DbSet<Lebensstatus> Lebensstati { get; set; }
-        public DbSet<Zauber> Zauber { get; set; }
-        public DbSet<Zaubertyp> Zaubertypen { get; set; }
+        public DbSet<LightCard> LightCards { get; set; }
+        public DbSet<Religion> Religions { get; set; }
         public DbSet<Stand> Staende { get; set; }
         public DbSet<Rasse> Rassen { get; set; }
+        public DbSet<Guild> Guilds { get; set; }
         public DbSet<Infanterie> Infanterien { get; set; }
+        public DbSet<MagicClass> MagicClasses { get; set; }
+        public DbSet<MagicClassSpecialization> MagicClassSpecializations { get; set; }
+        public DbSet<Character> Characters { get; set; }
+        public DbSet<CharacterDetails> CharacterDetails { get; set; }
+        public DbSet<CharacterAffiliation> CharacterAffiliations { get; set; }
+        public DbSet<Zaubertyp> Zaubertypen { get; set; }
+        public DbSet<Zauber> Zauber { get; set; }
+        public DbSet<CharacterMagicClass> CharacterMagicClasses { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -37,6 +39,60 @@ namespace Suendenbock_App.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            //Character - Pflichtfelder definieren
+            builder.Entity<Character>()
+                .Property(c => c.Nachname)
+                .IsRequired()
+                .HasMaxLength(100);
+            builder.Entity<Character>()
+                .Property(c => c.Vorname)
+                .IsRequired()
+                .HasMaxLength(100);
+            builder.Entity<Character>()
+                .Property(c => c.Geschlecht)
+                .IsRequired()
+                .HasMaxLength(20);
+
+            //Character - Pflicht-Beziehungen
+            builder.Entity<Character>()
+                .HasOne(c => c.Rasse)
+                .WithMany(r => r.Characters)
+                .HasForeignKey(c => c.RasseId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Character>()
+                .HasOne(c => c.Lebensstatus)
+                .WithMany(l => l.Characters)
+                .HasForeignKey(c => c.LebensstatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Character>()
+                .HasOne(c => c.Eindruck)
+                .WithMany(e => e.Charaktere)
+                .HasForeignKey(c => c.EindruckId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Character Eltern-Beziehungen
+            builder.Entity<Character>()
+                .HasOne(c => c.Vater)
+                .WithMany()
+                .HasForeignKey(c => c.VaterId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+            builder.Entity<Character>()
+                .HasOne(c => c.Mutter)
+                .WithMany()
+                .HasForeignKey(c => c.MutterId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+            //CharacterDetails - 1:1 Beziehung definieren
+            builder.Entity<CharacterDetails>()
+                .HasOne(cd => cd.Character)
+                .WithOne(c => c.Details)
+                .HasForeignKey<CharacterDetails>(cd => cd.CharacterId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete for CharacterDetails                
+            //CharacterAffiliation - 1:1 Beziehung definieren
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Character)
+                .WithOne(c => c.Affiliation)
+                .HasForeignKey<CharacterAffiliation>(ca => ca.CharacterId)
+                .OnDelete(DeleteBehavior.Cascade); // Cascade delete for CharacterAffiliation
             // Define the MagicClassSpecialization relationship
             builder.Entity<MagicClassSpecialization>()
                .HasOne(mcs => mcs.MagicClass)

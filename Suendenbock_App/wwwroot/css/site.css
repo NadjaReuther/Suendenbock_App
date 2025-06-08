@@ -42,6 +42,9 @@ body {
 
 
 /* Hover-Schatten je nach Magieklasse */
+.kunst-hover:hover {
+    box-shadow: 0 4px 12px #f6c780;
+}
 .dunkel-hover:hover {
     box-shadow: 0 4px 12px #372334;
 }
@@ -86,6 +89,9 @@ body {
 }
 
 /* Lightcard je nach Magieklasse */
+.kunst {
+    background-color: #f6c780;
+}
 .dunkel {
     background-color: #372334;
 }
@@ -199,4 +205,158 @@ body {
 .family-card:hover {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
     transform: translateY(-5px);
+}
+/**
+    * Dashboard Styles
+    * erstmal Admin-Dashboard
+*/
+/* Card Styles */
+.guild-card {
+    border: 2px solid #198754;
+    border-radius: 0.5rem;
+}
+
+    .guild-card .card-header {
+        background-color: #198754;
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border-bottom: none;
+    }
+
+.character-detail-card {
+    border: 2px solid #6f42c1;
+    border-radius: 0.5rem;
+}
+
+    .character-detail-card .card-header {
+        background-color: #6f42c1;
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border-bottom: none;
+    }
+
+#guildTable_wrapper, #characterTable_wrapper {
+    font-size: 0.5em;
+}
+.magic-card {
+    border: 2px solid #dc3545;
+    border-radius: 0.5rem;
+}
+
+    .magic-card .card-header {
+        background-color: #dc3545;
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        border-bottom: none;
+    }
+
+/* Character Cards */
+.character-card {
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    padding: 1rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+    .character-card:hover {
+        border-color: #0d6efd;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .character-card.active {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+
+.character-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.character-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #212529;
+}
+
+/* Guild Options */
+.guild-option {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .guild-option:hover {
+        background-color: #f8f9fa;
+    }
+
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+/* Magic Spells */
+.magic-spell-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.magic-spell {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+    .magic-spell:hover {
+        background-color: #e9ecef;
+    }
+
+.spell-level {
+    background-color: #dc3545;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Character Grid Height */
+.character-grid-section {
+    min-height: 300px;
+}
+
+/* Form Controls */
+.form-control:focus,
+.form-select:focus {
+    border-color: #6f42c1;
+    box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .character-grid-section {
+        margin-top: 1rem;
+    }
 }

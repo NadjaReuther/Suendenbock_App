@@ -1,138 +1,305 @@
 ﻿@using Suendenbock_App.Models.ViewModels
 @model AdminViewModel
-<h1>Admin-Dashboard</h1>
-<div class="row">
-    <div class="col-4">
-        <div class="card m-1 p-2">
-            <a asp-controller="Character" asp-action="Form" class="btn btn-outline-success">neuer Charakter</a>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Vorname</th>
-                        <th>Nachname</th>
-                        <th>Magie</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @{
-                        foreach (var character in Model.Characters)
-                        {
-                            <tr>
-                                <td>@character.Vorname</td>
-                                <td>@character.Nachname</td>
-                                <td>
-                                    @if (character.CharacterMagicClasses.Any())
-                                    {
-                                        <span>
-                                            @string.Join(", ", character.CharacterMagicClasses.Select(cmc => cmc.MagicClass.Bezeichnung))
-                                        </span>
-                                    } else
-                                    {
-                                        <span>keine Magie</span>
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml"; // Ensure this layout is set correctly
+}
+
+      
+    <!-- Main Content -->
+    <div class="container-fluid py-4">
+        <div class="row g-3">
+            <!-- Left Section -->
+            <div class="col-lg-8">
+                <!-- Top Cards Row -->
+                <div class="row g-3 mb-3">
+                    <!-- Gilden/Infanterie Card -->
+                    <div class="col-md-6">
+                        <div class="card guild-card h-100">
+                            <div class="card-header">
+                                Gilden/Infanterie
+                            </div>
+                            <div class="card-body">
+                                <table id="guildTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>                                            
+                                            <th>Leader</th>
+                                            <th>Vertreter</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var guild in Model.Guilds)
+                                        {
+                                            <tr>
+                                                <td>@guild.Name</td>
+                                                <td>Leiter</td>
+                                                <td>Vertreter</td>
+                                                <td>
+                                                    <a asp-controller="Guild" asp-action="Form" asp-route-id="@guild.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
+                                                    <button class="btn" onclick="deleteContent(@guild.Id, 'Guild')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
+                                                </td>
+                                            </tr>
                                     }
-                                </td>
-                                <td>
-                                    <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id" class=""><img width="30" height="30" src="/images/icons/edit.png"/></a>
-                                    <button class="btn" onclick="deleteContent(@character.Id, 'Character')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="col-4">
-        <div class="card m-1 p-2">
-            <a asp-controller="MagicClass" asp-action="Form" class="btn btn-outline-success">neue Magieklasse</a>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bezeichnung</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @{
-                        foreach (var magicClass in Model.MagicClasses)
-                        {
-                            <tr>
-                                <td>
-                                    <div>@magicClass.Bezeichnung</div>
-								    @if (magicClass.MagicClassSpecializations.Any())
-								    {
-									    <small class="text-muted">
-										    Spezialisierungen: @string.Join(", ", magicClass.MagicClassSpecializations.Select(s => s.Name))
-									    </small>
-								    }
-                                </td>
-                                <td>
-                                    <a asp-controller="MagicClass" asp-action="Form" asp-route-id="@magicClass.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
-                                    <button class="btn" onclick="deleteContent(@magicClass.Id, 'MagicClass')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="col-4">
-        <div class="card m-1 p-2">
-            <a asp-controller="Guild" asp-action="Form" class="btn btn-outline-success">neue Gilde</a>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Bezeichnung</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-					@{
-						foreach (var guild in Model.Guilds)
-						{
-							<tr>
-								<td>@guild.Name</td>
-								<td>
-                                    <a asp-controller="Guild" asp-action="Form" asp-route-id="@guild.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
-                                    <button class="btn" onclick="deleteContent(@guild.Id, 'Guild')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
-								</td>
-							</tr>
-						}
-					}
-                </tbody>
-            </table>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Character Detail Card -->
+                    <div class="col-md-6">
+                        <div class="card character-detail-card h-100">
+                            <div class="card-header">
+                                Character
+                            </div>
+                            <div class="card-body">
+                            <table id="characterTable">
+                                <thead>
+                                    <tr>
+                                        <th>Vorname</th>
+                                        <th>Nachname</th>
+                                        <th>Magie</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        foreach (var character in Model.Characters)
+                                        {
+                                            <tr>
+                                                <td>@character.Vorname</td>
+                                                <td>@character.Nachname</td>
+                                                <td>
+                                                    @if (character.CharacterMagicClasses.Any())
+                                                    {
+                                                        <span>
+                                                            @string.Join(", ", character.CharacterMagicClasses.Select(cmc => cmc.MagicClass.Bezeichnung))
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>keine Magie</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
+                                                    <button class="btn" onclick="deleteContent(@character.Id, 'Character')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Character Grid Section -->
+                <div class="card character-grid-section">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- First Row -->
+                            <div class="col-4">
+                                <div class="character-card" onclick="selectCharacter('Tewa', this)">
+                                    <div class="character-avatar">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="character-name">Tewa</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="character-card" onclick="selectCharacter('Salome', this)">
+                                    <div class="character-avatar">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="character-name">Salome</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="character-card" onclick="selectCharacter('Jeremias', this)">
+                                    <div class="character-avatar">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="character-name">Jeremias</div>
+                                </div>
+                            </div>
+
+                            <!-- Second Row -->
+                            <div class="col-4">
+                                <div class="character-card active" onclick="selectCharacter('Hiro', this)">
+                                    <div class="character-avatar">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="character-name">Hiro</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="character-card" onclick="selectCharacter('Josefine', this)">
+                                    <div class="character-avatar">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <div class="character-name">Josefine</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="character-card" onclick="selectCharacter('aktueller Begleiter', this)">
+                                    <div class="character-avatar">
+                                        <i class="bi bi-person-check-fill"></i>
+                                    </div>
+                                    <div class="character-name">aktueller Begleiter</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Section - Magie Card -->
+            <div class="col-lg-4">
+                <div class="card magic-card h-100">
+                    <div class="card-header">
+                        Magie
+                    </div>
+                    <div class="card-body p-0">
+                       
+                                @{
+                                    foreach (var magicClass in Model.MagicClasses)
+                                    {
+                                        <div class="magic-spell d-flex justify-content-between align-items-center" onclick="castSpell('Lichtstrahl')">
+                                            <span class="spell-name">@magicClass.Bezeichnung</span>
+                                            <span class="spell-level">3</span>
+                                        </div>
+                                        
+                                        // Display the magic class details as tooltips or in a more detailed view
+
+                                        //     @if (magicClass.MagicClassSpecializations.Any())
+                                        //     {
+                                        //         <small class="text-muted">
+                                        //             Spezialisierungen: @string.Join(", ", magicClass.MagicClassSpecializations.Select(s => s.Name))
+                                        //         </small>
+                                        //     }
+                                    }
+                                }
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
 @section Scripts {
-    <script>
-        function deleteContent(Id,controllerName) {
-            Swal.fire({
-                title: "Wollen Sie wirklich den Eintrag löschen?",
-                icon: "warning",
-                confirmButtonText: `Ja, löschen!`,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/" + controllerName + "/Delete",
-                        data: { id: Id },
-                        success: function (msg) {
-                            Swal.fire("Eintrag gelöscht", "", "success").then((result) => {
-                                location.reload();
-                            });
-                        },
-                        error: function (msg) {
-                            Swal.fire("Ups, irgendetwas ist schiefgelaufen!", "", "error");
-                        }
-                    });
-                }
+<script>
+    $(document).ready(function () {
+            $('#guildTable').DataTable({
+                dom: 'Bfrt' // Positionierung der Bedienelemente
+             });
+        });
+    $(document).ready(function () {
+            $('#characterTable').DataTable({
+                dom: 'Bfrt' // Positionierung der Bedienelemente
             });
-        }
-    </script>
+        });
+    function selectCharacter(name, element) {
+        // Entferne active Klasse von allen Karten
+        document.querySelectorAll('.character-card').forEach(card => {
+            card.classList.remove('active');
+        });
+
+        // Füge active Klasse zur geklickten Karte hinzu
+        element.classList.add('active');
+
+        console.log(`Ausgewählter Charakter: ${name}`);
+
+        // Bootstrap Toast Benachrichtigung (optional)
+        showToast(`Charakter "${name}" ausgewählt`);
     }
+
+    function castSpell(spellName) {
+        console.log(`Zauber "${spellName}" wird gewirkt!`);
+        showToast(`Zauber "${spellName}" gewirkt!`);
+    }
+
+    function showToast(message) {
+        // Erstelle temporäres Toast Element
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-primary border-0 position-fixed top-0 end-0 m-3" style="z-index: 1051;" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        const toastElement = document.querySelector('.toast:last-child');
+        const toast = new bootstrap.Toast(toastElement, { delay: 2000 });
+        toast.show();
+
+        // Entferne Toast nach dem Verstecken
+        toastElement.addEventListener('hidden.bs.toast', () => {
+            toastElement.remove();
+        });
+    }
+
+    // Navigation Tab Handler
+    document.addEventListener('DOMContentLoaded', function() {
+                            const navLinks = document.querySelectorAll('.nav-pills .nav-link');
+                            navLinks.forEach(link => {
+                                link.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    navLinks.forEach(l => l.classList.remove('active'));
+                                    this.classList.add('active');
+
+                                    const tabName = this.getAttribute('data-tab');
+                                    showToast(`Tab "${tabName}" aktiviert`);
+                                });
+                            });
+
+                            // Guild/Infantry selection handler
+                            const guildOptions = document.querySelectorAll('input[name="unit"]');
+                            guildOptions.forEach(option => {
+                                option.addEventListener('change', function() {
+                                    console.log(`Ausgewählte Einheit: ${this.value}`);
+                                    showToast(`Einheit "${this.value}" ausgewählt`);
+                                });
+                            });
+
+                            // Character form handlers
+                            const characterInputs = document.querySelectorAll('.character-detail-card input');
+                            characterInputs.forEach(input => {
+                                input.addEventListener('change', function() {
+                                    console.log(`${this.id}: ${this.value}`);
+                                });
+                            });
+                        });
+
+    function deleteContent(Id,controllerName) {
+        Swal.fire({
+            title: "Wollen Sie wirklich den Eintrag löschen?",
+            icon: "warning",
+            confirmButtonText: `Ja, löschen!`,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "POST",
+                    url: "/" + controllerName + "/Delete",
+                    data: { id: Id },
+                    success: function (msg) {
+                        Swal.fire("Eintrag gelöscht", "", "success").then((result) => {
+                            location.reload();
+                        });
+                    },
+                    error: function (msg) {
+                        Swal.fire("Ups, irgendetwas ist schiefgelaufen!", "", "error");
+                    }
+                });
+            }
+        });
+    }
+</script>
+}
+
 
 

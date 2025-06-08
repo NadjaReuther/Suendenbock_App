@@ -66,41 +66,45 @@ namespace Suendenbock_App.Controllers
         }
         public IActionResult CreateEdit(Character character, int[] selectedMagicClasses)
         {
-
-            if (character.Id == 0)
+            //Validierung der Pflichtfelder
+            if(string.IsNullOrEmpty(character.Nachname) 
+                || string.IsNullOrEmpty(character.Vorname) 
+                || string.IsNullOrEmpty(character.Geschlecht)
+                || character.RasseId == 0
+                || character.LebensstatusId == 0
+                || character.EindruckId == 0
+                || selectedMagicClasses == null
+                || selectedMagicClasses.Length == 0)
             {
-                //check if Vorname and Nachname already exists
-                if (checkInDB(character.Nachname)
-                     && checkInDB(character.Vorname))
-                {
-                    return NotFound();
-                }
+                TempData["Error"] = "Pflichtfelder: Vor-/Nachname, Geschlecht, Rasse, Lebensstatus, Eindruck und mindestens eine Magieklasse sind erforderlich.";
+                return RedirectToAction("Form", new { id = character.Id });
+            }
+            if (character.Id == 0)
+            {               
                 // Create new character
+                character.CompletionLevel = CharacterCompleteness.BasicInfo; // Set default completion level
                 _context.Characters.Add(character);
                 _context.SaveChanges();
 
-                //add MagicClass
-                if(selectedMagicClasses != null && selectedMagicClasses.Length > 0)
+                //add MagicClass             
+                foreach (var magicClassId in selectedMagicClasses)
                 {
-                    foreach (var magicClassId in selectedMagicClasses)
+                    _context.CharacterMagicClasses.Add(new CharacterMagicClass
                     {
-                        _context.CharacterMagicClasses.Add(new CharacterMagicClass
-                        {
-                            CharacterId = character.Id,
-                            MagicClassId = magicClassId
-                        });
-                    }
+                        CharacterId = character.Id,
+                        MagicClassId = magicClassId
+                    });
                 }
+                _context.SaveChanges();
             }
             else
             {
-                // Edit existing character
-                // Load character data based on id
-                //check if Vorname and Nachname already exists
-                var characterToUpdate = _context.Characters.Find(character.Id);
-                if (characterToUpdate == null 
-                    || (checkInDB(character.Nachname)
-                    && checkInDB(character.Vorname)))
+                //Bestehenden Character bearbeiten
+                var characterToUpdate = _context.Characters
+                    .Include(c => c.CharacterMagicClasses)
+                    .FirstOrDefault(c => c.Id == character.Id);
+
+                if (characterToUpdate == null) 
                 {
                     return NotFound();
                 }
@@ -108,40 +112,83 @@ namespace Suendenbock_App.Controllers
                 characterToUpdate.Nachname = character.Nachname;
                 characterToUpdate.Vorname = character.Vorname;
                 characterToUpdate.Geschlecht = character.Geschlecht;
-                //characterToUpdate.Geburtsdatum = character.Geburtsdatum;
+                characterToUpdate.RasseId = character.RasseId;
+                characterToUpdate.LebensstatusId = character.LebensstatusId;
+                characterToUpdate.EindruckId = character.EindruckId;
+                characterToUpdate.Geburtsdatum = character.Geburtsdatum;
+                // Optional: Update parent relationships if provided
+                if (character.VaterId.HasValue && character.VaterId.Value > 0)
+                {
+                    characterToUpdate.VaterId = character.VaterId;
+                }
+                else
+                {
+                    characterToUpdate.VaterId = null; // Clear if not provided
+                }
+                if (character.MutterId.HasValue && character.MutterId.Value > 0)
+                {
+                    characterToUpdate.MutterId = character.MutterId;
+                }
+                else
+                {
+                    characterToUpdate.MutterId = null; // Clear if not provided
+                }
                 //characterToUpdate.ImagePath = character.ImagePath;
 
                 //Update magic classes - first remove all existing
                 _context.CharacterMagicClasses.RemoveRange(characterToUpdate.CharacterMagicClasses);
                 //add MagicClass
-                if (selectedMagicClasses != null && selectedMagicClasses.Length > 0)
+                foreach (var magicClassId in selectedMagicClasses)
                 {
-                    foreach (var magicClassId in selectedMagicClasses)
+                    _context.CharacterMagicClasses.Add(new CharacterMagicClass
                     {
-                        string specializationKey = $"Specialization_{magicClassId}";
-                        int? specializationId = null;
-
-                        if(Request.Form.ContainsKey(specializationKey) && !string.IsNullOrEmpty(Request.Form[specializationKey]))
-                        {
-                            specializationId = int.Parse(Request.Form[specializationKey]);
-                        }
-                        _context.CharacterMagicClasses.Add(new CharacterMagicClass
-                        {
-                            CharacterId = character.Id,
-                            MagicClassId = magicClassId,
-                            MagicClassSpecializationId = specializationId
-                        });
-                    }
+                        CharacterId = character.Id,
+                        MagicClassId = magicClassId,
+                    });
                 }
-
-                characterToUpdate.GuildId = character.GuildId;
-                characterToUpdate.ReligionId = character.ReligionId;
+                _context.SaveChanges();
             }
-            // Save changes to the database
-            _context.SaveChanges();
             return RedirectToAction("Index", "Admin");
         }
 
+        public IActionResult EditDetails(int characterId)
+        {
+            // Load character details for editing
+            var character = _context.Characters
+                .Include(c => c.Details)
+                .FirstOrDefault(c => c.Id == characterId);
+            if (character == null)
+            {
+                return NotFound();
+            }
+            // ViewBag für DropDowns befüllen
+            ViewBag.Staende = _context.Staende.ToList();
+            ViewBag.Berufe = _context.Berufe.ToList();
+            ViewBag.Blutgruppen = _context.Blutgruppen.ToList();
+            ViewBag.Haeuser = _context.Haeuser.ToList();
+            ViewBag.Herkunftslaender = _context.Herkunftslaender.ToList();
+
+            return View(character);
+        }
+
+        public IActionResult EditAffiliation(int characterId)
+        {
+            // Load character affiliation for editing
+            var character = _context.Characters
+                .Include(c => c.Affiliation)
+                .FirstOrDefault(c => c.Id == characterId);
+            if (character == null)
+            {
+                return NotFound();
+            }
+            // ViewBag für DropDowns befüllen
+            ViewBag.Guilds = _context.Guilds.ToList();
+            ViewBag.Infanterien = _context.Infanterien.ToList();
+            ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
+            ViewBag.Religions = _context.Religions.ToList();
+
+            return View(character);
+        }
         public IActionResult Delete(int id)
         {
             // Load character data based on id
