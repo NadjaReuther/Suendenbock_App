@@ -258,14 +258,7 @@
                     {
                         foreach (var guild in ViewBag.Guilds)
                         {
-                            if (Model != null && Model.GuildId.HasValue && Model.GuildId.Value == guild.Id)
-                            {
-                                <option value="@guild.Id" selected>@guild.Name</option>
-                            }
-                            else
-                            {
-                                <option value="@guild.Id">@guild.Name</option>
-                            }
+                            
                         }
                     }
                 </select>
@@ -280,14 +273,7 @@
                     {
                         foreach (var religion in ViewBag.Religions)
                         {
-                            if (Model != null && Model.ReligionId.HasValue && Model.ReligionId.Value == religion.Id)
-                            {
-                                <option value="@religion.Id" selected>@religion.Type</option>
-                            }
-                            else
-                            {
-                                <option value="@religion.Id">@religion.Type</option>
-                            }
+                            
                         }
                     }
                 </select>

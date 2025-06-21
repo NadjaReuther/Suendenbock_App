@@ -71,6 +71,8 @@ namespace Suendenbock_App.Data.Seeders
                     new MagicClass { Bezeichnung = "Dampf", ImagePath = "/images/magicclass/fog.png", ObermagieId = 3 },
                     new MagicClass { Bezeichnung = "Tierbegleiter", ImagePath = "/images/magicclass/shadow.png", ObermagieId = 6 },
                     new MagicClass { Bezeichnung = "Zwielicht", ImagePath = "/images/magicclass/dark.png", ObermagieId = 14 },
+                    new MagicClass { Bezeichnung = "Dunkel", ImagePath = "/images/magicclass/dark.png", ObermagieId = 1 },
+                    new MagicClass { Bezeichnung = "Teer", ImagePath = "/images/magicclass/dark.png", ObermagieId = 6 },
                     new MagicClass { Bezeichnung = "Rhetorika", ImagePath = "/images/magicclass/shadow.png", ObermagieId = 9 },
                     new MagicClass { Bezeichnung = "Illusion", ImagePath = "/images/magicclass/illusion.png", ObermagieId = 7 },
                     new MagicClass { Bezeichnung = "Glück", ImagePath = "/images/magicclass/pain.png", ObermagieId = 9 },

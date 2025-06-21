@@ -28,8 +28,6 @@ namespace Suendenbock_App.Controllers
 
             // die 6 neuesten Charaktere
             var recentCharacters = _context.Characters
-                .Include(c => c.Guild)
-                .Include(c => c.Religion)
                 .OrderByDescending(c => c.Id)
                 .Take(6)
                 .ToList();
@@ -82,8 +80,6 @@ namespace Suendenbock_App.Controllers
                 }
             }
             var character = _context.Characters
-                .Include(c => c.Guild)
-                .Include(c => c.Religion)
                 .FirstOrDefault(c => c.Id == characterId);
 
             if (character == null)

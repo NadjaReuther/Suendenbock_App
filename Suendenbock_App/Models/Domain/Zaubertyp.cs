@@ -6,6 +6,7 @@
         public string Name { get; set; } = string.Empty;
         public string? Beschreibung { get; set; } = string.Empty;
         // Navigation Property
-        public virtual ICollection<Zauber> Zauber { get; set; } = new List<Zauber>(); // Zaubertyp has many Zauber
+        public virtual ICollection<Grundzauber> Grundzaubers { get; set; } = new List<Grundzauber>(); // Zaubertyp has many Grundzauber
+        public virtual ICollection<SpecialZauber> SpecialZaubers { get; set; } = new List<SpecialZauber>(); // Zaubertyp has many SpecialZauber
     }
 }

@@ -19,9 +19,7 @@
         vorname = Model.Vorname ?? "";
         nachname = Model.Nachname ?? "";
         geschlecht = Model.Geschlecht ?? "";
-        geburtsdatum = Model.Geburtsdatum ?? "";
-        guildId = Model.GuildId;
-        religionId = Model.ReligionId;
+        geburtsdatum = Model.Geburtsdatum ?? "";       
         modelId = Model.Id;
     }
 }
@@ -146,39 +144,6 @@
                         }
                     </div>
                 </div>
-            </div>
-            <div class="mb-3">
-                <select class="form-select" id="guildId" name="guildId">
-                    <option value="" disabled selected hidden>Gilde auswählen...</option>
-                    @foreach (var guild in ViewBag.Guilds)
-                        {
-                            @if (Model != null && Model.GuildId == guild.Id)
-                            {
-                                <option value="@guild.Id" selected>@guild.Name</option>
-                            }
-                            else
-                            {
-                                <option value="@guild.Id">@guild.Name</option>
-                            }
-                        }
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <select class="form-select" id="religionId" name="religionId">
-                    <option value="" disabled selected hidden>Religion auswählen...</option>
-                    @foreach (var religion in ViewBag.Religions)
-                        {
-                            @if (Model != null && Model.ReligionId == religion.Id)
-                            {
-                                <option value="@religion.Id" selected>@religion.Type</option>
-                            }
-                            else
-                            {
-                                <option value="@religion.Id">@religion.Type</option>
-                            }
-                        }
-                </select>
             </div>
 
             <div class="text-center">

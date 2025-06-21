@@ -20,8 +20,6 @@ namespace Suendenbock_App.ApiController
             var characters = _context.Characters
                 .Include(c => c.CharacterMagicClasses)
                     .ThenInclude(cmc => cmc.MagicClass)
-                .Include(c => c.Religion)
-                .Include(c => c.Guild)
                 .ToList();
 
             return Ok(characters);
@@ -33,8 +31,6 @@ namespace Suendenbock_App.ApiController
             var character = _context.Characters
                 .Include(c => c.CharacterMagicClasses)
                     .ThenInclude(cmc => cmc.MagicClass)
-                .Include(c => c.Religion)
-                .Include(c => c.Guild)
                 .FirstOrDefault(c => c.Id == id);
 
             if (character == null)

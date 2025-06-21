@@ -1,6 +1,6 @@
 ﻿namespace Suendenbock_App.Models.Domain
 {
-    public class Zauber
+    public class Grundzauber
     {
         public int Id { get; set; }
         public string Spruch { get; set; } = string.Empty;
@@ -10,8 +10,8 @@
         public string Effekt { get; set; } = string.Empty;
         // Foreign Key
         public int ZaubertypID { get; set; } // Foreign for ZaubertypID
-        public int MagicClassSpecializationId { get; set; } // Foreign Key for MagicSpecialization
+        public int MagicClassId { get; set; } // Foreign Key for MagicClass
         // Navigation Property
-        public virtual MagicClassSpecialization? MagicSpecialization { get; set; } // Navigation property for MagicSpecialization
+        public virtual MagicClass? MagicClass { get; set; } // Navigation property for MagicSpecialization
     }
 }

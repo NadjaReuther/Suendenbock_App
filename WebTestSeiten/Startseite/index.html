@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="style.css" rel="stylesheet" />
+    <title>Document</title>
+</head>
+<body>
+    <div class="bubble-container">
+    <h1 class="main-title">Willkommen in der Suendenbock App</h1>
+    
+    <div class="bubbles-wrapper">
+        <!-- Charaktere Blase -->
+        <div class="bubble bubble-characters" onclick="location.href='@Url.Action("Index", "Admin")'">
+            <span class="bubble-text">Charaktere</span>
+            <div class="bubble-count">@Model.Characters.Count</div>
+        </div>
+
+        <!-- Gilden Blase -->
+        <div class="bubble bubble-guilds" onclick="location.href='@Url.Action("Index", "Guild")'">
+            <span class="bubble-text">Gilden</span>
+            <div class="bubble-count">@Model.Guilds.Count</div>
+        </div>
+
+        <!-- Magieklassen Blase -->
+        <div class="bubble bubble-magic" onclick="location.href='@Url.Action("Index", "MagicClass")'">
+            <span class="bubble-text">Magieklassen</span>
+            <div class="bubble-count">@Model.MagicClasses.Count</div>
+        </div>
+
+        <!-- Herkunftsländer Blase -->
+        <div class="bubble bubble-countries" onclick="location.href='@Url.Action("Index", "Herkunftsland")'">
+            <span class="bubble-text">Herkunftsländer</span>
+            <div class="bubble-count">52</div>
+        </div>
+
+        <!-- Religionen Blase -->
+        <div class="bubble bubble-religions" onclick="location.href='@Url.Action("Index", "Religion")'">
+            <span class="bubble-text">Religionen</span>
+            <div class="bubble-count">8</div>
+        </div>
+
+        <!-- Familienstammbaum Blase -->
+        <div class="bubble bubble-family" onclick="location.href='@Url.Action("FamilyTree", "Home")'">
+            <span class="bubble-text">Stammbäume</span>
+            <div class="bubble-count">♦</div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional: Kurze Statistik-Übersicht -->
+<div class="stats-section">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card stats-card">
+                <div class="card-header">Geschlechterverteilung</div>
+                <div class="card-body">
+                    @foreach (var stat in Model.GenderStats)
+                    {
+                        <div class="stat-item">
+                            <span>@stat.Key:</span>
+                            <span class="stat-value">@stat.Value</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card stats-card">
+                <div class="card-header">Beliebte Magieklassen</div>
+                <div class="card-body">
+                    @foreach (var stat in Model.MagicClassStats.Take(5))
+                    {
+                        <div class="stat-item">
+                            <span>@stat.Key:</span>
+                            <span class="stat-value">@stat.Value</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

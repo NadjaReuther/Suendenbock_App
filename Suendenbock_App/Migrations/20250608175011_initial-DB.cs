@@ -421,26 +421,26 @@ namespace Suendenbock_App.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Nachname = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Vorname = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Geschlecht = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Bodyheight = table.Column<int>(type: "int", nullable: false),
+                    Nachname = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Vorname = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Geschlecht = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    RasseId = table.Column<int>(type: "int", nullable: false),
+                    LebensstatusId = table.Column<int>(type: "int", nullable: false),
+                    EindruckId = table.Column<int>(type: "int", nullable: false),
                     Geburtsdatum = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RasseId = table.Column<int>(type: "int", nullable: true),
-                    EindruckId = table.Column<int>(type: "int", nullable: true),
-                    StandId = table.Column<int>(type: "int", nullable: true),
-                    BerufId = table.Column<int>(type: "int", nullable: true),
-                    BlutgruppeId = table.Column<int>(type: "int", nullable: true),
-                    HausId = table.Column<int>(type: "int", nullable: true),
-                    HerkunftslandId = table.Column<int>(type: "int", nullable: true),
-                    LebensstatusId = table.Column<int>(type: "int", nullable: true),
                     VaterId = table.Column<int>(type: "int", nullable: true),
                     MutterId = table.Column<int>(type: "int", nullable: true),
+                    CompletionLevel = table.Column<int>(type: "int", nullable: false),
+                    BerufId = table.Column<int>(type: "int", nullable: true),
+                    BlutgruppeId = table.Column<int>(type: "int", nullable: true),
                     GuildId = table.Column<int>(type: "int", nullable: true),
+                    HausId = table.Column<int>(type: "int", nullable: true),
+                    HerkunftslandId = table.Column<int>(type: "int", nullable: true),
                     InfanterieId = table.Column<int>(type: "int", nullable: true),
                     InfanterierangId = table.Column<int>(type: "int", nullable: true),
-                    ReligionId = table.Column<int>(type: "int", nullable: true)
+                    ReligionId = table.Column<int>(type: "int", nullable: true),
+                    StandId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -471,7 +471,8 @@ namespace Suendenbock_App.Migrations
                         name: "FK_Characters_Eindruecke_EindruckId",
                         column: x => x.EindruckId,
                         principalTable: "Eindruecke",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Characters_Guilds_GuildId",
                         column: x => x.GuildId,
@@ -501,12 +502,14 @@ namespace Suendenbock_App.Migrations
                         name: "FK_Characters_Lebensstati_LebensstatusId",
                         column: x => x.LebensstatusId,
                         principalTable: "Lebensstati",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Characters_Rassen_RasseId",
                         column: x => x.RasseId,
                         principalTable: "Rassen",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Characters_Religions_ReligionId",
                         column: x => x.ReligionId,
@@ -538,6 +541,99 @@ namespace Suendenbock_App.Migrations
                         principalTable: "Obermagien",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CharacterAffiliations",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CharacterId = table.Column<int>(type: "int", nullable: false),
+                    GuildId = table.Column<int>(type: "int", nullable: true),
+                    InfanterieId = table.Column<int>(type: "int", nullable: true),
+                    InfanterierangId = table.Column<int>(type: "int", nullable: true),
+                    ReligionId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CharacterAffiliations", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CharacterAffiliations_Characters_CharacterId",
+                        column: x => x.CharacterId,
+                        principalTable: "Characters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CharacterAffiliations_Guilds_GuildId",
+                        column: x => x.GuildId,
+                        principalTable: "Guilds",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CharacterAffiliations_Infanterien_InfanterieId",
+                        column: x => x.InfanterieId,
+                        principalTable: "Infanterien",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CharacterAffiliations_Infanterieraenge_InfanterierangId",
+                        column: x => x.InfanterierangId,
+                        principalTable: "Infanterieraenge",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CharacterAffiliations_Religions_ReligionId",
+                        column: x => x.ReligionId,
+                        principalTable: "Religions",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CharacterDetails",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CharacterId = table.Column<int>(type: "int", nullable: false),
+                    BodyHeight = table.Column<int>(type: "int", nullable: true),
+                    StandId = table.Column<int>(type: "int", nullable: true),
+                    BerufId = table.Column<int>(type: "int", nullable: true),
+                    BlutgruppeId = table.Column<int>(type: "int", nullable: true),
+                    HausId = table.Column<int>(type: "int", nullable: true),
+                    HerkunftslandId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CharacterDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CharacterDetails_Berufe_BerufId",
+                        column: x => x.BerufId,
+                        principalTable: "Berufe",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CharacterDetails_Blutgruppen_BlutgruppeId",
+                        column: x => x.BlutgruppeId,
+                        principalTable: "Blutgruppen",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CharacterDetails_Characters_CharacterId",
+                        column: x => x.CharacterId,
+                        principalTable: "Characters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CharacterDetails_Haeuser_HausId",
+                        column: x => x.HausId,
+                        principalTable: "Haeuser",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CharacterDetails_Herkunftslaender_HerkunftslandId",
+                        column: x => x.HerkunftslandId,
+                        principalTable: "Herkunftslaender",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_CharacterDetails_Staende_StandId",
+                        column: x => x.StandId,
+                        principalTable: "Staende",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -661,6 +757,63 @@ namespace Suendenbock_App.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterAffiliations_CharacterId",
+                table: "CharacterAffiliations",
+                column: "CharacterId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterAffiliations_GuildId",
+                table: "CharacterAffiliations",
+                column: "GuildId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterAffiliations_InfanterieId",
+                table: "CharacterAffiliations",
+                column: "InfanterieId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterAffiliations_InfanterierangId",
+                table: "CharacterAffiliations",
+                column: "InfanterierangId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterAffiliations_ReligionId",
+                table: "CharacterAffiliations",
+                column: "ReligionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterDetails_BerufId",
+                table: "CharacterDetails",
+                column: "BerufId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterDetails_BlutgruppeId",
+                table: "CharacterDetails",
+                column: "BlutgruppeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterDetails_CharacterId",
+                table: "CharacterDetails",
+                column: "CharacterId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterDetails_HausId",
+                table: "CharacterDetails",
+                column: "HausId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterDetails_HerkunftslandId",
+                table: "CharacterDetails",
+                column: "HerkunftslandId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CharacterDetails_StandId",
+                table: "CharacterDetails",
+                column: "StandId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CharacterMagicClasses_MagicClassId",
@@ -800,6 +953,12 @@ namespace Suendenbock_App.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "CharacterAffiliations");
+
+            migrationBuilder.DropTable(
+                name: "CharacterDetails");
 
             migrationBuilder.DropTable(
                 name: "CharacterMagicClasses");

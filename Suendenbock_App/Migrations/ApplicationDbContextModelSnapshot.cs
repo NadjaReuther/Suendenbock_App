@@ -309,10 +309,10 @@ namespace Suendenbock_App.Migrations
                     b.Property<int?>("BlutgruppeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Bodyheight")
+                    b.Property<int>("CompletionLevel")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EindruckId")
+                    b.Property<int>("EindruckId")
                         .HasColumnType("int");
 
                     b.Property<string>("Geburtsdatum")
@@ -320,7 +320,8 @@ namespace Suendenbock_App.Migrations
 
                     b.Property<string>("Geschlecht")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int?>("GuildId")
                         .HasColumnType("int");
@@ -340,7 +341,7 @@ namespace Suendenbock_App.Migrations
                     b.Property<int?>("InfanterierangId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("LebensstatusId")
+                    b.Property<int>("LebensstatusId")
                         .HasColumnType("int");
 
                     b.Property<int?>("MutterId")
@@ -348,9 +349,10 @@ namespace Suendenbock_App.Migrations
 
                     b.Property<string>("Nachname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
-                    b.Property<int?>("RasseId")
+                    b.Property<int>("RasseId")
                         .HasColumnType("int");
 
                     b.Property<int?>("ReligionId")
@@ -364,7 +366,8 @@ namespace Suendenbock_App.Migrations
 
                     b.Property<string>("Vorname")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -397,6 +400,92 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("VaterId");
 
                     b.ToTable("Characters");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterAffiliation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GuildId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InfanterieId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("InfanterierangId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReligionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId")
+                        .IsUnique();
+
+                    b.HasIndex("GuildId");
+
+                    b.HasIndex("InfanterieId");
+
+                    b.HasIndex("InfanterierangId");
+
+                    b.HasIndex("ReligionId");
+
+                    b.ToTable("CharacterAffiliations");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterDetails", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BerufId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BlutgruppeId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("BodyHeight")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HausId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HerkunftslandId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("StandId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BerufId");
+
+                    b.HasIndex("BlutgruppeId");
+
+                    b.HasIndex("CharacterId")
+                        .IsUnique();
+
+                    b.HasIndex("HausId");
+
+                    b.HasIndex("HerkunftslandId");
+
+                    b.HasIndex("StandId");
+
+                    b.ToTable("CharacterDetails");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
@@ -845,11 +934,13 @@ namespace Suendenbock_App.Migrations
                         .WithMany("Charaktere")
                         .HasForeignKey("BlutgruppeId");
 
-                    b.HasOne("Suendenbock_App.Models.Domain.Eindruck", null)
+                    b.HasOne("Suendenbock_App.Models.Domain.Eindruck", "Eindruck")
                         .WithMany("Charaktere")
-                        .HasForeignKey("EindruckId");
+                        .HasForeignKey("EindruckId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.HasOne("Suendenbock_App.Models.Domain.Guild", "Guild")
+                    b.HasOne("Suendenbock_App.Models.Domain.Guild", null)
                         .WithMany("Characters")
                         .HasForeignKey("GuildId");
 
@@ -861,28 +952,32 @@ namespace Suendenbock_App.Migrations
                         .WithMany("Characters")
                         .HasForeignKey("HerkunftslandId");
 
-                    b.HasOne("Suendenbock_App.Models.Domain.Infanterie", "Infanterie")
+                    b.HasOne("Suendenbock_App.Models.Domain.Infanterie", null)
                         .WithMany("Characters")
                         .HasForeignKey("InfanterieId");
 
-                    b.HasOne("Suendenbock_App.Models.Domain.Infanterierang", "Infanterierang")
+                    b.HasOne("Suendenbock_App.Models.Domain.Infanterierang", null)
                         .WithMany("Characters")
                         .HasForeignKey("InfanterierangId");
 
-                    b.HasOne("Suendenbock_App.Models.Domain.Lebensstatus", null)
+                    b.HasOne("Suendenbock_App.Models.Domain.Lebensstatus", "Lebensstatus")
                         .WithMany("Characters")
-                        .HasForeignKey("LebensstatusId");
+                        .HasForeignKey("LebensstatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Suendenbock_App.Models.Domain.Character", "Mutter")
                         .WithMany()
                         .HasForeignKey("MutterId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Suendenbock_App.Models.Domain.Rasse", null)
+                    b.HasOne("Suendenbock_App.Models.Domain.Rasse", "Rasse")
                         .WithMany("Characters")
-                        .HasForeignKey("RasseId");
+                        .HasForeignKey("RasseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.HasOne("Suendenbock_App.Models.Domain.Religion", "Religion")
+                    b.HasOne("Suendenbock_App.Models.Domain.Religion", null)
                         .WithMany("Characters")
                         .HasForeignKey("ReligionId");
 
@@ -895,17 +990,91 @@ namespace Suendenbock_App.Migrations
                         .HasForeignKey("VaterId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Eindruck");
+
+                    b.Navigation("Lebensstatus");
+
+                    b.Navigation("Mutter");
+
+                    b.Navigation("Rasse");
+
+                    b.Navigation("Vater");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterAffiliation", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
+                        .WithOne("Affiliation")
+                        .HasForeignKey("Suendenbock_App.Models.Domain.CharacterAffiliation", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Guild", "Guild")
+                        .WithMany()
+                        .HasForeignKey("GuildId");
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Infanterie", "Infanterie")
+                        .WithMany()
+                        .HasForeignKey("InfanterieId");
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Infanterierang", "Infanterierang")
+                        .WithMany()
+                        .HasForeignKey("InfanterierangId");
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Religion", "Religion")
+                        .WithMany()
+                        .HasForeignKey("ReligionId");
+
+                    b.Navigation("Character");
+
                     b.Navigation("Guild");
 
                     b.Navigation("Infanterie");
 
                     b.Navigation("Infanterierang");
 
-                    b.Navigation("Mutter");
-
                     b.Navigation("Religion");
+                });
 
-                    b.Navigation("Vater");
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterDetails", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Beruf", "Beruf")
+                        .WithMany()
+                        .HasForeignKey("BerufId");
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Blutgruppe", "Blutgruppe")
+                        .WithMany()
+                        .HasForeignKey("BlutgruppeId");
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
+                        .WithOne("Details")
+                        .HasForeignKey("Suendenbock_App.Models.Domain.CharacterDetails", "CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Haus", "Haus")
+                        .WithMany()
+                        .HasForeignKey("HausId");
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Herkunftsland", "Herkunftsland")
+                        .WithMany()
+                        .HasForeignKey("HerkunftslandId");
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Stand", "Stand")
+                        .WithMany()
+                        .HasForeignKey("StandId");
+
+                    b.Navigation("Beruf");
+
+                    b.Navigation("Blutgruppe");
+
+                    b.Navigation("Character");
+
+                    b.Navigation("Haus");
+
+                    b.Navigation("Herkunftsland");
+
+                    b.Navigation("Stand");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
@@ -1032,7 +1201,11 @@ namespace Suendenbock_App.Migrations
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Character", b =>
                 {
+                    b.Navigation("Affiliation");
+
                     b.Navigation("CharacterMagicClasses");
+
+                    b.Navigation("Details");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Eindruck", b =>
