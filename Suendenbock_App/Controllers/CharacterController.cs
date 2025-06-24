@@ -23,10 +23,11 @@ namespace Suendenbock_App.Controllers
             ViewBag.Guilds = _context.Guilds.ToList();
             ViewBag.Religions = _context.Religions.ToList();
             ViewBag.Specializations = _context.MagicClassSpecializations.Include(s => s.MagicClass).ToList();
-
-            // Neu: Liste aller Charaktere für die Eltern-Dropdowns
+            ViewBag.Rassen = _context.Rassen.ToList();
+            ViewBag.Lebensstatus = _context.Lebensstati.ToList();
+            ViewBag.Eindruecke = _context.Eindruecke.ToList();
+            // Liste aller Charaktere für die Eltern-Dropdowns
             ViewBag.Characters = _context.Characters.ToList();
-
 
             // Check if id is provided for editing
             if (id > 0)

@@ -68,7 +68,7 @@ namespace Suendenbock_App.Data.Seeders
             }
         }
     }
-    public static class LabensstatusSeeder
+    public static class LebensstatusSeeder
     {
         public static void Seed(ApplicationDbContext context)
         {

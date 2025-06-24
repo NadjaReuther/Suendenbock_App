@@ -17,12 +17,11 @@ namespace Suendenbock_App.Data.Seeders
                 Console.WriteLine("Seeding Basis-Entitäten...");
                 LightCardSeeder.Seed(context);
                 ReligionSeeder.Seed(context);
-                AbenteuerrangSeeder.Seed(context);
-                AnmeldungsstatusSeeder.Seed(context);
-                EindruckSeeder.Seed(context);
                 StandSeeder.Seed(context);
                 HausSeeder.Seed(context);
                 BlutgruppeSeeder.Seed(context);
+                RasseSeeder.Seed(context);
+                LebensstatusSeeder.Seed(context);
                 HerkunftslandSeeder.Seed(context);
 
                 // 2. MagicClasses (abhängig von LightCards)

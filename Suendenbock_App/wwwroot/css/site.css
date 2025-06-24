@@ -95,83 +95,63 @@ body {
 .dunkel {
     background-color: #372334;
 }
-
 .luft {
     background-color: #abb8d4;
 }
-
 .wasser {
     background-color: #19879f;
 }
-
 .seele {
     background-color: #d46aab;
 }
-
 .flora {
     background-color: #226d22;
 }
-
 .fauna {
     background-color: #604136;
 }
-
 .licht {
     background-color: #f8ecd0;
 }
-
 .schmerz {
     background-color: #963742;
 }
-
 .geist {
     background-color: #431b92;
 }
-
 .feuer {
     background-color: #bb2929;
 }
-
 .zeit {
     background-color: #bd9a4c;
 }
-
 .mantik {
     background-color: #597476;
 }
-
 .daemmerung {
     background-color: #989693;
 }
-
 .card-red {
     background-color: rgba(255, 80, 0, 0.4);
 }
-
 .card-blue {
     background-color: rgba(0, 150, 255, 0.4);
 }
-
 .card-violett {
     background-color: rgb(128, 0, 128, 0.4);
 }
-
 .card-green {
     background-color: rgba(0, 180, 90, 0.4);
 }
-
 .card-yellow {
     background-color: rgba(255, 215, 0, 0.8);
 }
-
 .card-brown {
     background-color: rgba(139, 69, 19, 0.4);
 }
-
 .card-shadow {
     background-color: rgba(20, 20, 20, 0.5);
 }
-
 /**
     * CSS für die Familienbaumdarstellung
  */
