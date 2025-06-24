@@ -8,28 +8,91 @@
     <link href="/css/character.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
-<div class="steckbrief-background">
-    <div class="steckbrief-container">
-        <div class="steckbrief-title">Gilde</div>
-        <form asp-controller="Guild" asp-action="CreateEdit">
-            <div class="mb-3">
-                <label for="gildenname" class="form-label">Gildenname</label>
-                <input type="text" class="form-control" id="gildenname" name="gildenname">
-            </div>
 
-            <div class="mb-3">
-                <select class="form-select" id="lightClassId" name="lightClassId">
-                    <option value="" disabled selected hidden>Highlighting auswählen...</option>
+<div class="steckbrief-container">
+    <div class="steckbrief-title">Gilde</div>
+    <form asp-controller="Guild" asp-action="CreateEdit">
+        <div class="mb-3">
+            <label for="gildenname" class="form-label">Gildenname</label>
+            <input type="text" class="form-control" id="gildenname" name="gildenname">
+        </div>
+        <div class="row mb-3">
+            <div class="col-lg-7">
+                <label for="beschreibung" class="form-label">Beschreibung</label>
+			    <textarea class="form-control" id="beschreibung" name="beschreibung" rows="3"></textarea>
+            </div>
+            <div class="col-lg-5">
+                <!--spezielles Zeichen der Gilde wird über Bild hochladen und speichern das Imagepath angezeigt-->
+                <label for="gildenlogo" class="form-label">Gildenlogo</label>
+                <input type="text" class="form-control" id="gildenlogo" name="gildenlogo">
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-lg-6">
+                <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
+                <label for="gildenmeister" class="form-label">Gildenmeister</label>
+                <select class="form-select" id="gildenmeister" name="gildenmeister">
+                    <option value="" disabled selected>Gildenmeister auswählen...</option>
+                    @if(ViewBag.Characters != null)
+                    {
+                        foreach (var charakter in ViewBag.Characters)
+                        {
+                            <option value="@charakter.Id">@charakter.Name</option>
+                        }
+                    }
                 </select>
             </div>
-
-            <div class="mb-3">
-				<textarea class="form-control" id="beschreibung" name="beschreibung" rows="3"></textarea>
+            <div class="col-lg-6">
+                <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
+                <label for="gildenstellvertreter" class="form-label">Stellvertreter</label>
+                <select class="form-select" id="gildenstellvertreter" name="gildenstellvertreter">
+                    <option value="" disabled selected>Stellvertreter auswählen...</option>
+                    @if(ViewBag.Characters != null)
+                    {
+                        foreach (var charakter in ViewBag.Characters)
+                        {
+                            <option value="@charakter.Id">@charakter.Name</option>
+                        }
+                    }
+                </select>               
             </div>
-
-            <div class="text-center">
-                <button type="submit" class="btn-wachs">Gebilligt</button>
+        </div>
+        <div class="mb-3">
+            <!--hier wird die LightCardID hinzugefügt-->
+            <label for="gildenfarbe" class="form-label">Gildenfarbe</label>
+            <input type="color" class="form-control form-control-color" id="gildenfarbe" name="gildenfarbe" value="#563d7c" title="Choose your color">
+        </div>
+        <div class="row mb-3">
+            <div class="col-lg-6">
+                <label for="gildenstatus" class="form-label">Gildenstatus</label>
+                <select class="form-select" id="gildenstatus" name="gildenstatus">
+                    <option value="" disabled selected>Anmeldestatus auswählen...</option>
+                    @if(ViewBag.Anmeldungsstatus != null)
+                    {
+                        foreach (var status in ViewBag.Anmeldungsstatus)
+                        {
+                            <option value="@status.Id">@status.Name</option>
+                        }
+                    }
+                
+                </select>
             </div>
-        </form>
-    </div>
+            <div class="col-lg-6">
+                <label for="gildenrang" class="form-label">Gildenrang</label>
+                <select class="form-select" id="gildenrang" name="gildenrang">
+                    <option value="" disabled selected>Gildenrang auswählen...</option>
+                    @if(ViewBag.Abenteuerrang != null)
+                    {
+                        foreach (var rang in ViewBag.Abenteuerrang)
+                        {
+                            <option value="@rang.Id">@rang.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn-wachs">Gebilligt</button>
+        </div>
+    </form>
 </div>

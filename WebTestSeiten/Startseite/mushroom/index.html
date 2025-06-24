@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enchanted Character Realm</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Magical particle system -->
+    <div class="magical-particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 25%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 10s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 8s;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="enchanted-nav">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">🍄 Mystic Realm</a>
+            <ul class="nav-links">
+                <li><a href="#" class="nav-link">Characters</a></li>
+                <li><a href="#" class="nav-link">Equipment</a></li>
+                <li><a href="#" class="nav-link">Skills</a></li>
+                <li><a href="#" class="nav-link">Quests</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <div class="main-container">
+        <h1>Your Enchanted Heroes</h1>
+        
+        <div class="character-grid">
+            <!-- Character Card Example -->
+            <div class="character-card performance-optimized">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="decorative-mushroom">
+                        <div class="mushroom-cap"></div>
+                        <div class="mushroom-stem"></div>
+                    </div>
+                    <div>
+                        <h3>Elara Moonwhisper</h3>
+                        <p style="color: var(--sage-whisper);">Forest Druid • Level 25</p>
+                    </div>
+                </div>
+                
+                <!-- Character Stats -->
+                <div class="stat-container">
+                    <div class="stat-label">Health</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill" style="width: 85%;"></div>
+                    </div>
+                </div>
+                
+                <div class="stat-container">
+                    <div class="stat-label">Mana</div>
+                    <div class="stat-bar">
+                        <div class="stat-fill" style="width: 60%;"></div>
+                    </div>
+                </div>
+                
+                <!-- Equipment Grid -->
+                <div class="equipment-grid">
+                    <div class="equipment-slot filled">🗡️</div>
+                    <div class="equipment-slot filled">🛡️</div>
+                    <div class="equipment-slot"></div>
+                    <div class="equipment-slot filled">💍</div>
+                </div>
+                
+                <button class="mushroom-button">Manage Character</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

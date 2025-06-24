@@ -28,7 +28,8 @@ namespace Suendenbock_App.Data
         public DbSet<CharacterDetails> CharacterDetails { get; set; }
         public DbSet<CharacterAffiliation> CharacterAffiliations { get; set; }
         public DbSet<Zaubertyp> Zaubertypen { get; set; }
-        public DbSet<Grundzauber> Zauber { get; set; }
+        public DbSet<Grundzauber> Grundzauber { get; set; }
+        public DbSet<SpecialZauber> SpecialZauber { get; set; }
         public DbSet<CharacterMagicClass> CharacterMagicClasses { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

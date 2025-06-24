@@ -18,6 +18,11 @@ namespace Suendenbock_App.Controllers
         }
         public IActionResult Form(int id)
         {
+            ViewBag.LightCards = _context.LightCards.ToList();
+            ViewBag.Abenteuerrang = _context.Abenteuerraenge.ToList();
+            ViewBag.Anmeldungsstatus = _context.Anmeldungsstati.ToList();
+            ViewBag.Characters = _context.Characters.ToList();
+
             // Check if id is provided for editing
             if (id > 0)
             {
