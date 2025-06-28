@@ -32,10 +32,10 @@ namespace Suendenbock_App.Controllers
                 {
                     return NotFound();
                 }
-                // Return the view with the character data
+                // Return the view with the guild data
                 return View(guild);
             }
-            // Return the view for creating a new character
+            // Return the view for creating a new guild
             return View();
         }
         public IActionResult CreateEdit(Guild guild)

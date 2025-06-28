@@ -39,31 +39,22 @@
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-magic"></i> Magieklassen
+                                <i class="fas fa-magic"></i> Zauber & Magie
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="MagicClass" asp-action="Index">Alle Magieklassen</a></li>
                                 <li><a class="dropdown-item" asp-controller="MagicClass" asp-action="Form">Neue Magieklasse</a></li>
                                 <li><a class="dropdown-item" asp-controller="MagicClassSpecialization" asp-action="Form">Neue Magiespezialisierung</a></li>
+                                <li><a class="dropdown-item" asp-controller="Zauber" asp-action="Form">Neue Zauber</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-flag"></i> Gilden/Infanterien
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-controller="Guild" asp-action="Index">Übersicht</a></li>
+                            <ul class="dropdown-menu">                               
                                 <li><a class="dropdown-item" asp-controller="Guild" asp-action="Form">Neue Gilde</a></li>                                
                                 <li><a class="dropdown-item" asp-controller="Infanterie" asp-action="Form">Neue Infanterie</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-flag"></i> Zauber
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" asp-controller="Zauber" asp-action="Index">Übersicht</a></li>
-                                <li><a class="dropdown-item" asp-controller="Zauber" asp-action="Form">Neue Gilde</a></li>
                             </ul>
                         </li>
                     </ul>

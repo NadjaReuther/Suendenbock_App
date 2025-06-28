@@ -91,9 +91,9 @@
     animation: fadeIn 0.3s ease;
 }
 
-    .form-step.active {
-        display: block;
-    }
+.form-step.active {
+    display: block;
+}
 
 @keyframes fadeIn {
     from {

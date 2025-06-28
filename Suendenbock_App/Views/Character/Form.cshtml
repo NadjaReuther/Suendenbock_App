@@ -575,12 +575,10 @@
             console.log(currentStep);
             document.querySelectorAll('.step-item').forEach((item, index) => {
                 const stepNumber = index + 1;
-                item.classList.remove('active', 'completed');
-                console.log("ich gehe durch die Schleife: " + stepNumber);
+                item.classList.remove('active', 'completed');                
                 if (stepNumber < currentStep) {
                     item.classList.add('completed');
-                } else if (stepNumber === currentStep) {
-                    console.log("ich aktiviere: " + item);
+                } else if (stepNumber === currentStep) {                    
                     item.classList.add('active');
                 }
             });
@@ -591,8 +589,7 @@
                 stepEl.classList.remove('active');
             });
 
-            document.querySelector(`[data-step="${step}"]`).classList.add('active');
-
+            document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');            
             // Navigation Buttons anpassen
             const prevBtn = document.querySelector('.btn-prev');
             const nextBtn = document.querySelector('.btn-next');
@@ -605,7 +602,7 @@
             if (currentStep < totalSteps) {
                 // Validierung für Schritt 1 (Pflichtfelder)
                 if (currentStep === 1) {
-                    const requiredFields = document.querySelectorAll('[data-step="1"] [required]');
+                    const requiredFields = document.querySelectorAll('[data-nav-step="1"] [required]');
                     let isValid = true;
 
                     requiredFields.forEach(field => {
