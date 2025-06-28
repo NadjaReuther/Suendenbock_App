@@ -26,6 +26,12 @@ namespace Suendenbock_App.Controllers
             ViewBag.Rassen = _context.Rassen.ToList();
             ViewBag.Lebensstatus = _context.Lebensstati.ToList();
             ViewBag.Eindruecke = _context.Eindruecke.ToList();
+            ViewBag.Berufe = _context.Berufe.ToList();
+            ViewBag.Haeuser = _context.Haeuser.ToList();
+            ViewBag.Herkunftslaender = _context.Herkunftslaender.ToList();
+            ViewBag.Blutgruppe = _context.Blutgruppen.ToList();
+            ViewBag.Infanterie = _context.Infanterien.ToList();
+            ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
             // Liste aller Charaktere für die Eltern-Dropdowns
             ViewBag.Characters = _context.Characters.ToList();
 
@@ -34,6 +40,8 @@ namespace Suendenbock_App.Controllers
             {
                 // Load character data for editing
                 var character = _context.Characters
+                    .Include(ca => ca.Affiliation)
+                    .Include(cd => cd.Details)
                     .Include(c => c.CharacterMagicClasses)
                         .ThenInclude(cmc => cmc.MagicClassSpecialization)
                     .FirstOrDefault(c => c.Id == id);
