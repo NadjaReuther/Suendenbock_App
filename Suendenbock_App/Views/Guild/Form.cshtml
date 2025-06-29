@@ -8,10 +8,24 @@
     <link href="/css/character.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <strong>Fehler:</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <strong>Erfolg:</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 <div class="steckbrief-container">
     <div class="steckbrief-title">Gilde</div>
-    <form asp-controller="Guild" asp-action="CreateEdit">
+    <form asp-controller="Guild" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="gildenname" class="form-label">Gildenname</label>
             <input type="text" class="form-control" id="gildenname" name="gildenname">
@@ -24,12 +38,30 @@
             <div class="col-lg-5">
                 <!--spezielles Zeichen der Gilde wird über Bild hochladen und speichern das Imagepath angezeigt-->
                 <label for="gildenlogo" class="form-label">Gildenlogo</label>
-                <input type="text" class="form-control" id="gildenlogo" name="gildenlogo">
+                <div class="image-upload-container">
+                    <div class="image-preview" id="guild-drop-zone" onclick="document.getElementById('gildenlogoUpload').click()">
+                        @if (!string.IsNullOrEmpty(Model?.ImagePath))
+                        {
+                            <img src="@Model.ImagePath" alt="Gildenlogo" style="width: 100%; height: 100%; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <div class="image-placeholder">
+                                <span>🏰</span>
+                                <div>Gildenlogo<br><small>Klicken zum Hochladen</small></div>
+                            </div>
+                        }
+                    </div>
+                    <input type="file" id="gildenlogoUpload" name="gildenlogo" accept="image/jpeg,image/jpg,image/png" style="display: none;" onchange="previewImage(this, '.image-preview')">
+                    <button type="button" class="image-upload-btn" onclick="document.getElementById('gildenlogoUpload').click()">
+                        📷 Logo wählen
+                    </button>
+                </div>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-lg-6">
-                <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
+                <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="gildenmeister" class="form-label">Gildenmeister</label>
                 <select class="form-select" id="gildenmeister" name="gildenmeister">
                     <option value="" disabled selected>Gildenmeister auswählen...</option>
@@ -121,11 +153,14 @@
     </form>
 </div>
 @section Scripts {
+    <script src="~/js/imagePreview.js"></script>
     <script>
         // Tooltips aktivieren
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
+        });
+
+        enableImageDragDrop('#guild-drop-zone', 'gildenlogoUpload');
     </script>
 }
