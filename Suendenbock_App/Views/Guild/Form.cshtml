@@ -26,14 +26,32 @@
 <div class="steckbrief-container">
     <div class="steckbrief-title">Gilde</div>
     <form asp-controller="Guild" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
+        @if (Model != null && Model.Id > 0)
+        {
+            <input type="hidden" name="Id" value="@Model.Id" />
+        }
         <div class="mb-3">
             <label for="gildenname" class="form-label">Gildenname</label>
-            <input type="text" class="form-control" id="gildenname" name="gildenname">
+            @if(Model?.Name != "")
+            {
+                <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" />
+            }
+            else
+            {
+                <input type="text" class="form-control" id="Name" name="Name">
+            }            
         </div>
         <div class="row mb-3">
             <div class="col-lg-7">
                 <label for="beschreibung" class="form-label">Beschreibung</label>
-			    <textarea class="form-control" id="beschreibung" name="beschreibung" rows="3"></textarea>
+                @if(Model?.Description != "")
+                {
+                    <textarea class="form-control" id="Description" name="Description" rows="3">@Model.Description</textarea>
+                }
+                else
+                {
+                    <textarea class="form-control" id="Description" name="Description" rows="3"></textarea>
+                }			    
             </div>
             <div class="col-lg-5">
                 <!--spezielles Zeichen der Gilde wird über Bild hochladen und speichern das Imagepath angezeigt-->
@@ -69,7 +87,14 @@
                     {
                         foreach (var charakter in ViewBag.Characters)
                         {
-                            <option value="@charakter.Id">@charakter.Name</option>
+                            if(Model?.leader != null && Model?.leader == charakter.Id)
+                            {
+                                <option value="@charakter.Id" selected>@charakter.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@charakter.Id">@charakter.Name</option>
+                            }
                         }
                     }
                 </select>
@@ -83,7 +108,14 @@
                     {
                         foreach (var charakter in ViewBag.Characters)
                         {
-                            <option value="@charakter.Id">@charakter.Name</option>
+                            if(Model?.vertreter != null && Model?.vertreter == charakter.Id)
+                            {
+                                <option value="@charakter.Id" selected>@charakter.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@charakter.Id">@charakter.Name</option>
+                            }
                         }
                     }
                 </select>               
@@ -99,12 +131,24 @@
                     // Erste Reihe
                             @foreach (var lightCard in ViewBag.LightCards)
                             {                                
-                                <input type="radio"
-                                       class="btn-check"
-                                       name="lightCardId"
-                                       id="lightcard-@lightCard.Id"
-                                       value="@lightCard.Id"
-                                       autocomplete="off">
+                                if(Model?.LightCardId != null && Model?.LightCardId == lightCard.Id)
+                                {
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="lightCardId"
+                                           id="lightcard-@lightCard.Id"
+                                           value="@lightCard.Id"
+                                    autocomplete="off">
+                                }
+                                else
+                                {
+                                    <input type="radio"
+                                           class="btn-check"
+                                           name="lightCardId"
+                                           id="lightcard-@lightCard.Id"
+                                           value="@lightCard.Id"
+                                           autocomplete="off">
+                                }
                                 <label class="btn flex-fill"
                                        for="lightcard-@lightCard.Id"
                                        style="background-color: @lightCard.Farbcode; border-color: @lightCard.Farbcode; width: 30px; height: 30px; margin: 3px; border-radius: 5px; border: 2px solid darkgrey;"
@@ -121,13 +165,20 @@
         <div class="row mb-3">
             <div class="col-lg-6">
                 <label for="gildenstatus" class="form-label">Gildenstatus</label>
-                <select class="form-select" id="gildenstatus" name="gildenstatus">
+                <select class="form-select" id="AnmeldungsstatusId" name="AnmeldungsstatusID">
                     <option value="" disabled selected>Anmeldestatus auswählen...</option>
                     @if(ViewBag.Anmeldungsstatus != null)
                     {
                         foreach (var status in ViewBag.Anmeldungsstatus)
                         {
-                            <option value="@status.Id">@status.Name</option>
+                            if(Model?.AnmeldungsstatusId != null && Model?.AnmeldungsstatusId == status.Id)
+                            {
+                                <option value="@status.Id" selected>@status.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@status.Id">@status.Name</option>
+                            }
                         }
                     }
                 
@@ -135,13 +186,20 @@
             </div>
             <div class="col-lg-6">
                 <label for="gildenrang" class="form-label">Gildenrang</label>
-                <select class="form-select" id="gildenrang" name="gildenrang">
+                <select class="form-select" id="AbenteuerrangId" name="AbenteuerrangId">
                     <option value="" disabled selected>Gildenrang auswählen...</option>
                     @if(ViewBag.Abenteuerrang != null)
                     {
                         foreach (var rang in ViewBag.Abenteuerrang)
                         {
-                            <option value="@rang.Id">@rang.Name</option>
+                            if(Model?.AbenteuerrangId != null && Model?.AbenteuerrangId == rang.Id)
+                            {
+                                <option value="@rang.Id" selected>@rang.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@rang.Id">@rang.Name</option>
+                            }
                         }
                     }
                 </select>
