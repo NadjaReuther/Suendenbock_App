@@ -92,6 +92,8 @@ namespace Suendenbock_App.Controllers
                     guildToUpdate.AbenteuerrangId = guild.AbenteuerrangId;
                     guildToUpdate.AnmeldungsstatusId = guild.AnmeldungsstatusId;
                     guildToUpdate.LightCardId = guild.LightCardId;
+                    guildToUpdate.leader = guild.leader;
+                    guildToUpdate.vertreter = guild.vertreter;
 
                     // ImagePath nur aktualisieren wenn auch ein neues Bild hochgeladen wurde
                     if (!string.IsNullOrEmpty(guild.ImagePath))

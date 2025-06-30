@@ -31,7 +31,8 @@ namespace Suendenbock_App.Controllers
                 .OrderByDescending(c => c.Id)
                 .Take(6)
                 .ToList();
-
+            // alle Charakter
+            var Characters = _context.Characters.ToList();
             // Magieklassen-Statistik
             var magicClassStats = _context.CharacterMagicClasses
                 .GroupBy(cmc => cmc.MagicClassId)
@@ -55,7 +56,8 @@ namespace Suendenbock_App.Controllers
             var viewModel = new HomeViewModel
             {
                 MagicClassStats = magicClassStats,
-                Characters = recentCharacters,
+                recentCharacters = recentCharacters,
+                Characters = Characters,
                 MagicClasses = allMagicClasses,
                 Guilds = allGuilds,
                 GenderStats = genderStats

@@ -32,26 +32,12 @@
         }
         <div class="mb-3">
             <label for="gildenname" class="form-label">Gildenname</label>
-            @if(Model?.Name != "")
-            {
-                <input type="text" class="form-control" id="Name" name="Name" value="@Model.Name" />
-            }
-            else
-            {
-                <input type="text" class="form-control" id="Name" name="Name">
-            }            
+            <input type="text" class="form-control" id="Name" name="Name" value="@(Model?.Name ?? "")" />
         </div>
         <div class="row mb-3">
             <div class="col-lg-7">
                 <label for="beschreibung" class="form-label">Beschreibung</label>
-                @if(Model?.Description != "")
-                {
-                    <textarea class="form-control" id="Description" name="Description" rows="3">@Model.Description</textarea>
-                }
-                else
-                {
-                    <textarea class="form-control" id="Description" name="Description" rows="3"></textarea>
-                }			    
+                <textarea class="form-control" id="Description" name="Description" rows="3">@(Model?.Description ?? "")</textarea>                			    
             </div>
             <div class="col-lg-5">
                 <!--spezielles Zeichen der Gilde wird über Bild hochladen und speichern das Imagepath angezeigt-->
@@ -81,7 +67,7 @@
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="gildenmeister" class="form-label">Gildenmeister</label>
-                <select class="form-select" id="gildenmeister" name="gildenmeister">
+                <select class="form-select" id="leader" name="leader">
                     <option value="" disabled selected>Gildenmeister auswählen...</option>
                     @if(ViewBag.Characters != null)
                     {
@@ -89,20 +75,20 @@
                         {
                             if(Model?.leader != null && Model?.leader == charakter.Id)
                             {
-                                <option value="@charakter.Id" selected>@charakter.Name</option>
+                                <option value="@charakter.Id" selected>@charakter.Vorname @charakter.Nachname</option>
                             }
                             else
                             {
-                                <option value="@charakter.Id">@charakter.Name</option>
+                                <option value="@charakter.Id">@charakter.Vorname @charakter.Nachname</option>
                             }
                         }
                     }
                 </select>
             </div>
             <div class="col-lg-6">
-                <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
+                <!--combobox mit den charakternamen aus der Charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="gildenstellvertreter" class="form-label">Stellvertreter</label>
-                <select class="form-select" id="gildenstellvertreter" name="gildenstellvertreter">
+                <select class="form-select" id="vertreter" name="vertreter">
                     <option value="" disabled selected>Stellvertreter auswählen...</option>
                     @if(ViewBag.Characters != null)
                     {
@@ -110,11 +96,11 @@
                         {
                             if(Model?.vertreter != null && Model?.vertreter == charakter.Id)
                             {
-                                <option value="@charakter.Id" selected>@charakter.Name</option>
+                                <option value="@charakter.Id" selected>@charakter.Vorname @charakter.Nachname</option>
                             }
                             else
                             {
-                                <option value="@charakter.Id">@charakter.Name</option>
+                                <option value="@charakter.Id">@charakter.Vorname @charakter.Nachname</option>
                             }
                         }
                     }
@@ -129,26 +115,14 @@
                     @if (ViewBag.LightCards != null)
                     {
                     // Erste Reihe
-                            @foreach (var lightCard in ViewBag.LightCards)
+                            foreach (var lightCard in ViewBag.LightCards)
                             {                                
-                                if(Model?.LightCardId != null && Model?.LightCardId == lightCard.Id)
-                                {
-                                    <input type="radio"
-                                           class="btn-check"
-                                           name="lightCardId"
-                                           id="lightcard-@lightCard.Id"
-                                           value="@lightCard.Id"
-                                    autocomplete="off">
-                                }
-                                else
-                                {
-                                    <input type="radio"
-                                           class="btn-check"
-                                           name="lightCardId"
-                                           id="lightcard-@lightCard.Id"
-                                           value="@lightCard.Id"
-                                           autocomplete="off">
-                                }
+                                <input type="radio"
+                                        class="btn-check"
+                                        name="lightCardId"
+                                        id="lightcard-@lightCard.Id"
+                                        value="@lightCard.Id"
+                                       @(Model?.LightCardId == lightCard.Id ? "checked" : "")>                            
                                 <label class="btn flex-fill"
                                        for="lightcard-@lightCard.Id"
                                        style="background-color: @lightCard.Farbcode; border-color: @lightCard.Farbcode; width: 30px; height: 30px; margin: 3px; border-radius: 5px; border: 2px solid darkgrey;"

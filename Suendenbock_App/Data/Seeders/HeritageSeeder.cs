@@ -60,7 +60,7 @@ namespace Suendenbock_App.Data.Seeders
                 context.Set<Rasse>().AddRange(
                     new Rasse { Name = "Mensch"},
                     new Rasse { Name = "Upir" },
-                    new Rasse { Name = "Lykanthrop" },
+                    new Rasse { Name = "Lykantrop" },
                     new Rasse { Name = "Ulfhedinn" },
                     new Rasse { Name = "Konstrukteur" }                    
                 );

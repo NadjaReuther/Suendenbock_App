@@ -310,6 +310,30 @@
     user-select: none;
 }
 
-    .image-preview img[draggable="true"]:active {
-        cursor: grabbing;
-    }
+.image-preview img[draggable="true"]:active {
+    cursor: grabbing;
+}
+/* Spezifischere CSS-Regeln für Bootstrap btn-check */
+.steckbrief-container .btn-group .btn-check:checked + .btn,
+form .btn-check:checked + .btn.flex-fill {
+    border: 4px solid #000 !important;
+    box-shadow: 0 0 15px rgba(0,0,0,0.8) !important;
+    transform: scale(1.15) !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.steckbrief-container .btn-group .btn-check:checked + .btn::after,
+form .btn-check:checked + .btn.flex-fill::after {
+    content: "✓" !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: #fff !important;
+    font-weight: bold !important;
+    font-size: 16px !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8) !important;
+    z-index: 11 !important;
+    pointer-events: none !important;
+}

@@ -8,6 +8,21 @@
       
     <!-- Main Content -->
     <div class="container-fluid py-4">
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <strong>Fehler:</strong> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <strong>Erfolg:</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
         <div class="row g-3 mb-3">
             <!-- Gilden/Infanterie Card -->
             <div class="col-md-6">
@@ -30,7 +45,7 @@
                                         {
                                             <tr>
                                                 <td>@guild.Name</td>
-                                                <td>Leiter</td>
+                                                <td>@guild.leader</td>
                                                 <td>Vertreter</td>
                                                 <td>
                                                     <a asp-controller="Guild" asp-action="Form" asp-route-id="@guild.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
