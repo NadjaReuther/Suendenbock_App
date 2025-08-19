@@ -129,6 +129,19 @@ namespace Suendenbock_App.Data
                 .WithMany()
                 .HasForeignKey(c => c.MutterId)
                 .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+
+            // Guild Leader und Vertreter Beziehungen definieren
+            builder.Entity<Guild>()
+                .HasOne(g => g.LeaderCharacter)
+                .WithMany()
+                .HasForeignKey(g => g.leader)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Guild>()
+                .HasOne(g => g.VertreterCharacter)
+                .WithMany()
+                .HasForeignKey(g => g.vertreter)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

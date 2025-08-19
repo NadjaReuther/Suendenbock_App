@@ -1,4 +1,4 @@
-html {
+﻿html {
   font-size: 14px;
 }
 
@@ -153,7 +153,7 @@ body {
     background-color: rgba(20, 20, 20, 0.5);
 }
 /**
-    * CSS f�r die Familienbaumdarstellung
+    * CSS für die Familienbaumdarstellung
  */
 .family-tree {
     position: relative;
@@ -340,3 +340,286 @@ body {
         margin-top: 1rem;
     }
 }
+/* Admin Panel - Mittelalterliches Design */
+.admin-container {
+    background: linear-gradient(45deg, #f4f1e8, #e8dcc0);
+    background-image: radial-gradient(circle at 20% 80%, rgba(139, 115, 85, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(139, 115, 85, 0.1) 0%, transparent 50%);
+    min-height: 100vh;
+    font-family: 'MedievalSharp', cursive;
+}
+
+/* Pergament-Tabellen */
+.pergament-table-card {
+    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+    border: 3px solid #8b7355;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 12px 24px rgba(93, 78, 55, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+    position: relative;
+}
+
+    .pergament-table-card::before {
+        content: '';
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        border: 1px solid #e8dcc0;
+        border-radius: 17px;
+        pointer-events: none;
+    }
+
+.pergament-header {
+    font-family: 'Uncial Antiqua', serif;
+    font-size: 1.8rem;
+    color: #5d4e37;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    text-shadow: 1px 1px 2px rgba(93, 78, 55, 0.3);
+    position: relative;
+}
+
+/* DataTables mittelalterlich */
+.dataTables_wrapper {
+    padding: 0;
+    background: transparent;
+    
+}
+
+.medieval-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 2px solid #8b7355;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 20px !important;
+    font-size: 15px;
+}
+
+    .medieval-table thead th {
+        background: linear-gradient(135deg, #5d4e37, #8b7355);
+        color: #f9f6f0;
+        border: none;
+        padding: 15px 20px;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        font-family: 'MedievalSharp', cursive;
+    }
+
+    .medieval-table tbody td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e8dcc0;
+        border-right: 1px solid #f4f1e8;
+        background: #fefefe;
+        transition: all 0.3s ease;
+        font-family: 'MedievalSharp', cursive;
+        color: #5d4e37;
+    }
+
+    .medieval-table tbody tr:nth-child(even) td {
+        background: #f9f6f0;
+    }
+
+    .medieval-table tbody tr:hover td {
+        background: linear-gradient(145deg, #f4f1e8, #e8dcc0);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(93, 78, 55, 0.2);
+    }
+
+/* Mittelalterliche Action Buttons */
+.medieval-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.medieval-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #8b7355;
+    background: linear-gradient(145deg, #f9f6f0, #e8dcc0);
+    color: #5d4e37;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 8px rgba(93, 78, 55, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+    .medieval-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .medieval-btn:hover::before {
+        left: 100%;
+    }
+
+    .medieval-btn:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 8px 16px rgba(93, 78, 55, 0.4);
+        border-color: #d4af37;
+        color: #d4af37;
+    }
+
+    .medieval-btn.edit-btn {
+        background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+        border-color: #2196f3;
+        color: #1976d2;
+    }
+
+        .medieval-btn.edit-btn:hover {
+            background: linear-gradient(145deg, #2196f3, #1976d2);
+            color: white;
+        }
+
+    .medieval-btn.delete-btn {
+        background: linear-gradient(145deg, #ffebee, #ffcdd2);
+        border-color: #f44336;
+        color: #d32f2f;
+    }
+
+        .medieval-btn.delete-btn:hover {
+            background: linear-gradient(145deg, #f44336, #d32f2f);
+            color: white;
+        }
+
+/* DataTables Controls mittelalterlich */
+.dataTables_length select,
+.dataTables_filter input {
+    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+    border: 2px solid #d4c4a8;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #5d4e37;
+    font-family: 'MedievalSharp', cursive;
+    transition: all 0.3s ease;
+}
+
+    .dataTables_length select:focus,
+    .dataTables_filter input:focus {
+        outline: none;
+        border-color: #d4af37;
+        box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+    }
+
+.dataTables_length label,
+.dataTables_filter label {
+    color: #5d4e37;
+    font-family: 'MedievalSharp', cursive;
+    font-weight: 600;
+}
+
+/* Pagination mittelalterlich */
+.dataTables_paginate .paginate_button {
+    background: linear-gradient(145deg, #f9f6f0, #e8dcc0);
+    border: 2px solid #d4c4a8;
+    border-radius: 8px;
+    color: #5d4e37;
+    font-family: 'MedievalSharp', cursive;
+    font-weight: 600;
+    padding: 8px 15px;
+    margin: 0 3px;
+    transition: all 0.3s ease;
+    text-shadow: none;
+}
+
+    .dataTables_paginate .paginate_button:hover {
+        background: linear-gradient(145deg, #d4af37, #b8941f);
+        color: white;
+        border-color: #d4af37;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(93, 78, 55, 0.3);
+    }
+
+    .dataTables_paginate .paginate_button.current {
+        background: linear-gradient(145deg, #6e4b1f, #5d4e37);
+        color: #f9f6f0;
+        border-color: #6e4b1f;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+.dataTables_info {
+    color: #8b7355;
+    font-family: 'MedievalSharp', cursive;
+    font-style: italic;
+}
+
+/* Character Grid mittelalterlich angepasst */
+.character-grid-section {
+    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+    border: 3px solid #8b7355;
+    border-radius: 20px;
+    box-shadow: 0 12px 24px rgba(93, 78, 55, 0.3);
+}
+
+.character-card {
+    background: linear-gradient(145deg, #f9f6f0, #e8dcc0);
+    border: 2px solid #d4c4a8;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+    .character-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .character-card:hover::before {
+        left: 100%;
+    }
+
+    .character-card:hover,
+    .character-card.active {
+        border-color: #d4af37;
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(93, 78, 55, 0.4);
+    }
+
+.magic-card {
+    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+    border: 3px solid #8b7355;
+    border-radius: 20px;
+    box-shadow: 0 12px 24px rgba(93, 78, 55, 0.3);
+}
+
+.magic-spell {
+    background: linear-gradient(145deg, #f4f1e8, #e8dcc0);
+    border: 1px solid #d4c4a8;
+    border-radius: 8px;
+    margin: 5px;
+    padding: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+    .magic-spell:hover {
+        background: linear-gradient(145deg, #d4af37, #b8941f);
+        color: white;
+        transform: translateX(5px);
+    }

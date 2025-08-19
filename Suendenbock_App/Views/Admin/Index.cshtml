@@ -3,111 +3,169 @@
 @{
     ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml"; // Ensure this layout is set correctly
-}
-
-      
+}   
     <!-- Main Content -->
+<div class="admin-container">
     <div class="container-fluid py-4">
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show">
-            <strong>Fehler:</strong> @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                <strong>⚠️ Fehler:</strong> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show">
-            <strong>Erfolg:</strong> @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <strong>✅ Erfolg:</strong> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- Magie Card -->
+        <div class="row">
+        <div class="col-lg-12">
+            <div class="card magic-card h-100">
+                <div class="card-body p-0 d-flex justify-content-center">
+
+                    @{
+                        foreach (var magicClass in Model.MagicClasses)
+                        {
+                            <div class="magic-spell" onclick="castSpell('Lichtstrahl')">
+                                    <img src="@magicClass.ImagePath" class="magic-icon" alt="@magicClass.Bezeichnung" tooltip="tooltip" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                                </div>
+
+                            // Display the magic class details as tooltips or in a more detailed view
+
+                            //     @if (magicClass.MagicClassSpecializations.Any())
+                            //     {
+                            //         <small class="text-muted">
+                            //             Spezialisierungen: @string.Join(", ", magicClass.MagicClassSpecializations.Select(s => s.Name))
+                            //         </small>
+                            //     }
+                        }
+                    }
+                </div>
+            </div>
         </div>
-    }
-        <div class="row g-3 mb-3">
-            <!-- Gilden/Infanterie Card -->
+        </div>
+        <div class="row g-4 mb-4">
+            <!-- Gilden Pergament -->
             <div class="col-md-6">
-                        <div class="card guild-card h-100">
-                            <div class="card-header">
-                                Gilden/Infanterie
-                            </div>
-                            <div class="card-body">
-                                <table id="guildTable">
-                                    <thead>
-                                        <tr>
-                                            <th>Name</th>                                            
-                                            <th>Leader</th>
-                                            <th>Vertreter</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var guild in Model.Guilds)
+                <div class="pergament-table-card">
+                    <h3 class="pergament-header">Gilden & Infanterie</h3>
+                    <table id="guildTable" class="medieval-table w-100">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Gildenmeister</th>
+                                <th>Anmeldung</th>
+                                <th>Rang</th>
+                                <th>⚔️ Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var guild in Model.Guilds)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(guild.ImagePath))
                                         {
-                                            <tr>
-                                                <td>@guild.Name</td>
-                                                <td>@guild.leader</td>
-                                                <td>Vertreter</td>
-                                                <td>
-                                                    <a asp-controller="Guild" asp-action="Form" asp-route-id="@guild.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
-                                                    <button class="btn" onclick="deleteContent(@guild.Id, 'Guild')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
-                                                </td>
-                                            </tr>
-                                    }
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-            <!-- Character Detail Card -->
-            <div class="col-md-6">
-                        <div class="card character-detail-card h-100">
-                            <div class="card-header">
-                                Character
-                            </div>
-                            <div class="card-body">
-                            <table id="characterTable">
-                                <thead>
-                                    <tr>
-                                        <th>Vorname</th>
-                                        <th>Nachname</th>
-                                        <th>Magie</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{
-                                        foreach (var character in Model.Characters)
-                                        {
-                                            <tr>
-                                                <td>@character.Vorname</td>
-                                                <td>@character.Nachname</td>
-                                                <td>
-                                                    @if (character.CharacterMagicClasses.Any())
-                                                    {
-                                                        <span>
-                                                            @string.Join(", ", character.CharacterMagicClasses.Select(cmc => cmc.MagicClass.Bezeichnung))
-                                                        </span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span>keine Magie</span>
-                                                    }
-                                                </td>
-                                                <td>
-                                                    <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id" class=""><img width="30" height="30" src="/images/icons/edit.png" /></a>
-                                                    <button class="btn" onclick="deleteContent(@character.Id, 'Character')"><img width="30" height="30" src="/images/icons/trash.png" /></button>
-                                                </td>
-                                            </tr>
+                                            <img src="@guild.ImagePath" alt="Logo" style="width: 30px; height: 30px; margin-left: 5px; border-radius: 50%;">
                                         }
-                                    }
-                                </tbody>
-                            </table>
-                            </div>
-                        </div>
-                    </div>
+                                        <strong>@guild.Name</strong>
+                                    </td>
+
+                                    <td>@(guild.LeaderCharacter?.Vorname + " " + guild.LeaderCharacter?.Nachname)</td>
+                                    <td>@(guild.AnmeldungsstatusNavigation?.Name)</td>
+                                    <td>@(guild.AbenteuerrangNavigation?.Name)</td>
+                                    <td>
+                                        <div class="medieval-actions">
+                                            <a asp-controller="Guild" asp-action="Form" asp-route-id="@guild.Id"
+                                               class="medieval-btn edit-btn" title="Gilde bearbeiten">
+                                                ✏️
+                                            </a>
+                                            <button class="medieval-btn delete-btn"
+                                                    onclick="deleteContent(@guild.Id, 'Guild')"
+                                                    title="Gilde löschen">
+                                                🗡️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Charaktere Pergament -->
+            <div class="col-md-6">
+                <div class="pergament-table-card">
+                    <h3 class="pergament-header">Charaktere</h3>
+                    <table id="characterTable" class="medieval-table w-100">
+                        <thead>
+                            <tr>
+                                <th>Vorname</th>
+                                <th>Nachname</th>
+                                <th>Haus</th>
+                                <th>Magie</th>
+                                <th>⚔️ Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var character in Model.Characters)
+                            {
+                                <tr>
+                                    <td><strong>@character.Vorname</strong></td>
+                                    <td><strong>@character.Nachname</strong></td>
+                                    <td>@character.Details?.Haus?.Name</td>
+                                    <td>
+                                        @if (character.CharacterMagicClasses.Any())
+                                        {
+                                            <div class="magic-classes">
+                                                @foreach (var cmc in character.CharacterMagicClasses.Take(2))
+                                                {
+                                                    <span class="badge rounded-pill"
+                                                          style="background: linear-gradient(45deg, #d4af37, #b8941f); color: white; margin: 1px;">
+                                                        🔮 @cmc.MagicClass.Bezeichnung
+                                                    </span>
+                                                }
+                                                @if (character.CharacterMagicClasses.Count() > 2)
+                                                {
+                                                    <span class="badge rounded-pill bg-secondary">+@(character.CharacterMagicClasses.Count() - 2)</span>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">⚫ Keine Magie</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="medieval-actions">
+                                            <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id"
+                                               class="medieval-btn edit-btn" title="Charakter bearbeiten">
+                                                ✏️
+                                            </a>
+                                            <button class="medieval-btn delete-btn"
+                                                    onclick="deleteContent(@character.Id, 'Character')"
+                                                    title="Charakter löschen">
+                                                🗡️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <div class="row g-3">
-            <div class="col-lg-11">
+            <div class="col-lg-12">
                 <!-- Character Grid Section -->
                 <div class="card character-grid-section">
                     <div class="card-body">
@@ -167,50 +225,60 @@
                     </div>
                 </div>
             </div>
-            <!-- Right Section - Magie Card -->
-            <div class="col-lg-1">
-            <div class="card magic-card h-100">
-                <div class="card-header">
-                    Magie
-                </div>
-                <div class="card-body p-0">
-
-                    @{
-                        foreach (var magicClass in Model.MagicClasses)
-                        {
-                            <div class="magic-spell d-flex justify-content-between align-items-center" onclick="castSpell('Lichtstrahl')">
-                                <span class="spell-name">@magicClass.Bezeichnung</span>
-                                <span class="spell-level">3</span>
-                            </div>
-
-                            // Display the magic class details as tooltips or in a more detailed view
-
-                            //     @if (magicClass.MagicClassSpecializations.Any())
-                            //     {
-                            //         <small class="text-muted">
-                            //             Spezialisierungen: @string.Join(", ", magicClass.MagicClassSpecializations.Select(s => s.Name))
-                            //         </small>
-                            //     }
-                        }
-                    }
-                </div>
-            </div>
-        </div>
+           
         </div>  
     </div>
-
+</div>
 @section Scripts {
 <script>
-    $(document).ready(function () {
-            $('#guildTable').DataTable({
-                dom: 'Bfrt' // Positionierung der Bedienelemente
-             });
-        });
-    $(document).ready(function () {
-            $('#characterTable').DataTable({
-                dom: 'Bfrt' // Positionierung der Bedienelemente
+                   $(document).ready(function () {
+                const medievalTableConfig = {
+                    dom: '<"row pergament-controls mb-2"<"col-sm-12 col-md-5"l><"col-sm-12 col-md-7"f>>' +
+                         '<"row"<"col-sm-12"tr>>' +
+                         '<"row pergament-footer mt-5"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8"p>>',
+                    pageLength: 10,
+                    lengthMenu: [[5, 15, 25, -1], [5, 8, 15, 25, "Alle Einträge"]],
+                    language: {
+                        search: "🔍 Chroniken durchsuchen:",
+                        lengthMenu: "Zeige _MENU_ Einträge",
+                        info: "📜 _START_ bis _END_ von _TOTAL_ Einträgen",
+                        infoEmpty: "📰 Keine Einträge vorhanden",
+                        infoFiltered: "(🔎 gefiltert von _MAX_ Gesamteinträgen)",
+                        paginate: {
+                            first: "⏮️ Erste",
+                            last: "⏭️ Letzte",
+                            next: "▶️ Nächste",
+                            previous: "◀️ Vorherige"
+                        },
+                        emptyTable: "📋 Die Chroniken sind leer",
+                        zeroRecords: "🔍 Keine passenden Einträge in den Archiven gefunden"
+                    },
+                    columnDefs: [
+                        { orderable: false, targets: -1 }
+                    ],
+                    responsive: true,
+                    autoWidth: false,
+                    drawCallback: function() {
+                        // Füge Hover-Effekte nach dem Zeichnen hinzu
+                        $('.medieval-table tbody tr').hover(
+                            function() { $(this).addClass('table-hover'); },
+                            function() { $(this).removeClass('table-hover'); }
+                        );
+                    }
+                };
+
+                // Guild Table
+                $('#guildTable').DataTable({
+                    ...medievalTableConfig,
+                    order: [[0, 'asc']]
+                });
+
+                // Character Table
+                $('#characterTable').DataTable({
+                    ...medievalTableConfig,
+                    order: [[1, 'asc']]
+                });
             });
-        });
     function selectCharacter(name, element) {
         // Entferne active Klasse von allen Karten
         document.querySelectorAll('.character-card').forEach(card => {

@@ -19,5 +19,9 @@
         public Abenteuerrang? AbenteuerrangNavigation { get; set; } // Navigation Property Guild has an Abenteuerrang
         public Anmeldungsstatus? AnmeldungsstatusNavigation { get; set; } // Navigation Property Guild has an Anmeldungsstatus
         public virtual ICollection<Character> Characters { get; set; } = new List<Character>(); // Guild has many Characters
+        
+        // Navigation Properties hinzufügen
+        public virtual Character? LeaderCharacter { get; set; } // Für den Leader
+        public virtual Character? VertreterCharacter { get; set; } // Für den Stellvertreter
     }
 }
