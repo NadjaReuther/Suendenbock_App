@@ -1,0 +1,6 @@
+services:
+  suendenbock_app:
+    image: ${DOCKER_REGISTRY-}suendenbockapp
+    build:
+      context: .
+      dockerfile: Suendenbock_App/Dockerfile
