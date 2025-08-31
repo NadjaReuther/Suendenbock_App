@@ -1,79 +1,108 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
+using Suendenbock_App.Services;
 
 namespace Suendenbock_App.Controllers
 {
-    public class InfanterieController : Controller
+    public class InfanterieController : BaseOrganizationController
     {
-        private readonly ApplicationDbContext _context;
-
-        public InfanterieController(ApplicationDbContext context)
+        public InfanterieController(ApplicationDbContext context, IImageUploadService imageUploadService): base(context, imageUploadService)
         {
-            _context = context;
         }
         public IActionResult Index()
         {
             return View();
         }
-        public IActionResult Form(int id)
+        public IActionResult Form(int id = 0)
         {
-            ViewBag.LightCards = _context.LightCards.ToList();
-            ViewBag.Abenteuerrang = _context.Abenteuerraenge.ToList();
-            ViewBag.Anmeldungsstatus = _context.Anmeldungsstati.ToList();
-            ViewBag.Characters = _context.Characters.ToList();
+            // Load common ViewBag data
+            LoadCommonViewBagData();
+
+            //specific ViewBag data for Infanterie
+            ViewBag.InfanterieRangs = _context.Infanterieraenge.ToList();
 
             // Check if id is provided for editing
             if (id > 0)
             {
-                // Load character data for editing
-                var guild = _context.Guilds.Find(id);
-                if (guild == null)
+                var infanterie = _context.Infanterien.Find(id);
+                if (infanterie == null)
                 {
                     return NotFound();
                 }
-                // Return the view with the character data
-                return View(guild);
+                return View(infanterie);
             }
-            // Return the view for creating a new character
             return View();
         }
-        public IActionResult CreateEdit(Guild guild)
+        [HttpPost]
+        public async Task<IActionResult> CreateEdit(Infanterie infanterie, IFormFile? infanteriezeichen)
         {
-            if (guild.Id == 0)
+            try
             {
-                // Create new character
-                _context.Guilds.Add(guild);
-            }
-            else
-            {
-                // Edit existing character
-                // Load character data based on id
-                var guildToUpdate = _context.Guilds.Find(guild.Id);
-                if (guildToUpdate == null)
+                var uploadedImagePath = await ProcessImageUpload(infanteriezeichen, infanterie.Bezeichnung, "infanterie");
+
+                if (uploadedImagePath != null)
                 {
-                    return NotFound();
+                    infanterie.ImagePath = uploadedImagePath;
                 }
-                // Update character properties
-                guildToUpdate.Name = guild.Name;
-                guildToUpdate.ImagePath = guild.ImagePath;
-                guildToUpdate.LightCardId = guild.LightCardId;
+
+                if (infanterie.Id == 0)
+                {
+                    _context.Infanterien.Add(infanterie);
+                }
+                else
+                {
+                    var infanterieToUpdate = _context.Infanterien.Find(infanterie.Id);
+                    if (infanterieToUpdate == null)
+                    {
+                        return NotFound();
+                    }
+                    UpdateInfanterieProperties(infanterieToUpdate, infanterie);
+
+                    // update image only if a new one was uploaded
+                    if (uploadedImagePath != null)
+                    {
+                        DeleteOldImage(infanterieToUpdate.ImagePath);
+                        infanterieToUpdate.ImagePath = uploadedImagePath;
+                    }
+                }
+                _context.SaveChanges();
+                SetMessage(true, "Infanterie");
+                return RedirectToAction("Index", "Admin");
             }
-            _context.SaveChanges();
-            return RedirectToAction("Index");
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Fehler beim Speichern der Infanterie: {ex.Message}";
+                return RedirectToAction("Form", new { id = infanterie.Id });
+            }
         }
+        [HttpPost]
         public IActionResult Delete(int id)
         {
-            // Load the guild to delete
-            var guild = _context.Guilds.Find(id);
-            if (guild == null)
+            var infanterie = _context.Infanterien.Find(id);
+            if (infanterie == null)
             {
                 return NotFound();
             }
-            // Remove the guild from the context
-            _context.Guilds.Remove(guild);
+            // Delete associated image if exists
+            DeleteOldImage(infanterie.ImagePath);
+
+            _context.Infanterien.Remove(infanterie);
             _context.SaveChanges();
-            return RedirectToAction("Index");
+            
+            SetMessage(true, "Infanterie gelöscht");
+            return RedirectToAction("Index", "Admin");
+        }
+        /// <summary>
+        /// Aktualisiert die Eigenschaften der Infanterie
+        /// </summary>
+        public void UpdateInfanterieProperties(Infanterie target, Infanterie source)
+        {
+            target.Bezeichnung = source.Bezeichnung;
+            target.description = source.description;
+            target.LightCardId = source.LightCardId;
+            target.leader = source.leader;
+            target.vertreter = source.vertreter;
         }
     }
 }
