@@ -363,3 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 /Suendenbock_App/appsettings.json
 /Suendenbock_App/appsettings.Development.json
+/Suendenbock_App/appsettings.Development.json
+/Suendenbock_App/Dockerfile
+*.dcproj
+/docker-compose.override.yml
+/docker-compose.yml
