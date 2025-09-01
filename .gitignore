@@ -368,3 +368,4 @@ FodyWeavers.xsd
 *.dcproj
 /docker-compose.override.yml
 /docker-compose.yml
+/Suendenbock_App/appsettings.Development..json
