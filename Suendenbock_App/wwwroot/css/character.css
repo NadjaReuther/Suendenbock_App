@@ -337,3 +337,7 @@ form .btn-check:checked + .btn.flex-fill::after {
     z-index: 11 !important;
     pointer-events: none !important;
 }
+
+.card-link {
+    text-decoration:none;
+}

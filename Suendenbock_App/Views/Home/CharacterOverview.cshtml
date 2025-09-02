@@ -1,0 +1,50 @@
+﻿@using Suendenbock_App.Models.Domain
+@model List<Character>
+@section Styles {
+    <link href="/css/antique-home.css" rel="stylesheet" />
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+}
+
+<section class="main-container">
+    <!-- Hero Pergament Karten mit echten Daten -->
+    <section class="hero-section">
+        @foreach (var character in Model)
+        {
+            <a class="card-link" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@character.Id">
+            <div class="pergament-card" data-tilt>
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+       
+                @if(character.ImagePath == null)
+                {
+                    <!-- Zeigt die Initialen des Benutzers -->
+                    <div class="avatar-circle d-flex justify-content-center align-items-center">
+                        <span class="avatar-initials">
+                            @if (!string.IsNullOrEmpty(character.Vorname) && !string.IsNullOrEmpty(character.Nachname))
+                            {
+                                @character.Vorname.First()@character.Nachname.First()
+                            }
+                            else
+                            {
+                                <span>?</span>
+                            }
+                        </span>
+                    </div>
+                }
+                else
+                {
+                    <img class="card-title" src="@character.ImagePath" />
+                }
+                
+                <div class="card-content mt-3">
+                    @character.Vorname @character.Nachname
+                </div>
+            </div>
+            </a>
+        }
+        </section>
+</section>
+

@@ -1,0 +1,351 @@
+﻿@using Suendenbock_App.Models.Domain
+@model Character
+@section Styles {
+    <link href="/css/antique-home.css" rel="stylesheet" />
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+}
+
+<div class="steckbrief-container">
+        <div class="steckbrief-title">Charakter</div>
+        <!-- drei Schritt Navigation -->
+        <div class="step-navigation">
+            <div class="step-item active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-title">Basis-Informationen<br /></div>
+                <div class="step-connector"></div>
+            </div>
+            <div class="step-item" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-title">Persönliche Details<br /></div>
+                <div class="step-connector"></div>
+            </div>
+        </div>
+        <div class="form-step active" data-step="1">
+            <h4 class="text-center mb-4" style="color: #6e4b1f;">📜 Grundlegende Informationen</h4>
+                <div class="row mt-5">
+                    <div class="col-md-6 text-center">
+                        @if (Model.ImagePath == null)
+                        {
+                            <!-- Zeigt die Initialen des Benutzers -->
+                            <div class="avatar-circle d-flex justify-content-center align-items-center">
+                                <span class="avatar-initials">
+                                    @if (!string.IsNullOrEmpty(Model.Vorname) && !string.IsNullOrEmpty(Model.Nachname))
+                                    {
+                                        @Model.Vorname.First()
+                                        @Model.Nachname.First()
+                                    }
+                                    else
+                                    {
+                                        <span>?</span>
+                                    }
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <img class="card-title" src="@Model.ImagePath" />
+                        }
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <input type="text" class="form-control " id="vorname" name="vorname"
+                                    value="@Model.Vorname" disabled>
+                        </div>
+                        <div class="row mb-3">
+                            <input type="text" class="form-control" id="nachname" name="nachname"
+                                   value="@Model.Nachname" disabled>
+                        </div>
+                        <div class="row mb-3">
+                            <input type="text" class="form-control" id="geburtsdatum" name="geburtsdatum"
+                           value="@Model.Geburtsdatum" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" value="@Model.Geschlecht" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" value="@Model.Rasse.Name" disabled />
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" value="@Model.Lebensstatus.Name" disabled />
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" value="@Model.Eindruck.Name" disabled />
+                    </div>
+                </div>            
+                <!-- Magieklassen -->
+                <div class="row mb-3">
+                    <label class="form-label">Magieklassen</label>
+                    <div class="card p-3">
+                        <div class="row">
+                            <section class="magic-section">
+                                @Model.CharacterMagicClasses.Count
+                            @foreach(var magicclass in Model.CharacterMagicClasses)
+                            {
+                            <div>hallo</div>
+                            <div class="magic-grid">
+                                    Hallo @magicclass
+                                    <div class="magic-card @(magicclass.MagicClass?.Obermagie?.LightCard?.CssClass ?? "default")-hover" data-tilt>
+                                        <img src="@magicclass.MagicClass?.ImagePath" class="magic-icon" alt="@magicclass.MagicClass?.Bezeichnung" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="magic-icon-fallback" style="display:none;">🔮</div>
+
+                                        <div class="magic-name">@magicclass.MagicClass?.Bezeichnung</div>
+                                        <div class="magic-school">@(magicclass.MagicClass?.Obermagie?.Bezeichnung ?? "Unbekannt")</div>
+                                    </div>
+                                
+                            </div>
+                             }
+                    </section>
+                                    
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Spezialisierungen -->
+                <div class="row mb-3">
+                    <label class="form-label">Spezialisierungen</label>
+                    <div class="card p-3">
+                        <div class="row specializations-container">
+                            @{
+                                // Dictionary für ausgewählte Spezialisierungen
+                                var selectedSpecs = new Dictionary<int, int>();
+
+                                // Dictionary befüllen, wenn ViewBag.SelectedSpecializations existiert
+                                if (ViewBag.SelectedSpecializations != null)
+                                {
+                                    selectedSpecs = ViewBag.SelectedSpecializations;
+                                }
+
+                                // Magieklassen in lokale Variablen umwandeln
+                                var magicClasses = new List<MagicClass>();
+                                if (ViewBag.MagicClasses != null)
+                                {
+                                    magicClasses = ViewBag.MagicClasses;
+                                }
+
+                                // Spezialisierungen in lokale Variablen umwandeln
+                                var specializations = new List<MagicClassSpecialization>();
+                                if (ViewBag.Specializations != null)
+                                {
+                                    specializations = ViewBag.Specializations;
+                                }
+
+                                // Jetzt können wir LINQ-Methoden auf den typisierten Listen verwenden
+                                var specsGrouped = specializations.GroupBy(s => s.MagicClassId);
+                            }
+
+                            @if (specsGrouped.Any())
+                            {
+                                @foreach (var group in specsGrouped)
+                                {
+                                    int magicClassId = group.Key;
+                                    var magicClass = magicClasses.FirstOrDefault(m => m.Id == magicClassId);
+
+                                    if (magicClass != null)
+                                    {
+                                        <div class="col-12 specialization-group border p-2 mt-2" data-magic-class-id="@magicClassId" style="display:none;">
+                                            <h5 class="bg-light p-2">Spezialisierungen für @magicClass.Bezeichnung</h5>
+                                            <div class="row">
+                                                @foreach (var specialization in group)
+                                                {
+                                                    bool isSpecSelected = selectedSpecs.ContainsKey(magicClassId) &&
+                                                    selectedSpecs[magicClassId] == specialization.Id;
+
+                                                    <div class="col-md-4 col-sm-6 mb-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio"
+                                                                    name="specializationId_@magicClassId"
+                                                                    value="@specialization.Id"
+                                                                    id="spec-@specialization.Id"
+                                                                    @(isSpecSelected ? "checked" : "") />
+                                                            <label class="form-check-label" for="spec-@specialization.Id">
+                                                                @specialization.Name
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    Keine Spezialisierungen vorhanden oder keine MagicClass mit Spezialisierungen ausgewählt.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                    <!-- Eltern-Dropdowns hinzufügen -->
+                <div class="row">
+                        <!-- Vater-Dropdown -->
+                        <div class="col-md-6 mb-3">
+                            <label for="vaterId" class="form-label">Vater</label>
+                            <select class="form-select" id="vaterId" name="vaterId">
+                                <option value="">Vater auswählen</option>
+                                @if (ViewBag.Characters != null)
+                                {
+                                    foreach (var character in ViewBag.Characters)
+                                    {
+                                        if (character.Geschlecht == "männlich")
+                                        {
+                                            // Verhindern, dass ein Charakter sich selbst als Vater wählt
+                                            if (Model != null && Model.Id == character.Id)
+                                            {
+                                                continue;
+                                            }
+
+                                            if (Model != null && Model.VaterId.HasValue && Model.VaterId.Value == character.Id)
+                                            {
+                                                <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@character.Id">@character.Vorname @character.Nachname</option>
+                                            }
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Mutter-Dropdown -->
+                        <div class="col-md-6 mb-3">
+                            <label for="mutterId" class="form-label">Mutter</label>
+                            <select class="form-select" id="mutterId" name="mutterId">
+                                <option value="">Mutter auswählen</option>
+                                @if (ViewBag.Characters != null)
+                                {
+                                    foreach (var character in ViewBag.Characters)
+                                    {
+                                        if (character.Geschlecht == "weiblich")
+                                        {
+                                            // Verhindern, dass ein Charakter sich selbst als Mutter wählt
+                                            if (Model != null && Model.Id == character.Id)
+                                            {
+                                                continue;
+                                            }
+
+                                            if (Model != null && Model.MutterId.HasValue && Model.MutterId.Value == character.Id)
+                                            {
+                                                <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@character.Id">@character.Vorname @character.Nachname</option>
+                                            }
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+            </div>
+</div>
+
+@section Scripts {
+    <script>
+         let currentStep = 1;
+        const totalSteps = 3;
+
+        function updateStepIndicator() {
+            console.log(currentStep);
+            document.querySelectorAll('.step-item').forEach((item, index) => {
+                const stepNumber = index + 1;
+                item.classList.remove('active', 'completed');                
+                if (stepNumber < currentStep) {
+                    item.classList.add('completed');
+                } else if (stepNumber === currentStep) {                    
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.form-step').forEach(stepEl => {
+                stepEl.classList.remove('active');
+            });
+
+            document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');            
+            // Navigation Buttons anpassen
+            const prevBtn = document.querySelector('.btn-prev');
+            const nextBtn = document.querySelector('.btn-next');
+
+            prevBtn.style.display = step === 1 ? 'none' : 'block';
+            nextBtn.style.display = step === totalSteps ? 'none' : 'block';
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                // Validierung für Schritt 1 (Pflichtfelder)
+                if (currentStep === 1) {
+                    const requiredFields = document.querySelectorAll('[data-nav-step="1"] [required]');
+                    let isValid = true;
+
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            field.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            field.classList.remove('is-invalid');
+                        }
+                    });
+
+                    // Prüfe ob mindestens eine Magieklasse ausgewählt
+                    const magicClasses = document.querySelectorAll('input[name="selectedMagicClasses"]:checked');
+                    if (magicClasses.length === 0) {
+                        alert('Bitte wähle mindestens eine Magieklasse aus.');
+                        return;
+                    }
+
+                    if (!isValid) {
+                        alert('Bitte fülle alle Pflichtfelder aus.');
+                        return;
+                    }
+                }
+
+                currentStep++;
+                showStep(currentStep);
+                updateStepIndicator();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+                updateStepIndicator();
+            }
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.querySelector('.image-preview');
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Portrait Preview">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Spezialisierungen Toggle (falls implementiert)
+        document.querySelectorAll('input[name="selectedMagicClasses"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                // Hier könntest du Spezialisierungen ein-/ausblenden
+                console.log('Magieklasse geändert:', this.value, this.checked);
+            });
+        });
+
+        // Initial setup
+        updateStepIndicator();
+    </script>
+}
+

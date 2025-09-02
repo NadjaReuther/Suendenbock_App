@@ -64,6 +64,13 @@ namespace Suendenbock_App.Controllers
             };      
             return View(viewModel);
         }
+        // Übersicht Character
+        // / GET: /Home/CharacterOverview
+        public IActionResult CharacterOverview()
+        {
+            var characters = _context.Characters.ToList();
+            return View(characters);
+        }
 
         //Einbau Familienstammbaum
         public IActionResult FamilyTree(int characterId = 0)

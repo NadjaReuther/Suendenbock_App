@@ -16,6 +16,29 @@ namespace Suendenbock_App.Controllers
         {
             return View();
         }
+
+        public IActionResult CharacterSheet(int id)
+        {
+            var character = _context.Characters
+                .Include(ca => ca.Affiliation)
+                .Include(cd => cd.Details)
+                .Include(c => c.CharacterMagicClasses)
+                    .ThenInclude(cmc => cmc.MagicClass)
+                        .ThenInclude(mc => mc.Obermagie)
+                .Include(c => c.CharacterMagicClasses)
+                    .ThenInclude(cmc => cmc.MagicClassSpecialization)
+                .Include(c => c.Rasse)
+                .Include(c => c.Lebensstatus)
+                .Include(c => c.Eindruck)
+                .Include(c => c.Vater)
+                .Include(c => c.Mutter)
+                .FirstOrDefault(c => c.Id == id);
+            if (character == null)
+            {
+                return NotFound();
+            }
+            return View(character);
+        }
         public IActionResult Form(int id)
         {
             // Load data for dropdowns
