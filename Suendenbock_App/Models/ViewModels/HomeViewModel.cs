@@ -5,6 +5,7 @@ namespace Suendenbock_App.Models.ViewModels
     public class HomeViewModel
     {
         public List<MagicClass> MagicClasses { get; set; } = new List<MagicClass>();
+        public List<Infanterie> Infanteries { get; set; } = new List<Infanterie>();
         public List<Guild> Guilds { get; set; } = new List<Guild>();
         public List<Character> recentCharacters { get; set; } = new List<Character>();
         public List<Character> Characters { get; set; } = new List<Character>();

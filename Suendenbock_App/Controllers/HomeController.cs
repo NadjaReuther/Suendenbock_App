@@ -25,7 +25,7 @@ namespace Suendenbock_App.Controllers
                 .ThenInclude(o => o.LightCard)
                 .ToList();
             var allGuilds = _context.Guilds.ToList();
-
+            var allInfanteries = _context.Infanterien.ToList();
             // die 6 neuesten Charaktere
             var recentCharacters = _context.Characters
                 .OrderByDescending(c => c.Id)
@@ -60,6 +60,7 @@ namespace Suendenbock_App.Controllers
                 Characters = Characters,
                 MagicClasses = allMagicClasses,
                 Guilds = allGuilds,
+                Infanteries = allInfanteries,
                 GenderStats = genderStats
             };      
             return View(viewModel);
