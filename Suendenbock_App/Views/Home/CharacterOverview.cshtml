@@ -8,11 +8,12 @@
 
 <section class="main-container">
     <!-- Hero Pergament Karten mit echten Daten -->
-    <section class="hero-section">
+    <section class="character-scrolls">
         @foreach (var character in Model)
         {
-            <a class="card-link" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@character.Id">
+            
                 <div class="character-scroll" data-tilt>
+                    <a class="card-link" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@character.Id">
                     <div class="scroll-header">
                     @if(character.ImagePath == null)
                     {
@@ -27,8 +28,8 @@
                     <div class="scroll-body">
                         <h4>@character.Vorname @character.Nachname</h4>
                     </div>
+                </a>
                 </div>
-            </a>
         }
         </section>
 </section>
