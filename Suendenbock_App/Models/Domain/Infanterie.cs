@@ -13,5 +13,8 @@
 
         //Navigation Property
         public virtual ICollection<Regiment> Regiments { get; set; } = new List<Regiment>();
+
+        public virtual Character? LeaderCharacter { get; set; }
+        public virtual Character? VertreterCharacter { get; set; }
     }
 }

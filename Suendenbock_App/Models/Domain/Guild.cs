@@ -7,21 +7,20 @@
         public string ImagePath { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
 
-        //Foreign Key
         public int LightCardId { get; set; }
-        public int AbenteuerrangId { get; set; } // Foreign Key for Abenteuerrang
-        public int AnmeldungsstatusId { get; set; } // Foreign Key for Anmeldungstatus
-        public int? leader { get; set; } // Character ID of the leader
-        public int? vertreter { get; set; } // Character ID of the representative
+        public int AbenteuerrangId { get; set; }
+        public int AnmeldungsstatusId { get; set; }
 
-        //Navigation Properties
-        public LightCard? LightCard { get; set; }  // Navigation Property Guild has a LightCard
-        public Abenteuerrang? AbenteuerrangNavigation { get; set; } // Navigation Property Guild has an Abenteuerrang
-        public Anmeldungsstatus? AnmeldungsstatusNavigation { get; set; } // Navigation Property Guild has an Anmeldungsstatus
-        public virtual ICollection<Character> Characters { get; set; } = new List<Character>(); // Guild has many Characters
-        
-        // Navigation Properties hinzufügen
-        public virtual Character? LeaderCharacter { get; set; } // Für den Leader
-        public virtual Character? VertreterCharacter { get; set; } // Für den Stellvertreter
+        public int? leader { get; set; }    // Character ID des Leaders
+        public int? vertreter { get; set; } // Character ID des Stellvertreters
+
+        // Navigation Properties
+        public LightCard? LightCard { get; set; }
+        public Abenteuerrang? AbenteuerrangNavigation { get; set; }
+        public Anmeldungsstatus? AnmeldungsstatusNavigation { get; set; }
+        public virtual ICollection<Character> Characters { get; set; } = new List<Character>();
+
+        public virtual Character? LeaderCharacter { get; set; }
+        public virtual Character? VertreterCharacter { get; set; }
     }
 }

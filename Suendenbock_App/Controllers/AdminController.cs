@@ -24,12 +24,16 @@ namespace Suendenbock_App.Controllers
                 Include(ar => ar.AbenteuerrangNavigation).
                 Include(am => am.AnmeldungsstatusNavigation).
                 Include(c => c.Characters).ToList();
-
+            var allInfanteries = _context.Infanterien
+                .Include(l => l.LeaderCharacter)
+                .Include(a => a.VertreterCharacter)
+                .ToList();
             var allCharacters = _context.Characters.Include(c => c.CharacterMagicClasses).ToList();
             var viewModel = new AdminViewModel
             {
                 MagicClasses = allMagicClasses,
                 Guilds = allGuilds,
+                Infanteries = allInfanteries,
                 Characters = allCharacters,
             };
             return View(viewModel);

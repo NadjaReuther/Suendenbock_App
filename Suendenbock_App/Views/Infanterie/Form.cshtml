@@ -8,20 +8,48 @@
     <link href="/css/character.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <strong>Fehler:</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <strong>Erfolg:</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 
 <div class="steckbrief-container">
     <div class="steckbrief-title">Infanterie</div>
     <form asp-controller="Infanterie" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <label for="infanteriename" class="form-label">Infanteriename</label>
-            <input type="text" class="form-control" id="Bezeichnung" name="Bezeichnung" value="@(Model?.Bezeichnung ?? "")" required>
+        @if (Model != null && Model.Id > 0)
+        {
+            <input type="hidden" name="Id" value="@Model.Id" />
+        }
+        <div class="row mb-3">
+            <div class="col-2">
+                <label for="infanteriename" class="form-label">Infanteriename</label>
+                <input type="number" min="1" max="10" class="form-control" id="Bezeichnung" name="Bezeichnung" value="@(Model?.Bezeichnung ?? "")" required>
+            </div>
+            <div class="col-10">
+                <label for="infanteriename" class="form-label">Sitz der Infanterie</label>
+                <input type="text" class="form-control" id="Sitz" name="Sitz" value="@(Model?.Sitz ?? "")" required>
+            </div>
         </div>
+        
+
         <div class="row mb-3">
             <div class="col-lg-7">
                 <label for="beschreibung" class="form-label">Beschreibung</label>
-                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                <textarea class="form-control" id="description" name="description" rows="8" required></textarea>
             </div>
             <div class="col-lg-5">
+                <label for="infanteriezeichen" class="form-label">Infanteriesiegel</label>
                 <div class="image-upload-container">
                     <div class="image-preview" id="infanterie-drop-zone" onclick="document.getElementById('infanteriezeichenUpload').click()">
                         @if(!string.IsNullOrEmpty(Model?.ImagePath))
@@ -31,42 +59,29 @@
                         else
                         {
                             <div class="image-placeholder">
-                                <div>Infanteriezeichen<br /><small>Klicken zum Hochladen</small></div>
+                                <div>Infanteriesiegel<br /><small>Klicken zum Hochladen</small></div>
                             </div>
                         }
                     </div>
+                
+                    <input type="file" id="infanteriezeichenUpload" name="infanteriezeichen" accept="image/jpeg,image/jpg,image/png" style="display: none;" onchange="previewImage(this, '.image-preview')">
+                    <button type="button" class="image-upload-btn" onclick="document.getElementById('infanteriezeichenUpload').click()">📷 Logo wählen</button>
                 </div>
-                <input type="file" id="infanteriezeichenUpload" name="infanteriezeichen" accept="image/jpeg,image/jpg,image/png" style="display: none;" onchange="previewImage(this, '.image-preview')">
-                <button type="button" class="image-upload-btn" onclick="document.getElementById('infanteriezeichenUpload').click()">Zeichen wählen</button>
             </div>
         </div>
         <div class="row mb-3">
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniechef" class="form-label">Kompaniechef</label>
-                <select class="form-select" id="kompaniechef" name="kompaniechef" required>
+                <select class="form-select  character-select" id="leader" name="leader" required>
                     <option value="" disabled selected>Kompaniechef auswählen...</option>
-                    @if (ViewBag.Characters != null)
-                    {
-                        foreach (var charakter in ViewBag.Characters)
-                        {
-                            <option value="@charakter.Id">@charakter.Name</option>
-                        }
-                    }
                 </select>
             </div>
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniefuehrer" class="form-label">Kompaniefuehrer</label>
-                <select class="form-select" id="kompaniefuehrer" name="kompaniefuehrer" required>
+                <select class="form-select character-select" id="vertreter" name="vertreter" required>
                     <option value="" disabled selected>Kompaniefuehrer auswählen...</option>
-                    @if (ViewBag.Characters != null)
-                    {
-                        foreach (var charakter in ViewBag.Characters)
-                        {
-                            <option value="@charakter.Id">@charakter.Name</option>
-                        }
-                    }
                 </select>
             </div>
         </div>
@@ -110,6 +125,46 @@
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
+        });
+
+        $(document).ready(function() {
+            // Charakterauswahl mit Suche und AJAX
+            $('#leader, #vertreter').select2({
+                ajax: {
+                    url: '/api/Character/dropdown',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.results.map(item => ({
+                                id: item.id,
+                                text: item.fullName
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1,
+                placeholder: 'Namen eingeben...',
+                allowClear: true,
+                    language: {
+            inputTooShort: function() {
+                return ""; // ✅ Keine Meldung anzeigen
+            },
+            noResults: function() {
+                return "Keine Charaktere gefunden";
+            },
+            searching: function() {
+                return "Suche...";
+            }
+        }
+            });
+        });
     </script>
 }

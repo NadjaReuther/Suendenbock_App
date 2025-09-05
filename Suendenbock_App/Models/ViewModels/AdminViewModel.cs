@@ -9,5 +9,6 @@ namespace Suendenbock_App.Models.ViewModels
         public List<Guild> Guilds { get; set; } = new List<Guild>();
         public List<Religion> Religions { get; set; } = new List<Religion>();
         public List<Character> Characters { get; set; } = new List<Character>();
+        public List<Infanterie> Infanteries { get; set; } = new List<Infanterie>();
     }
 }

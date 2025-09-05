@@ -99,6 +99,7 @@ namespace Suendenbock_App.Controllers
         public void UpdateInfanterieProperties(Infanterie target, Infanterie source)
         {
             target.Bezeichnung = source.Bezeichnung;
+            target.Sitz = source.Sitz;
             target.description = source.description;
             target.LightCardId = source.LightCardId;
             target.leader = source.leader;

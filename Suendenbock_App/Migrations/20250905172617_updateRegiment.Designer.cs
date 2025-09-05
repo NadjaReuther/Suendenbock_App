@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250905172617_updateRegiment")]
+    partial class updateRegiment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -671,18 +674,12 @@ namespace Suendenbock_App.Migrations
                     b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("LeaderCharacterId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("LightCardId")
                         .HasColumnType("int");
 
                     b.Property<string>("Sitz")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("VertreterCharacterId")
-                        .HasColumnType("int");
 
                     b.Property<string>("description")
                         .IsRequired()
@@ -695,10 +692,6 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("LeaderCharacterId");
-
-                    b.HasIndex("VertreterCharacterId");
 
                     b.ToTable("Infanterien");
                 });
@@ -1264,21 +1257,6 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("LeaderCharacter");
 
                     b.Navigation("LightCard");
-
-                    b.Navigation("VertreterCharacter");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.Infanterie", b =>
-                {
-                    b.HasOne("Suendenbock_App.Models.Domain.Character", "LeaderCharacter")
-                        .WithMany()
-                        .HasForeignKey("LeaderCharacterId");
-
-                    b.HasOne("Suendenbock_App.Models.Domain.Character", "VertreterCharacter")
-                        .WithMany()
-                        .HasForeignKey("VertreterCharacterId");
-
-                    b.Navigation("LeaderCharacter");
 
                     b.Navigation("VertreterCharacter");
                 });
