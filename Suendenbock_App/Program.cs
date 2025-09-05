@@ -22,6 +22,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddControllers(); // Für API-Controller hinzufügen
+
 
 // addImageUpload 
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
@@ -93,6 +95,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapControllers(); // Für API-Controller hinzufügen
 app.MapRazorPages();
 
 app.Run();

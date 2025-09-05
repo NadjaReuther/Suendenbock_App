@@ -57,8 +57,6 @@ function enableImageDragDrop(dropZoneSelector, inputId) {
             previewImage(fileInput, dropZoneSelector);
         }
     });
-
-    enableImageDragDrop(dropZoneSelector, inputId);
 }
 
 function enableImageDragOut(dromZoneSelector, inputId) {

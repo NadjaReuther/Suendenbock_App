@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Models.Domain;
 
-namespace Suendenbock_App.Controllers
+namespace Suendenbock_App.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class CharacterApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
