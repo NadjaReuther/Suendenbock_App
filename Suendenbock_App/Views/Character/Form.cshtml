@@ -506,19 +506,19 @@
                     </div>
                 <div class="row mb-3">
                     <div class="col-md-6">                
-                        <select class="form-select" name="infanterieId">
-                            <option value="">Infanterie wählen...</option>
-                            @if(ViewBag.Infanterie != null)
+                        <select class="form-select" name="regimentsId">
+                            <option value="">Regiment wählen...</option>
+                            @if(ViewBag.Regiment != null)
                             {
-                                foreach(var infanterie in ViewBag.Infanterie)
+                                foreach(var regiment in ViewBag.Regiment)
                                 {
-                                    if(Model != null && Model.Affiliation.Infanterie == infanterie)
+                                    if(Model != null && Model.Affiliation.Regiment == regiment)
                                     {
-                                        <option value="@infanterie.Id" selected>@infanterie.Name</option>
+                                        <option value="@regiment.Id" selected>@regiment.Name</option>
                                     }
                                     else
                                     {
-                                        <option value="@infanterie.Id">@infanterie.Name</option>
+                                        <option value="@regiment.Id">@regiment.Name</option>
                                     }
                                 }
                             }                                                            

@@ -22,6 +22,7 @@ namespace Suendenbock_App.Data
         public DbSet<Rasse> Rassen { get; set; }
         public DbSet<Guild> Guilds { get; set; }
         public DbSet<Infanterie> Infanterien { get; set; }
+        public DbSet<Regiment> Regiments { get; set; }
         public DbSet<MagicClass> MagicClasses { get; set; }
         public DbSet<MagicClassSpecialization> MagicClassSpecializations { get; set; }
         public DbSet<Character> Characters { get; set; }
@@ -141,6 +142,17 @@ namespace Suendenbock_App.Data
                 .HasOne(g => g.VertreterCharacter)
                 .WithMany()
                 .HasForeignKey(g => g.vertreter)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Regiment>()
+                .HasOne(r => r.RegimentsCharacter)
+                .WithMany()
+                .HasForeignKey(r => r.Regimentsleiter)
+                .OnDelete(DeleteBehavior.SetNull);
+            builder.Entity<Regiment>()
+                .HasOne(r => r.AdjutantCharacter)
+                .WithMany()
+                .HasForeignKey(r => r.Adjutant)
                 .OnDelete(DeleteBehavior.SetNull);
         }
     }
