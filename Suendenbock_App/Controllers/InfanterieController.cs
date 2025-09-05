@@ -20,7 +20,7 @@ namespace Suendenbock_App.Controllers
             LoadCommonViewBagData();
 
             //specific ViewBag data for Infanterie
-            ViewBag.InfanterieRangs = _context.Infanterieraenge.ToList();
+            ViewBag.InfanterieRang = _context.Infanterieraenge.ToList();
 
             // Check if id is provided for editing
             if (id > 0)

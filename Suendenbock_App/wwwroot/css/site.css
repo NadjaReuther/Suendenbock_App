@@ -20,8 +20,21 @@ html {
 body {
     margin-bottom: 60px;
     background-color: #fdf6e3; /* helles Sandgelb */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
+.container {
+    flex: 1;
+    padding-bottom: 2rem;
+}
+.footer {
+    width: 100%;
+    white-space: nowrap;
+    margin-top: 2rem;
+    padding-top: 2rem;
+}
 .magic-icon {
     width: 24px;
     height: 25px;

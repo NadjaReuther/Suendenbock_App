@@ -14,12 +14,12 @@
     <form asp-controller="Infanterie" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="infanteriename" class="form-label">Infanteriename</label>
-            <input type="text" class="form-control" id="Bezeichnung" name="Bezeichnung" value="@(Model?.Bezeichnung ?? "")">
+            <input type="text" class="form-control" id="Bezeichnung" name="Bezeichnung" value="@(Model?.Bezeichnung ?? "")" required>
         </div>
         <div class="row mb-3">
             <div class="col-lg-7">
                 <label for="beschreibung" class="form-label">Beschreibung</label>
-                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
             </div>
             <div class="col-lg-5">
                 <div class="image-upload-container">
@@ -44,7 +44,7 @@
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniechef" class="form-label">Kompaniechef</label>
-                <select class="form-select" id="kompaniechef" name="kompaniechef">
+                <select class="form-select" id="kompaniechef" name="kompaniechef" required>
                     <option value="" disabled selected>Kompaniechef auswählen...</option>
                     @if (ViewBag.Characters != null)
                     {
@@ -58,7 +58,7 @@
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniefuehrer" class="form-label">Kompaniefuehrer</label>
-                <select class="form-select" id="kompaniefuehrer" name="kompaniefuehrer">
+                <select class="form-select" id="kompaniefuehrer" name="kompaniefuehrer" required>
                     <option value="" disabled selected>Kompaniefuehrer auswählen...</option>
                     @if (ViewBag.Characters != null)
                     {

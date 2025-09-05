@@ -19,8 +19,8 @@ namespace Suendenbock_App.Controllers
             // Load common ViewBag data
             LoadCommonViewBagData();
             //specific ViewBag data for Guild
-            ViewBag.Abenteuerrangs = _context.Abenteuerraenge.ToList();
-            ViewBag.Anmeldungsstatusse = _context.Anmeldungsstati.ToList();
+            ViewBag.Abenteuerrang = _context.Abenteuerraenge.ToList();
+            ViewBag.Anmeldungsstatus = _context.Anmeldungsstati.ToList();
             ViewBag.Characters = _context.Characters.ToList();
 
             if (id > 0)
