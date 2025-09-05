@@ -5,12 +5,16 @@ using Suendenbock_App.Models.Domain;
 
 namespace Suendenbock_App.Controllers.Api
 {
-    [Route("api/[controller]")]
+    [Route("api/character")]
     [ApiController]
 
     public class CharacterApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        public CharacterApiController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         [HttpGet("dropdown")]
         public async Task<IActionResult> GetCharactersForDropdown(string search = "", int page= 1)
@@ -26,15 +30,35 @@ namespace Suendenbock_App.Controllers.Api
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(c => c.FullName.Contains(search));
+                var searchResults = await query
+                    .Take(100)
+                    .ToListAsync();
+
+                return Ok(new
+                {
+                    results = searchResults,
+                    pagination = new { more = false }
+                });
             }
 
             //Paginierung anwenden
+            var pageSize = 20;
             var results = await query
-                .Skip((page - 1) * 20)
-                .Take(20)
+                .OrderBy(c => c.FullName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize + 1)
                 .ToListAsync();
 
-            return Ok(new {results, pagination = new {more = results.Count == 20}});
+            var hasMore = results.Count > pageSize;
+            if(hasMore)
+            {
+                results.Take(pageSize).ToList();
+            }
+            
+            return Ok(new {
+                results = results,
+                pagination = new {more = hasMore}
+            });
         }
     }
 }

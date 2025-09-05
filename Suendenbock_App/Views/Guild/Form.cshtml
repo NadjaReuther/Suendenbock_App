@@ -169,7 +169,7 @@
         enableImageDragDrop('#guild-drop-zone', 'gildenlogoUpload');
 
         $(document).ready(function() {
-            // Characterauswahl mit Suche und AJAX
+            // Charakterauswahl mit Suche und AJAX
             $('#leader, #vertreter').select2({
                 ajax: {
                     url: '/api/Character/dropdown',
@@ -177,26 +177,34 @@
                     delay: 250,
                     data: function (params) {
                         return {
-                            search: params.term, // Suchbegriff
-                            page: params.page || 1 // Pagination
+                            search: params.term,
+                            page: params.page || 1
                         };
                     },
-                    processResults: function (data, params) {
+                    processResults: function (data) {
                         return {
                             results: data.results.map(item => ({
                                 id: item.id,
-                                text: item.Fullname
-                            })),
-                            pagination: {
-                                more: data.pagination.more
-                            }
+                                text: item.fullName
+                            }))
                         };
                     },
                     cache: true
                 },
-                minimumInputLength: 2, //erst nach 2 Zeichen suchen
+                minimumInputLength: 1,
                 placeholder: 'Namen eingeben...',
-                allowClear: true
+                allowClear: true,
+                    language: {
+            inputTooShort: function() {
+                return ""; // ✅ Keine Meldung anzeigen
+            },
+            noResults: function() {
+                return "Keine Charaktere gefunden";
+            },
+            searching: function() {
+                return "Suche...";
+            }
+        }
             });
         });
     </script>
