@@ -25,6 +25,9 @@ builder.Services.AddControllersWithViews();
 
 // addImageUpload 
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+// add Cache Service
+builder.Services.AddScoped<ICachedDataService, CachedDataService>();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 

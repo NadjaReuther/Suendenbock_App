@@ -67,43 +67,15 @@
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="gildenmeister" class="form-label">Gildenmeister</label>
-                <select class="form-select" id="leader" name="leader" required>
-                    <option value="" disabled selected>Gildenmeister auswählen...</option>
-                    @if(ViewBag.Characters != null)
-                    {
-                        foreach (var charakter in ViewBag.Characters)
-                        {
-                            if(Model?.leader != null && Model?.leader == charakter.Id)
-                            {
-                                <option value="@charakter.Id" selected>@charakter.Vorname @charakter.Nachname</option>
-                            }
-                            else
-                            {
-                                <option value="@charakter.Id">@charakter.Vorname @charakter.Nachname</option>
-                            }
-                        }
-                    }
+                <select class="form-select character-select" id="leader" name="leader" required>
+                    <option value="" disabled selected>Gildenmeister auswählen...</option>                  
                 </select>
             </div>
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der Charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="gildenstellvertreter" class="form-label">Stellvertreter</label>
-                <select class="form-select" id="vertreter" name="vertreter" required>
-                    <option value="" disabled selected>Stellvertreter auswählen...</option>
-                    @if(ViewBag.Characters != null)
-                    {
-                        foreach (var charakter in ViewBag.Characters)
-                        {
-                            if(Model?.vertreter != null && Model?.vertreter == charakter.Id)
-                            {
-                                <option value="@charakter.Id" selected>@charakter.Vorname @charakter.Nachname</option>
-                            }
-                            else
-                            {
-                                <option value="@charakter.Id">@charakter.Vorname @charakter.Nachname</option>
-                            }
-                        }
-                    }
+                <select class="form-select character-select" id="vertreter" name="vertreter" required>
+                    <option value="" disabled selected>Stellvertreter auswählen...</option>                    
                 </select>               
             </div>
         </div>
@@ -186,6 +158,9 @@
 </div>
 @section Scripts {
     <script src="~/js/imagePreview.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
         // Tooltips aktivieren
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -194,5 +169,37 @@
         });
 
         enableImageDragDrop('#guild-drop-zone', 'gildenlogoUpload');
+
+        $(document).ready(function() {
+            // Characterauswahl mit Suche und AJAX
+            $('#leader, #vertreter').select2({
+                ajax: {
+                    url: '/api/Character/dropdown',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term, // Suchbegriff
+                            page: params.page || 1 // Pagination
+                        };
+                    },
+                    processResults: function (data, params) {
+                        return {
+                            results: data.results.map(item => ({
+                                id: item.id,
+                                text: item.Fullname
+                            })),
+                            pagination: {
+                                more: data.pagination.more
+                            }
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 2, //erst nach 2 Zeichen suchen
+                placeholder: 'Namen eingeben...',
+                allowClear: true
+            });
+        });
     </script>
 }

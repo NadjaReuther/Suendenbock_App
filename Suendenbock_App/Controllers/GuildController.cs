@@ -7,21 +7,23 @@ namespace Suendenbock_App.Controllers
 {
     public class GuildController : BaseOrganizationController
     {
-        public GuildController(ApplicationDbContext context, IImageUploadService imageUploadService): base(context, imageUploadService)
+        private readonly ICachedDataService _cachedData;
+        public GuildController(ApplicationDbContext context, IImageUploadService imageUploadService, ICachedDataService cachedData) : base(context, imageUploadService)
         {
+            _cachedData = cachedData;
         }
         public IActionResult Index()
         {
             return View();
         }
-        public IActionResult Form(int id = 0)
+        public async Task<IActionResult> Form(int id = 0)
         {
             // Load common ViewBag data
             LoadCommonViewBagData();
             //specific ViewBag data for Guild
-            ViewBag.Abenteuerrang = _context.Abenteuerraenge.ToList();
-            ViewBag.Anmeldungsstatus = _context.Anmeldungsstati.ToList();
-            ViewBag.Characters = _context.Characters.ToList();
+            ViewBag.LightCards = await _cachedData.GetLightCardsAsync();
+            ViewBag.Abenteuerrang = await _cachedData.GetAbenteuerrangeAsync();
+            ViewBag.Anmeldungsstatus =await _cachedData.GetAnmeldungsstatusseAsync();
 
             if (id > 0)
             {
