@@ -34,6 +34,7 @@ namespace Suendenbock_App.Controllers
                 .Include(a => a.AdjutantCharacter)
                 .ToList();
             var allCharacters = _context.Characters.Include(c => c.CharacterMagicClasses).ToList();
+
             var viewModel = new AdminViewModel
             {
                 MagicClasses = allMagicClasses,

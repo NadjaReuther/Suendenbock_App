@@ -77,16 +77,21 @@
                     <table id="infanterieTable" class="medieval-table w-100">
                         <thead>
                             <tr>
+                                <th></th>
                                 <th>Name</th>
                                 <th>General</th>
                                 <th>Sitz</th>
+                                <th>Regimente</th>
                                 <th>⚔️ Aktionen</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var infanterie in Model.Infanteries)
                             {
-                                <tr>
+                                <tr data-infanterie-id="@infanterie.Id">
+                                    <td class="dt-control">
+                                        <i class="fas fa-plus-circle text-primary" style="cursor: pointer;"></i>
+                                    </td>
                                     <td>
                                         @if (!string.IsNullOrEmpty(infanterie.ImagePath))
                                         {
@@ -94,9 +99,12 @@
                                         }
                                         <strong>@infanterie.Bezeichnung. Infanterie</strong>
                                     </td>
-
                                     <td>@infanterie.LeaderCharacter?.Vorname @infanterie.LeaderCharacter?.Nachname</td>
                                     <td>@infanterie.Sitz</td>
+                                    <td>
+                                        <span class="badge bg-info" id="regiment-count-@infanterie.Id">@infanterie.Regiments.Count 
+                                            @(infanterie.Regiments.Count == 1 ? "Regiment" : "Regimente")</span>
+                                    </td>
                                     <td>
                                         <div class="medieval-actions">
                                             <a asp-controller="Infanterie" asp-action="Form" asp-route-id="@infanterie.Id"
@@ -247,175 +255,197 @@
     </div>
 </div>
 @section Scripts {
-<script>
-$(document).ready(function () {
-    const medievalTableConfig = {
-        dom: '<"row pergament-controls mb-2"<"col-sm-12 col-md-5"l><"col-sm-12 col-md-7"f>>' +
-                '<"row"<"col-sm-12"tr>>' +
-                '<"row pergament-footer mt-5"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8"p>>',
-        pageLength: 10,
-        lengthMenu: [[5, 15, 25, -1], [5, 8, 15, 25, "Alle Einträge"]],
-        language: {
-            search: "🔍 Chroniken durchsuchen:",
-            lengthMenu: "Zeige _MENU_ Einträge",
-            info: "📜 _START_ bis _END_ von _TOTAL_ Einträgen",
-            infoEmpty: "📰 Keine Einträge vorhanden",
-            infoFiltered: "(🔎 gefiltert von _MAX_ Gesamteinträgen)",
-            paginate: {
-                first: "⏮️ Erste",
-                last: "⏭️ Letzte",
-                next: "▶️ Nächste",
-                previous: "◀️ Vorherige"
-            },
-            emptyTable: "📋 Die Chroniken sind leer",
-            zeroRecords: "🔍 Keine passenden Einträge in den Archiven gefunden"
-        },
-        columnDefs: [
-            { orderable: false, targets: -1 }
-        ],
-        responsive: true,
-        autoWidth: false,
-        drawCallback: function() {
-            // Füge Hover-Effekte nach dem Zeichnen hinzu
-            $('.medieval-table tbody tr').hover(
-                function() { $(this).addClass('table-hover'); },
-                function() { $(this).removeClass('table-hover'); }
-            );
-        }
-    };
+    <script>
+        $(document).ready(function () {
+            const medievalTableConfig = {
+                dom: '<"row pergament-controls mb-2"<"col-sm-12 col-md-5"l><"col-sm-12 col-md-7"f>>' +
+                        '<"row"<"col-sm-12"tr>>' +
+                        '<"row pergament-footer mt-5"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8"p>>',
+                pageLength: 10,
+                lengthMenu: [[5, 15, 25, -1], [5, 8, 15, 25, "Alle Einträge"]],
+                language: {
+                    search: "🔍 Chroniken durchsuchen:",
+                    lengthMenu: "Zeige _MENU_ Einträge",
+                    info: "📜 _START_ bis _END_ von _TOTAL_ Einträgen",
+                    infoEmpty: "📰 Keine Einträge vorhanden",
+                    infoFiltered: "(🔎 gefiltert von _MAX_ Gesamteinträgen)",
+                    paginate: {
+                        first: "⏮️ Erste",
+                        last: "⏭️ Letzte",
+                        next: "▶️ Nächste",
+                        previous: "◀️ Vorherige"
+                    },
+                    emptyTable: "📋 Die Chroniken sind leer",
+                    zeroRecords: "🔍 Keine passenden Einträge in den Archiven gefunden"
+                },
+                columnDefs: [
+                    { orderable: false, targets: -1 }
+                ],
+                responsive: true,
+                autoWidth: false
+            };
 
-// Guild Table
-$('#guildTable').DataTable({
-    ...medievalTableConfig,
-    
-    order: [[0, 'asc']]
-});
+            // Guild Table
+            $('#guildTable').DataTable({
+                ...medievalTableConfig,
+                order: [[0, 'asc']]
+            });
 
-// Infanterie Table
-    let table = $('#infanterieTable').DataTable({
-    ...medievalTableConfig,
-    order: [[0, 'asc']]
-});
+            // Infanterie Table mit Details
+            let infanterieTable = $('#infanterieTable').DataTable({
+                ...medievalTableConfig,
+                order: [[1, 'asc']], // Sortierung angepasst
+                columnDefs: [
+                    { orderable: false, targets: [0, -1] }, // Erste und letzte Spalte nicht sortierbar
+                    { className: "dt-control", targets: 0 }  // Details-Kontrolle
+                ]
+            });
 
-// Add event listener for opening and closing details
-table.on('click', 'tbody td.dt-control', function (e) {
-    let tr = e.target.closest('tr');
-    let row = table.row(tr);
+            // Event Listener für Details öffnen/schließen
+            $('#infanterieTable tbody').on('click', 'td.dt-control', function () {
+                var tr = $(this).closest('tr');
+                var row = infanterieTable.row(tr);
+                var icon = $(this).find('i');
 
-    if (row.child.isShown()) {
-        // This row is already open - close it
-        row.child.hide();
-    }
-    else {
-        // Open this row
-        row.child(format(row.data())).show();
-    }
-});
-// Character Table
-$('#characterTable').DataTable({
-    ...medievalTableConfig,
-    order: [[1, 'asc']]
-});
-});
+                if (row.child.isShown()) {
+                    // Details schließen
+                    row.child.hide();
+                    icon.removeClass('fa-minus-circle').addClass('fa-plus-circle');
+                    tr.removeClass('shown');
+                } else {
+                    // Details öffnen - AJAX Call
+                    var infanterieId = getInfanterieIdFromRow(tr);
+                    var infanterieName = tr.find('td:eq(1) strong').text();
+
+                    // Loading anzeigen
+                    row.child('<div class="text-center p-3"><i class="fas fa-spinner fa-spin"></i> Lade Regimente...</div>').show();
+                    icon.removeClass('fa-plus-circle').addClass('fa-minus-circle');
+                    tr.addClass('shown');
+
+                    // AJAX Call zur API
+                    loadRegimentsForInfanterie(infanterieId, infanterieName, row);
+                }
+            });
+
+            // Funktion um Infanterie ID aus der Tabellenzeile zu extrahieren
+            function getInfanterieIdFromRow(tr) {
+                // Du musst die Infanterie ID irgendwo in der Zeile verstecken
+                // Option 1: Als data-Attribut
+                return tr.data('infanterie-id');
+
+                // Option 2: Falls nicht vorhanden, über die Reihenfolge ermitteln
+                // return tr.index() + 1; // Nur wenn IDs 1,2,3... sind
+            }
+
+            // AJAX Funktion zum Laden der Regimente
+            function loadRegimentsForInfanterie(infanterieId, infanterieName, row) {
+                $.ajax({
+                    url: `/api/infanterie/${infanterieId}/regiments`,
+                    type: 'GET',
+                    success: function(regiments) {
+                        var detailsHtml = formatRegimentsDetails(regiments, infanterieName);
+                        row.child(detailsHtml).show();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Fehler beim Laden der Regimente:', error);
+                        row.child('<div class="alert alert-danger m-3">Fehler beim Laden der Regimente</div>').show();
+                    }
+                });
+            }
+
+            // Funktion zum Formatieren der Regiment-Details
+            function formatRegimentsDetails(regiments, infanterieName) {
+                if (!regiments || regiments.length === 0) {
+                    return '<div class="alert alert-info m-3">Keine Regimente zugeordnet</div>';
+                }
+
+                var detailsHtml = '<div class="p-3">';
+                detailsHtml += '<h5 class="text-primary mb-3">🏛️ Regimente der ' + infanterieName + '</h5>';
+                detailsHtml += '<div class="row">';
+
+                regiments.forEach(function(regiment) {
+                    detailsHtml += '<div class="col-md-6 mb-3">';
+                    detailsHtml += '<div class="card border-secondary">';
+                    detailsHtml += '<div class="card-header bg-secondary text-white">';
+                    detailsHtml += '<h6 class="mb-0">🎖️ ' + regiment.name + '</h6>';
+                    detailsHtml += '</div>';
+                    detailsHtml += '<div class="card-body">';
+                    detailsHtml += '<p class="mb-1"><strong>Regimentsleiter:</strong> ' +
+                                  (regiment.regimentsCharacter ?
+                                   regiment.regimentsCharacter.vorname + ' ' + regiment.regimentsCharacter.nachname :
+                                   'Nicht zugewiesen') + '</p>';
+                    detailsHtml += '<p class="mb-1"><strong>Adjutant:</strong> ' +
+                                  (regiment.adjutantCharacter ?
+                                   regiment.adjutantCharacter.vorname + ' ' + regiment.adjutantCharacter.nachname :
+                                   'Nicht zugewiesen') + '</p>';
+                    detailsHtml += '<p class="mb-0"><small class="text-muted">' + regiment.description + '</small></p>';
+                    detailsHtml += '</div>';
+                    detailsHtml += '</div>';
+                    detailsHtml += '</div>';
+                });
+
+                detailsHtml += '</div></div>';
+                return detailsHtml;
+            }
+
+            // Character Table
+            $('#characterTable').DataTable({
+                ...medievalTableConfig,
+                order: [[1, 'asc']]
+            });
+
+    // Restliche Funktionen bleiben gleich...
     function selectCharacter(name, element) {
-        // Entferne active Klasse von allen Karten
         document.querySelectorAll('.character-card').forEach(card => {
             card.classList.remove('active');
         });
-
-        // Füge active Klasse zur geklickten Karte hinzu
         element.classList.add('active');
-
         console.log(`Ausgewählter Charakter: ${name}`);
-
-        // Bootstrap Toast Benachrichtigung (optional)
         showToast(`Charakter "${name}" ausgewählt`);
     }
 
-    function castSpell(spellName) {
-        console.log(`Zauber "${spellName}" wird gewirkt!`);
-        showToast(`Zauber "${spellName}" gewirkt!`);
-    }
-
     function showToast(message) {
-        // Erstelle temporäres Toast Element
         const toastHtml = `
             <div class="toast align-items-center text-white bg-primary border-0 position-fixed top-0 end-0 m-3" style="z-index: 1051;" role="alert">
                 <div class="d-flex">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
+                    <div class="toast-body">${message}</div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
             </div>
         `;
-
         document.body.insertAdjacentHTML('beforeend', toastHtml);
         const toastElement = document.querySelector('.toast:last-child');
         const toast = new bootstrap.Toast(toastElement, { delay: 2000 });
         toast.show();
-
-        // Entferne Toast nach dem Verstecken
         toastElement.addEventListener('hidden.bs.toast', () => {
             toastElement.remove();
         });
     }
+});
 
-    // Navigation Tab Handler
-    document.addEventListener('DOMContentLoaded', function() {
-                            const navLinks = document.querySelectorAll('.nav-pills .nav-link');
-                            navLinks.forEach(link => {
-                                link.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    navLinks.forEach(l => l.classList.remove('active'));
-                                    this.classList.add('active');
-
-                                    const tabName = this.getAttribute('data-tab');
-                                    showToast(`Tab "${tabName}" aktiviert`);
-                                });
-                            });
-
-                            // Guild/Infantry selection handler
-                            const guildOptions = document.querySelectorAll('input[name="unit"]');
-                            guildOptions.forEach(option => {
-                                option.addEventListener('change', function() {
-                                    console.log(`Ausgewählte Einheit: ${this.value}`);
-                                    showToast(`Einheit "${this.value}" ausgewählt`);
-                                });
-                            });
-
-                            // Character form handlers
-                            const characterInputs = document.querySelectorAll('.character-detail-card input');
-                            characterInputs.forEach(input => {
-                                input.addEventListener('change', function() {
-                                    console.log(`${this.id}: ${this.value}`);
-                                });
-                            });
-                        });
-
-    function deleteContent(Id,controllerName) {
-        Swal.fire({
-            title: "Wollen Sie wirklich den Eintrag löschen?",
-            icon: "warning",
-            confirmButtonText: `Ja, löschen!`,
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    type: "POST",
-                    url: "/" + controllerName + "/Delete",
-                    data: { id: Id },
-                    success: function (msg) {
-                        Swal.fire("Eintrag gelöscht", "", "success").then((result) => {
-                            location.reload();
-                        });
-                    },
-                    error: function (msg) {
-                        Swal.fire("Ups, irgendetwas ist schiefgelaufen!", "", "error");
-                    }
-                });
-            }
-        });
-    }
+function deleteContent(Id, controllerName) {
+    Swal.fire({
+        title: "Wollen Sie wirklich den Eintrag löschen?",
+        icon: "warning",
+        confirmButtonText: `Ja, löschen!`,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                type: "POST",
+                url: "/" + controllerName + "/Delete",
+                data: { id: Id },
+                success: function (msg) {
+                    Swal.fire("Eintrag gelöscht", "", "success").then((result) => {
+                        location.reload();
+                    });
+                },
+                error: function (msg) {
+                    Swal.fire("Ups, irgendetwas ist schiefgelaufen!", "", "error");
+                }
+            });
+        }
+    });
+}
 </script>
 }
 

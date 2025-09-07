@@ -149,7 +149,7 @@ namespace Suendenbock_App.Data
                 .HasOne(r => r.Infanterie)
                 .WithMany(i => i.Regiments)
                 .HasForeignKey(r => r.InfanterieId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Infanterie>()
                 .HasOne(i => i.LeaderCharacter)
