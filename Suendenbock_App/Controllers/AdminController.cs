@@ -28,12 +28,18 @@ namespace Suendenbock_App.Controllers
                 .Include(l => l.LeaderCharacter)
                 .Include(a => a.VertreterCharacter)
                 .ToList();
+            var allRegiments = _context.Regiments
+                .Include(i => i.Infanterie)
+                .Include(r => r.RegimentsCharacter)
+                .Include(a => a.AdjutantCharacter)
+                .ToList();
             var allCharacters = _context.Characters.Include(c => c.CharacterMagicClasses).ToList();
             var viewModel = new AdminViewModel
             {
                 MagicClasses = allMagicClasses,
                 Guilds = allGuilds,
                 Infanteries = allInfanteries,
+                Regiments = allRegiments,
                 Characters = allCharacters,
             };
             return View(viewModel);

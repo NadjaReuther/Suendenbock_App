@@ -25,7 +25,7 @@
 }
 <div class="steckbrief-container">
     <div class="steckbrief-title">Gilde</div>
-    <form asp-controller="Guild" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
+    <form id="formular" asp-controller="Guild" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
         @if (Model != null && Model.Id > 0)
         {
             <input type="hidden" name="Id" value="@Model.Id" />
@@ -66,17 +66,28 @@
         <div class="row mb-3">
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
-                <label for="gildenmeister" class="form-label">Gildenmeister</label>
-                <select class="form-select character-select" id="leader" name="leader" required>
-                    <option value="" disabled selected>Gildenmeister auswählen...</option>                  
+                <label for="leader" style="width: 100%;">
+                    Gildenmeister
+                    
+                </label>
+                <select class="form-control character-select js-states" id="leader" name="leader" required>
+                    @if (Model?.leader != null)
+                    {
+                        <option value="@Model.leader" selected>@Model?.LeaderCharacter?.Vorname @Model?.LeaderCharacter?.Nachname</option>
+                    }
                 </select>
             </div>
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der Charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
-                <label for="gildenstellvertreter" class="form-label">Stellvertreter</label>
-                <select class="form-select character-select" id="vertreter" name="vertreter" required>
-                    <option value="" disabled selected>Stellvertreter auswählen...</option>                    
-                </select>               
+                <label for="vertreter" style="width: 100%;">
+                    Stellvertreter
+                    <select class="form-control character-select js-states" id="vertreter" name="vertreter" required>
+                        @if (Model?.vertreter != null)
+                        {
+                            <option value="@Model.vertreter" selected>@Model?.VertreterCharacter.Vorname @Model?.VertreterCharacter?.Nachname</option>
+                        }
+                    </select>
+                </label>
             </div>
         </div>
         <div class="mb-3">
@@ -170,7 +181,7 @@
 
         $(document).ready(function() {
             // Charakterauswahl mit Suche und AJAX
-            $('#leader, #vertreter').select2({
+            $('.character-select').select2({
                 ajax: {
                     url: '/api/Character/dropdown',
                     dataType: 'json',
@@ -193,19 +204,20 @@
                 },
                 minimumInputLength: 1,
                 placeholder: 'Namen eingeben...',
-                allowClear: true,
-                    language: {
-            inputTooShort: function() {
-                return ""; // ✅ Keine Meldung anzeigen
-            },
-            noResults: function() {
-                return "Keine Charaktere gefunden";
-            },
-            searching: function() {
-                return "Suche...";
-            }
-        }
+                allowClear: false,
+                language: {
+                    inputTooShort: function() {
+                        return ""; // ✅ Keine Meldung anzeigen
+                    },
+                    noResults: function() {
+                        return "Keine Charaktere gefunden";
+                    },
+                    searching: function() {
+                        return "Suche...";
+                    }
+                }
             });
         });
+        
     </script>
 }

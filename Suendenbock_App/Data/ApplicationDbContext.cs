@@ -150,6 +150,20 @@ namespace Suendenbock_App.Data
                 .WithMany(i => i.Regiments)
                 .HasForeignKey(r => r.InfanterieId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Infanterie>()
+                .HasOne(i => i.LeaderCharacter)
+                .WithMany()
+                .HasForeignKey(i => i.leader)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false);
+
+            builder.Entity<Infanterie>()
+                .HasOne(i => i.VertreterCharacter)
+                .WithMany()
+                .HasForeignKey(i => i.vertreter)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false);
         }
     }
 }

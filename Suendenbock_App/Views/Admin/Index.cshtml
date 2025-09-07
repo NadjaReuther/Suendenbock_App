@@ -23,33 +23,6 @@
             </div>
         }
 
-        <!-- Magie Card -->
-        <div class="row">
-        <div class="col-lg-12">
-            <div class="card magic-card h-100">
-                <div class="card-body p-0 d-flex justify-content-center">
-
-                    @{
-                        foreach (var magicClass in Model.MagicClasses)
-                        {
-                            <div class="magic-spell" onclick="castSpell('Lichtstrahl')">
-                                    <img src="@magicClass.ImagePath" class="magic-icon" alt="@magicClass.Bezeichnung" tooltip="tooltip" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-                                </div>
-
-                            // Display the magic class details as tooltips or in a more detailed view
-
-                            //     @if (magicClass.MagicClassSpecializations.Any())
-                            //     {
-                            //         <small class="text-muted">
-                            //             Spezialisierungen: @string.Join(", ", magicClass.MagicClassSpecializations.Select(s => s.Name))
-                            //         </small>
-                            //     }
-                        }
-                    }
-                </div>
-            </div>
-        </div>
-        </div>
         <div class="row g-4 mb-4">
             <!-- Gilden Pergament -->
             <div class="col-md-6">
@@ -101,13 +74,12 @@
 
                 <div class="pergament-table-card">
                     <h3 class="pergament-header">Infanterie</h3>
-                    <table id="guildTable" class="medieval-table w-100">
+                    <table id="infanterieTable" class="medieval-table w-100">
                         <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>General</th>
                                 <th>Sitz</th>
-                                <th>Regiment</th>
                                 <th>⚔️ Aktionen</th>
                             </tr>
                         </thead>
@@ -123,9 +95,8 @@
                                         <strong>@infanterie.Bezeichnung. Infanterie</strong>
                                     </td>
 
-                                    <td>@(infanterie.LeaderCharacter)</td>
+                                    <td>@infanterie.LeaderCharacter?.Vorname @infanterie.LeaderCharacter?.Nachname</td>
                                     <td>@infanterie.Sitz</td>
-                                    <td></td>
                                     <td>
                                         <div class="medieval-actions">
                                             <a asp-controller="Infanterie" asp-action="Form" asp-route-id="@infanterie.Id"
@@ -277,54 +248,75 @@
 </div>
 @section Scripts {
 <script>
-                   $(document).ready(function () {
-                const medievalTableConfig = {
-                    dom: '<"row pergament-controls mb-2"<"col-sm-12 col-md-5"l><"col-sm-12 col-md-7"f>>' +
-                         '<"row"<"col-sm-12"tr>>' +
-                         '<"row pergament-footer mt-5"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8"p>>',
-                    pageLength: 10,
-                    lengthMenu: [[5, 15, 25, -1], [5, 8, 15, 25, "Alle Einträge"]],
-                    language: {
-                        search: "🔍 Chroniken durchsuchen:",
-                        lengthMenu: "Zeige _MENU_ Einträge",
-                        info: "📜 _START_ bis _END_ von _TOTAL_ Einträgen",
-                        infoEmpty: "📰 Keine Einträge vorhanden",
-                        infoFiltered: "(🔎 gefiltert von _MAX_ Gesamteinträgen)",
-                        paginate: {
-                            first: "⏮️ Erste",
-                            last: "⏭️ Letzte",
-                            next: "▶️ Nächste",
-                            previous: "◀️ Vorherige"
-                        },
-                        emptyTable: "📋 Die Chroniken sind leer",
-                        zeroRecords: "🔍 Keine passenden Einträge in den Archiven gefunden"
-                    },
-                    columnDefs: [
-                        { orderable: false, targets: -1 }
-                    ],
-                    responsive: true,
-                    autoWidth: false,
-                    drawCallback: function() {
-                        // Füge Hover-Effekte nach dem Zeichnen hinzu
-                        $('.medieval-table tbody tr').hover(
-                            function() { $(this).addClass('table-hover'); },
-                            function() { $(this).removeClass('table-hover'); }
-                        );
-                    }
-                };
+$(document).ready(function () {
+    const medievalTableConfig = {
+        dom: '<"row pergament-controls mb-2"<"col-sm-12 col-md-5"l><"col-sm-12 col-md-7"f>>' +
+                '<"row"<"col-sm-12"tr>>' +
+                '<"row pergament-footer mt-5"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8"p>>',
+        pageLength: 10,
+        lengthMenu: [[5, 15, 25, -1], [5, 8, 15, 25, "Alle Einträge"]],
+        language: {
+            search: "🔍 Chroniken durchsuchen:",
+            lengthMenu: "Zeige _MENU_ Einträge",
+            info: "📜 _START_ bis _END_ von _TOTAL_ Einträgen",
+            infoEmpty: "📰 Keine Einträge vorhanden",
+            infoFiltered: "(🔎 gefiltert von _MAX_ Gesamteinträgen)",
+            paginate: {
+                first: "⏮️ Erste",
+                last: "⏭️ Letzte",
+                next: "▶️ Nächste",
+                previous: "◀️ Vorherige"
+            },
+            emptyTable: "📋 Die Chroniken sind leer",
+            zeroRecords: "🔍 Keine passenden Einträge in den Archiven gefunden"
+        },
+        columnDefs: [
+            { orderable: false, targets: -1 }
+        ],
+        responsive: true,
+        autoWidth: false,
+        drawCallback: function() {
+            // Füge Hover-Effekte nach dem Zeichnen hinzu
+            $('.medieval-table tbody tr').hover(
+                function() { $(this).addClass('table-hover'); },
+                function() { $(this).removeClass('table-hover'); }
+            );
+        }
+    };
 
-                // Guild Table
-                $('#guildTable').DataTable({
-                    ...medievalTableConfig,
-                    order: [[0, 'asc']]
-                });
+// Guild Table
+$('#guildTable').DataTable({
+    ...medievalTableConfig,
+    
+    order: [[0, 'asc']]
+});
 
-                // Character Table
-                $('#characterTable').DataTable({
-                    ...medievalTableConfig,
-                    order: [[1, 'asc']]
-                });
-            });
+// Infanterie Table
+    let table = $('#infanterieTable').DataTable({
+    ...medievalTableConfig,
+    order: [[0, 'asc']]
+});
+
+// Add event listener for opening and closing details
+table.on('click', 'tbody td.dt-control', function (e) {
+    let tr = e.target.closest('tr');
+    let row = table.row(tr);
+
+    if (row.child.isShown()) {
+        // This row is already open - close it
+        row.child.hide();
+    }
+    else {
+        // Open this row
+        row.child(format(row.data())).show();
+    }
+});
+// Character Table
+$('#characterTable').DataTable({
+    ...medievalTableConfig,
+    order: [[1, 'asc']]
+});
+});
     function selectCharacter(name, element) {
         // Entferne active Klasse von allen Karten
         document.querySelectorAll('.character-card').forEach(card => {

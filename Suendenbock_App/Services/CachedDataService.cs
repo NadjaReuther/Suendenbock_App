@@ -10,6 +10,7 @@ namespace Suendenbock_App.Services
         Task<List<LightCard>> GetLightCardsAsync();
         Task<List<Abenteuerrang>> GetAbenteuerrangeAsync();
         Task<List<Anmeldungsstatus>> GetAnmeldungsstatusseAsync();
+        Task<List<Infanterie>> GetInfanterieAsync();
     }
     public class CachedDataService : ICachedDataService
     {
@@ -46,6 +47,15 @@ namespace Suendenbock_App.Services
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24); // Cache for 1 day
                 return await _context.Anmeldungsstati.ToListAsync();
+            });
+        }
+
+        public Task<List<Infanterie>> GetInfanterieAsync()
+        {
+            return _cache.GetOrCreateAsync("Infanterie", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24);
+                return await _context.Infanterien.ToListAsync();
             });
         }
     }

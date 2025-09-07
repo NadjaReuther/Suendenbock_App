@@ -1,0 +1,133 @@
+﻿@using Suendenbock_App.Models.Domain
+@model Regiment
+@{
+    ViewData["Title"] = "Regiment erstellen";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <strong>Fehler:</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <strong>Erfolg:</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="steckbrief-container">
+    <div class="steckbrief-title">Regiment</div>
+    <form asp-controller="Regiment" asp-action="CreateEdit" method="post">
+        @if (Model != null && Model.Id > 0)
+        {
+            <input type="hidden" name="Id" value="@Model.Id" />
+        }
+        <div class="row mb-3">
+            <label for="regimentsname" class="form-label">Regimentsname</label>
+            <input type="text" class="form-control" id="Name" name="Name" value="@(Model?.Name ?? "")" required>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-lg-7">
+                <label for="beschreibung" class="form-label">Beschreibung</label>
+                <textarea class="form-control" id="description" name="description" rows="8" required></textarea>
+            </div>
+            <div class="col-lg-5">
+                <label for="infanterie" class="form-label">Infanterie</label>
+                <select class="form-select" id="infanterie" name="InfanterieId" required>
+                    <option value="" disabled selected>Infanterie auswählen...</option>
+                    @if (ViewBag.Infanterie != null)
+                    {
+                        foreach (var status in ViewBag.Infanterie)
+                        {
+                            if (Model?.Infanterie != null && Model?.Infanterie == status.Id)
+                            {
+                                <option value="@status.Id" selected>@status.Bezeichnung. Infanterie</option>
+                            }
+                            else
+                            {
+                                <option value="@status.Id">@status.Bezeichnung. Infanterie</option>
+                            }
+                        }
+                    }
+                </select>
+
+                <label for="kompaniechef" class="form-label">Kompaniechef</label>
+                <select class="form-select  character-select" id="leader" name="Regimentsleiter" required>
+                    @if (Model?.Regimentsleiter != null)
+                    {
+                        <option value="@Model.Regimentsleiter" selected>@Model?.RegimentsCharacter?.Vorname @Model?.RegimentsCharacter?.Nachname</option>
+                    }
+                </select>
+                <label for="kompaniefuehrer" class="form-label">Kompaniefuehrer</label>
+                <select class="form-select character-select" id="vertreter" name="Adjutant" required>
+                    @if (Model?.Adjutant != null)
+                    {
+                        <option value="@Model.Adjutant" selected>@Model?.AdjutantCharacter?.Vorname @Model?.AdjutantCharacter?.Nachname</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn-wachs">Gebilligt</button>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <script>
+        // Tooltips aktivieren
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        $(document).ready(function() {
+            // Charakterauswahl mit Suche und AJAX
+            $('#leader, #vertreter').select2({
+                ajax: {
+                    url: '/api/Character/dropdown',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.results.map(item => ({
+                                id: item.id,
+                                text: item.fullName
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1,
+                placeholder: 'Namen eingeben...',
+                allowClear: true,
+                    language: {
+            inputTooShort: function() {
+                return ""; // ✅ Keine Meldung anzeigen
+            },
+            noResults: function() {
+                return "Keine Charaktere gefunden";
+            },
+            searching: function() {
+                return "Suche...";
+            }
+        }
+            });
+        });
+    </script>
+}
