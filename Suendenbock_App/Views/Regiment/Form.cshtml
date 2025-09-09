@@ -39,17 +39,16 @@
         <div class="row mb-3">
             <div class="col-lg-7">
                 <label for="beschreibung" class="form-label">Beschreibung</label>
-                <textarea class="form-control" id="description" name="description" rows="8" required></textarea>
+                <textarea class="form-control" id="description" name="description" rows="8" required>@(Model?.Description ?? "")</textarea>
             </div>
             <div class="col-lg-5">
                 <label for="infanterie" class="form-label">Infanterie</label>
                 <select class="form-select" id="infanterie" name="InfanterieId" required>
-                    <option value="" disabled selected>Infanterie auswählen...</option>
                     @if (ViewBag.Infanterie != null)
                     {
                         foreach (var status in ViewBag.Infanterie)
                         {
-                            if (Model?.Infanterie != null && Model?.Infanterie == status.Id)
+                            if (Model?.Infanterie != null && Model?.InfanterieId == status.Id)
                             {
                                 <option value="@status.Id" selected>@status.Bezeichnung. Infanterie</option>
                             }

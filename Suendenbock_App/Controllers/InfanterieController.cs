@@ -41,13 +41,14 @@ namespace Suendenbock_App.Controllers
             {
                 var uploadedImagePath = await ProcessImageUpload(infanteriezeichen, infanterie.Bezeichnung, "infanterie");
 
-                if (uploadedImagePath != null)
-                {
-                    infanterie.ImagePath = uploadedImagePath;
-                }
+                
 
                 if (infanterie.Id == 0)
                 {
+                    if (uploadedImagePath != null)
+                    {
+                        infanterie.ImagePath = uploadedImagePath;
+                    }
                     _context.Infanterien.Add(infanterie);
                 }
                 else
@@ -84,14 +85,29 @@ namespace Suendenbock_App.Controllers
             {
                 return NotFound();
             }
-            // Delete associated image if exists
-            DeleteOldImage(infanterie.ImagePath);
 
-            _context.Infanterien.Remove(infanterie);
-            _context.SaveChanges();
-            
-            SetMessage(true, "Infanterie gelöscht");
-            return RedirectToAction("Index", "Admin");
+            try
+            {
+                var regimentCount = _context.Regiments.Count(r => r.InfanterieId == id);
+
+                // Delete associated image if exists
+                DeleteOldImage(infanterie.ImagePath);
+
+                _context.Infanterien.Remove(infanterie); //delete Infanterie and his regiments automatically through cascade in DBContext
+                _context.SaveChanges();
+
+                var message = regimentCount > 0
+                    ? $"Infanterie und {regimentCount} Regiment(e) erfolgreich gelöscht"
+                    : "Infanterie erfolgreich gelöscht";
+
+                SetMessage(true, message);
+                return RedirectToAction("Index", "Admin");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Fehler beim Löschen der Infanterie: {ex.Message}";
+                return RedirectToAction("Index", "Admin");
+            }       
         }
         /// <summary>
         /// Aktualisiert die Eigenschaften der Infanterie

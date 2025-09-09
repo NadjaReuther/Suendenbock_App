@@ -368,6 +368,14 @@
                     detailsHtml += '<div class="card border-secondary">';
                     detailsHtml += '<div class="card-header bg-secondary text-white">';
                     detailsHtml += '<h6 class="mb-0">🎖️ ' + regiment.name + '</h6>';
+                    detailsHtml += '<div class="btn-group btn-group-sm">';
+                    detailsHtml += '<a href="/Regiment/Form/' + regiment.id + '" class="btn btn-outline-light btn-sm" title="Regiment bearbeiten">';
+                    detailsHtml += '<i class="fas fa-edit"></i>';
+                    detailsHtml += '</a>';
+                    detailsHtml += '<button onclick="deleteContent(' + regiment.id + ', \'Regiment\')" class="btn btn-outline-danger btn-sm" title="Regiment löschen">';
+                    detailsHtml += '<i class="fas fa-trash"></i>';
+                    detailsHtml += '</button>';
+                    detailsHtml += '</div>';
                     detailsHtml += '</div>';
                     detailsHtml += '<div class="card-body">';
                     detailsHtml += '<p class="mb-1"><strong>Regimentsleiter:</strong> ' +

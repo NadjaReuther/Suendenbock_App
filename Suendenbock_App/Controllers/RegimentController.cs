@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Services;
@@ -22,7 +23,12 @@ namespace Suendenbock_App.Controllers
 
             if (id > 0)
             {
-                var regiment = _context.Regiments.Find(id);
+                var regiment = _context.Regiments
+                    .Include(r => r.Infanterie)
+                    .Include(r => r.RegimentsCharacter)
+                    .Include(r => r.AdjutantCharacter)
+                    .FirstOrDefault(r => r.Id == id);
+
                 if (regiment == null)
                 {
                     return NotFound();
@@ -33,7 +39,7 @@ namespace Suendenbock_App.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateEdit(Regiment regiment)
+        public IActionResult CreateEdit(Regiment regiment)
         {
             try
             {
@@ -78,7 +84,7 @@ namespace Suendenbock_App.Controllers
         {
             regimentToUpdate.Name = regiment.Name;
             regimentToUpdate.Description = regiment.Description;
-            regimentToUpdate.Infanterie = regiment.Infanterie;
+            regimentToUpdate.InfanterieId = regiment.InfanterieId;
             regimentToUpdate.Regimentsleiter = regiment.Regimentsleiter;
             regimentToUpdate.Adjutant = regiment.Adjutant;
         }

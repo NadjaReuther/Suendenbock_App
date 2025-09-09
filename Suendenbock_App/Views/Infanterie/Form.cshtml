@@ -46,7 +46,7 @@
         <div class="row mb-3">
             <div class="col-lg-7">
                 <label for="beschreibung" class="form-label">Beschreibung</label>
-                <textarea class="form-control" id="description" name="description" rows="8" required></textarea>
+                <textarea class="form-control" id="description" name="description" rows="8" required>@(Model?.description ?? "")</textarea>
             </div>
             <div class="col-lg-5">
                 <label for="infanteriezeichen" class="form-label">Infanteriesiegel</label>
@@ -71,17 +71,23 @@
         </div>
         <div class="row mb-3">
             <div class="col-lg-6">
-                <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
+                <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniechef" class="form-label">Kompaniechef</label>
                 <select class="form-select  character-select" id="leader" name="leader" required>
-                    <option value="" disabled selected>Kompaniechef auswählen...</option>
+                    @if (Model?.leader != null)
+                    {
+                        <option value="@Model.leader" selected>@Model?.LeaderCharacter?.Vorname @Model?.LeaderCharacter?.Nachname</option>
+                    }
                 </select>
             </div>
             <div class="col-lg-6">
-                <!--combobox mit den charakternamen aus der charaktertabelle EIntragung dann auch zum jeweiligen Charakter-->
+                <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniefuehrer" class="form-label">Kompaniefuehrer</label>
                 <select class="form-select character-select" id="vertreter" name="vertreter" required>
-                    <option value="" disabled selected>Kompaniefuehrer auswählen...</option>
+                    @if (Model?.vertreter != null)
+                    {
+                        <option value="@Model.vertreter" selected>@Model?.VertreterCharacter?.Vorname @Model?.VertreterCharacter?.Nachname</option>
+                    }
                 </select>
             </div>
         </div>
@@ -120,12 +126,16 @@
     </form>
 </div>
 @section Scripts {
+    <script src="~/js/imagePreview.js"></script>
+
     <script>
         // Tooltips aktivieren
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
         });
+
+        enableImageDragDrop('#infanterie-drop-zone', 'infanterielogoUpload');
 
         $(document).ready(function() {
             // Charakterauswahl mit Suche und AJAX
