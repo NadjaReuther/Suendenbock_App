@@ -7,7 +7,7 @@ namespace Suendenbock_App.Controllers
 {
     public class InfanterieController : BaseOrganizationController
     {
-        public InfanterieController(ApplicationDbContext context, IImageUploadService imageUploadService): base(context, imageUploadService)
+        public InfanterieController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment): base(context, imageUploadService, environment)
         {
         }
         public IActionResult Index()
@@ -39,12 +39,9 @@ namespace Suendenbock_App.Controllers
         {
             try
             {
-                var uploadedImagePath = await ProcessImageUpload(infanteriezeichen, infanterie.Bezeichnung, "infanterie");
-
-                
-
                 if (infanterie.Id == 0)
                 {
+                    var uploadedImagePath = await ProcessImageUpload(infanteriezeichen, infanterie.Bezeichnung, "infanterie");
                     if (uploadedImagePath != null)
                     {
                         infanterie.ImagePath = uploadedImagePath;
@@ -61,10 +58,17 @@ namespace Suendenbock_App.Controllers
                     UpdateInfanterieProperties(infanterieToUpdate, infanterie);
 
                     // update image only if a new one was uploaded
-                    if (uploadedImagePath != null)
+                    if (infanteriezeichen != null && infanteriezeichen.Length > 0)
                     {
-                        DeleteOldImage(infanterieToUpdate.ImagePath);
-                        infanterieToUpdate.ImagePath = uploadedImagePath;
+                        var uploadedImagePath = await ProcessImageUpload(infanteriezeichen, infanterie.Bezeichnung, "infanterie");
+                        if (uploadedImagePath != null)
+                        {
+                            // Altes Bild löschen
+                            DeleteOldImage(infanterieToUpdate.ImagePath);
+                            // Neues Bild setzen
+                            infanterieToUpdate.ImagePath = uploadedImagePath;
+                        }
+                        // Falls Upload fehlschlägt, bleibt das alte Bild erhalten
                     }
                 }
                 _context.SaveChanges();

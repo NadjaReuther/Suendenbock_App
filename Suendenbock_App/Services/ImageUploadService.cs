@@ -42,6 +42,7 @@ namespace Suendenbock_App.Services
                 // Ordner-Pfad erstellen (z.B. wwwroot/images/guild/)
                 var categoryPath = Path.Combine(_environment.WebRootPath, "images", category);
 
+
                 // Ordner erstellen falls er nicht existiert
                 if (!Directory.Exists(categoryPath))
                 {

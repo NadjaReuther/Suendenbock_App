@@ -9,7 +9,7 @@ namespace Suendenbock_App.Controllers
     public class RegimentController : BaseOrganizationController
     {
         private readonly ICachedDataService _cachedData;
-        public RegimentController(ApplicationDbContext context, IImageUploadService imageUploadService, ICachedDataService cachedDataService) : base(context, imageUploadService)
+        public RegimentController(ApplicationDbContext context, IImageUploadService imageUploadService, ICachedDataService cachedDataService, IWebHostEnvironment environment) : base(context, imageUploadService, environment)
         {
             _cachedData = cachedDataService;
         }

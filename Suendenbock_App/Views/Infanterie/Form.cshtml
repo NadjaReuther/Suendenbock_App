@@ -8,6 +8,13 @@
     <link href="/css/character.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
+@if (TempData["Debug"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show">
+        <strong>Debug:</strong> @TempData["Debug"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show">
@@ -52,13 +59,14 @@
                 <label for="infanteriezeichen" class="form-label">Infanteriesiegel</label>
                 <div class="image-upload-container">
                     <div class="image-preview" id="infanterie-drop-zone" onclick="document.getElementById('infanteriezeichenUpload').click()">
-                        @if(!string.IsNullOrEmpty(Model?.ImagePath))
+                        @if (!string.IsNullOrEmpty(Model?.ImagePath))
                         {
-                            <img src="@Model.ImagePath" alt="Infanteriezeichen" style="width: 100%; height: 100%; object-fit:cover;" />
+                            <img src="@Model.ImagePath" alt="@Model.ImagePath" style="width: 100%; height: 100%; object-fit:cover;" />                            
                         }
                         else
                         {
                             <div class="image-placeholder">
+                                <span>🏛️</span>
                                 <div>Infanteriesiegel<br /><small>Klicken zum Hochladen</small></div>
                             </div>
                         }
@@ -135,7 +143,7 @@
             return new bootstrap.Tooltip(tooltipTriggerEl)
         });
 
-        enableImageDragDrop('#infanterie-drop-zone', 'infanterielogoUpload');
+        enableImageDragDrop('#infanterie-drop-zone', 'infanteriezeichenUpload');
 
         $(document).ready(function() {
             // Charakterauswahl mit Suche und AJAX

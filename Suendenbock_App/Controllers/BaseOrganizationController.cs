@@ -12,13 +12,15 @@ namespace Suendenbock_App.Controllers
     {
         protected readonly ApplicationDbContext _context;
         protected readonly IImageUploadService _imageUploadService;
-
+        protected readonly IWebHostEnvironment _environment;
         protected BaseOrganizationController(
             ApplicationDbContext context,
-            IImageUploadService imageUploadService)
+            IImageUploadService imageUploadService,
+            IWebHostEnvironment environment)
         {
             _context = context;
             _imageUploadService = imageUploadService;
+            _environment = environment;
         }
 
         /// <summary>
@@ -38,23 +40,33 @@ namespace Suendenbock_App.Controllers
             if (logoFile == null || logoFile.Length == 0)
                 return null;
 
-            if (!_imageUploadService.ValidateImageFile(logoFile))
-            {
-                TempData["Error"] = "Ungültiges Bild. Erlaubt sind nur JPG/PNG Dateien bis 5MB.";
-                return null;
-            }
-
             try
             {
-                return await _imageUploadService.UploadImageAsync(
-                    logoFile,
-                    category,
-                    organizationName
-                );
+                // Validierung der Datei ZUERST
+                if (!_imageUploadService.ValidateImageFile(logoFile))
+                {
+                    TempData["Error"] = "Ungültige Bilddatei. Nur JPG/PNG bis 5MB erlaubt.";
+                    return null;
+                }
+
+                // Ordner-Pfad sicherstellen
+                var categoryPath = Path.Combine(_environment.WebRootPath, "images", category);
+
+                // Ordner erstellen falls nötig
+                if (!Directory.Exists(categoryPath))
+                {
+                    Directory.CreateDirectory(categoryPath);
+                }
+
+                // Upload durchführen
+                var result = await _imageUploadService.UploadImageAsync(logoFile, category, organizationName);
+
+                TempData["Success"] = "Bild erfolgreich hochgeladen!";
+                return result;
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Fehler beim Hochladen des Bildes: {ex.Message}";
+                TempData["Error"] = $"Upload-Fehler: {ex.Message}";
                 return null;
             }
         }
