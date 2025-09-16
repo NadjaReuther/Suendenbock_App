@@ -628,8 +628,7 @@
         // Initial setup
         updateStepIndicator();
 
-                // Charakterauswahl mit geschlechtsspezifischer Suche
-        $(document).ready(function() {
+                    $(document).ready(function() {
             // Väter (nur männlich)
             $('.character-select-male').select2({
                 ajax: {
@@ -641,14 +640,14 @@
                             search: params.term,
                             page: params.page || 1,
                             gender: 'männlich',
-                            excludeId: '@(Model?.Id ?? 0)'
+                            excludeId: @(Model?.Id ?? 0)
                         };
                     },
                     processResults: function (data) {
                         return {
                             results: data.results.map(item => ({
                                 id: item.id,
-                                text: item.text
+                                text: item.fullName
                             }))
                         };
                     },
@@ -681,14 +680,14 @@
                             search: params.term,
                             page: params.page || 1,
                             gender: 'weiblich',
-                            excludeId: '@(Model?.Id ?? 0)'
+                            excludeId: @(Model?.Id ?? 0)
                         };
                     },
                     processResults: function (data) {
                         return {
                             results: data.results.map(item => ({
                                 id: item.id,
-                                text: item.text
+                                text: item.fullName
                             }))
                         };
                     },

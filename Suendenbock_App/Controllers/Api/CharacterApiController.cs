@@ -27,6 +27,18 @@ namespace Suendenbock_App.Controllers.Api
                     geschlecht = c.Geschlecht
                 });
                 
+
+            //Geschlecht filtern, falls angegeben
+            if (!string.IsNullOrEmpty(gender))
+            {
+                query = query.Where(c => c.geschlecht == gender);
+            }
+
+            if (excludeId > 0)
+            {
+                query = query.Where(c => c.Id != excludeId);
+            }
+
             //Suche anwenden
             if (!string.IsNullOrEmpty(search))
             {
@@ -40,17 +52,6 @@ namespace Suendenbock_App.Controllers.Api
                     results = searchResults,
                     pagination = new { more = false }
                 });
-            }
-
-            //Geschlecht filtern, falls angegeben
-            if (!string.IsNullOrEmpty(gender))
-            {
-                query = query.Where(c => c.geschlecht == gender);
-            }
-
-            if (excludeId > 0)
-            {
-                query = query.Where(c => c.Id != excludeId);
             }
             //Paginierung anwenden
             var pageSize = 20;
