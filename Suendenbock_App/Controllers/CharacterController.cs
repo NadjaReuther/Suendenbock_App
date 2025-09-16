@@ -55,8 +55,6 @@ namespace Suendenbock_App.Controllers
             ViewBag.Blutgruppe = _context.Blutgruppen.ToList();
             ViewBag.Infanterie = _context.Infanterien.ToList();
             ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
-            // Liste aller Charaktere für die Eltern-Dropdowns
-            ViewBag.Characters = _context.Characters.ToList();
 
             // Check if id is provided for editing
             if (id > 0)
@@ -67,6 +65,8 @@ namespace Suendenbock_App.Controllers
                     .Include(cd => cd.Details)
                     .Include(c => c.CharacterMagicClasses)
                         .ThenInclude(cmc => cmc.MagicClassSpecialization)
+                    .Include(c => c.Vater)     
+                    .Include(c => c.Mutter)    
                     .FirstOrDefault(c => c.Id == id);
 
 

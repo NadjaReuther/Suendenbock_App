@@ -8,6 +8,7 @@
 @section Styles {
     <link href="/css/character.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 }
 
 <div class="steckbrief-container">
@@ -115,67 +116,29 @@
                 </div>
                 <!-- Eltern-Dropdowns hinzufügen -->
                 <div class="row">
-                    <!-- Vater-Dropdown -->
-                    <div class="col-md-6 mb-3">
-                        <label for="vaterId" class="form-label">Vater</label>
-                        <select class="form-select" id="vaterId" name="vaterId">
-                            <option value="">Vater auswählen</option>
-                            @if (ViewBag.Characters != null)
-                            {
-                                foreach (var character in ViewBag.Characters)
-                                {
-                                    if (character.Geschlecht == "männlich")
-                                    {
-                                        // Verhindern, dass ein Charakter sich selbst als Vater wählt
-                                        if (Model != null && Model.Id == character.Id)
-                                        {
-                                            continue;
-                                        }
+                <!-- Vater-Dropdown -->
+                <div class="col-md-6 mb-3">
+                    <label for="vaterId" class="form-label">Vater</label>
+                    <select class="form-select character-select-male" id="vaterId" name="vaterId">
+                        <option value="">Vater auswählen...</option>
+                        @if (Model != null && Model.VaterId.HasValue)
+                        {
+                            <option value="@Model.VaterId" selected>@Model.Vater?.Vorname @Model.Vater?.Nachname</option>
+                        }
+                    </select>
+                </div>
 
-                                        if (Model != null && Model.VaterId.HasValue && Model.VaterId.Value == character.Id)
-                                        {
-                                            <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@character.Id">@character.Vorname @character.Nachname</option>
-                                        }
-                                    }
-                                }
-                            }
-                        </select>
-                    </div>
-
-                    <!-- Mutter-Dropdown -->
-                    <div class="col-md-6 mb-3">
-                        <label for="mutterId" class="form-label">Mutter</label>
-                        <select class="form-select" id="mutterId" name="mutterId">
-                            <option value="">Mutter auswählen</option>
-                            @if (ViewBag.Characters != null)
-                            {
-                                foreach (var character in ViewBag.Characters)
-                                {
-                                    if (character.Geschlecht == "weiblich")
-                                    {
-                                        // Verhindern, dass ein Charakter sich selbst als Mutter wählt
-                                        if (Model != null && Model.Id == character.Id)
-                                        {
-                                            continue;
-                                        }
-
-                                        if (Model != null && Model.MutterId.HasValue && Model.MutterId.Value == character.Id)
-                                        {
-                                            <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@character.Id">@character.Vorname @character.Nachname</option>
-                                        }
-                                    }
-                                }
-                            }
-                        </select>
-                    </div>
+                <!-- Mutter-Dropdown -->
+                <div class="col-md-6 mb-3">
+                    <label for="mutterId" class="form-label">Mutter</label>
+                    <select class="form-select character-select-female" id="mutterId" name="mutterId">
+                        <option value="">Mutter auswählen...</option>
+                        @if (Model != null && Model.MutterId.HasValue)
+                        {
+                            <option value="@Model.MutterId" selected>@Model.Mutter?.Vorname @Model.Mutter?.Nachname</option>
+                        }
+                    </select>
+                </div>
                 </div>
             </div>
                 <!-- Magieklassen -->
@@ -665,9 +628,10 @@
         // Initial setup
         updateStepIndicator();
 
+                // Charakterauswahl mit geschlechtsspezifischer Suche
         $(document).ready(function() {
-            // Charakterauswahl mit Suche und AJAX
-            $('.character-select').select2({
+            // Väter (nur männlich)
+            $('.character-select-male').select2({
                 ajax: {
                     url: '/api/Character/dropdown',
                     dataType: 'json',
@@ -675,31 +639,73 @@
                     data: function (params) {
                         return {
                             search: params.term,
-                            page: params.page || 1
+                            page: params.page || 1,
+                            gender: 'männlich',
+                            excludeId: '@(Model?.Id ?? 0)'
                         };
                     },
                     processResults: function (data) {
                         return {
                             results: data.results.map(item => ({
                                 id: item.id,
-                                text: item.fullName
+                                text: item.text
                             }))
                         };
                     },
                     cache: true
                 },
                 minimumInputLength: 1,
-                placeholder: 'Namen eingeben...',
-                allowClear: false,
+                placeholder: 'Vater suchen...',
+                allowClear: true,
                 language: {
                     inputTooShort: function() {
-                        return ""; // ✅ Keine Meldung anzeigen
+                        return "";
                     },
                     noResults: function() {
-                        return "Keine Charaktere gefunden";
+                        return "Keine männlichen Charaktere gefunden";
                     },
                     searching: function() {
-                        return "Suche...";
+                        return "Suche nach Vätern...";
+                    }
+                }
+            });
+
+            // Mütter (nur weiblich)
+            $('.character-select-female').select2({
+                ajax: {
+                    url: '/api/Character/dropdown',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            page: params.page || 1,
+                            gender: 'weiblich',
+                            excludeId: '@(Model?.Id ?? 0)'
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.results.map(item => ({
+                                id: item.id,
+                                text: item.text
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1,
+                placeholder: 'Mutter suchen...',
+                allowClear: true,
+                language: {
+                    inputTooShort: function() {
+                        return "";
+                    },
+                    noResults: function() {
+                        return "Keine weiblichen Charaktere gefunden";
+                    },
+                    searching: function() {
+                        return "Suche nach Müttern...";
                     }
                 }
             });

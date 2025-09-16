@@ -17,13 +17,14 @@ namespace Suendenbock_App.Controllers.Api
         }
 
         [HttpGet("dropdown")]
-        public async Task<IActionResult> GetCharactersForDropdown(string search = "", int page= 1)
+        public async Task<IActionResult> GetCharactersForDropdown(string search = "", int page= 1, string gender = "", int excludeId = 0)
         {
             var query = _context.Characters
                 .Select(c => new
                 {
                     c.Id,
-                    FullName = c.Vorname + " " + c.Nachname
+                    FullName = c.Vorname + " " + c.Nachname,
+                    geschlecht = c.Geschlecht
                 });
                 
             //Suche anwenden
@@ -41,6 +42,16 @@ namespace Suendenbock_App.Controllers.Api
                 });
             }
 
+            //Geschlecht filtern, falls angegeben
+            if (!string.IsNullOrEmpty(gender))
+            {
+                query = query.Where(c => c.geschlecht == gender);
+            }
+
+            if (excludeId > 0)
+            {
+                query = query.Where(c => c.Id != excludeId);
+            }
             //Paginierung anwenden
             var pageSize = 20;
             var results = await query
