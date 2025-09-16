@@ -42,14 +42,13 @@ namespace Suendenbock_App.Controllers
         {
             try
             {
-                var uploadedImagePath = await ProcessImageUpload(gildenlogo, guild.Name, "guild");
-                if (uploadedImagePath != null)
-                {
-                    guild.ImagePath = uploadedImagePath;
-                }
-
                 if (guild.Id == 0)
                 {
+                    var uploadedImagePath = await ProcessImageUpload(gildenlogo, guild.Name, "guild");
+                    if(uploadedImagePath != null)
+                    {
+                        guild.ImagePath = uploadedImagePath;
+                    }
                     _context.Guilds.Add(guild);
                 }
                 else
@@ -61,10 +60,19 @@ namespace Suendenbock_App.Controllers
                     }
                     UpdateGuildProperties(guildToUpdate, guild);
 
-                    if (!string.IsNullOrEmpty(guild.ImagePath))
+                    if (gildenlogo != null && gildenlogo.Length > 0)
                     {
-                        DeleteOldImage(guildToUpdate.ImagePath);
-                        guildToUpdate.ImagePath = guild.ImagePath;
+                        var oldImagePath = guildToUpdate.ImagePath;
+
+                        var timeStamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                        var uniqueName = $"{guild.Name}_{timeStamp}";
+                        
+                        var uploadedImagePath = await ProcessImageUpload(gildenlogo, uniqueName, "guild");
+                        if(uploadedImagePath != null)
+                        {
+                            DeleteOldImage(oldImagePath);
+                            guildToUpdate.ImagePath = uploadedImagePath;
+                        }
                     }
                 }
                 _context.SaveChanges();

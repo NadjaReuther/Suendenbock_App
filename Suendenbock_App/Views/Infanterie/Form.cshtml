@@ -8,13 +8,6 @@
     <link href="/css/character.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
-@if (TempData["Debug"] != null)
-{
-    <div class="alert alert-info alert-dismissible fade show">
-        <strong>Debug:</strong> @TempData["Debug"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger alert-dismissible fade show">

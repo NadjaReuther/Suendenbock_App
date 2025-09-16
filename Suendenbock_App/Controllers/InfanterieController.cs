@@ -10,19 +10,17 @@ namespace Suendenbock_App.Controllers
         public InfanterieController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment): base(context, imageUploadService, environment)
         {
         }
+        
         public IActionResult Index()
         {
             return View();
         }
+        
         public IActionResult Form(int id = 0)
         {
-            // Load common ViewBag data
             LoadCommonViewBagData();
-
-            //specific ViewBag data for Infanterie
             ViewBag.InfanterieRang = _context.Infanterieraenge.ToList();
 
-            // Check if id is provided for editing
             if (id > 0)
             {
                 var infanterie = _context.Infanterien.Find(id);
@@ -32,8 +30,9 @@ namespace Suendenbock_App.Controllers
                 }
                 return View(infanterie);
             }
-            return View();
+            return View(new Infanterie());
         }
+
         [HttpPost]
         public async Task<IActionResult> CreateEdit(Infanterie infanterie, IFormFile? infanteriezeichen)
         {
@@ -41,6 +40,7 @@ namespace Suendenbock_App.Controllers
             {
                 if (infanterie.Id == 0)
                 {
+                    // **NEUE INFANTERIE**
                     var uploadedImagePath = await ProcessImageUpload(infanteriezeichen, infanterie.Bezeichnung, "infanterie");
                     if (uploadedImagePath != null)
                     {
@@ -50,27 +50,37 @@ namespace Suendenbock_App.Controllers
                 }
                 else
                 {
+                    // **BESTEHENDE INFANTERIE BEARBEITEN**
                     var infanterieToUpdate = _context.Infanterien.Find(infanterie.Id);
                     if (infanterieToUpdate == null)
                     {
                         return NotFound();
                     }
+
+                    // Eigenschaften aktualisieren (OHNE ImagePath)
                     UpdateInfanterieProperties(infanterieToUpdate, infanterie);
 
-                    // update image only if a new one was uploaded
+                    // **NUR bei neuem Bild das alte löschen und ersetzen**
                     if (infanteriezeichen != null && infanteriezeichen.Length > 0)
                     {
-                        var uploadedImagePath = await ProcessImageUpload(infanteriezeichen, infanterie.Bezeichnung, "infanterie");
+                        // **ALTE DATEI ZUERST LÖSCHEN**
+                        var oldImagePath = infanterieToUpdate.ImagePath;
+
+                        // **EINDEUTIGEN NAMEN GENERIEREN**
+                        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                        var uniqueName = $"{infanterie.Bezeichnung}_{timestamp}";
+
+                        var uploadedImagePath = await ProcessImageUpload(infanteriezeichen, uniqueName, "infanterie");
                         if (uploadedImagePath != null)
                         {
-                            // Altes Bild löschen
-                            DeleteOldImage(infanterieToUpdate.ImagePath);
+                            // Altes Bild löschen (NACH erfolgreichem Upload)
+                            DeleteOldImage(oldImagePath);
                             // Neues Bild setzen
                             infanterieToUpdate.ImagePath = uploadedImagePath;
                         }
-                        // Falls Upload fehlschlägt, bleibt das alte Bild erhalten
                     }
                 }
+
                 _context.SaveChanges();
                 SetMessage(true, "Infanterie");
                 return RedirectToAction("Index", "Admin");
@@ -81,6 +91,7 @@ namespace Suendenbock_App.Controllers
                 return RedirectToAction("Form", new { id = infanterie.Id });
             }
         }
+
         [HttpPost]
         public IActionResult Delete(int id)
         {
@@ -94,10 +105,10 @@ namespace Suendenbock_App.Controllers
             {
                 var regimentCount = _context.Regiments.Count(r => r.InfanterieId == id);
 
-                // Delete associated image if exists
+                // Bild löschen falls vorhanden
                 DeleteOldImage(infanterie.ImagePath);
 
-                _context.Infanterien.Remove(infanterie); //delete Infanterie and his regiments automatically through cascade in DBContext
+                _context.Infanterien.Remove(infanterie);
                 _context.SaveChanges();
 
                 var message = regimentCount > 0
@@ -113,10 +124,11 @@ namespace Suendenbock_App.Controllers
                 return RedirectToAction("Index", "Admin");
             }       
         }
+        
         /// <summary>
         /// Aktualisiert die Eigenschaften der Infanterie
         /// </summary>
-        public void UpdateInfanterieProperties(Infanterie target, Infanterie source)
+        private void UpdateInfanterieProperties(Infanterie target, Infanterie source)
         {
             target.Bezeichnung = source.Bezeichnung;
             target.Sitz = source.Sitz;

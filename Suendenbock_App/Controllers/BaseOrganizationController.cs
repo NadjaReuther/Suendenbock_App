@@ -13,6 +13,7 @@ namespace Suendenbock_App.Controllers
         protected readonly ApplicationDbContext _context;
         protected readonly IImageUploadService _imageUploadService;
         protected readonly IWebHostEnvironment _environment;
+
         protected BaseOrganizationController(
             ApplicationDbContext context,
             IImageUploadService imageUploadService,
@@ -33,7 +34,7 @@ namespace Suendenbock_App.Controllers
         }
 
         /// <summary>
-        /// Verarbeitet Bildupload für Organisationslogos
+        /// Verarbeitet Bildupload - delegiert alles an den Service
         /// </summary>
         protected async Task<string?> ProcessImageUpload(IFormFile? logoFile, string organizationName, string category)
         {
@@ -42,31 +43,23 @@ namespace Suendenbock_App.Controllers
 
             try
             {
-                // Validierung der Datei ZUERST
-                if (!_imageUploadService.ValidateImageFile(logoFile))
-                {
-                    TempData["Error"] = "Ungültige Bilddatei. Nur JPG/PNG bis 5MB erlaubt.";
-                    return null;
-                }
-
-                // Ordner-Pfad sicherstellen
-                var categoryPath = Path.Combine(_environment.WebRootPath, "images", category);
-
-                // Ordner erstellen falls nötig
-                if (!Directory.Exists(categoryPath))
-                {
-                    Directory.CreateDirectory(categoryPath);
-                }
-
-                // Upload durchführen
                 var result = await _imageUploadService.UploadImageAsync(logoFile, category, organizationName);
 
-                TempData["Success"] = "Bild erfolgreich hochgeladen!";
+                // Debug-Info für den Browser
+                TempData["UploadDebug"] = $"✅ Upload erfolgreich: {result}";
+
                 return result;
+            }
+            catch (ArgumentException ex)
+            {
+                TempData["Error"] = $"Ungültige Datei: {ex.Message}";
+                TempData["UploadDebug"] = $"❌ Validation Error: {ex.Message}";
+                return null;
             }
             catch (Exception ex)
             {
                 TempData["Error"] = $"Upload-Fehler: {ex.Message}";
+                TempData["UploadDebug"] = $"💥 Upload Error: {ex.Message}";
                 return null;
             }
         }
@@ -80,8 +73,7 @@ namespace Suendenbock_App.Controllers
             {
                 if (!string.IsNullOrEmpty(imagePath))
                 {
-                    var fullPath = Path.Combine(Directory.GetCurrentDirectory(),
-                        "wwwroot", imagePath.TrimStart('/'));
+                    var fullPath = Path.Combine(_environment.WebRootPath, imagePath.TrimStart('/'));
                     if (System.IO.File.Exists(fullPath))
                     {
                         System.IO.File.Delete(fullPath);

@@ -4,6 +4,14 @@
     ViewData["Title"] = "Admin Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml"; // Ensure this layout is set correctly
 }   
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show">
+        <strong>Error:</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
     <!-- Main Content -->
 <div class="admin-container">
     <div class="container-fluid py-4">

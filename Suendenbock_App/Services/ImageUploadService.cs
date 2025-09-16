@@ -8,6 +8,7 @@ namespace Suendenbock_App.Services
         Task<string> UploadImageAsync(IFormFile file, string category, string filename);
         bool ValidateImageFile(IFormFile file);
     }
+
     public class ImageUploadService : IImageUploadService
     {
         private readonly IWebHostEnvironment _environment;
@@ -15,13 +16,8 @@ namespace Suendenbock_App.Services
 
         // Erlaubte Dateierweiterungen
         private readonly string[] _allowedExtensions = { ".jpg", ".jpeg", ".png" };
-
         // Maximale Dateigröße (5MB)
         private readonly long _maxFileSize = 5 * 1024 * 1024;
-
-        // Maximale Bildabmessungen
-        private readonly int _maxWidth = 1920;
-        private readonly int _maxHeight = 1080;
 
         public ImageUploadService(IWebHostEnvironment environment, ILogger<ImageUploadService> logger)
         {
@@ -31,58 +27,70 @@ namespace Suendenbock_App.Services
 
         public async Task<string> UploadImageAsync(IFormFile file, string category, string fileName)
         {
+            var debugInfo = "";
             try
             {
+                debugInfo += $"🚀 Upload gestartet: {file.FileName} → {category}/{fileName}; ";
+
                 // Validierung der Datei
                 if (!ValidateImageFile(file))
                 {
+                    debugInfo += "❌ Datei-Validierung fehlgeschlagen; ";
                     throw new ArgumentException("Ungültige Bilddatei");
                 }
+                debugInfo += "✅ Validierung OK; ";
 
-                // Ordner-Pfad erstellen (z.B. wwwroot/images/guild/)
+                // Ordner-Pfad erstellen (z.B. wwwroot/images/infanterie/)
                 var categoryPath = Path.Combine(_environment.WebRootPath, "images", category);
-
+                debugInfo += $"📁 Ziel-Ordner: {categoryPath}; ";
 
                 // Ordner erstellen falls er nicht existiert
                 if (!Directory.Exists(categoryPath))
                 {
+                    debugInfo += "📁 Erstelle Ordner...; ";
                     Directory.CreateDirectory(categoryPath);
                 }
+                debugInfo += "📁 Ordner bereit; ";
 
                 // Dateiname mit Erweiterung erstellen
                 var fileExtension = Path.GetExtension(file.FileName).ToLower();
                 var safeFileName = MakeSafeFileName(fileName) + fileExtension;
                 var fullPath = Path.Combine(categoryPath, safeFileName);
 
-                // Bild verarbeiten und speichern
-                using (var imageStream = file.OpenReadStream())
+                debugInfo += $"💾 Vollständiger Pfad: {fullPath}; ";
+
+                // EINFACHER UPLOAD - Direkt speichern
+                using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 {
-                    using (var image = Image.FromStream(imageStream))
-                    {
-                        // Bild verkleinern falls nötig
-                        var resizedImage = ResizeImageIfNeeded(image);
-
-                        // Als JPEG mit guter Qualität speichern
-                        var encoder = ImageCodecInfo.GetImageDecoders()
-                            .FirstOrDefault(c => c.FormatID == ImageFormat.Jpeg.Guid);
-
-                        var encoderParams = new EncoderParameters(1);
-                        encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, 85L);
-
-                        resizedImage.Save(fullPath, encoder, encoderParams);
-                        resizedImage.Dispose();
-                    }
+                    await file.CopyToAsync(fileStream);
+                    await fileStream.FlushAsync();
                 }
+                debugInfo += "💾 Datei kopiert; ";
+
+                // Prüfen ob Datei wirklich existiert
+                if (!File.Exists(fullPath))
+                {
+                    debugInfo += "❌ Datei wurde nicht gespeichert!; ";
+                    throw new Exception("Datei konnte nicht gespeichert werden");
+                }
+
+                var fileInfo = new FileInfo(fullPath);
+                debugInfo += $"✅ Datei gespeichert: {fileInfo.Length} bytes; ";
 
                 // Relativen Pfad für die Datenbank zurückgeben
                 var relativePath = $"/images/{category}/{safeFileName}";
 
-                _logger.LogInformation($"Bild erfolgreich hochgeladen: {relativePath}");
+                debugInfo += $"🎉 Upload erfolgreich: {relativePath}";
+
+                // Debug-Info über TempData an Controller senden
+                Console.WriteLine(debugInfo); // Auch in Console
+
                 return relativePath;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Fehler beim Hochladen des Bildes: {fileName}");
+                debugInfo += $"💥 FEHLER: {ex.Message}";
+                Console.WriteLine(debugInfo);
                 throw;
             }
         }
@@ -117,35 +125,11 @@ namespace Suendenbock_App.Services
             return true;
         }
 
-        private Image ResizeImageIfNeeded(Image originalImage)
-        {
-            if (originalImage.Width <= _maxWidth && originalImage.Height <= _maxHeight)
-            {
-                return new Bitmap(originalImage);
-            }
-
-            // Seitenverhältnis beibehalten
-            var ratioX = (double)_maxWidth / originalImage.Width;
-            var ratioY = (double)_maxHeight / originalImage.Height;
-            var ratio = Math.Min(ratioX, ratioY);
-
-            var newWidth = (int)(originalImage.Width * ratio);
-            var newHeight = (int)(originalImage.Height * ratio);
-
-            var newImage = new Bitmap(newWidth, newHeight);
-            using (var graphics = Graphics.FromImage(newImage))
-            {
-                graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                graphics.DrawImage(originalImage, 0, 0, newWidth, newHeight);
-            }
-
-            return newImage;
-        }
-
         private string MakeSafeFileName(string fileName)
         {
+            if (string.IsNullOrEmpty(fileName))
+                return "unnamed";
+
             // Ungültige Zeichen durch Unterstriche ersetzen
             var invalidChars = Path.GetInvalidFileNameChars();
             var safeFileName = string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
