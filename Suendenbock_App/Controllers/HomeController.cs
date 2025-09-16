@@ -33,6 +33,8 @@ namespace Suendenbock_App.Controllers
                 .ToList();
             // alle Charakter
             var Characters = _context.Characters.ToList();
+            var Monstertypen = _context.MonsterTypes.ToList();
+           
             // Magieklassen-Statistik
             var magicClassStats = _context.CharacterMagicClasses
                 .GroupBy(cmc => cmc.MagicClassId)
@@ -61,7 +63,8 @@ namespace Suendenbock_App.Controllers
                 MagicClasses = allMagicClasses,
                 Guilds = allGuilds,
                 Infanteries = allInfanteries,
-                GenderStats = genderStats
+                GenderStats = genderStats,
+                Monstertyps = Monstertypen
             };      
             return View(viewModel);
         }
@@ -71,6 +74,16 @@ namespace Suendenbock_App.Controllers
         {
             var characters = _context.Characters.ToList();
             return View(characters);
+        }
+
+        // Übersicht Monstertyp
+        // / GET: /Home/MonsterOverview
+        public IActionResult MonsterOverview()
+        {
+            var monstertyp = _context.MonsterTypes
+                .Include(mt => mt.Monsterwuerfel)
+                .ToList();
+            return View(monstertyp);
         }
 
         //Einbau Familienstammbaum

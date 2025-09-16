@@ -32,7 +32,17 @@ namespace Suendenbock_App.Data
         public DbSet<Grundzauber> Grundzauber { get; set; }
         public DbSet<SpecialZauber> SpecialZauber { get; set; }
         public DbSet<CharacterMagicClass> CharacterMagicClasses { get; set; }
-
+        public DbSet<Monsterimmunitaeten> Monsterimmunitaeten { get; set; }
+        public DbSet<Monsteranfaelligkeiten> Monsteranfaelligkeiten { get; set; }
+        public DbSet<Monstergruppen> Monstergruppen { get; set; }
+        public DbSet<Monsterintelligenz> Monsterintelligenzen { get; set; }
+        public DbSet<Monstervorkommen> Monstervorkommen { get; set; }
+        public DbSet<Monsterwuerfel> Monsterwuerfel { get; set; }
+        public DbSet<Monstertyp> MonsterTypes { get; set; }
+        public DbSet<Monstertypanfaelligkeiten> Monstertypanfaelligkeiten { get; set; }
+        public DbSet<Monstertypimmunitaeten> Monstertypimmunitaeten { get; set; }
+        public DbSet<Monstertypvorkommen> Monstertypvorkommen { get; set; }
+        public DbSet<Monster> Monsters { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -164,6 +174,22 @@ namespace Suendenbock_App.Data
                 .HasForeignKey(i => i.vertreter)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .IsRequired(false);
+
+            builder.Entity<Monstertyp>()
+                .HasOne(mt => mt.Monstergruppen)
+                .WithMany(mg => mg.Monstertypen)
+                .HasForeignKey(mt => mt.MonstergruppenId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Monstertyp>()
+                .HasOne(mt => mt.Monsterintelligenz)
+                .WithMany(mi => mi.Monstertypen)
+                .HasForeignKey(mt => mt.MonsterintelligenzId)
+                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Monstertyp>()
+                .HasOne(mt => mt.Monsterwuerfel)
+                .WithMany(mw => mw.Monstertypen)
+                .HasForeignKey(mt => mt.MonsterwuerfelId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -88,4 +88,91 @@ namespace Suendenbock_App.Data.Seeders
             }
         }
     }
+    public static class MagicClassSpecializationSeeder
+    {
+        public static void Seed(ApplicationDbContext context)
+        {
+            if (!context.Set<MagicClassSpecialization>().Any())
+            {
+                context.Set<MagicClassSpecialization>().AddRange(
+                    new MagicClassSpecialization { Name = "Lehre der tausend Wege", MagicClassId = 1 },
+                    new MagicClassSpecialization { Name = "Lehre der Heimkehr", MagicClassId = 1 },
+
+                    new MagicClassSpecialization { Name = "Lehre der heiligen Sonne", MagicClassId = 2 },
+                    new MagicClassSpecialization { Name = "Lehre des ewigen Sieges", MagicClassId = 2 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Spannung", MagicClassId = 3 },
+                    new MagicClassSpecialization { Name = "Lehre des Widerstandes", MagicClassId = 3 },
+
+                    new MagicClassSpecialization { Name = "Lehre des Bergnebels", MagicClassId = 4 },
+                    new MagicClassSpecialization { Name = "Lehre des Talnebels", MagicClassId = 4 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Wurzeln", MagicClassId = 5 },
+                    new MagicClassSpecialization { Name = "Lehre der Zweige", MagicClassId = 5 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Pein", MagicClassId = 6 },
+                    new MagicClassSpecialization { Name = "Lehre des Zweifels", MagicClassId = 6 },
+
+                    new MagicClassSpecialization { Name = "Lehre des heiligen Ritters", MagicClassId = 7 },
+                    new MagicClassSpecialization { Name = "Lehre des heiligen Lichts", MagicClassId = 7 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Mykoniden", MagicClassId = 8 },
+                    new MagicClassSpecialization { Name = "Lehre der Flora", MagicClassId = 8 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Resonanz", MagicClassId = 9 },
+                    new MagicClassSpecialization { Name = "Lehre der Frequenz", MagicClassId = 9 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Gletscher", MagicClassId = 10 },
+                    new MagicClassSpecialization { Name = "Lehre der Tundra", MagicClassId = 10 },
+                    new MagicClassSpecialization { Name = "Lehre des Vakuums", MagicClassId = 11 },
+                    new MagicClassSpecialization { Name = "Lehre des Sturms", MagicClassId = 11 },
+
+                    new MagicClassSpecialization { Name = "Lehre des Eidbrechers", MagicClassId = 12 },
+                    new MagicClassSpecialization { Name = "Lehre des Samael", MagicClassId = 12 },
+
+                    new MagicClassSpecialization { Name = "Lehre des ewigen Käfigs", MagicClassId = 13 },
+                    new MagicClassSpecialization { Name = "Lehre der endlosen Fessel", MagicClassId = 13 },
+
+                    new MagicClassSpecialization { Name = "Lehre des Morast", MagicClassId = 14 },
+                    new MagicClassSpecialization { Name = "Lehre des Fango", MagicClassId = 14 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Farben", MagicClassId = 15 },
+                    new MagicClassSpecialization { Name = "Lehre des Kometen ", MagicClassId = 15 },
+
+                    new MagicClassSpecialization { Name = "Lehre des Unterdrucks", MagicClassId = 16 },
+                    new MagicClassSpecialization { Name = "Lehre des Überdrucks", MagicClassId = 16 },
+
+                    new MagicClassSpecialization { Name = "Ruf der Nähe", MagicClassId = 17 },
+                    new MagicClassSpecialization { Name = "Ruf der Ferne", MagicClassId = 17 },
+
+                    new MagicClassSpecialization { Name = "Lehre des Lichts", MagicClassId = 18 },
+                    new MagicClassSpecialization { Name = "Lehre des Schattens", MagicClassId = 18 },
+
+                    new MagicClassSpecialization { Name = "Lehre des Mondritters", MagicClassId = 19 },
+                    new MagicClassSpecialization { Name = "Lehre des Nachtgeistes", MagicClassId = 19 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Zähigkeit", MagicClassId = 20 },
+                    new MagicClassSpecialization { Name = "Lehre des Brodelns", MagicClassId = 20 },
+                    new MagicClassSpecialization { Name = "Lehre der Tat", MagicClassId = 21 },
+                    new MagicClassSpecialization { Name = "Lehre des Wortes", MagicClassId = 21 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Erkenntnis", MagicClassId = 22 },
+                    new MagicClassSpecialization { Name = "Lehre der Verschleierung", MagicClassId = 22 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Gewissenheit", MagicClassId = 23 },
+                    new MagicClassSpecialization { Name = "Lehre des Lust", MagicClassId = 23 },
+
+                    new MagicClassSpecialization { Name = "Lehre des Felsenherzes", MagicClassId = 24 },
+                    new MagicClassSpecialization { Name = "Lehre der Eisenlunge", MagicClassId = 24 },
+
+                    new MagicClassSpecialization { Name = "Lehre der Massen und Räume", MagicClassId = 25 },
+                    new MagicClassSpecialization { Name = "Lehre der vier Säfte", MagicClassId = 25 },
+
+                    new MagicClassSpecialization { Name = "Lehre des Wellernschen Pokus", MagicClassId = 26 },
+                    new MagicClassSpecialization { Name = "Lehre des Wellernschen Opfers", MagicClassId = 26 }
+                );
+                context.SaveChanges();
+            }
+        }
+    }
 }

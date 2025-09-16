@@ -30,12 +30,26 @@ namespace Suendenbock_App.Data.Seeders
                 ObermagicSeeder.Seed(context);
                 MagicClassSeeder.Seed(context);
                 ZaubertypSeeder.Seed(context);
+                MagicClassSpecializationSeeder.Seed(context);
 
                 // 3. Guilds (abhängig von LightCards)
                 Console.WriteLine("Seeding Guilds...");
                 AbenteuerrangSeeder.Seed(context);
                 AnmeldungsstatusSeeder.Seed(context);
                 EindruckSeeder.Seed(context);
+
+                // 4. Monster
+                Console.WriteLine("Seeding Monsters...");
+                MonsterimmunitaetenSeeder.Seed(context);
+                MonsteranfaelligkeitenSeeder.Seed(context);
+                MonstergruppenSeeder.Seed(context);
+                MonsterintelligenzSeeder.Seed(context);
+                MonstervorkommenSeeder.Seed(context);
+                MonsterwuerfelSeeder.Seed(context);   
+                MonstertypSeeder.Seed(context);
+                MonstertypanfaelligkeitenSeeder.Seed(context);
+                MonstertypimmunitaetenSeeder.Seed(context);
+                MonstertypvorkommenSeeder.Seed(context);
 
                 Console.WriteLine("Database seeding completed successfully!");
             }

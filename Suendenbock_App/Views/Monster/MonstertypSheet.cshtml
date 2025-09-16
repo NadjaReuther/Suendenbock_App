@@ -1,0 +1,105 @@
+﻿@using Suendenbock_App.Models.Domain
+@model Monstertyp
+@section Styles {
+    <link href="/css/antique-home.css" rel="stylesheet" />
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+}
+<div class="steckbrief-container">
+    <div class="steckbrief-title">@Model.Name</div>
+    <div class="row mt-5">
+        <div class="col-md-6">
+            <p>Hier kommt die Erklärung zum Monstertyp</p>
+            <p>
+                @Model.Description
+            </p>
+        </div>
+    </div>
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="pergament-card" data-tilt>
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+                <h3 class="card-title">Intelligenz</h3>
+                <div class="card-content">@Model.Monsterintelligenz.Name</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="pergament-card" data-tilt>
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+                <h3 class="card-title">Gruppe</h3>
+                <div class="card-content">@Model.Monstergruppen.Name</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="pergament-card" data-tilt>
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+                <h3 class="card-title">Würfel </h3>
+                <div class="card-content">@Model.Monsterwuerfel.Wuerfel</div>
+            </div>
+        </div>
+    </<div>
+    <div class="row mt-5">
+        <div class="col-md-4">
+            <div class="pergament-card" data-tilt>
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+                <h3 class="card-title">Immunitaeten </h3>
+                <div class="card-content">
+                    @(Model.MonstertypImmunitaeten?.Any() == true ?
+                                        string.Join(", ", Model.MonstertypImmunitaeten.Select(mi => mi.Monsterimmunitaeten?.Name ?? "Unbekannt")) :
+                                        "Keine")
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="pergament-card" data-tilt>
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+                <h3 class="card-title">Vorkommen<br /></h3>
+                <div class="card-content">
+                    @(Model.MonstertypenVorkommen?.Any() == true ?
+                                        string.Join(", ", Model.MonstertypenVorkommen.Select(mi => mi.Monstervorkommen?.Name ?? "Unbekannt")) :
+                                        "Keine")
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="pergament-card" data-tilt>
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+                <h3 class="card-title">Anfällig<br /></h3>
+                <div class="card-content">
+                        @(Model.MonstertypAnfaelligkeiten?.Any() == true ?
+                                                    string.Join(", ", Model.MonstertypAnfaelligkeiten.Select(mi => mi.Monsteranfaelligkeiten?.Name ?? "Unbekannt")) :
+                                                    "Keine")
+                </div>
+            </div>
+        </div>
+    </div>    
+</div>
+</div>
+        <div class="mt-5 pergament-card" data-tilt>
+            <div class="card-corner top-left"></div>
+            <div class="card-corner top-right"></div>
+            <div class="card-corner bottom-left"></div>
+            <div class="card-corner bottom-right"></div>
+            <h3 class="card-title">viele Monster<br /></h3>
+            <div class="card-content">
+               
+            </div>
+        </div>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250916165349_MonsterTables")]
+    partial class MonsterTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -847,11 +850,16 @@ namespace Suendenbock_App.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("MonstertypId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MonstertypId");
 
                     b.ToTable("Monsteranfaelligkeiten");
                 });
@@ -1548,6 +1556,13 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Monstertyp");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsteranfaelligkeiten", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Monstertyp", null)
+                        .WithMany("MonsterAnfaelligkeiten")
+                        .HasForeignKey("MonstertypId");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertyp", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Domain.Monstergruppen", "Monstergruppen")
@@ -1584,7 +1599,7 @@ namespace Suendenbock_App.Migrations
                         .IsRequired();
 
                     b.HasOne("Suendenbock_App.Models.Domain.Monstertyp", "Monstertyp")
-                        .WithMany("MonstertypAnfaelligkeiten")
+                        .WithMany()
                         .HasForeignKey("MonstertypId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1783,7 +1798,7 @@ namespace Suendenbock_App.Migrations
                 {
                     b.Navigation("Monster");
 
-                    b.Navigation("MonstertypAnfaelligkeiten");
+                    b.Navigation("MonsterAnfaelligkeiten");
 
                     b.Navigation("MonstertypImmunitaeten");
 
