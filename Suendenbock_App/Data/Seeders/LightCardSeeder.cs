@@ -23,7 +23,8 @@ namespace Suendenbock_App.Data.Seeders
                     new LightCard { CssClass = "feuer", Farbcode = "#bb2929", Bezeichnung = "Feuer" },
                     new LightCard { CssClass = "zeit", Farbcode = "#bd9a4c", Bezeichnung = "Zeit" },
                     new LightCard { CssClass = "mantik", Farbcode = "#597476", Bezeichnung = "Mantik" },
-                    new LightCard { CssClass = "daemmerung", Farbcode = "#989693", Bezeichnung = "Dämmerung" }
+                    new LightCard { CssClass = "daemmerung", Farbcode = "#989693", Bezeichnung = "Dämmerung" },
+                    new LightCard { CssClass = "unbegabt", Farbcode = " #CCCCFF", Bezeichnung = "Unbegabt" }
                 );
                 context.SaveChanges();
             }

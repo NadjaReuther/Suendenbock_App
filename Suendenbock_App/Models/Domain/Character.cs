@@ -11,6 +11,7 @@
         public int Id { get; set; }
         public string Nachname { get; set; } = string.Empty;
         public string Vorname { get; set; } = string.Empty;
+        public string Rufname { get; set; } = string.Empty;
         public string Geschlecht { get; set; } = string.Empty;
 
         //Pflicht-Foreign-Keys

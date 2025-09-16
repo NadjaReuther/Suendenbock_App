@@ -40,7 +40,8 @@ namespace Suendenbock_App.Data.Seeders
                     new Obermagie { Bezeichnung = "Feuer", LightCardId = 11 },
                     new Obermagie { Bezeichnung = "Zeit", LightCardId = 12 },
                     new Obermagie { Bezeichnung = "Mantik", LightCardId = 13 },
-                    new Obermagie { Bezeichnung = "Dämmerung", LightCardId = 14 }
+                    new Obermagie { Bezeichnung = "Dämmerung", LightCardId = 14 },
+                    new Obermagie { Bezeichnung = "Unbegabt", LightCardId = 15 }
                 );
                 context.SaveChanges();
             }
@@ -78,7 +79,10 @@ namespace Suendenbock_App.Data.Seeders
                     new MagicClass { Bezeichnung = "Glück", ImagePath = "/images/magicclass/pain.png", ObermagieId = 9 },
                     new MagicClass { Bezeichnung = "Erde", ImagePath = "/images/magicclass/earth.png", ObermagieId = 5 },
                     new MagicClass { Bezeichnung = "Genesung", ImagePath = "/images/magicclass/pain.png", ObermagieId = 3 },
-                    new MagicClass { Bezeichnung = "Schutz", ImagePath = "/images/magicclass/pain.png", ObermagieId = 12 }
+                    new MagicClass { Bezeichnung = "Schutz", ImagePath = "/images/magicclass/pain.png", ObermagieId = 12 },
+                    new MagicClass { Bezeichnung = "Profane", ImagePath = "/images/magicclass/dark.png", ObermagieId = 15 },
+                    new MagicClass { Bezeichnung = "Beschränkte", ImagePath = "/images/magicclass/dark.png", ObermagieId = 15 },
+                    new MagicClass { Bezeichnung = "Unbegabte", ImagePath = "/images/magicclass/dark.png", ObermagieId = 15 }
                 );
                 context.SaveChanges();
             }

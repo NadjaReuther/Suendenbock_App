@@ -23,6 +23,7 @@ namespace Suendenbock_App.Data.Seeders
                 RasseSeeder.Seed(context);
                 LebensstatusSeeder.Seed(context);
                 HerkunftslandSeeder.Seed(context);
+                InfanterieRangSeeder.Seed(context);
 
                 // 2. MagicClasses (abhängig von LightCards)
                 Console.WriteLine("Seeding MagicClasses...");

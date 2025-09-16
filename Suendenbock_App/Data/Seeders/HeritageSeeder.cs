@@ -33,6 +33,49 @@ namespace Suendenbock_App.Data.Seeders
             }
         }
     }
+
+    public static class InfanterieRangSeeder
+    {
+        public static void Seed(ApplicationDbContext context)
+        {
+            if (!context.Set<Infanterierang>().Any())
+            {
+                context.Set<Infanterierang>().AddRange(
+                    new Infanterierang { Name = "✯ - General" },
+                    new Infanterierang { Name = "✯ - Generalleutnant" },
+                    new Infanterierang { Name = "✯ - Generalmajor" },
+                    new Infanterierang { Name = "✯ - Brigadegeneral" },
+                    new Infanterierang { Name = "✯ - Oberst" },
+                    new Infanterierang { Name = "✯ - Oberstleutnant" },
+                    new Infanterierang { Name = "✯ - Major" },
+                    new Infanterierang { Name = "✯ - Stabshauptmann" },
+                    new Infanterierang { Name = "✯ - Hauptmann" },
+                    new Infanterierang { Name = "✯ - Oberleutnant" },
+                    new Infanterierang { Name = "✯ - Oberstabsfeldwebel" },
+                    new Infanterierang { Name = "✯ - Stabsfeldwebel" },
+                    new Infanterierang { Name = "✯ - Hauptfeldwebel" },
+                    new Infanterierang { Name = "✯ - Oberfeldwebel" },
+                    new Infanterierang { Name = "✯ - Feldwebel" },
+                    new Infanterierang { Name = "✯ - Stabsunteroffizier" },
+                    new Infanterierang { Name = "✯ - Unteroffizier" },
+                    new Infanterierang { Name = "✯ - Stabsgefreiter" },
+                    new Infanterierang { Name = "✯ - Gefreiter" },
+                    new Infanterierang { Name = "✯ - Soldat" },
+                    new Infanterierang { Name = "⚕ - Generaloberststabsarzt" },
+                    new Infanterierang { Name = "⚕ - Generalstabsarzt" },
+                    new Infanterierang { Name = "⚕ - Generalarzt" },
+                    new Infanterierang { Name = "⚕ - Oberstarzt" },
+                    new Infanterierang { Name = "⚕ - Oberfeldarzt" },
+                    new Infanterierang { Name = "⚕ - Stabsarzt" },
+                    new Infanterierang { Name = "✞ - Legat" },
+                    new Infanterierang { Name = "✞ - Pater Oberst" },
+                    new Infanterierang { Name = "✞ - Pater Gefreiter" }
+
+                );
+                context.SaveChanges();
+            }
+        }
+    }
     public static class BlutgruppeSeeder
     {
         public static void Seed(ApplicationDbContext context)

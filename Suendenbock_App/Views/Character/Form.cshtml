@@ -31,27 +31,24 @@
         </div>
         <form asp-controller="Character" asp-action="CreateEdit" method="post">
             <div class="form-step active" data-step="1">
-                <h4 class="text-center mb-4" style="color: #6e4b1f;">📜 Grundlegende Informationen</h4>
-                <p>Bitte fülle die Pflichtfelder aus, um fortzufahren.</p>
-                @* Verstecktes Feld für die ID bei Bearbeitung *@
                 @if (Model != null && Model.Id > 0)
                 {
                     <input type="hidden" name="Id" value="@Model.Id" />
                 }
                 <div class="row mt-5">
                     <div class="col-md-6 text-center">
-                                <div class="image-upload-container">
-                                    <div class="image-preview" onclick="document.getElementById('imageUpload').click()">
-                                        <div class="image-placeholder">
-                                            <i>🖼️</i>
-                                            <div>Portrait<br><small>Klicken zum Hochladen</small></div>
-                                        </div>
-                                    </div>
-                                    <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="previewImage(this)">
-                                    <button type="button" class="image-upload-btn" onclick="document.getElementById('imageUpload').click()">
-                                        📷 Bild wählen
-                                    </button>
+                        <div class="image-upload-container">
+                            <div class="image-preview" onclick="document.getElementById('imageUpload').click()">
+                                <div class="image-placeholder">
+                                    <i>🖼️</i>
+                                    <div>Portrait<br><small>Klicken zum Hochladen</small></div>
                                 </div>
+                            </div>
+                            <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                            <button type="button" class="image-upload-btn" onclick="document.getElementById('imageUpload').click()">
+                                📷 Bild wählen
+                            </button>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="row mb-3">
@@ -63,9 +60,12 @@
                                    value="@(Model != null ? Model.Nachname : "")" required placeholder="Nachname">
                         </div>
                         <div class="row mb-3">
-                            <label for="geburtsdatum" class="form-label">Geburtsdatum</label>
-                            <input type="date" class="form-control" id="geburtsdatum" name="geburtsdatum"
-                                    value="@(Model != null ? Model.Geburtsdatum : "")">
+                            <input type="text" class="form-control" id="rufname" name="rufname"
+                               value="@(Model != null ? Model.Rufname : "")" required placeholder="Rufname">
+                        </div>
+                        <div class="row mb-3">
+                            <input type="date" class="form-control" id="rufname" name="rufname"
+                                   value="@(Model != null ? Model.Geburtsdatum : "")" min="100-00-00" max="1619-12-31" required />
                         </div>
                     </div>
                 </div>
@@ -113,46 +113,71 @@
                         </select>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <select class="form-select" id="lebensstatus" name="lebensstatus">
-                            <option value="" disabled selected>Lebensstatus auswählen...</option>
-                            @if (ViewBag.Lebensstatus != null)
+                <!-- Eltern-Dropdowns hinzufügen -->
+                <div class="row">
+                    <!-- Vater-Dropdown -->
+                    <div class="col-md-6 mb-3">
+                        <label for="vaterId" class="form-label">Vater</label>
+                        <select class="form-select" id="vaterId" name="vaterId">
+                            <option value="">Vater auswählen</option>
+                            @if (ViewBag.Characters != null)
                             {
-                                foreach (var status in ViewBag.Lebensstatus)
+                                foreach (var character in ViewBag.Characters)
                                 {
-                                    if (Model != null && Model.Lebensstatus == status)
+                                    if (character.Geschlecht == "männlich")
                                     {
-                                        <option value="@status.Id" selected>@status.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@status.Id">@status.Name</option>
+                                        // Verhindern, dass ein Charakter sich selbst als Vater wählt
+                                        if (Model != null && Model.Id == character.Id)
+                                        {
+                                            continue;
+                                        }
+
+                                        if (Model != null && Model.VaterId.HasValue && Model.VaterId.Value == character.Id)
+                                        {
+                                            <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@character.Id">@character.Vorname @character.Nachname</option>
+                                        }
                                     }
                                 }
                             }
                         </select>
                     </div>
-                    <div class="col-md-6">                            
-                            <select class="form-select" id="eindruck" name="eindruck">
-                                <option value="" disabled selected>Eindruck auswählen...</option>
-                                @if (ViewBag.Eindruecke != null)
+
+                    <!-- Mutter-Dropdown -->
+                    <div class="col-md-6 mb-3">
+                        <label for="mutterId" class="form-label">Mutter</label>
+                        <select class="form-select" id="mutterId" name="mutterId">
+                            <option value="">Mutter auswählen</option>
+                            @if (ViewBag.Characters != null)
+                            {
+                                foreach (var character in ViewBag.Characters)
                                 {
-                                    foreach (var eindruck in ViewBag.Eindruecke)
+                                    if (character.Geschlecht == "weiblich")
                                     {
-                                        if (Model != null && Model.Eindruck == eindruck)
+                                        // Verhindern, dass ein Charakter sich selbst als Mutter wählt
+                                        if (Model != null && Model.Id == character.Id)
                                         {
-                                            <option value="@eindruck.Id" selected>@eindruck.Name</option>
+                                            continue;
+                                        }
+
+                                        if (Model != null && Model.MutterId.HasValue && Model.MutterId.Value == character.Id)
+                                        {
+                                            <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
                                         }
                                         else
                                         {
-                                            <option value="@eindruck.Id">@eindruck.Name</option>
+                                            <option value="@character.Id">@character.Vorname @character.Nachname</option>
                                         }
                                     }
                                 }
-                            </select>
-                        </div>
-                </div>            
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
                 <!-- Magieklassen -->
                 <div class="row mb-3">
                     <label class="form-label">Magieklassen</label>
@@ -276,71 +301,48 @@
                         </div>
                     </div>
                 </div>
-                    <!-- Eltern-Dropdowns hinzufügen -->
-                <div class="row">
-                        <!-- Vater-Dropdown -->
-                        <div class="col-md-6 mb-3">
-                            <label for="vaterId" class="form-label">Vater</label>
-                            <select class="form-select" id="vaterId" name="vaterId">
-                                <option value="">Vater auswählen</option>
-                                @if (ViewBag.Characters != null)
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <select class="form-select" id="lebensstatus" name="lebensstatus">
+                        <option value="" disabled selected>Lebensstatus auswählen...</option>
+                        @if (ViewBag.Lebensstatus != null)
+                        {
+                            foreach (var status in ViewBag.Lebensstatus)
+                            {
+                                if (Model != null && Model.Lebensstatus == status)
                                 {
-                                    foreach (var character in ViewBag.Characters)
-                                    {
-                                        if (character.Geschlecht == "männlich")
-                                        {
-                                            // Verhindern, dass ein Charakter sich selbst als Vater wählt
-                                            if (Model != null && Model.Id == character.Id)
-                                            {
-                                                continue;
-                                            }
-
-                                            if (Model != null && Model.VaterId.HasValue && Model.VaterId.Value == character.Id)
-                                            {
-                                                <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@character.Id">@character.Vorname @character.Nachname</option>
-                                            }
-                                        }
-                                    }
+                                    <option value="@status.Id" selected>@status.Name</option>
                                 }
-                            </select>
-                        </div>
-
-                        <!-- Mutter-Dropdown -->
-                        <div class="col-md-6 mb-3">
-                            <label for="mutterId" class="form-label">Mutter</label>
-                            <select class="form-select" id="mutterId" name="mutterId">
-                                <option value="">Mutter auswählen</option>
-                                @if (ViewBag.Characters != null)
+                                else
                                 {
-                                    foreach (var character in ViewBag.Characters)
-                                    {
-                                        if (character.Geschlecht == "weiblich")
-                                        {
-                                            // Verhindern, dass ein Charakter sich selbst als Mutter wählt
-                                            if (Model != null && Model.Id == character.Id)
-                                            {
-                                                continue;
-                                            }
-
-                                            if (Model != null && Model.MutterId.HasValue && Model.MutterId.Value == character.Id)
-                                            {
-                                                <option value="@character.Id" selected>@character.Vorname @character.Nachname</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="@character.Id">@character.Vorname @character.Nachname</option>
-                                            }
-                                        }
-                                    }
+                                    <option value="@status.Id">@status.Name</option>
                                 }
-                            </select>
-                        </div>
-                    </div>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <select class="form-select" id="eindruck" name="eindruck">
+                        <option value="" disabled selected>Eindruck auswählen...</option>
+                        @if (ViewBag.Eindruecke != null)
+                        {
+                            foreach (var eindruck in ViewBag.Eindruecke)
+                            {
+                                if (Model != null && Model.Eindruck == eindruck)
+                                {
+                                    <option value="@eindruck.Id" selected>@eindruck.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@eindruck.Id">@eindruck.Name</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
             </div>
+                  
 
             <div class="form-step" data-step="2">
                  <h4 class="text-center mb-4" style="color: #6e4b1f;">🏰 Persönliche Details</h4>
@@ -662,5 +664,45 @@
 
         // Initial setup
         updateStepIndicator();
+
+        $(document).ready(function() {
+            // Charakterauswahl mit Suche und AJAX
+            $('.character-select').select2({
+                ajax: {
+                    url: '/api/Character/dropdown',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            page: params.page || 1
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.results.map(item => ({
+                                id: item.id,
+                                text: item.fullName
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1,
+                placeholder: 'Namen eingeben...',
+                allowClear: false,
+                language: {
+                    inputTooShort: function() {
+                        return ""; // ✅ Keine Meldung anzeigen
+                    },
+                    noResults: function() {
+                        return "Keine Charaktere gefunden";
+                    },
+                    searching: function() {
+                        return "Suche...";
+                    }
+                }
+            });
+        });
     </script>
 }
