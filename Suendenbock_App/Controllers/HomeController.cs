@@ -81,7 +81,7 @@ namespace Suendenbock_App.Controllers
         public IActionResult MonsterOverview()
         {
             var monstertyp = _context.MonsterTypes
-                .Include(mt => mt.Monsterwuerfel)
+                .OrderBy(mt => mt.MonsterwuerfelId)
                 .ToList();
             return View(monstertyp);
         }
