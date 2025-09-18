@@ -52,8 +52,8 @@ namespace Suendenbock_App.Controllers
             ViewBag.Berufe = _context.Berufe.ToList();
             ViewBag.Haeuser = _context.Haeuser.ToList();
             ViewBag.Herkunftslaender = _context.Herkunftslaender.ToList();
-            ViewBag.Blutgruppe = _context.Blutgruppen.ToList();
-            ViewBag.Infanterie = _context.Infanterien.ToList();
+            ViewBag.Blutgruppen = _context.Blutgruppen.ToList();
+            ViewBag.Regiment = _context.Regiments.ToList();
             ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
 
             // Check if id is provided for editing
@@ -62,7 +62,26 @@ namespace Suendenbock_App.Controllers
                 // Load character data for editing
                 var character = _context.Characters
                     .Include(ca => ca.Affiliation)
+                        .ThenInclude(navigationPropertyPath: a => a.Guild)
+                    .Include(ca => ca.Affiliation)
+                        .ThenInclude(navigationPropertyPath: a => a.Religion)
+                    .Include(ca => ca.Affiliation)
+                        .ThenInclude(navigationPropertyPath: i => i.Regiment)
+                    .Include(ca => ca.Affiliation)
+                        .ThenInclude(navigationPropertyPath: i => i.Infanterierang)
                     .Include(cd => cd.Details)
+                        .ThenInclude(navigationPropertyPath: d => d.Beruf)
+                    .Include(cd => cd.Details)
+                        .ThenInclude(navigationPropertyPath: d => d.Haus)
+                    .Include(cd => cd.Details)
+                        .ThenInclude(navigationPropertyPath: d => d.Herkunftsland)
+                    .Include(cd => cd.Details)
+                        .ThenInclude(navigationPropertyPath: d => d.Blutgruppe)
+                    .Include(cd => cd.Details)
+                        .ThenInclude(navigationPropertyPath: d => d.Stand)
+                    .Include(c => c.Rasse)
+                    .Include(c => c.Lebensstatus)
+                    .Include(c => c.Eindruck)
                     .Include(c => c.CharacterMagicClasses)
                         .ThenInclude(cmc => cmc.MagicClassSpecialization)
                     .Include(c => c.Vater)     

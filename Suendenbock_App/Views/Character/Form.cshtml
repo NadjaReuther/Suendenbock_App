@@ -101,7 +101,7 @@
                             {
                                 foreach (var rasse in ViewBag.Rassen)
                                 {
-                                    if (Model != null && Model.Rasse == rasse.Name)
+                                    if (Model != null && Model.Rasse.Name == rasse.Name)
                                     {
                                         <option value="@rasse.Id" selected>@rasse.Name</option>
                                     }
@@ -359,7 +359,7 @@
                             {
                                 foreach (var haus in ViewBag.Haeuser)
                                 {
-                                    if (Model != null && Model.Details.Haus == haus)
+                                    if (Model != null && Model.Details.Haus.Name == haus.Name)
                                     {
                                         <option value="@haus.Id" selected>@haus.Name</option>
                                     }
@@ -373,12 +373,12 @@
                     </div>
                     <div class="col-md-6">
                         <select class="form-select" id="herkunftslaenderId" name="herkunftslaenderId">
-                            <option value="" disabled selected>herkunftsländer wählen...</option>
+                            <option value="" disabled selected>Herkunftsland wählen...</option>
                             @if (ViewBag.Herkunftslaender != null)
                             {
                                 foreach (var herkunftsland in ViewBag.Herkunftslaender)
                                 {
-                                    if (Model != null && Model.Details.Herkunftsland == herkunftsland)
+                                    if (Model != null && Model.Details.Herkunftsland.Name == herkunftsland.Name)
                                     {
                                         <option value="@herkunftsland.Id" selected>@herkunftsland.Name</option>
                                     }
@@ -399,7 +399,7 @@
                             {
                                 foreach(var blutgruppe in ViewBag.Blutgruppen)
                                 {
-                                    if(Model != null && Model.Details.Blutgruppe == blutgruppe)
+                                    if(Model != null && Model.Details.Blutgruppe.Name == blutgruppe.Name)
                                     {
                                         <option value="@blutgruppe.Id" selected>@blutgruppe.Name</option>
                                     }                                        
@@ -436,7 +436,7 @@
                                 {
                                     foreach (var guild in ViewBag.Guilds)
                                     {
-                                        if(Model != null && Model.Affiliation.Guild == guild)
+                                        if(Model != null && Model.Affiliation.Guild.Name == guild.Name)
                                         {
                                             <option value="@guild.Id" selected>@guild.Name</option>
                                         }
@@ -456,7 +456,7 @@
                                 {
                                     foreach (var religion in ViewBag.Religions)
                                     {
-                                        if(Model != null && Model.Affiliation.Religion == religion)
+                                        if(Model != null && Model.Affiliation.Religion.Type == religion.Type)
                                         {
                                             <option value="@religion.Id" selected>@religion.Type</option>
                                         }
@@ -477,7 +477,7 @@
                             {
                                 foreach(var regiment in ViewBag.Regiment)
                                 {
-                                    if(Model != null && Model.Affiliation.Regiment == regiment)
+                                    if(Model != null && Model.Affiliation.Regiment.Name == regiment.Name)
                                     {
                                         <option value="@regiment.Id" selected>@regiment.Name</option>
                                     }
@@ -496,7 +496,7 @@
                             {
                                 foreach(var infanterierang in ViewBag.Infanterieraenge)
                                 {
-                                    if(Model != null && Model.Affiliation.Infanterierang == infanterierang)
+                                    if(Model != null && Model.Affiliation.Infanterierang.Name == infanterierang.Name)
                                     {
                                         <option value="@infanterierang.Id" selected>@infanterierang.Name</option>
                                     }
@@ -537,7 +537,6 @@
         const totalSteps = 3;
 
         function updateStepIndicator() {
-            console.log(currentStep);
             document.querySelectorAll('.step-item').forEach((item, index) => {
                 const stepNumber = index + 1;
                 item.classList.remove('active', 'completed');                
