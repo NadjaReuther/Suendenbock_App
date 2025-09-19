@@ -2,21 +2,26 @@
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
+using Suendenbock_App.Services;
+using System.Threading.Tasks;
 
 namespace Suendenbock_App.Controllers
 {
     public class CharacterController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public CharacterController(ApplicationDbContext context)
+        private readonly IImageUploadService _imageUploadService;
+        private readonly IWebHostEnvironment _environment;
+        public CharacterController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment)
         {
             _context = context;
+            _imageUploadService = imageUploadService;
+            _environment = environment;
         }
         public IActionResult Index()
         {
             return View();
         }
-
         public IActionResult CharacterSheet(int id)
         {
             var character = _context.Characters
@@ -41,230 +46,322 @@ namespace Suendenbock_App.Controllers
         }
         public IActionResult Form(int id)
         {
-            // Load data for dropdowns
-            ViewBag.MagicClasses = _context.MagicClasses.ToList();
-            ViewBag.Guilds = _context.Guilds.ToList();
-            ViewBag.Religions = _context.Religions.ToList();
-            ViewBag.Specializations = _context.MagicClassSpecializations.Include(s => s.MagicClass).ToList();
-            ViewBag.Rassen = _context.Rassen.ToList();
-            ViewBag.Lebensstatus = _context.Lebensstati.ToList();
-            ViewBag.Eindruecke = _context.Eindruecke.ToList();
-            ViewBag.Berufe = _context.Berufe.ToList();
-            ViewBag.Haeuser = _context.Haeuser.ToList();
-            ViewBag.Herkunftslaender = _context.Herkunftslaender.ToList();
-            ViewBag.Blutgruppen = _context.Blutgruppen.ToList();
-            ViewBag.Regiment = _context.Regiments.ToList();
-            ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
-
-            // Check if id is provided for editing
+            //Lade Basis-Daten für das Formular
+            LoadFormViewBagData();
+            
             if (id > 0)
             {
                 // Load character data for editing
-                var character = _context.Characters
-                    .Include(ca => ca.Affiliation)
-                        .ThenInclude(navigationPropertyPath: a => a.Guild)
-                    .Include(ca => ca.Affiliation)
-                        .ThenInclude(navigationPropertyPath: a => a.Religion)
-                    .Include(ca => ca.Affiliation)
-                        .ThenInclude(navigationPropertyPath: i => i.Regiment)
-                    .Include(ca => ca.Affiliation)
-                        .ThenInclude(navigationPropertyPath: i => i.Infanterierang)
-                    .Include(cd => cd.Details)
-                        .ThenInclude(navigationPropertyPath: d => d.Beruf)
-                    .Include(cd => cd.Details)
-                        .ThenInclude(navigationPropertyPath: d => d.Haus)
-                    .Include(cd => cd.Details)
-                        .ThenInclude(navigationPropertyPath: d => d.Herkunftsland)
-                    .Include(cd => cd.Details)
-                        .ThenInclude(navigationPropertyPath: d => d.Blutgruppe)
-                    .Include(cd => cd.Details)
-                        .ThenInclude(navigationPropertyPath: d => d.Stand)
-                    .Include(c => c.Rasse)
-                    .Include(c => c.Lebensstatus)
-                    .Include(c => c.Eindruck)
-                    .Include(c => c.CharacterMagicClasses)
-                        .ThenInclude(cmc => cmc.MagicClassSpecialization)
-                    .Include(c => c.Vater)     
-                    .Include(c => c.Mutter)    
-                    .FirstOrDefault(c => c.Id == id);
+                var character = LoadCharacterForEditing(id);
+                if (character == null)
+                {
+                    return NotFound();
+                }
+                return View(character);
+            }
+            // neuen leeren Charakter erstellen
+            return View();
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> SaveStep1(Character character, 
+                                                   int[] selectedMagicClasses, 
+                                                   Dictionary<int, int> selectedSpecializations, 
+                                                   IFormFile? characterImage)
+        {
+            try
+            {
+                if(!ValidateStep1(character, selectedMagicClasses))
+                {                    
+                    LoadFormViewBagData();
+                    SetSelectedMagicClassesViewBag(selectedMagicClasses, selectedSpecializations);
+                    TempData["Error"] = "Bitte füllen Sie alle Pflichtfelder aus und wählen Sie 1-2 Magieklassen.";
+                    return View("Form", character);
+                }
+                if (character.Id == 0)
+                {
+                    if (characterImage != null && characterImage.Length > 0)
+                    {
+                        try
+                        {
+                            var uploadedImagePath = await _imageUploadService.UploadImageAsync(characterImage, "characters", $"{character.Vorname}_{character.Nachname}");
+                            character.ImagePath = uploadedImagePath;
+                        }
+                        catch (Exception ex)
+                        {
+                            TempData["Error"] = $"Bild-Upload fehlgeschlagen: {ex.Message}";
+                        }
+                    }
+                    character.CompletionLevel = CharacterCompleteness.BasicInfo;
+                    _context.Characters.Add(character);
+                    _context.SaveChanges();
+
+                }
+                else
+                {
+                    var existingCharacter = _context.Characters.Find(character.Id);
+                    if (existingCharacter != null)
+                    {
+                        if (characterImage != null && characterImage.Length > 0)
+                        {
+                            try
+                            {
+                                if (!string.IsNullOrEmpty(existingCharacter.ImagePath))
+                                {
+                                    DeleteOldImage(existingCharacter.ImagePath);
+                                }
+
+                                var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
+                                var uniqueName = $"{character.Vorname}_{character.Nachname}_{timestamp}";
+                                var uploadedImagePath = await _imageUploadService.UploadImageAsync(characterImage, "characters", uniqueName);
+                                existingCharacter.ImagePath = uploadedImagePath;
+                            }
+                            catch (Exception ex)
+                            {
+                                TempData["Error"] = $"Bild-Upload fehlgeschlagen: {ex.Message}";
+                            }
+                        }
+                        UpdateCharacterStep1(existingCharacter);
+                    }
+                }
+                //Magieklassen und Spezialisierung speichern
+                SaveCharacterMagicClasses(character.Id, selectedMagicClasses, selectedSpecializations);
+
+                TempData["Success"] = "Schritt 1 erfolgreich gespeichert!";
+                return RedirectToAction("Form", new { id = character.Id, step = 2 });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Fehler beim Speichern: {ex.Message}";
+                LoadFormViewBagData();
+                return View("Form", character);
+            }
+        }
+        [HttpPost]
+        public IActionResult SaveStep2(int id, int? standId, int? berufId, int? blutgruppeId, int? hausId, int? herkunftsland, int? bodyHeight)
+        {
+            try
+            {
+                var character = _context.Characters.Include(c => c.Details).FirstOrDefault(c => c.Id == id);
+                if(character == null)
+                {
+                    return NotFound();
+                }
+                // CharacterDetails erstellen oder aktualisieren
+                if (character.Details == null)
+                {
+                    character.Details = new CharacterDetails { CharacterId = id };
+                    _context.CharacterDetails.Add(character.Details);
+                }
+                character.Details.StandId = standId;
+                character.Details.BerufId = berufId;
+                character.Details.BlutgruppeId = blutgruppeId;
+                character.Details.HausId = hausId;
+                character.Details.HerkunftslandId = herkunftsland;
+                character.Details.BodyHeight = bodyHeight;
+
+                character.CompletionLevel = CharacterCompleteness.WithDetails;
+                _context.SaveChanges();
+
+                TempData["Success"] = "Schritt 2 erfolgreich gespeichert!";
+                return RedirectToAction("Form", new { id = character.Id, step = 3 });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Fehler beim Speichern: {ex.Message}";
+                return RedirectToAction("Form", new { id = id, step = 2 });
+            }
+        }
+        [HttpPost]
+        public IActionResult SaveStep3(int id, int? guildId, int? religionId, int? regimentId, int? infanterierangId)
+        {
+            try
+            {
+                var character = _context.Characters.Include(c => c.Affiliation).FirstOrDefault(c => c.Id == id);
+                if (character == null)
+                {
+                    return NotFound();
+                }
+                // CharacterAffiliation erstellen oder aktualisieren
+                if (character.Affiliation == null)
+                {
+                    character.Affiliation = new CharacterAffiliation { CharacterId = id };
+                    _context.CharacterAffiliations.Add(character.Affiliation);
+                }
+                character.Affiliation.GuildId = guildId;
+                character.Affiliation.ReligionId = religionId;
+                character.Affiliation.RegimentsId = regimentId;
+                character.Affiliation.InfanterierangId = infanterierangId;
+                character.CompletionLevel = CharacterCompleteness.Complete;
+                _context.SaveChanges();
+
+                TempData["Success"] = "Charakter erfolgreich erfolgreich erstellt/aktualisiert!";
+                return RedirectToAction("Index", "Admin");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Fehler beim Speichern: {ex.Message}";
+                return RedirectToAction("Form", new { id = id, step = 3 });
+            }
+        }
+        [HttpPost]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                var character = _context.Characters
+                    .Include(c => c.Details)
+                    .Include(c => c.Affiliation)
+                    .Include(c => c.CharacterMagicClasses)
+                    .FirstOrDefault(c => c.Id == id);
 
                 if (character == null)
                 {
                     return NotFound();
                 }
-                // Get selected magic classes
-                var selectedIds = character.CharacterMagicClasses
-                    .Select(cmc => cmc.MagicClassId)
-                    .ToArray();
 
-                ViewBag.SelectedMagicClasses = selectedIds;
+                // Alte Bilddatei löschen, falls vorhanden
+                if (!string.IsNullOrEmpty(character.ImagePath))
+                {
+                    DeleteOldImage(character.ImagePath);
+                }
                 
-                ViewBag.SelectedSpecializations = character.CharacterMagicClasses
-                    .Where(cmc => cmc.MagicClassSpecializationId.HasValue)
-                    .ToDictionary(
-                        cmc => cmc.MagicClassId, 
-                        cmc => cmc.MagicClassSpecializationId.Value
-                    );
-                // Return the view with the character data
-                return View(character);
+                _context.Characters.Remove(character);
+                _context.SaveChanges();
+
+                TempData["Success"] = "Charakter erfolgreich gelöscht!";
+                return RedirectToAction("Index", "Admin");
             }
-            // Return the view for creating a new character
-            // Initialize selected magic classes as an empty array
-            ViewBag.SelectedMagicClasses = new int[0];
-            ViewBag.SelectedSpecializations = new Dictionary<int, int>();
-            return View();
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Fehler beim Löschen: {ex.Message}";
+                return RedirectToAction("Index", "Admin");
+            }
         }
-        public IActionResult CreateEdit(Character character, int[] selectedMagicClasses)
+        // Hilfsmethoden
+        private void DeleteOldImage(string imagePath)
         {
-            //Validierung der Pflichtfelder
-            if(string.IsNullOrEmpty(character.Nachname) 
-                || string.IsNullOrEmpty(character.Vorname) 
-                || string.IsNullOrEmpty(character.Geschlecht)
-                || character.RasseId == 0
-                || character.LebensstatusId == 0
-                || character.EindruckId == 0
-                || selectedMagicClasses == null
-                || selectedMagicClasses.Length == 0)
+            try
             {
-                TempData["Error"] = "Pflichtfelder: Vor-/Nachname, Geschlecht, Rasse, Lebensstatus, Eindruck und mindestens eine Magieklasse sind erforderlich.";
-                return RedirectToAction("Form", new { id = character.Id });
-            }
-            if (character.Id == 0)
-            {               
-                // Create new character
-                character.CompletionLevel = CharacterCompleteness.BasicInfo; // Set default completion level
-                _context.Characters.Add(character);
-                _context.SaveChanges();
-
-                //add MagicClass             
-                foreach (var magicClassId in selectedMagicClasses)
+                var fullPath = Path.Combine(_environment.WebRootPath, imagePath.TrimStart('/'));
+                if (System.IO.File.Exists(fullPath))
                 {
-                    _context.CharacterMagicClasses.Add(new CharacterMagicClass
-                    {
-                        CharacterId = character.Id,
-                        MagicClassId = magicClassId
-                    });
+                    System.IO.File.Delete(fullPath);
                 }
-                _context.SaveChanges();
             }
-            else
+            catch (Exception ex)
             {
-                //Bestehenden Character bearbeiten
-                var characterToUpdate = _context.Characters
-                    .Include(c => c.CharacterMagicClasses)
-                    .FirstOrDefault(c => c.Id == character.Id);
-
-                if (characterToUpdate == null) 
-                {
-                    return NotFound();
-                }
-                // Update character properties
-                characterToUpdate.Nachname = character.Nachname;
-                characterToUpdate.Vorname = character.Vorname;
-                characterToUpdate.Geschlecht = character.Geschlecht;
-                characterToUpdate.RasseId = character.RasseId;
-                characterToUpdate.LebensstatusId = character.LebensstatusId;
-                characterToUpdate.EindruckId = character.EindruckId;
-                characterToUpdate.Geburtsdatum = character.Geburtsdatum;
-                // Optional: Update parent relationships if provided
-                if (character.VaterId.HasValue && character.VaterId.Value > 0)
-                {
-                    characterToUpdate.VaterId = character.VaterId;
-                }
-                else
-                {
-                    characterToUpdate.VaterId = null; // Clear if not provided
-                }
-                if (character.MutterId.HasValue && character.MutterId.Value > 0)
-                {
-                    characterToUpdate.MutterId = character.MutterId;
-                }
-                else
-                {
-                    characterToUpdate.MutterId = null; // Clear if not provided
-                }
-                //characterToUpdate.ImagePath = character.ImagePath;
-
-                //Update magic classes - first remove all existing
-                _context.CharacterMagicClasses.RemoveRange(characterToUpdate.CharacterMagicClasses);
-                //add MagicClass
-                foreach (var magicClassId in selectedMagicClasses)
-                {
-                    _context.CharacterMagicClasses.Add(new CharacterMagicClass
-                    {
-                        CharacterId = character.Id,
-                        MagicClassId = magicClassId,
-                    });
-                }
-                _context.SaveChanges();
+                // Log error but do not interrupt the main flow
+                Console.WriteLine($"Fehler beim Löschen des alten Bildes: {ex.Message}");
             }
-            return RedirectToAction("Index", "Admin");
         }
-
-        public IActionResult EditDetails(int characterId)
+        private void LoadFormViewBagData()
         {
-            // Load character details for editing
-            var character = _context.Characters
-                .Include(c => c.Details)
-                .FirstOrDefault(c => c.Id == characterId);
-            if (character == null)
-            {
-                return NotFound();
-            }
-            // ViewBag für DropDowns befüllen
+
+            // Load data for dropdowns
+            ViewBag.MagicClasses = _context.MagicClasses.Include(mc => mc.Obermagie).ThenInclude(o => o.LightCard).ToList();
+            ViewBag.Specializations = _context.MagicClassSpecializations.Include(s => s.MagicClass).ToList();
+            ViewBag.Rassen = _context.Rassen.ToList();
+            ViewBag.Lebensstatus = _context.Lebensstati.ToList();
+            ViewBag.Eindruecke = _context.Eindruecke.ToList();
+            ViewBag.Characters = _context.Characters.ToList();
             ViewBag.Staende = _context.Staende.ToList();
             ViewBag.Berufe = _context.Berufe.ToList();
             ViewBag.Blutgruppen = _context.Blutgruppen.ToList();
             ViewBag.Haeuser = _context.Haeuser.ToList();
             ViewBag.Herkunftslaender = _context.Herkunftslaender.ToList();
-
-            return View(character);
-        }
-
-        public IActionResult EditAffiliation(int characterId)
-        {
-            // Load character affiliation for editing
-            var character = _context.Characters
-                .Include(c => c.Affiliation)
-                .FirstOrDefault(c => c.Id == characterId);
-            if (character == null)
-            {
-                return NotFound();
-            }
-            // ViewBag für DropDowns befüllen
             ViewBag.Guilds = _context.Guilds.ToList();
-            ViewBag.Infanterien = _context.Infanterien.ToList();
-            ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
             ViewBag.Religions = _context.Religions.ToList();
-
-            return View(character);
+            ViewBag.Regiment = _context.Regiments.ToList();
+            ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
         }
-        public IActionResult Delete(int id)
+        private Character LoadCharacterForEditing(int id)
         {
-            // Load character data based on id
-            var character = _context.Characters.Find(id);
-            if (character == null)
-            {
-                return NotFound();
-            }
-            // Remove character from the database
-            _context.Characters.Remove(character);
-            _context.SaveChanges();
-            return RedirectToAction("Index", "Admin");
-        }
+            var character = _context.Characters
+                    .Include(c => c.Details)
+                    .Include(c => c.Affiliation)
+                    .Include(c => c.CharacterMagicClasses)
+                        .ThenInclude(cmc => cmc.MagicClassSpecialization)                     
+                    .Include(c => c.Rasse)
+                    .Include(c => c.Lebensstatus)
+                    .Include(c => c.Eindruck)
+                    .Include(c => c.Vater)
+                    .Include(c => c.Mutter)
+                    .FirstOrDefault(c => c.Id == id);
 
-        private bool checkInDB(string search)
-        {
-            var character = _context.Characters.FirstOrDefault(c => c.Nachname == search || c.Vorname == search);
             if (character != null)
             {
-                return true;
+                // Ausgewählte Magieklassen und Spezialisierungen in ViewBag speichern
+                var selectedMagicClasses = character.CharacterMagicClasses.Select(cmc => cmc.MagicClassId).ToArray();
+                var selectedSpecializations = character.CharacterMagicClasses
+                    .Where(cmc => cmc.MagicClassSpecializationId.HasValue)
+                    .ToDictionary(cmc => cmc.MagicClassId, cmc => cmc.MagicClassSpecializationId.Value);
+
+                SetSelectedMagicClassesViewBag(selectedMagicClasses, selectedSpecializations);
             }
-            else
+            return character;
+        }
+        private void SetSelectedMagicClassesViewBag(int[] selectedMagicClasses, Dictionary<int, int> selectedSpecializations)
+        {
+            ViewBag.SelectedMagicClasses = selectedMagicClasses ?? new int[0];
+            ViewBag.SelectedSpecializations = selectedSpecializations ?? new Dictionary<int, int>();
+        }
+        private bool ValidateStep1(Character character, int[] selectedMagicClasses)
+        {
+            return !string.IsNullOrEmpty(character.Vorname) &&
+                   !string.IsNullOrEmpty(character.Nachname) &&
+                   !string.IsNullOrEmpty(character.Rufname) &&
+                   !string.IsNullOrEmpty(character.Geschlecht) &&
+                   character.RasseId > 0 &&
+                   character.LebensstatusId > 0 &&
+                   character.EindruckId > 0 &&
+                   selectedMagicClasses != null &&
+                   selectedMagicClasses.Length >= 1 && 
+                   selectedMagicClasses.Length <= 2;
+        }
+        private void UpdateCharacterStep1(Character character)
+        {
+            var existingCharacter = _context.Characters.FirstOrDefault(c => c.Id == character.Id);
+            if (existingCharacter != null)
             {
-                return false;
+                existingCharacter.Vorname = character.Vorname;
+                existingCharacter.Nachname = character.Nachname;
+                existingCharacter.Rufname = character.Rufname;
+                existingCharacter.Geschlecht = character.Geschlecht;
+                existingCharacter.Geburtsdatum = character.Geburtsdatum;
+                existingCharacter.RasseId = character.RasseId;
+                existingCharacter.LebensstatusId = character.LebensstatusId;
+                existingCharacter.EindruckId = character.EindruckId;
+                existingCharacter.VaterId = character.VaterId;
+                existingCharacter.MutterId = character.MutterId;
             }
+        }
+        private void SaveCharacterMagicClasses(int characterId, int[] selectedMagicClasses, Dictionary<int, int> selectedSpecializations)
+        {
+            // Alle bestehenden MagicClasses für diesen Charakter entfernen
+            var existingMagicClasses = _context.CharacterMagicClasses.Where(cmc => cmc.CharacterId == characterId);
+            _context.CharacterMagicClasses.RemoveRange(existingMagicClasses);
+
+            if(selectedMagicClasses != null)
+            {
+                foreach (var magicClassId in selectedMagicClasses)
+                {
+                    var characterMagicCLass = new CharacterMagicClass
+                    {
+                        CharacterId = characterId,
+                        MagicClassId = magicClassId
+                    };
+
+                    // Spezialisierung hinzufügen, falls ausgewählt
+                    if (selectedSpecializations.ContainsKey(magicClassId))
+                    {
+                        characterMagicCLass.MagicClassSpecializationId = selectedSpecializations[magicClassId];
+                    }
+
+                    _context.CharacterMagicClasses.Add(characterMagicCLass);
+                }
+            }
+            _context.SaveChanges();
         }
     }
 }

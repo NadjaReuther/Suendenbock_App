@@ -1,8 +1,19 @@
 ﻿@using Suendenbock_App.Models.Domain
 @model Character
 @{
-    ViewData["Title"] = "Charakter erstellen";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model != null && Model.Id > 0 ? "Charakter bearbeiten" : "Charakter erstellen";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    int currentStep = ViewBag.Step != null ? (int)ViewBag.Step : 1;
+    if(Model != null)
+    {
+        // Bestimme den aktuellen Schritt basierend auf dem CompletionLevel
+        currentStep = (int)Model.CompletionLevel;
+        if(ViewBag.Step != null && (int)ViewBag.Step > currentStep)
+        {
+            currentStep = (int)ViewBag.Step; 
+        }
+    }
 }
 
 @section Styles {
@@ -11,27 +22,46 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 }
 
-<div class="steckbrief-container">
-        <div class="steckbrief-title">Charakter</div>
+<div class="steckbrief-background">
+    <div class="steckbrief-container">
+        <div class="steckbrief-title">@ViewData["Title"]</div>
         <!-- drei Schritt Navigation -->
         <div class="step-navigation">
-            <div class="step-item active" data-step="1">
+            <div class="step-item @(currentStep >= 1 ? "active" : "") @(currentStep > 1 ? "completed" : "")">
                 <div class="step-number">1</div>
-                <div class="step-title">Basis-Informationen<br /><small>(Pflichtfelder)</small></div>
+                <div class="step-title">Basis-Informationen</div>
                 <div class="step-connector"></div>
             </div>
-            <div class="step-item" data-step="2">
+            <div class="step-item @(currentStep >= 2 ? "active" : "") @(currentStep > 2 ? "completed" : "")">
                 <div class="step-number">2</div>
-                <div class="step-title">Persönliche Details<br /><small>(Optional)</small></div>
+                <div class="step-title">Persönliche Details</div>
                 <div class="step-connector"></div>
             </div>
-            <div class="step-item" data-step="3">
+            <div class="step-item @(currentStep >= 3 ? "active" : "")">
                 <div class="step-number">3</div>
-                <div class="step-title">Zugehörigkeiten<br /><small>(Optional)</small></div>
+                <div class="step-title">Zugehörigkeiten</div>
             </div>
         </div>
-        <form asp-controller="Character" asp-action="CreateEdit" method="post">
-            <div class="form-step active" data-step="1">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show mt-3">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show mt-3">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- Schritt 1: Basis Informationen -->
+        <div class="form-step @(currentStep == 1 ? "active" : "")" data-step="1">
+            <form asp-controller="Character" asp-action="SaveStep1" method="post">
                 @if (Model != null && Model.Id > 0)
                 {
                     <input type="hidden" name="Id" value="@Model.Id" />
@@ -39,14 +69,22 @@
                 <div class="row mt-5">
                     <div class="col-md-6 text-center">
                         <div class="image-upload-container">
-                            <div class="image-preview" onclick="document.getElementById('imageUpload').click()">
-                                <div class="image-placeholder">
-                                    <i>🖼️</i>
-                                    <div>Portrait<br><small>Klicken zum Hochladen</small></div>
-                                </div>
+                            <div class="image-preview" id="character-drop-zone" onclick="document.getElementById('characterImageUpload').click()">
+                                @if (!string.IsNullOrEmpty(Model?.ImagePath))
+                                {
+                                    <img src="@Model.ImagePath" alt="Charakterbild" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;" />
+                                }
+                                else
+                                {
+                                    <div class="image-placeholder">
+                                        <span>👤</span>
+                                        <div>Portrait<br><small>Klicken zum Hochladen</small></div>
+                                    </div>
+                                }
+                                <div class="drop-zone-hint">📁 Datei hier ablegen</div>
                             </div>
-                            <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="previewImage(this)">
-                            <button type="button" class="image-upload-btn" onclick="document.getElementById('imageUpload').click()">
+                            <input type="file" id="characterImageUpload" name="characterImage" accept="image/jpeg,image/jpg,image/png" style="display: none;" onchange="previewImage(this, '#character-drop-zone')">
+                            <button type="button" class="image-upload-btn" onclick="document.getElementById('characterImageUpload').click()">
                                 📷 Bild wählen
                             </button>
                         </div>
@@ -54,27 +92,23 @@
                     <div class="col-md-6">
                         <div class="row mb-3">
                             <input type="text" class="form-control" id="vorname" name="vorname"
-                                    value="@(Model != null ? Model.Vorname : "")" required placeholder="Vorname">
+                                    value="@(Model != null ? Model.Vorname : "")" required placeholder="Vorname *">
                         </div>
                         <div class="row mb-3">
                             <input type="text" class="form-control" id="nachname" name="nachname"
-                                   value="@(Model != null ? Model.Nachname : "")" required placeholder="Nachname">
+                                   value="@(Model != null ? Model.Nachname : "")" required placeholder="Nachname *">
                         </div>
                         <div class="row mb-3">
                             <input type="text" class="form-control" id="rufname" name="rufname"
-                               value="@(Model != null ? Model.Rufname : "")" required placeholder="Rufname">
-                        </div>
-                        <div class="row mb-3">
-                            <input type="date" class="form-control" id="rufname" name="rufname"
-                                   value="@(Model != null ? Model.Geburtsdatum : "")" min="100-00-00" max="1619-12-31" required />
+                               value="@(Model != null ? Model.Rufname : "")" required placeholder="Rufname *">
                         </div>
                     </div>
                 </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <select class="form-select" id="geschlecht" name="geschlecht">
-                            <option value="" disabled selected>Geschlecht auswählen...</option>
-
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="geschlecht" class="form-label">Geschlecht *</label>
+                        <select class="form-select" id="geschlecht" name="geschlecht" required>
+                            <option value="">Geschlecht auswählen...</option>
                             @if (Model != null && Model.Geschlecht == "männlich")
                             {
                                 <option value="männlich" selected>männlich</option>
@@ -94,14 +128,21 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-6">                        
-                        <select class="form-select" id="rasse" name="rasse">
-                            <option value="" disabled selected>Rasse auswählen...</option>
+                    <div class="col-md-6 mb-3">
+                        <label for="geburtsdatum" class="form-label">Geburtsdatum</label>
+                        <input type="date" class="form-control" id="geburtsdatum" name="geburtsdatum" value="@(Model?.Geburtsdatum ?? "")" min="100-01-01" max="1619-12-31" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="rasseId" class="form-label">Rasse *</label>
+                        <select class="form-select" id="rasseId" name="rasseId" required>
+                            <option value="">Rasse auswählen...</option>
                             @if(ViewBag.Rassen != null)
                             {
                                 foreach (var rasse in ViewBag.Rassen)
                                 {
-                                    if (Model != null && Model.Rasse.Name == rasse.Name)
+                                    if(Model != null && Model.Rasse.Name == rasse.Name)
                                     {
                                         <option value="@rasse.Id" selected>@rasse.Name</option>
                                     }
@@ -113,71 +154,74 @@
                             }
                         </select>
                     </div>
-                </div>
-                <!-- Eltern-Dropdowns hinzufügen -->
-                <div class="row">
-                <!-- Vater-Dropdown -->
-                <div class="col-md-6 mb-3">
-                    <label for="vaterId" class="form-label">Vater</label>
-                    <select class="form-select character-select-male" id="vaterId" name="vaterId">
-                        <option value="">Vater auswählen...</option>
-                        @if (Model != null && Model.VaterId.HasValue)
-                        {
-                            <option value="@Model.VaterId" selected>@Model.Vater?.Vorname @Model.Vater?.Nachname</option>
-                        }
-                    </select>
+                    <div class="col-md-4 mb-3">
+                        <label for="lebensstatusId" class="form-label">Lebensstatus *</label>
+                        <select class="form-select" id="lebensstatusId" name="lebensstatusId" required>
+                            <option value="">Lebensstatus auswählen...</option>
+                            @if (ViewBag.Lebensstatus != null)
+                            {
+                                foreach(var status in ViewBag.Lebensstatus)
+                                {
+                                    if(Model != null && Model.Lebensstatus.Name == status.Name)
+                                    {
+                                        <option value="@status.Id" selected>@status.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@status.Id">@status.Name</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="eindruckId" class="form-label">Eindruck *</label>
+                        <select class="form-select" id="eindruckId" name="eindruckId" required>
+                            <option value="">Eindruck auswählen...</option>
+                            @if (ViewBag.Eindruecke != null)
+                            {
+                                foreach(var eindruck in ViewBag.Eindruecke)
+                                {
+                                    if(Model != null && Model.Eindruck.Name == eindruck.Name)
+                                    {
+                                        <option value="@eindruck.Id" selected>@eindruck.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@eindruck.Id">@eindruck.Name</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Mutter-Dropdown -->
-                <div class="col-md-6 mb-3">
-                    <label for="mutterId" class="form-label">Mutter</label>
-                    <select class="form-select character-select-female" id="mutterId" name="mutterId">
-                        <option value="">Mutter auswählen...</option>
-                        @if (Model != null && Model.MutterId.HasValue)
-                        {
-                            <option value="@Model.MutterId" selected>@Model.Mutter?.Vorname @Model.Mutter?.Nachname</option>
-                        }
-                    </select>
-                </div>
-                </div>
-            </div>
                 <!-- Magieklassen -->
-                <div class="row mb-3">
-                    <label class="form-label">Magieklassen</label>
+                <div class="mb-3">
+                    <label class="form-label">Magieklassen (maximal 2) *</label>
                     <div class="card p-3">
-                        <div class="row">
+                        <div class="row" id="magicClassContainer">
                             @if (ViewBag.MagicClasses != null)
                             {
+                                var selectedMagicClasses = ViewBag.SelectedMagicClasses as int[] ?? new int[0];
                                 foreach (var magicclass in ViewBag.MagicClasses)
                                 {
-                                    bool isSelected = false;
-
-                                    // Prüfe, ob SelectedMagicClasses existiert und nicht null ist
-                                    if (ViewBag.SelectedMagicClasses != null)
-                                    {
-                                        // Durchlaufe die ausgewählten IDs und prüfe, ob die aktuelle MagicClass enthalten ist
-                                        foreach (var id in ViewBag.SelectedMagicClasses)
-                                        {
-                                            if (id.Equals(magicclass.Id))
-                                            {
-                                                isSelected = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    <div class="col-md-2 col-sm-4 mb-2">
+                                    bool isSelected = selectedMagicClasses.Contains(magicclass.Id);
+                                    <div class="col-md-3 col-sm-6 mb-2">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox"
+                                            <input class="form-check-input magic-class-checkbox" type="checkbox"
                                                     name="selectedMagicClasses"
                                                     value="@magicclass.Id"
                                                     id="magic-@magicclass.Id"
                                                     @(isSelected ? "checked" : "")>
-                                                <label class="form-check-label" for="magic-@magicclass.Id">
-                                                    <div class="d-flex align-items-center">
-                                                        <img class="magicclassIcon" src="@magicclass.ImagePath" />
-                                                        <span class="ms-2">@magicclass.Bezeichnung</span>
-                                                    </div>
+                                            <label class="form-check-label" for="magic-@magicclass.Id">
+                                                <div class="d-flex align-items-center">
+                                                    @if (!string.IsNullOrEmpty(magicclass.ImagePath))
+                                                    {
+                                                        <img src="@magicclass.ImagePath" class="magicclassIcon me-2" alt="@magicclass.Bezeichnung" />
+                                                    }
+                                                    <span>@magicclass.Bezeichnung</span>
+                                                </div>
                                             </label>
                                         </div>
                                     </div>
@@ -188,248 +232,198 @@
                 </div>
 
                 <!-- Spezialisierungen -->
-                <div class="row mb-3">
+                <div class="mb-3" id="specializationsContainer">
                     <label class="form-label">Spezialisierungen</label>
-                    <div class="card p-3">
-                        <div class="row specializations-container">
-                            @{
-                                // Dictionary für ausgewählte Spezialisierungen
-                                var selectedSpecs = new Dictionary<int, int>();
+                    <div class="card p-3">                        
+                        @if (ViewBag.MagicClasses != null && ViewBag.Specializations != null)
+                        {
+                            var selectedSpecializations = ViewBag.SelectedSpecializations as Dictionary<int, int> ?? new Dictionary<int, int>();
+                            var selectedMagicClasses = ViewBag.SelectedMagicClasses as int[] ?? new int[0];
 
-                                // Dictionary befüllen, wenn ViewBag.SelectedSpecializations existiert
-                                if (ViewBag.SelectedSpecializations != null)
-                                {
-                                    selectedSpecs = ViewBag.SelectedSpecializations;
-                                }
-
-                                // Magieklassen in lokale Variablen umwandeln
-                                var magicClasses = new List<MagicClass>();
-                                if (ViewBag.MagicClasses != null)
-                                {
-                                    magicClasses = ViewBag.MagicClasses;
-                                }
-
-                                // Spezialisierungen in lokale Variablen umwandeln
-                                var specializations = new List<MagicClassSpecialization>();
-                                if (ViewBag.Specializations != null)
-                                {
-                                    specializations = ViewBag.Specializations;
-                                }
-
-                                // Jetzt können wir LINQ-Methoden auf den typisierten Listen verwenden
-                                var specsGrouped = specializations.GroupBy(s => s.MagicClassId);
-                            }
-
-                            @if (specsGrouped.Any())
+                            foreach(var magicClass in ViewBag.MagicClasses)
                             {
-                                @foreach (var group in specsGrouped)
+                                var specializations = ViewBag.Specializations.Where(s => s.MagicClassId == magicClassId.Id).ToList();
+                                if(specializations.Any())
                                 {
-                                    int magicClassId = group.Key;
-                                    var magicClass = magicClasses.FirstOrDefault(m => m.Id == magicClassId);
-
-                                    if (magicClass != null)
-                                    {
-                                        <div class="col-12 specialization-group border p-2 mt-2" data-magic-class-id="@magicClassId" style="display:none;">
-                                            <h5 class="bg-light p-2">Spezialisierungen für @magicClass.Bezeichnung</h5>
-                                            <div class="row">
-                                                @foreach (var specialization in group)
+                                    bool shouldShow = selectedMagicClasses.Contains(magicClass.Id);
+                                    <div class="specialization-group mb-3" data-magic-class-id="@magicClass.Id" style="display: @(shouldShow ? "block" : "none")">
+                                        <h6>Spezialisierung für @magicClass.Bezeichnung</h6>
+                                        <select class="form-select specialization-select" name="selectedSpecializations[@magicClass.Id]" data-magic-class-id="@magicClass.Id">
+                                            <option value="">Keine Spezialisierung</option>
+                                            @foreach(var spec in specializations)
+                                            {
+                                                bool isSpecSelected = selectedSpecializations.ContainsKey(magicClass.Id) && selectedSpecializations[magicClass.Id] == spec.Id;
+                                                if(isSpecSelected)
                                                 {
-                                                    bool isSpecSelected = selectedSpecs.ContainsKey(magicClassId) &&
-                                                    selectedSpecs[magicClassId] == specialization.Id;
-
-                                                    <div class="col-md-4 col-sm-6 mb-2">
-                                                        <div class="form-check">
-                                                            <input class="form-check-input" type="radio"
-                                                                    name="specializationId_@magicClassId"
-                                                                    value="@specialization.Id"
-                                                                    id="spec-@specialization.Id"
-                                                                    @(isSpecSelected ? "checked" : "") />
-                                                            <label class="form-check-label" for="spec-@specialization.Id">
-                                                                @specialization.Name
-                                                            </label>
-                                                        </div>
-                                                    </div>
+                                                    <option value="@spec.Id" selected>@spec.Bezeichnung</option>
                                                 }
-                                            </div>
-                                        </div>
+                                                else
+                                                {
+                                                    <option value="@spec.Id">@spec.Bezeichnung</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn-wachs">Schritt 1 speichern und weiter</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Schritt 2: Persönliche Details -->
+        <div class="form-step @(currentStep == 2 ? "active" : "")" data-step="2">
+            @if (Model != null && Model.Id > 0)
+            {
+                <form asp-controller="Character" asp-action="SaveStep2" method="post">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+
+                    <h4 class="text-center mb-4" style="color: #6e4b1f;">🏰 Persönliche Details</h4>
+                        
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="standId" class="form-label">Stand</label>
+                            <select class="form-select" id="standId" name="standId">
+                                <option value="">Stand auswählen...</option>
+                                @if (ViewBag.Staende != null)
+                                {
+                                    foreach (var stand in ViewBag.Staende)
+                                    {
+                                        if (Model.Details != null && Model.Details.Stand == stand)
+                                        {
+                                            <option value="@stand.Id">@stand.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@stand.Id">@stand.Name</option>
+                                        }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                <div class="alert alert-info">
-                                    Keine Spezialisierungen vorhanden oder keine MagicClass mit Spezialisierungen ausgewählt.
-                                </div>
-                            }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="berufId" class="form-label">Beruf</label>
+                            <select class="form-select" id="berufId" name="berufId">
+                                <option value="">Beruf wählen...</option>
+                                @if (ViewBag.Berufe != null)
+                                {
+                                    foreach (var beruf in ViewBag.Berufe)
+                                    {
+                                        if (Model.Details != null && Model.Details.Beruf == beruf)
+                                        {
+                                            <option value="@beruf.Id" selected>@beruf.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@beruf.Id">@beruf.Name</option>
+                                        }
+                                    }
+                                }
+                            </select>
                         </div>
                     </div>
-                </div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <select class="form-select" id="lebensstatus" name="lebensstatus">
-                        <option value="" disabled selected>Lebensstatus auswählen...</option>
-                        @if (ViewBag.Lebensstatus != null)
-                        {
-                            foreach (var status in ViewBag.Lebensstatus)
-                            {
-                                if (Model != null && Model.Lebensstatus == status)
-                                {
-                                    <option value="@status.Id" selected>@status.Name</option>
-                                }
-                                else
-                                {
-                                    <option value="@status.Id">@status.Name</option>
-                                }
-                            }
-                        }
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <select class="form-select" id="eindruck" name="eindruck">
-                        <option value="" disabled selected>Eindruck auswählen...</option>
-                        @if (ViewBag.Eindruecke != null)
-                        {
-                            foreach (var eindruck in ViewBag.Eindruecke)
-                            {
-                                if (Model != null && Model.Eindruck == eindruck)
-                                {
-                                    <option value="@eindruck.Id" selected>@eindruck.Name</option>
-                                }
-                                else
-                                {
-                                    <option value="@eindruck.Id">@eindruck.Name</option>
-                                }
-                            }
-                        }
-                    </select>
-                </div>
-            </div>
-                  
-
-            <div class="form-step" data-step="2">
-                 <h4 class="text-center mb-4" style="color: #6e4b1f;">🏰 Persönliche Details</h4>
-                
-                 <div class="row">
-                     <div class="col-md-6">
-                        <select class="form-select" id="standId" name="standId">
-                            <option value="" disabled selected>Stand auswählen...</option>
-                            @if(ViewBag.Staende != null)
-                            {
-                                foreach(var stand in ViewBag.Staende)
-                                {
-                                    if(Model != null && Model.Details.Stand == stand)
-                                    {
-                                        <option value="@stand.Id" selected>@stand.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@stand.Id">@stand.Name</option>
-                                    }
-                                }
-                            }
-                        </select>
-                     </div>
-                    <div class="col-md-6">                
-                        <select class="form-select" id="berufId" name="berufId">
-                            <option value="" disabled selected>Beruf wählen...</option>
-                            @if(ViewBag.Berufe != null)
-                            {
-                                foreach(var beruf in ViewBag.Berufe)
-                                {
-                                    if(Model != null && Model.Details.Beruf == beruf)
-                                    {
-                                        <option value="@beruf.Id" selected>@beruf.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@beruf.Id">@beruf.Name</option>
-                                    }
-                                }
-                            }                                
-                        </select>
-                    </div>
-                 </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <select class="form-select" id="hausId" name="hausId">
-                            <option value="" disabled selected>Haus auswählen...</option>
-                            @if (ViewBag.Haeuser != null)
-                            {
-                                foreach (var haus in ViewBag.Haeuser)
-                                {
-                                    if (Model != null && Model.Details.Haus.Name == haus.Name)
-                                    {
-                                        <option value="@haus.Id" selected>@haus.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@haus.Id">@haus.Name</option>
-                                    }
-                                }
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <select class="form-select" id="herkunftslaenderId" name="herkunftslaenderId">
-                            <option value="" disabled selected>Herkunftsland wählen...</option>
-                            @if (ViewBag.Herkunftslaender != null)
-                            {
-                                foreach (var herkunftsland in ViewBag.Herkunftslaender)
-                                {
-                                    if (Model != null && Model.Details.Herkunftsland.Name == herkunftsland.Name)
-                                    {
-                                        <option value="@herkunftsland.Id" selected>@herkunftsland.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@herkunftsland.Id">@herkunftsland.Name</option>
-                                    }
-                                }
-                            }
-                        </select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">                
-                        <select class="form-select" id="blutgruppeId" name="blutgruppeId">
-                            <option value="">Blutgruppe wählen...</option>
-                            @if(ViewBag.Blutgruppen != null)
-                            {
-                                foreach(var blutgruppe in ViewBag.Blutgruppen)
-                                {
-                                    if(Model != null && Model.Details.Blutgruppe.Name == blutgruppe.Name)
-                                    {
-                                        <option value="@blutgruppe.Id" selected>@blutgruppe.Name</option>
-                                    }                                        
-                                    else
-                                    {
-                                        <option value="@blutgruppe.Id">@blutgruppe.Name</option>
-                                    }
-                                }                                    
-                            }                     
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Körpergröße (cm)</label>
-                        @if(Model != null && Model.Details.BodyHeight != null)
-                        {
-                            <input type="number" class="form-control" name="bodyHeight" value="@Model.Details.BodyHeight">
-                        }
-                        else
-                        {
-                            <input type="number" class="form-control" name="bodyHeight" placeholder="z.B. 175">
-                        }                            
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-step" data-step="3">
-                <h4 class="text-center mb-4" style="color: #6e4b1f;">⚔️ Zugehörigkeiten</h4>
-                <div class="row">
+                    <div class="row">
                         <div class="col-md-6 mb-3">
-                            <!-- Guild-Dropdown -->
+                            <label for="hausId" class="form-label">Haus</label>
+                            <select class="form-select" id="hausId" name="hausId">
+                                <option value="">Haus auswählen...</option>
+                                @if (ViewBag.Haeuser != null)
+                                {
+                                    foreach (var haus in ViewBag.Haeuser)
+                                    {
+                                        if (Model != null && Model.Details.Haus.Name == haus.Name)
+                                        {
+                                            <option value="@haus.Id" selected>@haus.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@haus.Id">@haus.Name</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="herkunftslandId" class="form-label">Herkunftsland</label>
+                            <select class="form-select" id="herkunftslandId" name="herkunftslandId">
+                                <option value="">Herkunftsland wählen...</option>
+                                @if (ViewBag.Herkunftslaender != null)
+                                {
+                                    foreach (var herkunftsland in ViewBag.Herkunftslaender)
+                                    {
+                                        if (Model != null && Model.Details.Herkunftsland.Name == herkunftsland.Name)
+                                        {
+                                            <option value="@herkunftsland.Id" selected>@herkunftsland.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@herkunftsland.Id">@herkunftsland.Name</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6  mb-3">
+                            <label for="blutgruppeId" class="form-label">Blutgruppe</label>
+                            <select class="form-select" id="blutgruppeId" name="blutgruppeId">
+                                <option value="">Blutgruppe wählen...</option>
+                                @if(ViewBag.Blutgruppen != null)
+                                {
+                                    foreach(var blutgruppe in ViewBag.Blutgruppen)
+                                    {
+                                        if(Model != null && Model.Details.Blutgruppe.Name == blutgruppe.Name)
+                                        {
+                                            <option value="@blutgruppe.Id" selected>@blutgruppe.Name</option>
+                                        }                                        
+                                        else
+                                        {
+                                            <option value="@blutgruppe.Id">@blutgruppe.Name</option>
+                                        }
+                                    }                                    
+                                }                     
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="bodyHeight" class="form-label">Körpergröße (cm)</label>
+                            <input type="number" class="form-control" id="bodyHeight" name="bodyHeight" 
+                                    value="@(Model?.Details?.BodyHeight ?? 0)" placeholder="z.B. 175" min="50" max="600" />         
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("Form", new { id = Model.Id, step = 1 })" class="btn btn-secondary me-3">
+                            ← Zurück zu Schritt 1
+                        </a>
+                        <button type="button" class="btn-wachs">Schritt 2 speichern und weiter</button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    Bitte speichern Sie zuerst die Basis-Informationen, um mit den persönlichen Details fortzufahren.
+                </div>
+            }
+            </div>
+
+        <!-- Schritt 3: Zugehörigkeiten -->
+        <div class="form-step @(currentStep == 3 ? "active" : "")" data-step="3">
+            @if (Model != null && Model.Id > 0)
+            {
+                <form asp-controller="Character" asp-action="SaveStep3" method="post">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+                
+                    <h4 class="text-center mb-4" style="color: #6e4b1f;">⚔️ Zugehörigkeiten</h4>
+                
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="guldId" class="form-label">Gilde</label>
                             <select class="form-select" id="guildId" name="guildId">
                                 <option value="" disabled selected>Gilde auswählen...</option>
                                 @if (ViewBag.Guilds != null)
@@ -448,8 +442,8 @@
                                 }
                             </select>
                         </div>
-                        <!-- Religion-Dropdown -->
                         <div class="col-md-6 mb-3">
+                            <label for="religionId" class="form-label">Religion</label>
                             <select class="form-select" id="religionId" name="religionId">
                                 <option value="" disabled selected>Religion auswählen...</option>
                                 @if (ViewBag.Religions != null)
@@ -469,8 +463,9 @@
                             </select>
                         </div>
                     </div>
-                <div class="row mb-3">
-                    <div class="col-md-6">                
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                        <label for="regimentsId" class="form-label">Regiment</label>
                         <select class="form-select" name="regimentsId">
                             <option value="">Regiment wählen...</option>
                             @if(ViewBag.Regiment != null)
@@ -489,9 +484,10 @@
                             }                                                            
                         </select>
                     </div>
-                    <div class="col-md-6">                
+                    <div class="col-md-6 mb-3">
+                        <label for="infanterierangId" class="form-label">Infanterierang</label>
                         <select class="form-select" id="infanterierangId" name="infanterierangId">
-                            <option value="">Rang wählen...</option>
+                            <option value="">Infanterierang wählen...</option>
                             @if(ViewBag.Infanterieraenge != null)
                             {
                                 foreach(var infanterierang in ViewBag.Infanterieraenge)
@@ -509,30 +505,50 @@
                         </select>
                     </div>
                 </div>
+                    
                 <div class="text-center mt-4">
-                    <div class="alert alert-success">
+                    <div class="alert alert-success mb-3">
                         <strong>🎉 Fast geschafft!</strong><br>
-                        Überprüfe deine Angaben und erstelle den Charakter.
+                        Überprüfe deine Angaben und schließe die Charaktererstellung ab.
                     </div>
-                    <button type="submit" class="btn-wachs">Gebilligt</button>
+                    <a href="@Url.Action("Form", new { id = Model.Id, step = 2 })" class="btn btn-secondary me-3">
+                        ← Zurück zu Schritt 2
+                    </a>
+                    <button type="submit" class="btn-wachs">Charakter abschließen</button>
                 </div>
+            </form>
+        }
+        else
+        {
+            <div class="alert alert-warning">
+                Bitte speichern Sie zuerst die vorherigen Schritte, um fortzufahren.
             </div>
-            <!-- Navigation Buttons -->
-            <div class="step-navigation-buttons">
-                <button type="button" class="btn-prev" onclick="previousStep()" style="display: none;">
-                    ← Zurück
-                </button>
-                <div style="flex-grow: 1;"></div>
-                <button type="button" class="btn-next" onclick="nextStep()">
-                    Weiter →
-                </button>
-            </div>
-
-    </form>
+        }
+          
+        </div>
+    </div>
 </div>
 
 @section Scripts {
+    
+    <script src="~/js/imagePreview.js"></script>
     <script>
+        // Bild-Upload Drag & Drop aktivieren
+        enableImageDragDrop('#character-drop-zone', 'characterImageUpload');
+
+        // Form Submission für die drei Schritte
+        function submitStep1() {
+            document.getElementById('step1Form').submit();
+        }
+
+        function submitStep2() {
+            document.getElementById('step2Form').submit();
+        }
+
+        function submitStep3() {
+            document.getElementById('step3Form').submit();
+        }
+
          let currentStep = 1;
         const totalSteps = 3;
 
@@ -605,29 +621,10 @@
             }
         }
 
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.querySelector('.image-preview');
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Portrait Preview">`;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        // Spezialisierungen Toggle (falls implementiert)
-        document.querySelectorAll('input[name="selectedMagicClasses"]').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                // Hier könntest du Spezialisierungen ein-/ausblenden
-                console.log('Magieklasse geändert:', this.value, this.checked);
-            });
-        });
-
         // Initial setup
         updateStepIndicator();
 
-                    $(document).ready(function() {
+        $(document).ready(function() {
             // Väter (nur männlich)
             $('.character-select-male').select2({
                 ajax: {
@@ -705,6 +702,52 @@
                     searching: function() {
                         return "Suche nach Müttern...";
                     }
+                }
+            });
+
+            // Select2 für Spezialisierungen initialisieren
+            $('.specialization-select').select2({
+                placeholder: 'Spezialisierung wählen...',
+                allowClear: true,
+            });
+
+            // Maximal 2 Checkboxen erlauben
+            $('input[name="selectedMagicClasses"]').change(function() {
+                var checkedCount = $('input[name="selectedMagicClasses"]:checked').length;
+                if (checkedCount > 2) {
+                    this.checked = false;
+                    alert('Du kannst maximal 2 Magieklassen auswählen.');
+                }
+                // Zeige/Verstecke Spezialisierungen basierend auf ausgewählten Magieklassen
+                toggleSpecializations();
+            });
+
+            function toggleSpecializations() {
+                $('.specialization-group').hide();
+
+                $('.magic-class-checkbox:checked').each(function() {
+                    var magicClassId = $(this).val();
+                    $('.specialization-group[data-magic-class-id="' + magicClassId + '"]').show();
+                });
+            }
+
+            //beim Laden der Seite SPezialisierungen aktualisieren
+            toggleSpecializations();
+
+            // Validierung für Schritt 1
+            $('form[action*="SaveStep1"]').on('submit', function(e) {
+                var checkedMagicClasses = $('.magic-class-checkbox:checked').length;
+
+                if (checkedMagicClasses === 0) {
+                    e.preventDefault();
+                    alert('Bitte wähle mindestens eine Magieklasse aus.');
+                    return false;
+                }
+
+                if(checkedMagicClasses > 2) {
+                    e.preventDefault();
+                    alert('Du kannst maximal 2 Magieklassen auswählen.');
+                    return false;
                 }
             });
         });
