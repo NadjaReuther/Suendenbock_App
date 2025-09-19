@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\images\magicclass\" />
     <Folder Include="wwwroot\images\guild\" />
     <Folder Include="wwwroot\images\religion\" />
   </ItemGroup>

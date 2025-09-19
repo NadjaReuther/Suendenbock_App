@@ -44,7 +44,7 @@ namespace Suendenbock_App.Controllers
             }
             return View(character);
         }
-        public IActionResult Form(int id)
+        public IActionResult Form(int id = 0)
         {
             //Lade Basis-Daten für das Formular
             LoadFormViewBagData();
@@ -121,7 +121,7 @@ namespace Suendenbock_App.Controllers
                                 TempData["Error"] = $"Bild-Upload fehlgeschlagen: {ex.Message}";
                             }
                         }
-                        UpdateCharacterStep1(existingCharacter);
+                        UpdateCharacterStep1(existingCharacter, character);
                     }
                 }
                 //Magieklassen und Spezialisierung speichern
@@ -138,11 +138,11 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public IActionResult SaveStep2(int id, int? standId, int? berufId, int? blutgruppeId, int? hausId, int? herkunftsland, int? bodyHeight)
+        public async Task<IActionResult> SaveStep2(int id, int? standId, int? berufId, int? blutgruppeId, int? hausId, int? herkunftsland, int? bodyHeight)
         {
             try
             {
-                var character = _context.Characters.Include(c => c.Details).FirstOrDefault(c => c.Id == id);
+                var character = await _context.Characters.Include(c => c.Details).FirstOrDefaultAsync(c => c.Id == id);
                 if(character == null)
                 {
                     return NotFound();
@@ -161,7 +161,7 @@ namespace Suendenbock_App.Controllers
                 character.Details.BodyHeight = bodyHeight;
 
                 character.CompletionLevel = CharacterCompleteness.WithDetails;
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Schritt 2 erfolgreich gespeichert!";
                 return RedirectToAction("Form", new { id = character.Id, step = 3 });
@@ -173,11 +173,11 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public IActionResult SaveStep3(int id, int? guildId, int? religionId, int? regimentId, int? infanterierangId)
+        public async Task<IActionResult> SaveStep3(int id, int? guildId, int? religionId, int? regimentId, int? infanterierangId)
         {
             try
             {
-                var character = _context.Characters.Include(c => c.Affiliation).FirstOrDefault(c => c.Id == id);
+                var character = await _context.Characters.Include(c => c.Affiliation).FirstOrDefaultAsync(c => c.Id == id);
                 if (character == null)
                 {
                     return NotFound();
@@ -192,8 +192,9 @@ namespace Suendenbock_App.Controllers
                 character.Affiliation.ReligionId = religionId;
                 character.Affiliation.RegimentsId = regimentId;
                 character.Affiliation.InfanterierangId = infanterierangId;
+                
                 character.CompletionLevel = CharacterCompleteness.Complete;
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Charakter erfolgreich erfolgreich erstellt/aktualisiert!";
                 return RedirectToAction("Index", "Admin");
@@ -319,24 +320,21 @@ namespace Suendenbock_App.Controllers
                    selectedMagicClasses.Length >= 1 && 
                    selectedMagicClasses.Length <= 2;
         }
-        private void UpdateCharacterStep1(Character character)
+        private void UpdateCharacterStep1(Character existingCharacter, Character newCharacter)
         {
-            var existingCharacter = _context.Characters.FirstOrDefault(c => c.Id == character.Id);
-            if (existingCharacter != null)
-            {
-                existingCharacter.Vorname = character.Vorname;
-                existingCharacter.Nachname = character.Nachname;
-                existingCharacter.Rufname = character.Rufname;
-                existingCharacter.Geschlecht = character.Geschlecht;
-                existingCharacter.Geburtsdatum = character.Geburtsdatum;
-                existingCharacter.RasseId = character.RasseId;
-                existingCharacter.LebensstatusId = character.LebensstatusId;
-                existingCharacter.EindruckId = character.EindruckId;
-                existingCharacter.VaterId = character.VaterId;
-                existingCharacter.MutterId = character.MutterId;
-            }
+            // Der existingCharacter ist bereits geladen, keine neue Datenbankabfrage nötig
+            existingCharacter.Vorname = newCharacter.Vorname;
+            existingCharacter.Nachname = newCharacter.Nachname;
+            existingCharacter.Rufname = newCharacter.Rufname;
+            existingCharacter.Geschlecht = newCharacter.Geschlecht;
+            existingCharacter.Geburtsdatum = newCharacter.Geburtsdatum;
+            existingCharacter.RasseId = newCharacter.RasseId;
+            existingCharacter.LebensstatusId = newCharacter.LebensstatusId;
+            existingCharacter.EindruckId = newCharacter.EindruckId;
+            existingCharacter.VaterId = newCharacter.VaterId;
+            existingCharacter.MutterId = newCharacter.MutterId;
         }
-        private void SaveCharacterMagicClasses(int characterId, int[] selectedMagicClasses, Dictionary<int, int> selectedSpecializations)
+        private async Task SaveCharacterMagicClasses(int characterId, int[] selectedMagicClasses, Dictionary<int, int> selectedSpecializations)
         {
             // Alle bestehenden MagicClasses für diesen Charakter entfernen
             var existingMagicClasses = _context.CharacterMagicClasses.Where(cmc => cmc.CharacterId == characterId);
@@ -361,7 +359,7 @@ namespace Suendenbock_App.Controllers
                     _context.CharacterMagicClasses.Add(characterMagicCLass);
                 }
             }
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

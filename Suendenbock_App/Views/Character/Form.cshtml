@@ -206,7 +206,7 @@
                                 var selectedMagicClasses = ViewBag.SelectedMagicClasses as int[] ?? new int[0];
                                 foreach (var magicclass in ViewBag.MagicClasses)
                                 {
-                                    bool isSelected = selectedMagicClasses.Contains(magicclass.Id);
+                                    bool isSelected = Array.Exists(selectedMagicClasses, x => x == magicclass.Id);
                                     <div class="col-md-3 col-sm-6 mb-2">
                                         <div class="form-check">
                                             <input class="form-check-input magic-class-checkbox" type="checkbox"
@@ -234,43 +234,38 @@
                 <!-- Spezialisierungen -->
                 <div class="mb-3" id="specializationsContainer">
                     <label class="form-label">Spezialisierungen</label>
-                    <div class="card p-3">                        
-                        @if (ViewBag.MagicClasses != null && ViewBag.Specializations != null)
-                        {
-                            var selectedSpecializations = ViewBag.SelectedSpecializations as Dictionary<int, int> ?? new Dictionary<int, int>();
-                            var selectedMagicClasses = ViewBag.SelectedMagicClasses as int[] ?? new int[0];
-
-                            foreach(var magicClass in ViewBag.MagicClasses)
+                    <div class="card p-3">
+                        <div class="row" id="specializationsRow">
+                            @if (ViewBag.MagicClasses != null && ViewBag.Specializations != null)
                             {
-                                var specializations = ViewBag.Specializations.Where(s => s.MagicClassId == magicClassId.Id).ToList();
-                                if(specializations.Any())
+                                var selectedMagicClasses = ViewBag.SelectedMagicClasses as int[] ?? new int[0];
+                                var selectedSpecializations = ViewBag.SelectedSpecializations as Dictionary<int, int> ?? new Dictionary<int, int>();
+                                var allSpecializations = ViewBag.Specializations as List<MagicClassSpecialization> ?? new List<MagicClassSpecialization>();
+
+                                foreach (var magicClass in ViewBag.MagicClasses)
                                 {
-                                    bool shouldShow = selectedMagicClasses.Contains(magicClass.Id);
-                                    <div class="specialization-group mb-3" data-magic-class-id="@magicClass.Id" style="display: @(shouldShow ? "block" : "none")">
-                                        <h6>Spezialisierung für @magicClass.Bezeichnung</h6>
-                                        <select class="form-select specialization-select" name="selectedSpecializations[@magicClass.Id]" data-magic-class-id="@magicClass.Id">
-                                            <option value="">Keine Spezialisierung</option>
-                                            @foreach(var spec in specializations)
-                                            {
-                                                bool isSpecSelected = selectedSpecializations.ContainsKey(magicClass.Id) && selectedSpecializations[magicClass.Id] == spec.Id;
-                                                if(isSpecSelected)
+                                    var specializations = allSpecializations.Where(s => s.MagicClassId == magicClass.Id).ToList();
+
+                                    if (specializations.Any())
+                                    {
+                                        <div class="col-md-6 mb-3 specialization-column" data-magic-class-id="@magicClass.Id" style="display: none;">
+                                            <label class="form-label">@magicClass.Bezeichnung</label>
+                                            <select class="form-select" name="selectedSpecializations[@magicClass.Id]">
+                                                <option value="">Keine Spezialisierung</option>
+                                                @foreach (var spec in specializations)
                                                 {
-                                                    <option value="@spec.Id" selected>@spec.Bezeichnung</option>
+                                                    <option value="@spec.Id">@spec.Name</option>
                                                 }
-                                                else
-                                                {
-                                                    <option value="@spec.Id">@spec.Bezeichnung</option>
-                                                }
-                                            }
-                                        </select>
-                                    </div>
+                                            </select>
+                                        </div>
+                                    }
                                 }
                             }
-                        }
+                        </div>
                     </div>
                 </div>
                 <div class="text-center">
-                    <button type="button" class="btn-wachs">Schritt 1 speichern und weiter</button>
+                    <button type="button" class="btn-wachs">speichern</button>
                 </div>
             </form>
         </div>
@@ -336,7 +331,7 @@
                                 {
                                     foreach (var haus in ViewBag.Haeuser)
                                     {
-                                        if (Model != null && Model.Details.Haus.Name == haus.Name)
+                                        if (Model?.Details?.Haus?.Name == haus.Name)
                                         {
                                             <option value="@haus.Id" selected>@haus.Name</option>
                                         }
@@ -356,7 +351,7 @@
                                 {
                                     foreach (var herkunftsland in ViewBag.Herkunftslaender)
                                     {
-                                        if (Model != null && Model.Details.Herkunftsland.Name == herkunftsland.Name)
+                                        if (Model?.Details?.Herkunftsland?.Name == herkunftsland.Name)
                                         {
                                             <option value="@herkunftsland.Id" selected>@herkunftsland.Name</option>
                                         }
@@ -378,7 +373,7 @@
                                 {
                                     foreach(var blutgruppe in ViewBag.Blutgruppen)
                                     {
-                                        if(Model != null && Model.Details.Blutgruppe.Name == blutgruppe.Name)
+                                        if(Model?.Details?.Blutgruppe?.Name == blutgruppe.Name)
                                         {
                                             <option value="@blutgruppe.Id" selected>@blutgruppe.Name</option>
                                         }                                        
@@ -400,7 +395,7 @@
                         <a href="@Url.Action("Form", new { id = Model.Id, step = 1 })" class="btn btn-secondary me-3">
                             ← Zurück zu Schritt 1
                         </a>
-                        <button type="button" class="btn-wachs">Schritt 2 speichern und weiter</button>
+                        <button type="button" class="btn-wachs">speichern</button>
                     </div>
                 </form>
             }
@@ -430,7 +425,7 @@
                                 {
                                     foreach (var guild in ViewBag.Guilds)
                                     {
-                                        if(Model != null && Model.Affiliation.Guild.Name == guild.Name)
+                                        if(Model?.Affiliation?.Guild?.Name == guild.Name)
                                         {
                                             <option value="@guild.Id" selected>@guild.Name</option>
                                         }
@@ -450,7 +445,7 @@
                                 {
                                     foreach (var religion in ViewBag.Religions)
                                     {
-                                        if(Model != null && Model.Affiliation.Religion.Type == religion.Type)
+                                        if(Model?.Affiliation?.Religion?.Type == religion.Type)
                                         {
                                             <option value="@religion.Id" selected>@religion.Type</option>
                                         }
@@ -472,7 +467,7 @@
                             {
                                 foreach(var regiment in ViewBag.Regiment)
                                 {
-                                    if(Model != null && Model.Affiliation.Regiment.Name == regiment.Name)
+                                    if(Model?.Affiliation?.Regiment?.Name == regiment.Name)
                                     {
                                         <option value="@regiment.Id" selected>@regiment.Name</option>
                                     }
@@ -492,7 +487,7 @@
                             {
                                 foreach(var infanterierang in ViewBag.Infanterieraenge)
                                 {
-                                    if(Model != null && Model.Affiliation.Infanterierang.Name == infanterierang.Name)
+                                    if(Model?.Affiliation?.Infanterierang?.Name == infanterierang.Name)
                                     {
                                         <option value="@infanterierang.Id" selected>@infanterierang.Name</option>
                                     }
@@ -514,7 +509,7 @@
                     <a href="@Url.Action("Form", new { id = Model.Id, step = 2 })" class="btn btn-secondary me-3">
                         ← Zurück zu Schritt 2
                     </a>
-                    <button type="submit" class="btn-wachs">Charakter abschließen</button>
+                    <button type="submit" class="btn-wachs">gebilligt</button>
                 </div>
             </form>
         }
@@ -705,12 +700,6 @@
                 }
             });
 
-            // Select2 für Spezialisierungen initialisieren
-            $('.specialization-select').select2({
-                placeholder: 'Spezialisierung wählen...',
-                allowClear: true,
-            });
-
             // Maximal 2 Checkboxen erlauben
             $('input[name="selectedMagicClasses"]').change(function() {
                 var checkedCount = $('input[name="selectedMagicClasses"]:checked').length;
@@ -718,20 +707,22 @@
                     this.checked = false;
                     alert('Du kannst maximal 2 Magieklassen auswählen.');
                 }
-                // Zeige/Verstecke Spezialisierungen basierend auf ausgewählten Magieklassen
+                // Zeige/Verstecke Spezialisierungen
                 toggleSpecializations();
             });
 
             function toggleSpecializations() {
-                $('.specialization-group').hide();
+                // Alle Spezialisierungen verstecken
+                $('.specialization-column').hide();
 
-                $('.magic-class-checkbox:checked').each(function() {
+                // Nur die der ausgewählten Magieklassen zeigen
+                $('input[name="selectedMagicClasses"]:checked').each(function() {
                     var magicClassId = $(this).val();
-                    $('.specialization-group[data-magic-class-id="' + magicClassId + '"]').show();
+                    $('.specialization-column[data-magic-class-id="' + magicClassId + '"]').show();
                 });
             }
 
-            //beim Laden der Seite SPezialisierungen aktualisieren
+            // Beim Laden der Seite Spezialisierungen aktualisieren
             toggleSpecializations();
 
             // Validierung für Schritt 1
