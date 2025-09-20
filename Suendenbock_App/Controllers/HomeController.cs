@@ -34,13 +34,17 @@ namespace Suendenbock_App.Controllers
             // alle Charakter
             var Characters = _context.Characters.ToList();
             var Monstertypen = _context.MonsterTypes.ToList();
-           
-            // Magieklassen-Statistik
+
+            // Preload MagicClass names into a dictionary
+            var magicClassNames = _context.MagicClasses
+                .ToDictionary(mc => mc.Id, mc => mc.Bezeichnung);
+
+            // Now build the stats without querying inside the projection
             var magicClassStats = _context.CharacterMagicClasses
                 .GroupBy(cmc => cmc.MagicClassId)
                 .Select(g => new { MagicClassId = g.Key, Count = g.Count() })
                 .ToDictionary(
-                    x => _context.MagicClasses.FirstOrDefault(mc => mc.Id == x.MagicClassId)?.Bezeichnung ?? "Unbekannt",
+                    x => magicClassNames.ContainsKey(x.MagicClassId) ? magicClassNames[x.MagicClassId] : "Unbekannt",
                 x => x.Count);
 
             // Charaktere ohne Magieklasse hinzufügen

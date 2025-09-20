@@ -44,10 +44,12 @@ namespace Suendenbock_App.Controllers
             }
             return View(character);
         }
-        public IActionResult Form(int id = 0)
+        public IActionResult Form(int id = 0, int step = 1)
         {
             //Lade Basis-Daten für das Formular
             LoadFormViewBagData();
+
+            ViewBag.Step = step;
             
             if (id > 0)
             {
@@ -125,7 +127,7 @@ namespace Suendenbock_App.Controllers
                     }
                 }
                 //Magieklassen und Spezialisierung speichern
-                SaveCharacterMagicClasses(character.Id, selectedMagicClasses, selectedSpecializations);
+                await SaveCharacterMagicClasses(character.Id, selectedMagicClasses, selectedSpecializations);
 
                 TempData["Success"] = "Schritt 1 erfolgreich gespeichert!";
                 return RedirectToAction("Form", new { id = character.Id, step = 2 });
