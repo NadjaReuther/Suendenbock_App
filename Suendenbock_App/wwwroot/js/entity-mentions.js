@@ -27,19 +27,25 @@
     }
 
     createHelpTooltip() {
+        // Prüfe ob bereits ein Hilfe-Tooltip existiert
+        const existingHelp = this.textarea.parentNode.querySelector('.mention-help');
+        if (existingHelp) {
+            return; // Tooltip bereits vorhanden, keine Duplikate erstellen
+        }
+
         // Hilfe-Tooltip neben dem Textarea erstellen
         const helpDiv = document.createElement('div');
         helpDiv.className = 'mention-help';
         helpDiv.innerHTML = `
-            <small class="text-muted">
-                💡 <strong>Verlinkungen:</strong> 
-                <span style="color: #d4af37;">@Charakter</span> • 
-                <span style="color: #198754;">#Gilde</span> • 
-                <span style="color: #dc3545;">§Infanterie</span> • 
-                <span style="color: #6f42c1;">&Monster</span> • 
-                <span style="color: #fd7e14;">%Magie</span>
-            </small>
-        `;
+        <small class="text-muted">
+            💡 <strong>Verlinkungen:</strong> 
+            <span style="color: #d4af37;">@Charakter</span> • 
+            <span style="color: #198754;">#Gilde</span> • 
+            <span style="color: #dc3545;">§Infanterie</span> • 
+            <span style="color: #6f42c1;">&Monster</span> • 
+            <span style="color: #fd7e14;">%Magie</span>
+        </small>
+    `;
         this.textarea.parentNode.appendChild(helpDiv);
     }
 
@@ -228,10 +234,20 @@
     }
 }
 
-// Initialisierung
 document.addEventListener('DOMContentLoaded', function () {
-    // Für alle Description-Textareas aktivieren
-    new EntityMentions('#description');
-    new EntityMentions('#Description');
-    new EntityMentions('[name="description"]');
+    // Finde alle Textareas mit description-bezogenen Namen/IDs
+    const descriptionTextareas = document.querySelectorAll([
+        'textarea[id*="description"]',
+        'textarea[name*="description"]',
+        'textarea#description',
+        'textarea#Description'
+    ].join(', '));
+
+    // Erstelle nur eine EntityMentions-Instanz pro Textarea
+    descriptionTextareas.forEach(textarea => {
+        if (!textarea.hasAttribute('data-mentions-initialized')) {
+            new EntityMentions('#' + textarea.id || `[name="${textarea.name}"]`);
+            textarea.setAttribute('data-mentions-initialized', 'true');
+        }
+    });
 });
