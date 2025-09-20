@@ -36,7 +36,11 @@ namespace Suendenbock_App.Controllers
             var allCharacters = _context.Characters
                 .Include(c => c.CharacterMagicClasses)
                 .Include(c => c.Details)
-                .Include(c => c.Affiliation)
+                    .ThenInclude(h => h.Haus)
+                .Include(c => c.Details)
+                    .ThenInclude(l => l.Herkunftsland)
+                .Include(c => c.Details)
+                    .ThenInclude(b => b.Blutgruppe)
                 .ToList();
 
             var viewModel = new AdminViewModel

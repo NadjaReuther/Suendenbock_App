@@ -140,7 +140,7 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep2(int id, int? standId, int? berufId, int? blutgruppeId, int? hausId, int? herkunftsland, int? bodyHeight)
+        public async Task<IActionResult> SaveStep2(int id, int? standId, int? berufId, int? blutgruppeId, int? hausId, int? herkunftslandId, int? bodyHeight)
         {
             try
             {
@@ -159,7 +159,7 @@ namespace Suendenbock_App.Controllers
                 character.Details.BerufId = berufId;
                 character.Details.BlutgruppeId = blutgruppeId;
                 character.Details.HausId = hausId;
-                character.Details.HerkunftslandId = herkunftsland;
+                character.Details.HerkunftslandId = herkunftslandId;
                 character.Details.BodyHeight = bodyHeight;
 
                 character.CompletionLevel = CharacterCompleteness.WithDetails;
@@ -269,7 +269,6 @@ namespace Suendenbock_App.Controllers
             ViewBag.Eindruecke = _context.Eindruecke.ToList();
             ViewBag.Characters = _context.Characters.ToList();
             ViewBag.Staende = _context.Staende.ToList();
-            ViewBag.Berufe = _context.Berufe.ToList();
             ViewBag.Blutgruppen = _context.Blutgruppen.ToList();
             ViewBag.Haeuser = _context.Haeuser.ToList();
             ViewBag.Herkunftslaender = _context.Herkunftslaender.ToList();

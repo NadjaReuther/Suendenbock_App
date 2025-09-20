@@ -32,6 +32,79 @@
         }
 
         <div class="row g-4 mb-4">
+            <!-- Charaktere Pergament -->
+            <div class="col-md-12">
+                <div class="pergament-table-card">
+                    <h3 class="pergament-header">Charaktere</h3>
+                    <table id="characterTable" class="medieval-table w-100">
+                        <thead>
+                            <tr>
+                                <th>Rufname</th>
+                                <th>Vorname</th>
+                                <th>Nachname</th>
+                                <th>Haus</th>
+                                <th>Herkunftsland</th>
+                                <th>Blutgruppe</th>
+                                <th>Magie</th>
+                                <th>⚔️ Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var character in Model.Characters)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@character.ImagePath" style="width: 30px; height: 30px; margin-left: 5px; border-radius: 50%;" />
+                                        <strong>@character.Rufname</strong>    
+                                    </td>
+                                    <td><strong>@character.Vorname</strong></td>
+                                    <td><strong>@character.Nachname</strong></td>
+                                    <td>@character.Details?.Haus?.Name</td>
+                                    <td>@character.Details?.Herkunftsland?.Name</td>
+                                    <td>@character.Details?.Blutgruppe?.Name</td>
+                                    <td>
+                                        @if (character.CharacterMagicClasses.Any())
+                                        {
+                                            <div class="magic-classes">
+                                                @foreach (var cmc in character.CharacterMagicClasses.Take(2))
+                                                {
+                                                    <span class="badge rounded-pill"
+                                                          style="background: linear-gradient(45deg, #d4af37, #b8941f); color: white; margin: 1px;">
+                                                        🔮 @cmc.MagicClass.Bezeichnung
+                                                    </span>
+                                                }
+                                                @if (character.CharacterMagicClasses.Count() > 2)
+                                                {
+                                                    <span class="badge rounded-pill bg-secondary">+@(character.CharacterMagicClasses.Count() - 2)</span>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">⚫ Keine Magie</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="medieval-actions">
+                                            <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id"
+                                               class="medieval-btn edit-btn" title="Charakter bearbeiten">
+                                                ✏️
+                                            </a>
+                                            <button class="medieval-btn delete-btn"
+                                                    onclick="deleteContent(@character.Id, 'Character')"
+                                                    title="Charakter löschen">
+                                                🗡️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <!-- Gilden Pergament -->
             <div class="col-md-6">
                 <div class="pergament-table-card">
@@ -79,7 +152,8 @@
                         </tbody>
                     </table>
                 </div>
-
+            </div>
+            <div class="col-md-6">
                 <div class="pergament-table-card">
                     <h3 class="pergament-header">Infanterie</h3>
                     <table id="infanterieTable" class="medieval-table w-100">
@@ -110,8 +184,10 @@
                                     <td>@infanterie.LeaderCharacter?.Vorname @infanterie.LeaderCharacter?.Nachname</td>
                                     <td>@infanterie.Sitz</td>
                                     <td>
-                                        <span class="badge bg-info" id="regiment-count-@infanterie.Id">@infanterie.Regiments.Count 
-                                            @(infanterie.Regiments.Count == 1 ? "Regiment" : "Regimente")</span>
+                                        <span class="badge bg-info" id="regiment-count-@infanterie.Id">
+                                            @infanterie.Regiments.Count
+                                            @(infanterie.Regiments.Count == 1 ? "Regiment" : "Regimente")
+                                        </span>
                                     </td>
                                     <td>
                                         <div class="medieval-actions">
@@ -131,70 +207,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-
-            <!-- Charaktere Pergament -->
-            <div class="col-md-6">
-                <div class="pergament-table-card">
-                    <h3 class="pergament-header">Charaktere</h3>
-                    <table id="characterTable" class="medieval-table w-100">
-                        <thead>
-                            <tr>
-                                <th>Vorname</th>
-                                <th>Nachname</th>
-                                <th>Haus</th>
-                                <th>Magie</th>
-                                <th>⚔️ Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var character in Model.Characters)
-                            {
-                                <tr>
-                                    <td><strong>@character.Vorname</strong></td>
-                                    <td><strong>@character.Nachname</strong></td>
-                                    <td>@character.Details?.Haus?.Name</td>
-                                    <td>
-                                        @if (character.CharacterMagicClasses.Any())
-                                        {
-                                            <div class="magic-classes">
-                                                @foreach (var cmc in character.CharacterMagicClasses.Take(2))
-                                                {
-                                                    <span class="badge rounded-pill"
-                                                          style="background: linear-gradient(45deg, #d4af37, #b8941f); color: white; margin: 1px;">
-                                                        🔮 @cmc.MagicClass.Bezeichnung
-                                                    </span>
-                                                }
-                                                @if (character.CharacterMagicClasses.Count() > 2)
-                                                {
-                                                    <span class="badge rounded-pill bg-secondary">+@(character.CharacterMagicClasses.Count() - 2)</span>
-                                                }
-                                            </div>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">⚫ Keine Magie</span>
-                                        }
-                                    </td>
-                                    <td>
-                                        <div class="medieval-actions">
-                                            <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id"
-                                               class="medieval-btn edit-btn" title="Charakter bearbeiten">
-                                                ✏️
-                                            </a>
-                                            <button class="medieval-btn delete-btn"
-                                                    onclick="deleteContent(@character.Id, 'Character')"
-                                                    title="Charakter löschen">
-                                                🗡️
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            </div>        
         </div>
     </div>
 </div>

@@ -317,23 +317,8 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="berufId" class="form-label">Beruf</label>
-                            <select class="form-select" id="berufId" name="berufId">
-                                <option value="">Beruf wählen...</option>
-                                @if (ViewBag.Berufe != null)
-                                {
-                                    foreach (var beruf in ViewBag.Berufe)
-                                    {
-                                        if (Model?.Details?.Beruf == beruf)
-                                        {
-                                            <option value="@beruf.Id" selected>@beruf.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@beruf.Id">@beruf.Name</option>
-                                        }
-                                    }
-                                }
-                            </select>
+                            <input type="text" class="form-control" id="berufId" name="berufId"
+                                   value="@(Model != null ? Model?.Details?.BerufId : "")" />
                         </div>
                     </div>
 
