@@ -4,6 +4,8 @@
     {
         public int Id { get; set; }
         public int CharacterId { get; set; } // Foreign key to Character
+        public string? Description { get; set; }
+        public string? ProcessedDescription { get; set; }
         //Körperliche Eigenschaften
         public int? BodyHeight { get; set; } 
         //Herkunft und Status (alles optional)        

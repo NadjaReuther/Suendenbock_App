@@ -134,6 +134,26 @@
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="vaterId" class="form-label">Vater</label>
+                        <select class="form-select character-select-male" id="vaterId" name="vaterId">
+                            @if (Model?.Vater != null)
+                            {
+                                <option value="@Model.Vater.Id" selected>@Model.Vater.Vorname @Model.Vater.Nachname</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="mutterId" class="form-label">Mutter</label>
+                        <select class="form-select character-select-female" id="mutterId" name="mutterId">
+                            @if (Model?.Mutter != null)
+                            {
+                                <option value="@Model.Mutter.Id" selected>@Model.Mutter.Vorname @Model.Mutter.Nachname</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-md-4 mb-3">
                         <label for="rasseId" class="form-label">Rasse *</label>
                         <select class="form-select" id="rasseId" name="rasseId" required>
@@ -391,6 +411,12 @@
                                     value="@(Model?.Details?.BodyHeight ?? 0)" placeholder="z.B. 175" min="50" max="600" />         
                         </div>
                     </div>
+
+                    <div class="description-container">
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                              placeholder="Beschreibung... (verwende @@Name um Charaktere zu verlinken)">@Model?.Details?.Description</textarea>
+                    </div>
+
                     <div class="text-center mt-4">
                         <a href="@Url.Action("Form", new { id = Model?.Id, step = 1 })" class="btn btn-secondary me-3">
                             ← Zurück zu Schritt 1
@@ -525,7 +551,7 @@
 </div>
 
 @section Scripts {
-    
+    <script src="~/js/entity-mentions.js"></script>
     <script src="~/js/imagePreview.js"></script>
     <script>
         // Bild-Upload Drag & Drop aktivieren
@@ -654,6 +680,9 @@
 
             // Beim Laden der Seite Spezialisierungen aktualisieren
             toggleSpecializations();
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            new EntityMentions('#description');
         });
     </script>
 }

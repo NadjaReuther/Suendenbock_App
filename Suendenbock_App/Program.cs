@@ -27,6 +27,7 @@ builder.Services.AddControllers(); // Für API-Controller hinzufügen
 
 // addImageUpload 
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+builder.Services.AddScoped<IMentionProcessorService, MentionProcessorService>();
 // add Cache Service
 builder.Services.AddScoped<ICachedDataService, CachedDataService>();
 builder.Services.AddMemoryCache();

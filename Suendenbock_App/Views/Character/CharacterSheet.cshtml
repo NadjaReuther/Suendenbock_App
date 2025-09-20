@@ -1,93 +1,71 @@
 ﻿@using Suendenbock_App.Models.Domain
 @model Character
 @section Styles {
-    <link href="/css/antique-home.css" rel="stylesheet" />
-    <link href="/css/character.css" rel="stylesheet" />
+    <link href="/css/wiki.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
 }
 
-<div class="steckbrief-container">
-    <div class="steckbrief-title">Charakter</div>
-    <h4 class="text-center mb-4" style="color: #6e4b1f;">📜 @Model.Vorname @Model.Nachname</h4>
-    <div class="row mt-5">
-        <div class="col-md-6">
-            <p>Hier kommt die Erklärung zum Character</p>
-        </div>
-        <div class="col-md-6 text-center">
-            <section class="character-scrolls">                            
-                    <div class="character-scroll" data-tilt>
-                        <div class="scroll-header">
-                                @if (@Model.ImagePath == null)
-                                {
-                                    <!-- Zeigt die Initialen des Benutzers -->
-                                    <div class="character-seal">@Model.Vorname.FirstOrDefault()@Model.Nachname.FirstOrDefault()</div>
-                                }
-                                else
-                                {
-                                    <img class="card-title" src="@Model.ImagePath" />
-                                }
-                        </div>
-                        <div class="scroll-body">
-                            <h4>@Model.Vorname @Model.Nachname</h4>
-                            <p>
-                                @Model.Geburtsdatum<br/>
-                                @Model.Geschlecht<br/>
-                                @Model.Eindruck.Name<br />
-                                @Model.Lebensstatus.Name<br />
-                                @Model.Affiliation?.Religion keine Reiligion<br />
-                                @Model.Rasse.Name<br />
+<div class="wiki-container">
+    <div class="wiki-header">
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" alt="@Model.Vorname @Model.Nachname" class="wiki-avatar">
+        }
+        else
+        {
+            <div class="wiki-avatar" style="background: linear-gradient(45deg, #d4af37, #b8941f); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                @Model.Vorname.FirstOrDefault()@Model.Nachname.FirstOrDefault()
+            </div>
+        }
 
-                            </p>
-                        </div>                                
-                    </div>
-            </section>
-        </div>   
-    </div>            
-    <!-- Magieklassen -->
-    <div class="row mb-3">
-        <label class="form-label">Magieklassen</label>
-        <div class="card p-1">
-            <div class="row">
-                <section class="magic-section">
-                    @Model.CharacterMagicClasses.Count
-                @foreach(var magicclass in Model.CharacterMagicClasses)
+        <div>
+            <h1 class="wiki-title">@Model.Vorname @Model.Nachname</h1>
+            <p class="wiki-subtitle">
+                @Model.Rasse.Name • @Model.Lebensstatus.Name
+                @if (Model.CharacterMagicClasses.Any())
                 {
-                    <div class="magic-grid">
-                        Hallo @magicclass
-                        <div class="magic-card @(magicclass.MagicClass?.Obermagie?.LightCard?.CssClass ?? "default")-hover" data-tilt>
-                            <img src="@magicclass.MagicClass?.ImagePath" class="magic-icon" alt="@magicclass.MagicClass?.Bezeichnung" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                            <div class="magic-icon-fallback" style="display:none;">🔮</div>
-
-                            <div class="magic-name">@magicclass.MagicClass?.Bezeichnung</div>
-                            <div class="magic-school">@(magicclass.MagicClass?.Obermagie?.Bezeichnung ?? "Unbekannt")</div>
-                        </div>
-                    </div>
-                    }
-                </section>                                    
-            </div>
+                    <span> • @string.Join(", ", Model.CharacterMagicClasses.Select(cmc => cmc.MagicClass?.Bezeichnung))</span>
+                }
+            </p>
         </div>
     </div>
 
-    <!-- Spezialisierungen -->
-    <div class="row mb-3">
-        <label class="form-label">Spezialisierungen</label>
-        <div class="card p-3">
-            <div class="row specializations-container">
-                @Model.CharacterMagicClasses
+    <div class="wiki-content">
+        <div class="wiki-main">
+            <h3>📜 Charakterbeschreibung</h3>
+            <div class="wiki-description">
+                @* NEU: Verarbeitete Description mit Links anzeigen *@
+                @if (!string.IsNullOrEmpty(Model.Details?.ProcessedDescription))
+                {
+                    @Html.Raw(Model.Details.ProcessedDescription)
+                }
+                else if (!string.IsNullOrEmpty(Model.Details?.Description))
+                {
+                    @Model.Details.Description
+                }
+                else
+                {
+                    <em class="text-muted">Keine Beschreibung verfügbar.</em>
+                }
             </div>
         </div>
-    </div>
-    <!-- Eltern-Dropdowns hinzufügen -->
-    <div class="row">
-        <!-- Vater-Dropdown -->
-        <div class="col-md-6 mb-3">
-            <label for="vaterId" class="form-label">Vater</label>
-            @Model.Vater
-        </div>
-        <!-- Mutter-Dropdown -->
-        <div class="col-md-6 mb-3">
-            <label for="mutterId" class="form-label">Mutter</label>
-            @Model.Mutter
+
+        <div class="wiki-sidebar">
+            <div class="wiki-infobox">
+                <h4>📊 Charakterdaten</h4>
+                <p><strong>Rufname:</strong> @Model.Rufname</p>
+                <p><strong>Geschlecht:</strong> @Model.Geschlecht</p>
+                @if (!string.IsNullOrEmpty(Model.Geburtsdatum))
+                {
+                    <p><strong>Geboren:</strong> @Model.Geburtsdatum</p>
+                }
+            </div>
+
+            @* Weitere Infoboxen für Magie, Familie etc. *@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/character-mentions.js"></script>
+}

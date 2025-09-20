@@ -12,11 +12,13 @@ namespace Suendenbock_App.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageUploadService _imageUploadService;
         private readonly IWebHostEnvironment _environment;
-        public CharacterController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment)
+        private readonly IMentionProcessorService _mentionProcessor;
+        public CharacterController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment, IMentionProcessorService mentionProcessor)
         {
             _context = context;
             _imageUploadService = imageUploadService;
             _environment = environment;
+            _mentionProcessor = mentionProcessor;
         }
         public IActionResult Index()
         {
@@ -140,7 +142,7 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep2(int id, int? standId, int? berufId, int? blutgruppeId, int? hausId, int? herkunftslandId, int? bodyHeight)
+        public async Task<IActionResult> SaveStep2(int id, int? standId, int? berufId, int? blutgruppeId, int? hausId, int? herkunftslandId, int? bodyHeight, string? description)
         {
             try
             {
@@ -161,6 +163,17 @@ namespace Suendenbock_App.Controllers
                 character.Details.HausId = hausId;
                 character.Details.HerkunftslandId = herkunftslandId;
                 character.Details.BodyHeight = bodyHeight;
+                // NEU: Description verarbeiten - @Mentions in Links umwandeln
+                character.Details.Description = description;
+                if (!string.IsNullOrEmpty(description))
+                {
+                    character.Details.ProcessedDescription = _mentionProcessor.ProcessMentions(description);
+                }
+                else
+                {
+                    character.Details.ProcessedDescription = null;
+                }
+
 
                 character.CompletionLevel = CharacterCompleteness.WithDetails;
                 await _context.SaveChangesAsync();
