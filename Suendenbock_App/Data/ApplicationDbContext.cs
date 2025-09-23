@@ -10,7 +10,6 @@ namespace Suendenbock_App.Data
         public DbSet<Anmeldungsstatus> Anmeldungsstati { get; set; }
         public DbSet<Abenteuerrang> Abenteuerraenge { get; set; }
         public DbSet<Blutgruppe> Blutgruppen { get; set; }
-        public DbSet<Beruf> Berufe { get; set; }
         public DbSet<Eindruck> Eindruecke { get; set; }
         public DbSet<Haus> Haeuser { get; set; }
         public DbSet<Herkunftsland> Herkunftslaender { get; set; }
@@ -53,177 +52,271 @@ namespace Suendenbock_App.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            //Character - Pflichtfelder definieren
-            // Character Basis-Beziehungen (bestehend - nicht ändern)
+
+            // ===============================
+            // CHARACTER BASIS-BEZIEHUNGEN
+            // ===============================
+
+            // Character -> Rasse (1:n)
             builder.Entity<Character>()
                 .HasOne(c => c.Rasse)
                 .WithMany(r => r.Characters)
                 .HasForeignKey(c => c.RasseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Character -> Lebensstatus (1:n)
             builder.Entity<Character>()
                 .HasOne(c => c.Lebensstatus)
                 .WithMany(l => l.Characters)
                 .HasForeignKey(c => c.LebensstatusId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Character -> Eindruck (1:n)
             builder.Entity<Character>()
                 .HasOne(c => c.Eindruck)
                 .WithMany(e => e.Charaktere)
                 .HasForeignKey(c => c.EindruckId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Character Eltern-Beziehungen (bestehend - nicht ändern)
+            // ===============================
+            // CHARACTER ELTERN-BEZIEHUNGEN
+            // ===============================
+
+            // Character -> Vater (selbstreferenziell)
             builder.Entity<Character>()
                 .HasOne(c => c.Vater)
                 .WithMany()
                 .HasForeignKey(c => c.VaterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Character -> Mutter (selbstreferenziell)
             builder.Entity<Character>()
                 .HasOne(c => c.Mutter)
                 .WithMany()
                 .HasForeignKey(c => c.MutterId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // CharacterDetails - 1:1 Beziehung (bestehend - nicht ändern)
+            // ===============================
+            // CHARACTER DETAIL-BEZIEHUNGEN (1:1)
+            // ===============================
+
+            // CharacterDetails -> Character (1:1)
             builder.Entity<CharacterDetails>()
                 .HasOne(cd => cd.Character)
                 .WithOne(c => c.Details)
                 .HasForeignKey<CharacterDetails>(cd => cd.CharacterId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // CharacterAffiliation - 1:1 Beziehung (bestehend - nicht ändern)
+            // CharacterDetails -> Stand
+            builder.Entity<CharacterDetails>()
+                .HasOne(cd => cd.Stand)
+                .WithMany()
+                .HasForeignKey(cd => cd.StandId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // CharacterDetails -> Blutgruppe
+            builder.Entity<CharacterDetails>()
+                .HasOne(cd => cd.Blutgruppe)
+                .WithMany()
+                .HasForeignKey(cd => cd.BlutgruppeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // CharacterDetails -> Haus
+            builder.Entity<CharacterDetails>()
+                .HasOne(cd => cd.Haus)
+                .WithMany()
+                .HasForeignKey(cd => cd.HausId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // CharacterDetails -> Herkunftsland
+            builder.Entity<CharacterDetails>()
+                .HasOne(cd => cd.Herkunftsland)
+                .WithMany()
+                .HasForeignKey(cd => cd.HerkunftslandId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ===============================
+            // CHARACTER ZUGEHÖRIGKEITS-BEZIEHUNGEN (1:1)
+            // ===============================
+
+            // CharacterAffiliation -> Character (1:1)
             builder.Entity<CharacterAffiliation>()
                 .HasOne(ca => ca.Character)
                 .WithOne(c => c.Affiliation)
                 .HasForeignKey<CharacterAffiliation>(ca => ca.CharacterId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // MagicClass Beziehungen (bestehend - nicht ändern)
-            builder.Entity<MagicClassSpecialization>()
-               .HasOne(mcs => mcs.MagicClass)
-               .WithMany(mc => mc.MagicClassSpecializations)
-               .HasForeignKey(mcs => mcs.MagicClassId);
+            // CharacterAffiliation -> Guild
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Guild)
+                .WithMany()  // Guild hat keine direkte Characters Collection
+                .HasForeignKey(ca => ca.GuildId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // CharacterMagicClass (bestehend - nicht ändern)
-            builder.Entity<CharacterMagicClass>()
-                .HasKey(cm => new { cm.CharacterId, cm.MagicClassId });
+            // CharacterAffiliation -> Regiment
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Regiment)
+                .WithMany()  // Regiment Characters werden indirekt über CharacterAffiliation erreicht
+                .HasForeignKey(ca => ca.RegimentsId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<CharacterMagicClass>()
-                .HasOne(cm => cm.Character)
-                .WithMany(c => c.CharacterMagicClasses)
-                .HasForeignKey(cm => cm.CharacterId);
+            // CharacterAffiliation -> Infanterierang
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Infanterierang)
+                .WithMany()  // Infanterierang Characters werden indirekt über CharacterAffiliation erreicht
+                .HasForeignKey(ca => ca.InfanterierangId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<CharacterMagicClass>()
-                .HasOne(cm => cm.MagicClass)
-                .WithMany(m => m.CharacterMagicClasses)
-                .HasForeignKey(cm => cm.MagicClassId);
+            // CharacterAffiliation -> Religion
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Religion)
+                .WithMany()  // Religion Characters werden indirekt über CharacterAffiliation erreicht
+                .HasForeignKey(ca => ca.ReligionId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<CharacterMagicClass>()
-                .HasOne(cm => cm.MagicClassSpecialization)
+            // ===============================
+            // GUILD BEZIEHUNGEN
+            // ===============================
+
+            // Guild -> LightCard
+            builder.Entity<Guild>()
+                .HasOne(g => g.LightCard)
                 .WithMany()
-                .HasForeignKey(cm => cm.MagicClassSpecializationId)
-                .IsRequired(false);
+                .HasForeignKey(g => g.LightCardId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // NEUE Guild Leader/Vertreter Beziehungen - ClientSetNull
+            // Guild Leader/Vertreter Beziehungen
             builder.Entity<Guild>()
                 .HasOne(g => g.LeaderCharacter)
                 .WithMany()
                 .HasForeignKey(g => g.leader)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Guild>()
                 .HasOne(g => g.VertreterCharacter)
                 .WithMany()
                 .HasForeignKey(g => g.vertreter)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // NEUE Regiment Beziehungen - ClientSetNull
-            builder.Entity<Regiment>()
-                .HasOne(r => r.RegimentsCharacter)
-                .WithMany()
-                .HasForeignKey(r => r.Regimentsleiter)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
+            // ===============================
+            // INFANTERIE BEZIEHUNGEN
+            // ===============================
 
-            builder.Entity<Regiment>()
-                .HasOne(r => r.AdjutantCharacter)
-                .WithMany()
-                .HasForeignKey(r => r.Adjutant)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
-
-            // Regiment zu Infanterie - Required Beziehung
-            builder.Entity<Regiment>()
-                .HasOne(r => r.Infanterie)
-                .WithMany(i => i.Regiments)
-                .HasForeignKey(r => r.InfanterieId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+            // Infanterie Leader/Vertreter Beziehungen
             builder.Entity<Infanterie>()
                 .HasOne(i => i.LeaderCharacter)
                 .WithMany()
                 .HasForeignKey(i => i.leader)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Infanterie>()
                 .HasOne(i => i.VertreterCharacter)
                 .WithMany()
                 .HasForeignKey(i => i.vertreter)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
-
-            builder.Entity<Monstertyp>()
-                .HasOne(mt => mt.Monstergruppen)
-                .WithMany(mg => mg.Monstertypen)
-                .HasForeignKey(mt => mt.MonstergruppenId)
-                .OnDelete(DeleteBehavior.Restrict);
-            builder.Entity<Monstertyp>()
-                .HasOne(mt => mt.Monsterintelligenz)
-                .WithMany(mi => mi.Monstertypen)
-                .HasForeignKey(mt => mt.MonsterintelligenzId)
-                .OnDelete(DeleteBehavior.Restrict);
-            builder.Entity<Monstertyp>()
-                .HasOne(mt => mt.Monsterwuerfel)
-                .WithMany(mw => mw.Monstertypen)
-                .HasForeignKey(mt => mt.MonsterwuerfelId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // CharacterAffiliation zu Regiment Beziehung (NEU hinzufügen)
-            builder.Entity<CharacterAffiliation>()
-                .HasOne(ca => ca.Regiment)
-                .WithMany()
-                .HasForeignKey(ca => ca.RegimentsId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
+            // ===============================
+            // REGIMENT BEZIEHUNGEN
+            // ===============================
 
-            // CharacterAffiliation zu Guild Beziehung (falls noch nicht vorhanden)
-            builder.Entity<CharacterAffiliation>()
-                .HasOne(ca => ca.Guild)
-                .WithMany()
-                .HasForeignKey(ca => ca.GuildId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
+            // Regiment -> Infanterie
+            builder.Entity<Regiment>()
+                .HasOne(r => r.Infanterie)
+                .WithMany(i => i.Regiments)
+                .HasForeignKey(r => r.InfanterieId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // CharacterAffiliation zu Religion Beziehung (falls noch nicht vorhanden)
-            builder.Entity<CharacterAffiliation>()
-                .HasOne(ca => ca.Religion)
+            // Regiment Leader/Adjutant Beziehungen
+            builder.Entity<Regiment>()
+                .HasOne(r => r.RegimentsCharacter)
                 .WithMany()
-                .HasForeignKey(ca => ca.ReligionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
+                .HasForeignKey(r => r.Regimentsleiter)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            // CharacterAffiliation zu Infanterierang Beziehung (falls noch nicht vorhanden)
-            builder.Entity<CharacterAffiliation>()
-                .HasOne(ca => ca.Infanterierang)
+            builder.Entity<Regiment>()
+                .HasOne(r => r.AdjutantCharacter)
                 .WithMany()
-                .HasForeignKey(ca => ca.InfanterierangId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .IsRequired(false);
+                .HasForeignKey(r => r.Adjutant)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ===============================
+            // MAGIC CLASS BEZIEHUNGEN
+            // ===============================
+
+            // MagicClass -> Obermagie
+            builder.Entity<MagicClass>()
+                .HasOne(mc => mc.Obermagie)
+                .WithMany()
+                .HasForeignKey(mc => mc.ObermagieId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // MagicClassSpecialization -> MagicClass
+            builder.Entity<MagicClassSpecialization>()
+                .HasOne(mcs => mcs.MagicClass)
+                .WithMany(mc => mc.MagicClassSpecializations)
+                .HasForeignKey(mcs => mcs.MagicClassId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Obermagie -> LightCard
+            builder.Entity<Obermagie>()
+                .HasOne(o => o.LightCard)
+                .WithMany(lc => lc.Obermagie)
+                .HasForeignKey(o => o.LightCardId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ===============================
+            // CHARACTER MAGIC CLASS BEZIEHUNGEN (n:m)
+            // ===============================
+
+            // CharacterMagicClass -> Character
+            builder.Entity<CharacterMagicClass>()
+                .HasOne(cmc => cmc.Character)
+                .WithMany(c => c.CharacterMagicClasses)
+                .HasForeignKey(cmc => cmc.CharacterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CharacterMagicClass -> MagicClass
+            builder.Entity<CharacterMagicClass>()
+                .HasOne(cmc => cmc.MagicClass)
+                .WithMany(mc => mc.CharacterMagicClasses)
+                .HasForeignKey(cmc => cmc.MagicClassId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // CharacterMagicClass -> MagicClassSpecialization (optional)
+            builder.Entity<CharacterMagicClass>()
+                .HasOne(cmc => cmc.MagicClassSpecialization)
+                .WithMany()
+                .HasForeignKey(cmc => cmc.MagicClassSpecializationId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ===============================
+            // ZAUBER BEZIEHUNGEN
+            // ===============================
+
+            // Grundzauber -> MagicClass
+            builder.Entity<Grundzauber>()
+                .HasOne(gz => gz.MagicClass)
+                .WithMany()
+                .HasForeignKey(gz => gz.MagicClassId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // SpecialZauber -> MagicClassSpecialization
+            builder.Entity<SpecialZauber>()
+                .HasOne(sz => sz.MagicClassSpecialization)
+                .WithMany()
+                .HasForeignKey(sz => sz.MagicClassSpecializationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ===============================
+            // MONSTER BEZIEHUNGEN
+            // ===============================
+
+            // Monster -> Monstertyp
+            builder.Entity<Monster>()
+                .HasOne(m => m.Monstertyp)
+                .WithMany(mt => mt.Monster)
+                .HasForeignKey(m => m.MonstertypId)
+                .OnDelete(DeleteBehavior.Restrict);           
         }
     }
 }

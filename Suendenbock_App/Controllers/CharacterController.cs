@@ -38,8 +38,6 @@ namespace Suendenbock_App.Controllers
                 .Include(c => c.Details)
                     .ThenInclude(d => d.Stand)
                 .Include(c => c.Details)
-                    .ThenInclude(d => d.Beruf)
-                .Include(c => c.Details)
                     .ThenInclude(d => d.Blutgruppe)
                 .Include(c => c.Details)
                     .ThenInclude(d => d.Haus)
@@ -166,7 +164,7 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep2(int id, int? standId, int? berufId, int? blutgruppeId, int? hausId, int? herkunftslandId, int? bodyHeight, string? description)
+        public async Task<IActionResult> SaveStep2(int id, int? standId, string? beruf, int? blutgruppeId, int? hausId, int? herkunftslandId, int? bodyHeight, string? description)
         {
             try
             {
@@ -184,7 +182,7 @@ namespace Suendenbock_App.Controllers
                 }
 
                 character.Details.StandId = standId;
-                character.Details.BerufId = berufId;
+                character.Details.Beruf = beruf;
                 character.Details.BlutgruppeId = blutgruppeId;
                 character.Details.HausId = hausId;
                 character.Details.HerkunftslandId = herkunftslandId;

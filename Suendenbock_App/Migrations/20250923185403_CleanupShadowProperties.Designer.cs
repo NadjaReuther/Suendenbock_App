@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250923185403_CleanupShadowProperties")]
+    partial class CleanupShadowProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,7 +241,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Abenteuerraenge", (string)null);
+                    b.ToTable("Abenteuerraenge");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Anmeldungsstatus", b =>
@@ -255,7 +258,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Anmeldungsstati", (string)null);
+                    b.ToTable("Anmeldungsstati");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Blutgruppe", b =>
@@ -275,7 +278,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Blutgruppen", (string)null);
+                    b.ToTable("Blutgruppen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Character", b =>
@@ -378,7 +381,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("VaterId");
 
-                    b.ToTable("Characters", (string)null);
+                    b.ToTable("Characters");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterAffiliation", b =>
@@ -417,7 +420,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ReligionId");
 
-                    b.ToTable("CharacterAffiliations", (string)null);
+                    b.ToTable("CharacterAffiliations");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterDetails", b =>
@@ -474,7 +477,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("StandId");
 
-                    b.ToTable("CharacterDetails", (string)null);
+                    b.ToTable("CharacterDetails");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
@@ -502,7 +505,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MagicClassSpecializationId");
 
-                    b.ToTable("CharacterMagicClasses", (string)null);
+                    b.ToTable("CharacterMagicClasses");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Eindruck", b =>
@@ -519,7 +522,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Eindruecke", (string)null);
+                    b.ToTable("Eindruecke");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Gildenlizenz", b =>
@@ -542,7 +545,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("LizenzenId");
 
-                    b.ToTable("Gildenlizenzen", (string)null);
+                    b.ToTable("Gildenlizenzen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Grundzauber", b =>
@@ -583,7 +586,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ZaubertypID");
 
-                    b.ToTable("Grundzauber", (string)null);
+                    b.ToTable("Grundzauber");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Guild", b =>
@@ -641,7 +644,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("vertreter");
 
-                    b.ToTable("Guilds", (string)null);
+                    b.ToTable("Guilds");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Haus", b =>
@@ -661,7 +664,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Haeuser", (string)null);
+                    b.ToTable("Haeuser");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Herkunftsland", b =>
@@ -678,7 +681,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Herkunftslaender", (string)null);
+                    b.ToTable("Herkunftslaender");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Infanterie", b =>
@@ -721,7 +724,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("vertreter");
 
-                    b.ToTable("Infanterien", (string)null);
+                    b.ToTable("Infanterien");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Infanterierang", b =>
@@ -738,7 +741,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Infanterieraenge", (string)null);
+                    b.ToTable("Infanterieraenge");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Lebensstatus", b =>
@@ -755,7 +758,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lebensstati", (string)null);
+                    b.ToTable("Lebensstati");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.LightCard", b =>
@@ -780,7 +783,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LightCards", (string)null);
+                    b.ToTable("LightCards");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Lizenzen", b =>
@@ -797,7 +800,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lizenzen", (string)null);
+                    b.ToTable("Lizenzen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.MagicClass", b =>
@@ -823,7 +826,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ObermagieId");
 
-                    b.ToTable("MagicClasses", (string)null);
+                    b.ToTable("MagicClasses");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.MagicClassSpecialization", b =>
@@ -848,7 +851,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MagicClassId");
 
-                    b.ToTable("MagicClassSpecializations", (string)null);
+                    b.ToTable("MagicClassSpecializations");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monster", b =>
@@ -879,7 +882,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonstertypId");
 
-                    b.ToTable("Monsters", (string)null);
+                    b.ToTable("Monsters");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsteranfaelligkeiten", b =>
@@ -896,7 +899,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monsteranfaelligkeiten", (string)null);
+                    b.ToTable("Monsteranfaelligkeiten");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstergruppen", b =>
@@ -913,7 +916,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monstergruppen", (string)null);
+                    b.ToTable("Monstergruppen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsterimmunitaeten", b =>
@@ -930,7 +933,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monsterimmunitaeten", (string)null);
+                    b.ToTable("Monsterimmunitaeten");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsterintelligenz", b =>
@@ -947,7 +950,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monsterintelligenzen", (string)null);
+                    b.ToTable("Monsterintelligenzen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertyp", b =>
@@ -985,7 +988,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonsterwuerfelId");
 
-                    b.ToTable("MonsterTypes", (string)null);
+                    b.ToTable("MonsterTypes");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertypanfaelligkeiten", b =>
@@ -1008,7 +1011,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonstertypId");
 
-                    b.ToTable("Monstertypanfaelligkeiten", (string)null);
+                    b.ToTable("Monstertypanfaelligkeiten");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertypimmunitaeten", b =>
@@ -1031,7 +1034,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonstertypId");
 
-                    b.ToTable("Monstertypimmunitaeten", (string)null);
+                    b.ToTable("Monstertypimmunitaeten");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertypvorkommen", b =>
@@ -1054,7 +1057,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonstervorkommenId");
 
-                    b.ToTable("Monstertypvorkommen", (string)null);
+                    b.ToTable("Monstertypvorkommen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstervorkommen", b =>
@@ -1071,7 +1074,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monstervorkommen", (string)null);
+                    b.ToTable("Monstervorkommen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsterwuerfel", b =>
@@ -1088,7 +1091,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monsterwuerfel", (string)null);
+                    b.ToTable("Monsterwuerfel");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Obermagie", b =>
@@ -1110,7 +1113,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("LightCardId");
 
-                    b.ToTable("Obermagien", (string)null);
+                    b.ToTable("Obermagien");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Rasse", b =>
@@ -1127,7 +1130,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Rassen", (string)null);
+                    b.ToTable("Rassen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Regiment", b =>
@@ -1165,7 +1168,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("Regimentsleiter");
 
-                    b.ToTable("Regiments", (string)null);
+                    b.ToTable("Regiments");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Religion", b =>
@@ -1182,7 +1185,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Religions", (string)null);
+                    b.ToTable("Religions");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.SpecialZauber", b =>
@@ -1223,7 +1226,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ZaubertypID");
 
-                    b.ToTable("SpecialZauber", (string)null);
+                    b.ToTable("SpecialZauber");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Stand", b =>
@@ -1240,7 +1243,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Staende", (string)null);
+                    b.ToTable("Staende");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Zaubertyp", b =>
@@ -1260,7 +1263,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Zaubertypen", (string)null);
+                    b.ToTable("Zaubertypen");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

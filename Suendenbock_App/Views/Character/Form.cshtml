@@ -336,9 +336,9 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="berufId" class="form-label">Beruf</label>
-                            <input type="text" class="form-control" id="berufId" name="berufId"
-                                   value="@(Model != null ? Model?.Details?.BerufId : "")" />
+                            <label for="beruf" class="form-label">Beruf</label>
+                            <input type="text" class="form-control" id="beruf" name="beruf"
+                                   value="@(Model?.Details?.Beruf ?? "")" />
                         </div>
                     </div>
 
