@@ -37,6 +37,7 @@ namespace Suendenbock_App.Data.Seeders
                 AbenteuerrangSeeder.Seed(context);
                 AnmeldungsstatusSeeder.Seed(context);
                 EindruckSeeder.Seed(context);
+                LizenzenSeeder.Seed(context);
 
                 // 4. Monster
                 Console.WriteLine("Seeding Monsters...");

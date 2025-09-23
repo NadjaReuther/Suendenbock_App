@@ -7,7 +7,7 @@ namespace Suendenbock_App.Controllers
 {
     public class InfanterieController : BaseOrganizationController
     {
-        public InfanterieController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment): base(context, imageUploadService, environment)
+        public InfanterieController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment, IMentionProcessorService mentionProcessor): base(context, imageUploadService, environment, mentionProcessor)
         {
         }
         

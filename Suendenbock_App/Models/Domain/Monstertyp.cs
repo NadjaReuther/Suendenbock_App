@@ -4,7 +4,8 @@
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string? Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? ProcessedDescription { get; set; }
         // Foreign Key
         public int MonsterwuerfelId { get; set; }
         public int MonsterintelligenzId { get; set; }

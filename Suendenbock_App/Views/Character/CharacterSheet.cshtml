@@ -21,11 +21,7 @@
         <div>
             <h1 class="wiki-title">@Model.Vorname @Model.Nachname</h1>
             <p class="wiki-subtitle">
-                @Model.Rasse.Name • @Model.Lebensstatus.Name
-                @if (Model.CharacterMagicClasses.Any())
-                {
-                    <span> • @string.Join(", ", Model.CharacterMagicClasses.Select(cmc => cmc.MagicClass?.Bezeichnung))</span>
-                }
+                @Model.Rasse.Name • @Model.Lebensstatus.Name • @Model.Eindruck.Name
             </p>
         </div>
     </div>
@@ -59,9 +55,31 @@
                 {
                     <p><strong>Geboren:</strong> @Model.Geburtsdatum</p>
                 }
+                <p><strong>Magie:</strong>
+                @if (Model.CharacterMagicClasses.Any())
+                {
+                    @foreach (var cmc in Model.CharacterMagicClasses)
+                    {
+                        <div style="margin-left: 10px; font-size: 0.9em; color: #666;">
+                            @(cmc.MagicClass?.Obermagie?.Bezeichnung) → @(cmc.MagicClass?.Bezeichnung) → @(cmc.MagicClassSpecialization?.Name ?? "Keine Spezialisierung")
+                        </div>
+                    }
+                }
+                </p>
+                <p><strong>Beruf:</strong> @Model.Details?.Beruf?.Name</p>
+                <p><strong>Haus:</strong> @Model.Details?.Haus?.Name</p>
+                <p><strong>Herkunft:</strong> @Model.Details?.Herkunftsland?.Name</p>
+                <p><strong>Eltern:</strong>
+                    <div style="margin-left: 10px; font-size: 0.9em; color: #666;">Vater: @Model.Vater?.Vorname @Model.Vater?.Nachname</div>
+                    <div style="margin-left: 10px; font-size: 0.9em; color: #666;">Mutter: @Model.Mutter?.Vorname @Model.Mutter?.Nachname</div>
+                </p>
+                <p><strong>Blut:</strong> @Model.Details?.Blutgruppe?.Name</p>
+                <p><strong>Gilde:</strong> @Model.Affiliation?.Guild?.Name</p>
+                <p><strong>Regiment:</strong> @Model.Affiliation?.Regiment?.Name</p>
+                <p><strong>Infanterierang:</strong> @Model.Affiliation?.Infanterierang?.Name</p>
             </div>
 
-            @* Weitere Infoboxen für Magie, Familie etc. *@
+            
         </div>
     </div>
 </div>

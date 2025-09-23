@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Services;
@@ -8,13 +9,28 @@ namespace Suendenbock_App.Controllers
     public class GuildController : BaseOrganizationController
     {
         private readonly ICachedDataService _cachedData;
-        public GuildController(ApplicationDbContext context, IImageUploadService imageUploadService, ICachedDataService cachedData, IWebHostEnvironment environment) : base(context, imageUploadService, environment)
+        public GuildController(ApplicationDbContext context, IImageUploadService imageUploadService, ICachedDataService cachedData, IWebHostEnvironment environment,IMentionProcessorService mentionProcessor) : base(context, imageUploadService, environment,mentionProcessor)
         {
             _cachedData = cachedData;
         }
         public IActionResult Index()
         {
             return View();
+        }
+        public IActionResult GuildSheet(int id)
+        {
+            var guild = _context.Guilds
+                .Include(c => c.Characters)
+                    .ThenInclude(ch => ch.ImagePath)
+                .Include(c => c.LeaderCharacter)
+                .Include(c => c.VertreterCharacter)
+                .FirstOrDefault(c => c.Id == id);
+
+            if (guild == null)
+            {
+                return NotFound();
+            }
+            return View(guild);
         }
         public async Task<IActionResult> Form(int id = 0)
         {

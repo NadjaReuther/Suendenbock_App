@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250921170911_ProcessedDescriptionWiki")]
+    partial class ProcessedDescriptionWiki
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -480,12 +483,6 @@ namespace Suendenbock_App.Migrations
                     b.Property<int?>("StandId")
                         .HasColumnType("int");
 
-                    b.Property<string>("quote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("urheber")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BerufId");
@@ -542,29 +539,6 @@ namespace Suendenbock_App.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Eindruecke");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.Gildenlizenz", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("GuildId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LizenzenId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuildId");
-
-                    b.HasIndex("LizenzenId");
-
-                    b.ToTable("Gildenlizenzen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Grundzauber", b =>
@@ -641,12 +615,6 @@ namespace Suendenbock_App.Migrations
 
                     b.Property<int?>("leader")
                         .HasColumnType("int");
-
-                    b.Property<string>("quote")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("urheber")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("vertreter")
                         .HasColumnType("int");
@@ -803,23 +771,6 @@ namespace Suendenbock_App.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("LightCards");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.Lizenzen", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Lizenzen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.MagicClass", b =>
@@ -1514,25 +1465,6 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("MagicClassSpecialization");
                 });
 
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.Gildenlizenz", b =>
-                {
-                    b.HasOne("Suendenbock_App.Models.Domain.Guild", "Guild")
-                        .WithMany("Gildenlizenzen")
-                        .HasForeignKey("GuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Suendenbock_App.Models.Domain.Lizenzen", "Lizenzen")
-                        .WithMany("Gildenlizenzen")
-                        .HasForeignKey("LizenzenId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Guild");
-
-                    b.Navigation("Lizenzen");
-                });
-
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Grundzauber", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Domain.MagicClass", "MagicClass")
@@ -1809,8 +1741,6 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Guild", b =>
                 {
                     b.Navigation("Characters");
-
-                    b.Navigation("Gildenlizenzen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Haus", b =>
@@ -1841,11 +1771,6 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Domain.LightCard", b =>
                 {
                     b.Navigation("Obermagie");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.Lizenzen", b =>
-                {
-                    b.Navigation("Gildenlizenzen");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.MagicClass", b =>

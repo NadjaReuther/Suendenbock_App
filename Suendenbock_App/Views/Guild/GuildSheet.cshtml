@@ -1,0 +1,66 @@
+﻿@using Suendenbock_App.Models.Domain
+@model Guild
+@section Styles {
+    <link href="/css/wiki.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+}
+
+<div class="wiki-container">
+    <div class="wiki-header">
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" alt="@Model.Name" class="wiki-avatar">
+        }
+        else
+        {
+            <div class="wiki-avatar" style="background: linear-gradient(45deg, #d4af37, #b8941f); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                @Model.Name
+            </div>
+        }
+
+        <div>
+            <h1 class="wiki-title">@Model.Name</h1>
+            <p class="wiki-subtitle">
+                @Model.AbenteuerrangNavigation
+            </p>
+        </div>
+    </div>
+
+    <div class="wiki-content">
+        <div class="wiki-main">
+            <h3>📜 Gildenbeschreibung</h3>
+            <div class="wiki-description">
+                @* NEU: Verarbeitete Description mit Links anzeigen *@
+                @if (!string.IsNullOrEmpty(Model.ProcessedDescription))
+                {
+                    @Html.Raw(Model.ProcessedDescription)
+                }
+                else if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    @Model.Description
+                }
+                else
+                {
+                    <em class="text-muted">Keine Beschreibung verfügbar.</em>
+                }
+            </div>
+        </div>
+
+        <div class="wiki-sidebar">
+            <div class="wiki-infobox">
+                <h4>📊 Gildendaten</h4>
+                <p><strong>Rang:</strong> </p>
+                <p><strong>anführer:</strong></p>               
+                <p><strong>Stellvertreter:</strong></p>
+                <p><strong>Anmeldestatus:</strong> @Model.AnmeldungsstatusNavigation.Name</p>
+                <p><strong>Lizenzen:</strong> </p>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/character-mentions.js"></script>
+}

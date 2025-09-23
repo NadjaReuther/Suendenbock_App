@@ -27,18 +27,42 @@ namespace Suendenbock_App.Controllers
         public IActionResult CharacterSheet(int id)
         {
             var character = _context.Characters
-                .Include(ca => ca.Affiliation)
-                .Include(cd => cd.Details)
-                .Include(c => c.CharacterMagicClasses)
-                    .ThenInclude(cmc => cmc.MagicClass)
-                        .ThenInclude(mc => mc.Obermagie)
-                .Include(c => c.CharacterMagicClasses)
-                    .ThenInclude(cmc => cmc.MagicClassSpecialization)
+                // Basis-Character Daten
                 .Include(c => c.Rasse)
                 .Include(c => c.Lebensstatus)
                 .Include(c => c.Eindruck)
                 .Include(c => c.Vater)
                 .Include(c => c.Mutter)
+
+                // CharacterDetails mit allen verknüpften Tabellen
+                .Include(c => c.Details)
+                    .ThenInclude(d => d.Stand)
+                .Include(c => c.Details)
+                    .ThenInclude(d => d.Beruf)
+                .Include(c => c.Details)
+                    .ThenInclude(d => d.Blutgruppe)
+                .Include(c => c.Details)
+                    .ThenInclude(d => d.Haus)
+                .Include(c => c.Details)
+                    .ThenInclude(d => d.Herkunftsland)
+
+                // CharacterAffiliation (Zugehörigkeiten)
+                .Include(c => c.Affiliation)
+                    .ThenInclude(a => a.Guild)
+                .Include(c => c.Affiliation)
+                    .ThenInclude(a => a.Religion)
+                .Include(c => c.Affiliation)
+                    .ThenInclude(a => a.Regiment)
+                .Include(c => c.Affiliation)
+                    .ThenInclude(a => a.Infanterierang)
+
+                // Magie-Informationen komplett
+                .Include(c => c.CharacterMagicClasses)
+                    .ThenInclude(cmc => cmc.MagicClass)
+                        .ThenInclude(mc => mc.Obermagie)
+                            .ThenInclude(o => o.LightCard)
+                .Include(c => c.CharacterMagicClasses)
+                    .ThenInclude(cmc => cmc.MagicClassSpecialization)
                 .FirstOrDefault(c => c.Id == id);
             if (character == null)
             {
@@ -147,33 +171,38 @@ namespace Suendenbock_App.Controllers
             try
             {
                 var character = await _context.Characters.Include(c => c.Details).FirstOrDefaultAsync(c => c.Id == id);
-                if(character == null)
+                if (character == null)
                 {
                     return NotFound();
                 }
+
                 // CharacterDetails erstellen oder aktualisieren
                 if (character.Details == null)
                 {
                     character.Details = new CharacterDetails { CharacterId = id };
                     _context.CharacterDetails.Add(character.Details);
                 }
+
                 character.Details.StandId = standId;
                 character.Details.BerufId = berufId;
                 character.Details.BlutgruppeId = blutgruppeId;
                 character.Details.HausId = hausId;
                 character.Details.HerkunftslandId = herkunftslandId;
                 character.Details.BodyHeight = bodyHeight;
-                // NEU: Description verarbeiten - @Mentions in Links umwandeln
+
+                // ROBUSTE Description-Verarbeitung mit Link-Erhaltung
                 character.Details.Description = description;
                 if (!string.IsNullOrEmpty(description))
                 {
-                    character.Details.ProcessedDescription = _mentionProcessor.ProcessMentions(description);
+                    character.Details.ProcessedDescription = _mentionProcessor.ProcessMentionsPreservingExisting(
+                        description,
+                        character.Details.ProcessedDescription
+                    );
                 }
                 else
                 {
                     character.Details.ProcessedDescription = null;
                 }
-
 
                 character.CompletionLevel = CharacterCompleteness.WithDetails;
                 await _context.SaveChangesAsync();
@@ -188,7 +217,7 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep3(int id, int? guildId, int? religionId, int? regimentId, int? infanterierangId)
+        public async Task<IActionResult> SaveStep3(int id, int? guildId, int? religionId, int? regimentsId, int? infanterierangId)
         {
             try
             {
@@ -205,7 +234,7 @@ namespace Suendenbock_App.Controllers
                 }
                 character.Affiliation.GuildId = guildId;
                 character.Affiliation.ReligionId = religionId;
-                character.Affiliation.RegimentsId = regimentId;
+                character.Affiliation.RegimentsId = regimentsId;
                 character.Affiliation.InfanterierangId = infanterierangId;
                 
                 character.CompletionLevel = CharacterCompleteness.Complete;

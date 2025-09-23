@@ -21,6 +21,8 @@ namespace Suendenbock_App.Data
         public DbSet<Stand> Staende { get; set; }
         public DbSet<Rasse> Rassen { get; set; }
         public DbSet<Guild> Guilds { get; set; }
+        public DbSet<Lizenzen> Lizenzen {  get; set; }
+        public DbSet<Gildenlizenz> Gildenlizenzen { get; set; }
         public DbSet<Infanterie> Infanterien { get; set; }
         public DbSet<Regiment> Regiments { get; set; }
         public DbSet<MagicClass> MagicClasses { get; set; }
@@ -190,6 +192,38 @@ namespace Suendenbock_App.Data
                 .WithMany(mw => mw.Monstertypen)
                 .HasForeignKey(mt => mt.MonsterwuerfelId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // CharacterAffiliation zu Regiment Beziehung (NEU hinzufügen)
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Regiment)
+                .WithMany()
+                .HasForeignKey(ca => ca.RegimentsId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false);
+
+            // CharacterAffiliation zu Guild Beziehung (falls noch nicht vorhanden)
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Guild)
+                .WithMany()
+                .HasForeignKey(ca => ca.GuildId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false);
+
+            // CharacterAffiliation zu Religion Beziehung (falls noch nicht vorhanden)
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Religion)
+                .WithMany()
+                .HasForeignKey(ca => ca.ReligionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false);
+
+            // CharacterAffiliation zu Infanterierang Beziehung (falls noch nicht vorhanden)
+            builder.Entity<CharacterAffiliation>()
+                .HasOne(ca => ca.Infanterierang)
+                .WithMany()
+                .HasForeignKey(ca => ca.InfanterierangId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired(false);
         }
     }
 }

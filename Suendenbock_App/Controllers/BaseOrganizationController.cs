@@ -13,15 +13,18 @@ namespace Suendenbock_App.Controllers
         protected readonly ApplicationDbContext _context;
         protected readonly IImageUploadService _imageUploadService;
         protected readonly IWebHostEnvironment _environment;
+        protected readonly IMentionProcessorService _mentionProcessor;
 
         protected BaseOrganizationController(
             ApplicationDbContext context,
             IImageUploadService imageUploadService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IMentionProcessorService mentionProcessor)
         {
             _context = context;
             _imageUploadService = imageUploadService;
             _environment = environment;
+            _mentionProcessor = mentionProcessor;
         }
 
         /// <summary>
@@ -29,7 +32,7 @@ namespace Suendenbock_App.Controllers
         /// </summary>
         protected void LoadCommonViewBagData()
         {
-            ViewBag.LightCards = _context.LightCards.ToList();
+            ViewBag.Lizenzen = _context.Lizenzen.ToList();
             ViewBag.Characters = _context.Characters.ToList();
         }
 
