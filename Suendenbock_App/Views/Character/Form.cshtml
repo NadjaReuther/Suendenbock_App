@@ -162,7 +162,7 @@
                             {
                                 foreach (var rasse in ViewBag.Rassen)
                                 {
-                                    if(Model != null && Model.Rasse.Name == rasse.Name)
+                                    if(Model?.Rasse?.Name == rasse.Name)
                                     {
                                         <option value="@rasse.Id" selected>@rasse.Name</option>
                                     }
@@ -182,7 +182,7 @@
                             {
                                 foreach(var status in ViewBag.Lebensstatus)
                                 {
-                                    if(Model != null && Model.Lebensstatus.Name == status.Name)
+                                    if(Model?.Lebensstatus?.Name == status.Name)
                                     {
                                         <option value="@status.Id" selected>@status.Name</option>
                                     }
@@ -202,7 +202,7 @@
                             {
                                 foreach(var eindruck in ViewBag.Eindruecke)
                                 {
-                                    if(Model != null && Model.Eindruck.Name == eindruck.Name)
+                                    if(Model?.Eindruck?.Name == eindruck.Name)
                                     {
                                         <option value="@eindruck.Id" selected>@eindruck.Name</option>
                                     }

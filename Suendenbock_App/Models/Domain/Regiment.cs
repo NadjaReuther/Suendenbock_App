@@ -8,14 +8,13 @@
         public string? ProcessedDescription { get; set; }
 
         // Nullable Foreign Keys
-        public int? Regimentsleiter { get; set; }
-        public int? Adjutant { get; set; }
-        public int InfanterieId { get; set; } // ← Richtiger Name für FK
+        public int? RegimentsleiterId { get; set; }
+        public int? AdjutantId { get; set; }
+        public int InfanterieId { get; set; } 
 
         // Navigation Properties
-        public virtual Character? RegimentsCharacter { get; set; }
-        public virtual Character? AdjutantCharacter { get; set; }
+        public virtual Character? Regimentsleiter { get; set; }
+        public virtual Character? Adjutant { get; set; }
         public virtual Infanterie? Infanterie { get; set; }
-        public virtual ICollection<Character> Characters { get; set; } = new List<Character>();
     }
 }

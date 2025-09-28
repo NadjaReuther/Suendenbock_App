@@ -215,7 +215,7 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep3(int id, int? guildId, int? religionId, int? regimentsId, int? infanterierangId)
+        public async Task<IActionResult> SaveStep3(int id, int? guildId, int? religionId, int? regimentId, int? infanterierangId)
         {
             try
             {
@@ -232,7 +232,7 @@ namespace Suendenbock_App.Controllers
                 }
                 character.Affiliation.GuildId = guildId;
                 character.Affiliation.ReligionId = religionId;
-                character.Affiliation.RegimentsId = regimentsId;
+                character.Affiliation.RegimentId = regimentId;
                 character.Affiliation.InfanterierangId = infanterierangId;
                 
                 character.CompletionLevel = CharacterCompleteness.Complete;
@@ -322,6 +322,8 @@ namespace Suendenbock_App.Controllers
             var character = _context.Characters
                     .Include(c => c.Details)
                     .Include(c => c.Affiliation)
+                    .Include(c => c.CharacterMagicClasses)
+                        .ThenInclude(cmc => cmc.MagicClass)
                     .Include(c => c.CharacterMagicClasses)
                         .ThenInclude(cmc => cmc.MagicClassSpecialization)                     
                     .Include(c => c.Rasse)

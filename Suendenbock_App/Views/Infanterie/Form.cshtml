@@ -75,9 +75,9 @@
                 <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniechef" class="form-label">Kompaniechef</label>
                 <select class="form-select  character-select" id="leader" name="leader" required>
-                    @if (Model?.leader != null)
+                    @if (Model?.LeaderId != null)
                     {
-                        <option value="@Model.leader" selected>@Model?.LeaderCharacter?.Vorname @Model?.LeaderCharacter?.Nachname</option>
+                        <option value="@Model.LeaderId" selected>@Model?.LeaderCharacter?.Vorname @Model?.LeaderCharacter?.Nachname</option>
                     }
                 </select>
             </div>
@@ -85,9 +85,9 @@
                 <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniefuehrer" class="form-label">Kompaniefuehrer</label>
                 <select class="form-select character-select" id="vertreter" name="vertreter" required>
-                    @if (Model?.vertreter != null)
+                    @if (Model?.VertreterId != null)
                     {
-                        <option value="@Model.vertreter" selected>@Model?.VertreterCharacter?.Vorname @Model?.VertreterCharacter?.Nachname</option>
+                        <option value="@Model.VertreterId" selected>@Model?.VertreterCharacter?.Vorname @Model?.VertreterCharacter?.Nachname</option>
                     }
                 </select>
             </div>

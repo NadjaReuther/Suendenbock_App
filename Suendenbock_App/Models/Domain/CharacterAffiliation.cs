@@ -6,7 +6,7 @@
         public int CharacterId { get; set; } // Foreign key to Character
         //entweder Gilde ODER Infanterie (nicht beides)
         public int? GuildId { get; set; }
-        public int? RegimentsId { get; set; } //Foreign Key für Regiment
+        public int? RegimentId { get; set; } //Foreign Key für Regiment
         public int? InfanterierangId { get; set; } //Foreign Key für Infanterierang
         //Religion (optional)
         public int? ReligionId { get; set; }

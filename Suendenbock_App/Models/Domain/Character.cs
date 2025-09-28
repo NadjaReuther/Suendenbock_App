@@ -22,11 +22,14 @@
         //Optionale Basis-Informationen
         public string? Geburtsdatum { get; set; }
         public string? ImagePath { get; set; }
-        //Eltern-Bjeziehungen (optional)
+        
+        //Eltern-Beziehungen (optional)
         public int? VaterId { get; set; }
         public int? MutterId { get; set; }
+        
         //Vollständigkeits-Status
         public CharacterCompleteness CompletionLevel { get; set; } = CharacterCompleteness.BasicInfo;
+        
         //Navigation Properties für Pflichtfelder
         public virtual Rasse Rasse { get; set; } = null!; //character has one Rasse
         public virtual Lebensstatus Lebensstatus { get; set; } = null!; //character has one Lebensstatus
@@ -34,6 +37,7 @@
         //Navigation Properties für Eltern
         public virtual Character? Vater { get; set; } //character has one father
         public virtual Character? Mutter { get; set; } //character has one mother
+        
         //Navigation Properties für andere Tabellen
         public virtual CharacterDetails? Details { get; set; }
         public virtual CharacterAffiliation? Affiliation { get; set; }

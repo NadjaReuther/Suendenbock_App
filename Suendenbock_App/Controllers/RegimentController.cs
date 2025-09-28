@@ -25,8 +25,8 @@ namespace Suendenbock_App.Controllers
             {
                 var regiment = _context.Regiments
                     .Include(r => r.Infanterie)
-                    .Include(r => r.RegimentsCharacter)
-                    .Include(r => r.AdjutantCharacter)
+                    .Include(r => r.Regimentsleiter)
+                    .Include(r => r.Adjutant)
                     .FirstOrDefault(r => r.Id == id);
 
                 if (regiment == null)

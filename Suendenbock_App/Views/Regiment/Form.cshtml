@@ -62,16 +62,16 @@
 
                 <label for="kompaniechef" class="form-label">Kompaniechef</label>
                 <select class="form-select  character-select" id="leader" name="Regimentsleiter" required>
-                    @if (Model?.Regimentsleiter != null)
+                    @if (Model?.RegimentsleiterId != null)
                     {
-                        <option value="@Model.Regimentsleiter" selected>@Model?.RegimentsCharacter?.Vorname @Model?.RegimentsCharacter?.Nachname</option>
+                        <option value="@Model.RegimentsleiterId" selected>@Model?.Regimentsleiter?.Vorname @Model?.Regimentsleiter?.Nachname</option>
                     }
                 </select>
                 <label for="kompaniefuehrer" class="form-label">Kompaniefuehrer</label>
                 <select class="form-select character-select" id="vertreter" name="Adjutant" required>
-                    @if (Model?.Adjutant != null)
+                    @if (Model?.AdjutantId != null)
                     {
-                        <option value="@Model.Adjutant" selected>@Model?.AdjutantCharacter?.Vorname @Model?.AdjutantCharacter?.Nachname</option>
+                        <option value="@Model.AdjutantId" selected>@Model?.Adjutant?.Vorname @Model?.Adjutant?.Nachname</option>
                     }
                 </select>
             </div>

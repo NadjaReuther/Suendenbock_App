@@ -27,15 +27,15 @@ namespace Suendenbock_App.Controllers.Api
                         r.Id,
                         r.Name,
                         r.Description,
-                        RegimentsCharacter = r.RegimentsCharacter != null ? new
+                        RegimentsCharacter = r.Regimentsleiter != null ? new
                         {
-                            r.RegimentsCharacter.Vorname,
-                            r.RegimentsCharacter.Nachname
+                            r.Regimentsleiter.Vorname,
+                            r.Regimentsleiter.Nachname
                         } : null,
-                        AdjutantCharacter = r.AdjutantCharacter != null ? new
+                        AdjutantCharacter = r.Adjutant != null ? new
                         {
-                            r.AdjutantCharacter.Vorname,
-                            r.AdjutantCharacter.Nachname
+                            r.Adjutant.Vorname,
+                            r.Adjutant.Nachname
                         } : null
                     })
                     .ToListAsync();

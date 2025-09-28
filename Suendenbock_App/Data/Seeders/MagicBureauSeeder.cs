@@ -80,9 +80,9 @@ namespace Suendenbock_App.Data.Seeders
                     new MagicClass { Bezeichnung = "Erde", ImagePath = "/images/magicclass/earth.png", ObermagieId = 5 },
                     new MagicClass { Bezeichnung = "Genesung", ImagePath = "/images/magicclass/pain.png", ObermagieId = 3 },
                     new MagicClass { Bezeichnung = "Schutz", ImagePath = "/images/magicclass/pain.png", ObermagieId = 12 },
-                    new MagicClass { Bezeichnung = "Profane", ImagePath = "/images/magicclass/dark.png", ObermagieId = 17 },
-                    new MagicClass { Bezeichnung = "Beschränkte", ImagePath = "/images/magicclass/dark.png", ObermagieId = 17 },
-                    new MagicClass { Bezeichnung = "Unbegabte", ImagePath = "/images/magicclass/dark.png", ObermagieId = 17 }
+                    new MagicClass { Bezeichnung = "Profane", ImagePath = "/images/magicclass/dark.png", ObermagieId = 15 },
+                    new MagicClass { Bezeichnung = "Beschränkte", ImagePath = "/images/magicclass/dark.png", ObermagieId = 15 },
+                    new MagicClass { Bezeichnung = "Unbegabte", ImagePath = "/images/magicclass/dark.png", ObermagieId = 15 }
                 );
                 context.SaveChanges();
             }

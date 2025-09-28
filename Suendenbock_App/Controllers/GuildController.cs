@@ -20,8 +20,6 @@ namespace Suendenbock_App.Controllers
         public IActionResult GuildSheet(int id)
         {
             var guild = _context.Guilds
-                .Include(c => c.Characters)
-                    .ThenInclude(ch => ch.ImagePath)
                 .Include(c => c.LeaderCharacter)
                 .Include(c => c.VertreterCharacter)
                 .FirstOrDefault(c => c.Id == id);
@@ -125,8 +123,8 @@ namespace Suendenbock_App.Controllers
             guildToUpdate.LightCardId = guild.LightCardId;
             guildToUpdate.AbenteuerrangId = guild.AbenteuerrangId;
             guildToUpdate.AnmeldungsstatusId = guild.AnmeldungsstatusId;
-            guildToUpdate.leader = guild.leader;
-            guildToUpdate.vertreter = guild.vertreter;
+            guildToUpdate.LeaderId = guild.LeaderId;
+            guildToUpdate.VertreterId = guild.VertreterId;
         }
     }
 }

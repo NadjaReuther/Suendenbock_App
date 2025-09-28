@@ -23,18 +23,19 @@ namespace Suendenbock_App.Controllers
                 Include(v => v.VertreterCharacter).
                 Include(ar => ar.AbenteuerrangNavigation).
                 Include(am => am.AnmeldungsstatusNavigation).
-                Include(c => c.Characters).ToList();
+                ToList();
             var allInfanteries = _context.Infanterien
                 .Include(l => l.LeaderCharacter)
                 .Include(a => a.VertreterCharacter)
                 .ToList();
             var allRegiments = _context.Regiments
                 .Include(i => i.Infanterie)
-                .Include(r => r.RegimentsCharacter)
-                .Include(a => a.AdjutantCharacter)
+                .Include(r => r.Regimentsleiter)
+                .Include(a => a.Adjutant)
                 .ToList();
             var allCharacters = _context.Characters
                 .Include(c => c.CharacterMagicClasses)
+                    .ThenInclude(cmc => cmc.MagicClass)
                 .Include(c => c.Details)
                     .ThenInclude(h => h.Haus)
                 .Include(c => c.Details)

@@ -41,7 +41,7 @@ using(var scope = app.Services.CreateScope())
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
 
     await CreateRole(roleManager, "Administrator");
-    await CreateDefaultUser(userManager, "Administrator", "gott@suendenbock.lore", "Adrijaan1618!");
+    await CreateDefaultUser(userManager, "Administrator", "gott@suendenbock.lore", "Adrijan1618!");
 }
 async Task CreateRole(RoleManager<IdentityRole> roleManager, string roleName)
 {

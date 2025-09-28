@@ -134,8 +134,8 @@ namespace Suendenbock_App.Controllers
             target.Sitz = source.Sitz;
             target.description = source.description;
             target.LightCardId = source.LightCardId;
-            target.leader = source.leader;
-            target.vertreter = source.vertreter;
+            target.LeaderId = source.LeaderId;
+            target.VertreterId = source.VertreterId;
         }
     }
 }

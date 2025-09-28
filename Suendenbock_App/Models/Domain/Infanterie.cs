@@ -9,8 +9,8 @@
         public string? ImagePath { get; set; } = string.Empty;
         public string Sitz {  get; set; } = string.Empty;
         public int? LightCardId { get; set; } // Foreign Key to LightCard
-        public int? leader { get; set; } // Character ID of the leader
-        public int? vertreter { get; set; } // Character ID of the representative
+        public int? LeaderId { get; set; } // Character ID of the leader
+        public int? VertreterId { get; set; } // Character ID of the representative
 
         //Navigation Property
         public virtual ICollection<Regiment> Regiments { get; set; } = new List<Regiment>();
