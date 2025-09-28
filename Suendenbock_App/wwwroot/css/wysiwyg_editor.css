@@ -1,0 +1,33 @@
+﻿#editor-wrapper {
+    position: relative;
+}
+
+.ck-editor__editable_inline {
+    min-height: 200px;
+    border: 2px solid #d4c4a8 !important;
+    border-radius: 8px !important;
+    font-family: 'Times New Roman', serif;
+}
+
+/* Entity-Links im Editor stylen */
+.entity-link {
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.character-link {
+    background-color: rgba(212, 175, 55, 0.2);
+    color: #d4af37;
+}
+
+.guild-link {
+    background-color: rgba(25, 135, 84, 0.2);
+    color: #198754;
+}
+
+.infanterie-link {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}

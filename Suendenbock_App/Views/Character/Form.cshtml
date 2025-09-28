@@ -19,7 +19,6 @@
 @section Styles {
     <link href="/css/character.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 }
 
 <div class="steckbrief-background">
@@ -413,8 +412,12 @@
                     </div>
 
                     <div class="description-container">
-                        <textarea class="form-control" id="description" name="description" rows="3"
-                              placeholder="Beschreibung... (verwende @@Name um Charaktere zu verlinken)">@Model?.Details?.Description</textarea>
+                        <div id="editor-wrapper">
+                            <textarea class="form-control d-none" id="description" name="description" required>
+                                @(Model?.Details?.Description ?? "")
+                            </textarea>
+                            <div id="wysiwyg-editor"></div>
+                        </div>
                     </div>
 
                     <div class="text-center mt-4">
@@ -553,6 +556,7 @@
 @section Scripts {
     <script src="~/js/entity-mentions.js"></script>
     <script src="~/js/imagePreview.js"></script>
+    <script src="~/js/wysiwyg_editor.js"></script>
     <script>
         // Bild-Upload Drag & Drop aktivieren
         enableImageDragDrop('#character-drop-zone', 'characterImageUpload');
@@ -678,6 +682,7 @@
                 });
             }
 
+             new WikiWYSIWYGEditor('#description');
             // Beim Laden der Seite Spezialisierungen aktualisieren
             toggleSpecializations();
         });

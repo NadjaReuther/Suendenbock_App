@@ -200,23 +200,38 @@
         return labels[type] || '';
     }
 
+    // Bisheriger Code bleibt, aber erweitere die selectEntity-Methode:
     selectEntity(entity) {
         if (!this.currentMention || entity.type === 'help') return;
 
-        const text = this.textarea.value;
-        const beforeMention = text.substring(0, this.currentMention.start);
-        const afterMention = text.substring(this.currentMention.end);
-
-        // Erstelle die Mention mit dem ursprünglichen Symbol
-        const mention = `${this.currentMention.symbol}${entity.name}`;
-        const newText = beforeMention + mention + ' ' + afterMention;
-        this.textarea.value = newText;
-
-        const newCursorPos = this.currentMention.start + mention.length + 1;
-        this.textarea.setSelectionRange(newCursorPos, newCursorPos);
+        // Für WYSIWYG-Editor
+        if (this.isWYSIWYGMode()) {
+            this.insertEntityInWYSIWYG(entity);
+        } else {
+            // Bestehender Code für normale Textareas
+            const text = this.textarea.value;
+            const beforeMention = text.substring(0, this.currentMention.start);
+            const afterMention = text.substring(this.currentMention.end);
+            const mention = `${this.currentMention.symbol}${entity.name}`;
+            const newText = beforeMention + mention + ' ' + afterMention;
+            this.textarea.value = newText;
+        }
 
         this.hideDropdown();
-        this.textarea.focus();
+    }
+
+    // Neue Methode für WYSIWYG-Integration
+    insertEntityInWYSIWYG(entity) {
+        const linkHtml = `<a href="/wiki/${entity.type}/${entity.id}" class="entity-link ${entity.type}-link">${entity.name}</a>`;
+
+        // In CKEditor einfügen
+        this.editor.model.change(writer => {
+            const htmlDataProcessor = this.editor.data.processor;
+            const viewFragment = htmlDataProcessor.toView(linkHtml);
+            const modelFragment = this.editor.data.toModel(viewFragment);
+
+            this.editor.model.insertContent(modelFragment);
+        });
     }
 
     hideDropdown() {
