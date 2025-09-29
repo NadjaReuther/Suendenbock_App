@@ -20,10 +20,128 @@
     }
 
     init() {
-        this.textarea.addEventListener('input', (e) => this.handleInput(e));
-        this.textarea.addEventListener('keydown', (e) => this.handleKeydown(e));
+        console.log('🔄 EntityMentions: Initialisierung gestartet');
+
+        // Prüfen ob CKEditor verwendet wird
+        if (this.checkForCKEditor()) {
+            console.log('✅ CKEditor-Modus erkannt');
+            this.initCKEditorMode();
+        } else {
+            console.log('✅ Textarea-Modus erkannt');
+            // Alte Textarea-Methode
+            this.textarea.addEventListener('input', (e) => this.handleInput(e));
+            this.textarea.addEventListener('keydown', (e) => this.handleKeydown(e));
+        }
+
         this.createDropdown();
         this.createHelpTooltip();
+    }
+
+    checkForCKEditor() {
+        // Prüfe ob CKEditor-Element existiert
+        return document.querySelector('.ck-editor') !== null;
+    }
+
+    initCKEditorMode() {
+        // Warte auf CKEditor-Instanz
+        let attempts = 0;
+        const maxAttempts = 50; // 5 Sekunden
+
+        const checkInterval = setInterval(() => {
+            attempts++;
+
+            if (window.currentEditor) {
+                clearInterval(checkInterval);
+                this.editor = window.currentEditor;
+                console.log('✅ CKEditor-Instanz gefunden');
+                this.setupCKEditorListeners();
+            } else if (attempts >= maxAttempts) {
+                clearInterval(checkInterval);
+                console.error('❌ CKEditor-Instanz nicht gefunden nach 5 Sekunden');
+            }
+        }, 100);
+    }
+
+    setupCKEditorListeners() {
+        console.log('✅ Richte CKEditor-Listeners ein');
+
+        // Lausche auf Tastatureingaben im Editor
+        this.editor.editing.view.document.on('keyup', (evt, data) => {
+            this.handleCKEditorInput();
+        });
+
+        this.editor.editing.view.document.on('keydown', (evt, data) => {
+            this.handleCKEditorKeydown(data);
+        });
+    }
+
+    handleCKEditorInput() {
+        // Hole den aktuellen Text aus dem Editor (ohne HTML-Tags)
+        const htmlContent = this.editor.getData();
+        const text = htmlContent.replace(/<[^>]*>/g, ''); // Entferne HTML-Tags
+
+        // Hole die aktuelle Cursor-Position
+        const selection = this.editor.model.document.selection;
+        const position = selection.getFirstPosition();
+
+        // Berechne ungefähre Cursor-Position im Text
+        const cursorPos = text.length;
+        const beforeCursor = text.substring(Math.max(0, cursorPos - 50), cursorPos);
+
+        // Erweiterte Regex für alle Mention-Typen
+        const mentionPattern = /([@#§&%])(\w*)$/;
+        const match = beforeCursor.match(mentionPattern);
+
+        if (match) {
+            const symbol = match[1];
+            const searchTerm = match[2];
+
+            console.log(`🔍 Mention erkannt: ${symbol}${searchTerm}`);
+
+            this.currentMention = {
+                start: cursorPos - match[0].length,
+                end: cursorPos,
+                term: searchTerm,
+                symbol: symbol,
+                type: this.mentionTypes[symbol]?.type || 'all'
+            };
+
+            if (searchTerm.length >= 1) {
+                this.searchEntities(searchTerm, this.currentMention.type);
+            } else if (searchTerm.length === 0) {
+                this.showTypeHelp(symbol);
+            }
+        } else {
+            this.hideDropdown();
+        }
+    }
+
+    handleCKEditorKeydown(data) {
+        if (this.dropdown.style.display === 'none') return;
+
+        if (data.keyCode === 27) { // Escape
+            this.hideDropdown();
+            data.preventDefault();
+        }
+    }
+
+    insertEntityInCKEditor(entity) {
+        console.log('✅ Füge Entity in CKEditor ein:', entity.name);
+
+        // Erstelle HTML-Link
+        const linkHtml = `<a href="${entity.url}" class="entity-link ${entity.type}-link" data-entity-type="${entity.type}" data-entity-id="${entity.id}">${entity.name}</a>&nbsp;`;
+
+        // Lösche das getippte Symbol + Suchbegriff
+        this.editor.model.change(writer => {
+            const selection = this.editor.model.document.selection;
+            const position = selection.getFirstPosition();
+
+            // Füge Link ein
+            const viewFragment = this.editor.data.processor.toView(linkHtml);
+            const modelFragment = this.editor.data.toModel(viewFragment);
+
+            this.editor.model.insertContent(modelFragment, position);
+        });
     }
 
     createHelpTooltip() {
@@ -200,21 +318,25 @@
         return labels[type] || '';
     }
 
-    // Bisheriger Code bleibt, aber erweitere die selectEntity-Methode:
     selectEntity(entity) {
         if (!this.currentMention || entity.type === 'help') return;
 
-        // Für WYSIWYG-Editor
-        if (this.isWYSIWYGMode()) {
-            this.insertEntityInWYSIWYG(entity);
+        if (this.editor) {
+            // CKEditor-Modus: HTML-Link einfügen
+            console.log('🔄 Füge Entity im CKEditor-Modus ein');
+            this.insertEntityInCKEditor(entity);
         } else {
-            // Bestehender Code für normale Textareas
+            // Textarea-Modus: Text-Symbol einfügen
+            console.log('🔄 Füge Entity im Textarea-Modus ein');
             const text = this.textarea.value;
             const beforeMention = text.substring(0, this.currentMention.start);
             const afterMention = text.substring(this.currentMention.end);
             const mention = `${this.currentMention.symbol}${entity.name}`;
             const newText = beforeMention + mention + ' ' + afterMention;
             this.textarea.value = newText;
+
+            const newCursorPos = this.currentMention.start + mention.length + 1;
+            this.textarea.setSelectionRange(newCursorPos, newCursorPos);
         }
 
         this.hideDropdown();

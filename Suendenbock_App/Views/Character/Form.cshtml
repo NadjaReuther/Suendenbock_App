@@ -18,6 +18,7 @@
 
 @section Styles {
     <link href="/css/character.css" rel="stylesheet" />
+    <link href="/css/wysiwyg-editor.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
 
@@ -554,14 +555,22 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/entity-mentions.js"></script>
     <script src="~/js/imagePreview.js"></script>
-    <script src="~/js/wysiwyg_editor.js"></script>
+    <script src="~/js/wysiwyg-editor.js"></script>
+    <script src="~/js/entity-mentions.js"></script>
     <script>
         // Bild-Upload Drag & Drop aktivieren
         enableImageDragDrop('#character-drop-zone', 'characterImageUpload');
 
         $(document).ready(function() {
+            // Zuerst WYSIWYG-Editor initialisieren
+            const wikiEditor = new WikiWYSIWYGEditor('#description');
+
+            // Dann EntityMentions mit kleiner Verzögerung
+            setTimeout(() => {
+                console.log('🔄 Initialisiere EntityMentions...');
+                new EntityMentions('#description');
+            }, 800);
 
             $('form[asp-action="SaveStep1"]').on('submit', function(e) {
                 var checkedCount = $('input[name="selectedMagicClasses"]:checked').length;

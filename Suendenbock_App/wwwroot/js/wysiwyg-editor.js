@@ -2,16 +2,20 @@
     constructor(textareaSelector) {
         this.textarea = document.querySelector(textareaSelector);
         this.editor = null;
-        this.entityMentions = null;
 
         if (this.textarea) {
+            console.log('✅ WikiWYSIWYGEditor: Textarea gefunden');
             this.init();
+        } else {
+            console.error('❌ WikiWYSIWYGEditor: Textarea nicht gefunden:', textareaSelector);
         }
     }
 
     async init() {
         try {
-            // CKEditor initialisieren
+            console.log('🔄 Starte CKEditor Initialisierung...');
+
+            // CKEditor erstellen
             this.editor = await ClassicEditor.create(
                 document.querySelector('#wysiwyg-editor'),
                 {
@@ -19,41 +23,34 @@
                         'heading', '|',
                         'bold', 'italic', 'underline', '|',
                         'link', 'bulletedList', 'numberedList', '|',
-                        'outdent', 'indent', '|',
-                        'blockQuote', 'insertTable', '|',
                         'undo', 'redo'
                     ],
-                    placeholder: 'Beschreibung eingeben...'
+                    placeholder: 'Beschreibung eingeben...',
+                    language: 'de'
                 }
             );
+
+            console.log('✅ CKEditor erfolgreich initialisiert');
+
+            // Editor global verfügbar machen für EntityMentions
+            window.currentEditor = this.editor;
+            console.log('✅ Editor ist jetzt global verfügbar (window.currentEditor)');
 
             // Inhalt vom versteckten Textarea laden
             this.editor.setData(this.textarea.value);
 
-            // Editor-Inhalt mit Textarea synchronisieren
+            // Bei Änderungen im Editor -> Textarea aktualisieren
             this.editor.model.document.on('change:data', () => {
                 this.textarea.value = this.editor.getData();
             });
 
-            // Entity-Mentions-System integrieren
-            this.setupEntityMentions();
+            console.log('✅ WikiWYSIWYGEditor vollständig initialisiert');
 
         } catch (error) {
-            console.error('Editor konnte nicht geladen werden:', error);
-            // Fallback: Normales Textarea anzeigen
+            console.error('❌ Fehler beim Laden des Editors:', error);
+            // Fallback: Zeige normales Textarea
             this.textarea.classList.remove('d-none');
+            document.querySelector('#wysiwyg-editor').style.display = 'none';
         }
-    }
-
-    setupEntityMentions() {
-        // Bestehende EntityMentions-Funktionalität erweitern
-        this.editor.editing.view.document.on('keydown', (evt, data) => {
-            if (data.keyCode === 64) { // @ Symbol
-                this.showMentionsDropdown('character');
-            } else if (data.keyCode === 35) { // # Symbol
-                this.showMentionsDropdown('guild');
-            }
-            // Weitere Symbole...
-        });
     }
 }

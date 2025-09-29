@@ -6,6 +6,7 @@
 }
 @section Styles {
     <link href="/css/character.css" rel="stylesheet" />
+    <link href="/css/wysiwyg-editor.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
 @if (TempData["Error"] != null)
@@ -37,7 +38,10 @@
         <div class="row mb-3">
             <div class="col-lg-7">
                 <label for="beschreibung" class="form-label">Beschreibung</label>
-                <textarea class="form-control" id="Description" name="Description" rows="3" required>@(Model?.Description ?? "")</textarea>                			    
+                <div id="editor-wrapper">
+                    <textarea class="form-control d-none" id="description" name="description" required>@(Model?.Description ?? "")</textarea>
+                    <div id="wysiwyg-editor"></div>
+                </div>
             </div>
             <div class="col-lg-5">
                 <!--spezielles Zeichen der Gilde wird über Bild hochladen und speichern das Imagepath angezeigt-->
@@ -167,7 +171,8 @@
 </div>
 @section Scripts {
     <script src="~/js/imagePreview.js"></script>
-
+    <script src="~/js/wysiwyg-editor.js"></script>
+    <script src="~/js/entity-mentions.js"></script>
     <script>
         // Tooltips aktivieren
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -178,6 +183,14 @@
         enableImageDragDrop('#guild-drop-zone', 'gildenlogoUpload');
 
         $(document).ready(function() {
+            // Zuerst WYSIWYG-Editor initialisieren
+            const wikiEditor = new WikiWYSIWYGEditor('#description');
+
+            // Dann EntityMentions mit kleiner Verzögerung
+            setTimeout(() => {
+                console.log('🔄 Initialisiere EntityMentions...');
+                new EntityMentions('#description');
+            }, 800);
             // Charakterauswahl mit Suche und AJAX
             $('.character-select').select2({
                 ajax: {

@@ -1,7 +1,4 @@
-﻿#editor-wrapper {
-    position: relative;
-}
-
+﻿/* CKEditor Styling */
 .ck-editor__editable_inline {
     min-height: 200px;
     border: 2px solid #d4c4a8 !important;
@@ -9,25 +6,36 @@
     font-family: 'Times New Roman', serif;
 }
 
-/* Entity-Links im Editor stylen */
+/* Entity-Links im Editor */
 .entity-link {
     padding: 2px 6px;
     border-radius: 4px;
     text-decoration: none;
     font-weight: bold;
+    cursor: pointer;
 }
 
 .character-link {
     background-color: rgba(212, 175, 55, 0.2);
-    color: #d4af37;
+    color: #d4af37 !important;
 }
 
 .guild-link {
     background-color: rgba(25, 135, 84, 0.2);
-    color: #198754;
+    color: #198754 !important;
 }
 
 .infanterie-link {
     background-color: rgba(220, 53, 69, 0.2);
-    color: #dc3545;
+    color: #dc3545 !important;
+}
+
+.monster-link {
+    background-color: rgba(111, 66, 193, 0.2);
+    color: #6f42c1 !important;
+}
+
+.magicclass-link {
+    background-color: rgba(253, 126, 20, 0.2);
+    color: #fd7e14 !important;
 }
