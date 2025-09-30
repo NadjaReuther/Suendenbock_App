@@ -6,6 +6,7 @@
 }
 @section Styles {
     <link href="/css/character.css" rel="stylesheet" />
+    <link href="/css/wysiwyg-editor.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
 @if (TempData["Error"] != null)
@@ -45,8 +46,12 @@
 
         <div class="row mb-3">
             <div class="col-lg-7">
-                <label for="beschreibung" class="form-label">Beschreibung</label>
-                <textarea class="form-control" id="description" name="description" rows="8" required>@(Model?.description ?? "")</textarea>
+                <div id="editor-wrapper">
+                    <textarea class="form-control d-none" id="description" name="description" required>
+                                @(Model?.description ?? "")
+                            </textarea>
+                    <div id="wysiwyg-editor"></div>
+                </div>
             </div>
             <div class="col-lg-5">
                 <label for="infanteriezeichen" class="form-label">Infanteriesiegel</label>
@@ -74,7 +79,7 @@
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniechef" class="form-label">Kompaniechef</label>
-                <select class="form-select  character-select" id="leader" name="leader" required>
+                <select class="form-select  character-select" id="leader" name="LeaderId" required>
                     @if (Model?.LeaderId != null)
                     {
                         <option value="@Model.LeaderId" selected>@Model?.LeaderCharacter?.Vorname @Model?.LeaderCharacter?.Nachname</option>
@@ -84,7 +89,7 @@
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="kompaniefuehrer" class="form-label">Kompaniefuehrer</label>
-                <select class="form-select character-select" id="vertreter" name="vertreter" required>
+                <select class="form-select character-select" id="vertreter" name="VertreterId" required>
                     @if (Model?.VertreterId != null)
                     {
                         <option value="@Model.VertreterId" selected>@Model?.VertreterCharacter?.Vorname @Model?.VertreterCharacter?.Nachname</option>
@@ -128,7 +133,8 @@
 </div>
 @section Scripts {
     <script src="~/js/imagePreview.js"></script>
-
+    <script src="~/js/wysiwyg-editor.js"></script>
+    <script src="~/js/entity-mentions.js"></script>
     <script>
         // Tooltips aktivieren
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -139,6 +145,14 @@
         enableImageDragDrop('#infanterie-drop-zone', 'infanteriezeichenUpload');
 
         $(document).ready(function() {
+            // Zuerst WYSIWYG-Editor initialisieren
+            const wikiEditor = new WikiWYSIWYGEditor('#description');
+
+            // Dann EntityMentions mit kleiner Verzögerung
+            setTimeout(() => {
+                console.log('🔄 Initialisiere EntityMentions...');
+                new EntityMentions('#description');
+            }, 800);
             // Charakterauswahl mit Suche und AJAX
             $('#leader, #vertreter').select2({
                 ajax: {

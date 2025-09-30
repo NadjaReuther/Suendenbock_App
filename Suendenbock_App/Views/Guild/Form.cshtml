@@ -71,7 +71,7 @@
             <div class="col-lg-6">
                 <!--combobox mit den charakternamen aus der charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="leader" style="width: 100%;">Gildenmeister
-                <select class="form-control character-select js-states" id="leader" name="leader" required>
+                <select class="form-control character-select js-states" id="leader" name="LeaderId" required>
                     @if (Model?.LeaderId != null)
                     {
                         <option value="@Model.LeaderId" selected>@Model?.LeaderCharacter?.Vorname @Model?.LeaderCharacter?.Nachname</option>
@@ -83,7 +83,7 @@
                 <!--combobox mit den charakternamen aus der Charaktertabelle Eintragung dann auch zum jeweiligen Charakter-->
                 <label for="vertreter" style="width: 100%;">
                     Stellvertreter
-                    <select class="form-control character-select js-states" id="vertreter" name="vertreter" required>
+                    <select class="form-control character-select js-states" id="vertreter" name="VertreterId" required>
                         @if (Model?.VertreterId != null)
                         {
                             <option value="@Model.VertreterId" selected>@Model?.VertreterCharacter?.Vorname @Model?.VertreterCharacter?.Nachname</option>

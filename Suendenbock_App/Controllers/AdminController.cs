@@ -26,7 +26,7 @@ namespace Suendenbock_App.Controllers
                 ToList();
             var allInfanteries = _context.Infanterien
                 .Include(l => l.LeaderCharacter)
-                .Include(a => a.VertreterCharacter)
+                .Include(l => l.VertreterCharacter)
                 .ToList();
             var allRegiments = _context.Regiments
                 .Include(i => i.Infanterie)

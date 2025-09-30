@@ -371,20 +371,11 @@
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    // Finde alle Textareas mit description-bezogenen Namen/IDs
-    const descriptionTextareas = document.querySelectorAll([
-        'textarea[id*="description"]',
-        'textarea[name*="description"]',
-        'textarea#description',
-        'textarea#Description'
-    ].join(', '));
-
-    // Erstelle nur eine EntityMentions-Instanz pro Textarea
-    descriptionTextareas.forEach(textarea => {
-        if (!textarea.hasAttribute('data-mentions-initialized')) {
-            new EntityMentions('#' + textarea.id || `[name="${textarea.name}"]`);
-            textarea.setAttribute('data-mentions-initialized', 'true');
-        }
-    });
-});
+//Helper Function für Entity-mention außerhalb vom ckEditor verwenden
+function initEntityMentionsForTextarea(selector) {
+    const textarea = document.querySelector(selector);
+    if (textarea && !textarea.hasAttribute('data-mentions-initialized')) {
+        new EntityMentions(selector);
+        textarea.setAttribute('data-mentions-initialized', 'true');
+    }
+}

@@ -85,8 +85,8 @@ namespace Suendenbock_App.Controllers
             regimentToUpdate.Name = regiment.Name;
             regimentToUpdate.Description = regiment.Description;
             regimentToUpdate.InfanterieId = regiment.InfanterieId;
-            regimentToUpdate.Regimentsleiter = regiment.Regimentsleiter;
-            regimentToUpdate.Adjutant = regiment.Adjutant;
+            regimentToUpdate.RegimentsleiterId = regiment.RegimentsleiterId;
+            regimentToUpdate.AdjutantId = regiment.AdjutantId;
         }
     }
 }

@@ -64,15 +64,15 @@
                     }
                 </select>
 
-                <label for="kompaniechef" class="form-label">Kompaniechef</label>
-                <select class="form-select  character-select" id="leader" name="Regimentsleiter" required>
+                <label for="kompaniechef" class="form-label">Regimentsleiter</label>
+                <select class="form-select  character-select" id="RegimentsleiterId" name="RegimentsleiterId" required>
                     @if (Model?.RegimentsleiterId != null)
                     {
                         <option value="@Model.RegimentsleiterId" selected>@Model?.Regimentsleiter?.Vorname @Model?.Regimentsleiter?.Nachname</option>
                     }
                 </select>
-                <label for="kompaniefuehrer" class="form-label">Kompaniefuehrer</label>
-                <select class="form-select character-select" id="vertreter" name="Adjutant" required>
+                <label for="kompaniefuehrer" class="form-label">Adjutant</label>
+                <select class="form-select character-select" id="AdjutantId" name="AdjutantId" required>
                     @if (Model?.AdjutantId != null)
                     {
                         <option value="@Model.AdjutantId" selected>@Model?.Adjutant?.Vorname @Model?.Adjutant?.Nachname</option>
@@ -96,7 +96,7 @@
         });
 
         $(document).ready(function() {
-            / Zuerst WYSIWYG-Editor initialisieren
+            // Zuerst WYSIWYG-Editor initialisieren
             const wikiEditor = new WikiWYSIWYGEditor('#description');
 
             // Dann EntityMentions mit kleiner Verzögerung
@@ -105,7 +105,7 @@
                 new EntityMentions('#description');
             }, 800);
             // Charakterauswahl mit Suche und AJAX
-            $('#leader, #vertreter').select2({
+            $('#RegimentsleiterId, #AdjutantId').select2({
                 ajax: {
                     url: '/api/Character/dropdown',
                     dataType: 'json',

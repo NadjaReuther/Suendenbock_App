@@ -563,14 +563,28 @@
         enableImageDragDrop('#character-drop-zone', 'characterImageUpload');
 
         $(document).ready(function() {
-            // Zuerst WYSIWYG-Editor initialisieren
-            const wikiEditor = new WikiWYSIWYGEditor('#description');
+           // ✅ Prüfe ob wir in Schritt 2 sind UND ob das Editor-Element existiert
+            const editorElement = document.querySelector('#wysiwyg-editor');
+            const descriptionTextarea = document.querySelector('#description');
 
-            // Dann EntityMentions mit kleiner Verzögerung
-            setTimeout(() => {
-                console.log('🔄 Initialisiere EntityMentions...');
-                new EntityMentions('#description');
-            }, 800);
+            console.log('Editor-Element gefunden:', editorElement !== null);
+            console.log('Description-Textarea gefunden:', descriptionTextarea !== null);
+
+            if (editorElement && descriptionTextarea) {
+                console.log('✅ Initialisiere WYSIWYG-Editor für Schritt 2');
+
+                // Zuerst WYSIWYG-Editor initialisieren
+                const wikiEditor = new WikiWYSIWYGEditor('#description');
+
+                // Dann EntityMentions mit kleiner Verzögerung
+                setTimeout(() => {
+                    console.log('🔄 Initialisiere EntityMentions...');
+                    new EntityMentions('#description');
+                }, 800);
+            } else {
+                console.log('⏭️ Kein Editor-Element gefunden - überspringe WYSIWYG-Initialisierung');
+            }
+
 
             $('form[asp-action="SaveStep1"]').on('submit', function(e) {
                 var checkedCount = $('input[name="selectedMagicClasses"]:checked').length;

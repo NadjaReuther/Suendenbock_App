@@ -15,31 +15,37 @@
         try {
             console.log('🔄 Starte CKEditor Initialisierung...');
 
+            // Prüfe ob das Editor-Element existiert
+            const editorContainer = document.querySelector('#wysiwyg-editor');
+
+            if (!editorContainer) {
+                console.warn('⚠️ #wysiwyg-editor Element nicht gefunden - Editor wird nicht initialisiert');
+                this.textarea.classList.remove('d-none');
+                return;
+            }
+
             // CKEditor erstellen
-            this.editor = await ClassicEditor.create(
-                document.querySelector('#wysiwyg-editor'),
-                {
-                    toolbar: [
-                        'heading', '|',
-                        'bold', 'italic', 'underline', '|',
-                        'link', 'bulletedList', 'numberedList', '|',
-                        'undo', 'redo'
-                    ],
-                    placeholder: 'Beschreibung eingeben...',
-                    language: 'de'
-                }
-            );
+            this.editor = await ClassicEditor.create(editorContainer, {
+                toolbar: [
+                    'heading', '|',
+                    'bold', 'italic', 'underline', '|',
+                    'link', 'bulletedList', 'numberedList', '|',
+                    'undo', 'redo'
+                ],
+                placeholder: 'Beschreibung eingeben...',
+                language: 'de'
+            });
 
             console.log('✅ CKEditor erfolgreich initialisiert');
 
-            // Editor global verfügbar machen für EntityMentions
+            // Editor global verfügbar machen
             window.currentEditor = this.editor;
-            console.log('✅ Editor ist jetzt global verfügbar (window.currentEditor)');
+            console.log('✅ Editor ist jetzt global verfügbar');
 
-            // Inhalt vom versteckten Textarea laden
+            // Inhalt vom Textarea laden
             this.editor.setData(this.textarea.value);
 
-            // Bei Änderungen im Editor -> Textarea aktualisieren
+            // Synchronisierung
             this.editor.model.document.on('change:data', () => {
                 this.textarea.value = this.editor.getData();
             });
@@ -50,7 +56,10 @@
             console.error('❌ Fehler beim Laden des Editors:', error);
             // Fallback: Zeige normales Textarea
             this.textarea.classList.remove('d-none');
-            document.querySelector('#wysiwyg-editor').style.display = 'none';
+            const editorContainer = document.querySelector('#wysiwyg-editor');
+            if (editorContainer) {
+                editorContainer.style.display = 'none';
+            }
         }
     }
 }
