@@ -12,13 +12,11 @@ namespace Suendenbock_App.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageUploadService _imageUploadService;
         private readonly IWebHostEnvironment _environment;
-        private readonly IMentionProcessorService _mentionProcessor;
-        public CharacterController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment, IMentionProcessorService mentionProcessor)
+        public CharacterController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment)
         {
             _context = context;
             _imageUploadService = imageUploadService;
             _environment = environment;
-            _mentionProcessor = mentionProcessor;
         }
         public IActionResult Index()
         {
@@ -187,22 +185,9 @@ namespace Suendenbock_App.Controllers
                 character.Details.HausId = hausId;
                 character.Details.HerkunftslandId = herkunftslandId;
                 character.Details.BodyHeight = bodyHeight;
-
-                // ROBUSTE Description-Verarbeitung mit Link-Erhaltung
                 character.Details.Description = description;
-                if (!string.IsNullOrEmpty(description))
-                {
-                    character.Details.ProcessedDescription = _mentionProcessor.ProcessMentionsPreservingExisting(
-                        description,
-                        character.Details.ProcessedDescription
-                    );
-                }
-                else
-                {
-                    character.Details.ProcessedDescription = null;
-                }
-
                 character.CompletionLevel = CharacterCompleteness.WithDetails;
+                
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Schritt 2 erfolgreich gespeichert!";

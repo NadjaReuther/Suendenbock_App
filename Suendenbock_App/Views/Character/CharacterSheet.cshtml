@@ -30,12 +30,7 @@
         <div class="wiki-main">
             <h3>📜 Charakterbeschreibung</h3>
             <div class="wiki-description">
-                @* NEU: Verarbeitete Description mit Links anzeigen *@
-                @if (!string.IsNullOrEmpty(Model.Details?.ProcessedDescription))
-                {
-                    @Html.Raw(Model.Details.ProcessedDescription)
-                }
-                else if (!string.IsNullOrEmpty(Model.Details?.Description))
+                @if (!string.IsNullOrEmpty(Model.Details?.Description))
                 {
                     @Model.Details.Description
                 }

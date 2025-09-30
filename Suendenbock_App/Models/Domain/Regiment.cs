@@ -5,7 +5,6 @@
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public string? ProcessedDescription { get; set; }
 
         // Nullable Foreign Keys
         public int? RegimentsleiterId { get; set; }

@@ -13,18 +13,15 @@ namespace Suendenbock_App.Controllers
         protected readonly ApplicationDbContext _context;
         protected readonly IImageUploadService _imageUploadService;
         protected readonly IWebHostEnvironment _environment;
-        protected readonly IMentionProcessorService _mentionProcessor;
 
         protected BaseOrganizationController(
             ApplicationDbContext context,
             IImageUploadService imageUploadService,
-            IWebHostEnvironment environment,
-            IMentionProcessorService mentionProcessor)
+            IWebHostEnvironment environment)
         {
             _context = context;
             _imageUploadService = imageUploadService;
-            _environment = environment;
-            _mentionProcessor = mentionProcessor;
+            _environment = environment;            
         }
 
         /// <summary>

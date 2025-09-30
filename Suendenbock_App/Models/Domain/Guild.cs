@@ -6,7 +6,6 @@
         public string Name { get; set; } = string.Empty;
         public string ImagePath { get; set; } = string.Empty;
         public string? Description { get; set; }
-        public string? ProcessedDescription { get; set; }
         public string? quote { get; set; }
         public string? urheber { get; set; }
         public int LightCardId { get; set; }

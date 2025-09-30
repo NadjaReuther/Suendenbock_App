@@ -9,7 +9,7 @@ namespace Suendenbock_App.Controllers
     public class GuildController : BaseOrganizationController
     {
         private readonly ICachedDataService _cachedData;
-        public GuildController(ApplicationDbContext context, IImageUploadService imageUploadService, ICachedDataService cachedData, IWebHostEnvironment environment,IMentionProcessorService mentionProcessor) : base(context, imageUploadService, environment,mentionProcessor)
+        public GuildController(ApplicationDbContext context, IImageUploadService imageUploadService, ICachedDataService cachedData, IWebHostEnvironment environment) : base(context, imageUploadService, environment)
         {
             _cachedData = cachedData;
         }

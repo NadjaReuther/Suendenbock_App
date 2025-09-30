@@ -7,7 +7,6 @@
         public string? quote { get; set; }
         public string? urheber { get; set; }
         public string? Description { get; set; }
-        public string? ProcessedDescription { get; set; }
         public string? Beruf { get; set; }
         //Körperliche Eigenschaften
         public int? BodyHeight { get; set; } 

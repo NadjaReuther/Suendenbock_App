@@ -5,7 +5,6 @@
         public int Id { get; set; }
         public string Bezeichnung { get; set; } = string.Empty;
         public string? description { get; set; }
-        public string? ProcessedDescription { get; set; }
         public string? ImagePath { get; set; } = string.Empty;
         public string Sitz {  get; set; } = string.Empty;
         public int? LightCardId { get; set; } // Foreign Key to LightCard
