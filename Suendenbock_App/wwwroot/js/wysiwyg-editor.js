@@ -3,8 +3,21 @@
         this.textarea = document.querySelector(textareaSelector);
         this.editor = null;
 
+        // ✅ Prüfe ob bereits ein Editor existiert
+        if (window.currentEditor) {
+            console.warn('⚠️ Editor bereits vorhanden - überspringe Initialisierung');
+            return;
+        }
+
+        // ✅ Prüfe ob Textarea bereits als "editor-initialized" markiert ist
+        if (this.textarea && this.textarea.hasAttribute('data-editor-initialized')) {
+            console.warn('⚠️ Textarea bereits initialisiert - überspringe');
+            return;
+        }
+
         if (this.textarea) {
             console.log('✅ WikiWYSIWYGEditor: Textarea gefunden');
+            this.textarea.setAttribute('data-editor-initialized', 'true');
             this.init();
         } else {
             console.error('❌ WikiWYSIWYGEditor: Textarea nicht gefunden:', textareaSelector);
@@ -24,11 +37,17 @@
                 return;
             }
 
+            // ✅ Prüfe nochmal ob bereits ein Editor vorhanden ist
+            if (window.currentEditor) {
+                console.warn('⚠️ Editor bereits während Init gefunden - abbrechen');
+                return;
+            }
+
             // CKEditor erstellen
             this.editor = await ClassicEditor.create(editorContainer, {
                 toolbar: [
                     'heading', '|',
-                    'bold', 'italic', 'underline', '|',
+                    'bold', 'italic', '|',  // ← 'underline' entfernt (siehe Error unten)
                     'link', 'bulletedList', 'numberedList', '|',
                     'undo', 'redo'
                 ],
@@ -56,6 +75,7 @@
             console.error('❌ Fehler beim Laden des Editors:', error);
             // Fallback: Zeige normales Textarea
             this.textarea.classList.remove('d-none');
+            this.textarea.removeAttribute('data-editor-initialized');
             const editorContainer = document.querySelector('#wysiwyg-editor');
             if (editorContainer) {
                 editorContainer.style.display = 'none';
