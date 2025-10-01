@@ -131,17 +131,91 @@
         // Erstelle HTML-Link
         const linkHtml = `<a href="${entity.url}" class="entity-link ${entity.type}-link" data-entity-type="${entity.type}" data-entity-id="${entity.id}">${entity.name}</a>&nbsp;`;
 
+        const textToDelete = this.currentMention.symbol + this.currentMention.term;
+        const deleteLength = textToDelete.length;
+
         // Lösche das getippte Symbol + Suchbegriff
         this.editor.model.change(writer => {
             const selection = this.editor.model.document.selection;
             const position = selection.getFirstPosition();
 
+            //StartPosition der Zeichen
+            const startPosition = this.findPositionBackwards(currentPosition, deleteLength, writer);
+
+            if (!startPosition) {
+                return;
+            }
+
+            //Reichweite von Start bis aktuelle Postion
+            const rangeToDelete = writer.createRange(startPosition, currentPosition);
+            writer.remove(rangeToDelete);
+            
             // Füge Link ein
             const viewFragment = this.editor.data.processor.toView(linkHtml);
             const modelFragment = this.editor.data.toModel(viewFragment);
 
-            this.editor.model.insertContent(modelFragment, position);
+            writer.insert(modelFragment, startPosition);
+
+            //Cursor hinter link
+            const newPosition = writer.createPositionAfter(modelFragment.getChild(0));
+            writer.setSelection(newPosition);
         });
+        this.editor.editing.view.focus();
+    }
+
+    findPositionBackwards(position, steps, writer) {
+        if (steps === 0) return position;
+
+        let currentPos = position;
+        let remainingSteps = steps;
+
+        while (remainingSteps > 0) {
+            const parent = currentPos.parent;
+            if (!parent) return null;
+
+            const textNode = currentPos.textNode;
+            const offset = currentPos.offset;
+
+            if (textNode && textNode.is($text)) {
+                if (offset >= remainigSteps) {
+                    return writer.createPositionAt(textNode, offset - remainigSteps);
+                } else {
+                    remainingSteps -= offset;
+                    const prevSibling = textNode.previousSibling;
+
+                    if (prevSibling && prevSibling.is($text)) {
+                        currentPos = writer.createPositionAt(prevSibling, 'end');
+                    } else if (prevSibling) {
+                        currentPos = writer.createPositionBefore(prevSibling);
+                    } else {
+                        const parentOffset = parent.offsetOf(textNode);
+                        if (parentOffset > 0) {
+                            currentPos = writer.createPositionAt(parent, parentOffset);
+                        } else {
+                            return writer.createPositionAt(parent, 0);
+                        }
+                    }
+                }
+            } else {
+                if (offset > 0) {
+                    const prevChild = parent.getChild(offset - 1);
+                    if (prevChild & prevChild.is($text)) {
+                        currentPos = writer.createPositionAt(prevChild, 'end');
+                    } else if (prevChild) {
+                        currentPos = writer.createPositionBefore(prevChild);
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return writer.createPositionAt(parent, 0);
+                }
+            }
+
+            if (remainingSteps > 1000) {
+                return null;
+            }
+        }
+        return currentPos;
     }
 
     createHelpTooltip() {
