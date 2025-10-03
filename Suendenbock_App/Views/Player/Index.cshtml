@@ -1,0 +1,66 @@
+﻿@model List<Character>
+@{
+    ViewData["Title"] = "Meine Character";
+}
+@section Styles {
+    <link href="/css/antique-home.css" rel="stylesheet" />
+    <link href="/css/character.css" rel="stylesheet" />
+}
+
+<header class="antique-header">
+    <h1 class="main-title">Meine Characterbögen</h1>
+    <p style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Willkommen, Abenteurer! Hier findest du deine Charaktere.
+    </p>
+</header>
+
+<div class="main-container">
+    @if(Model.Count == 0)
+    {
+        <div class="pergament-card" style="text-align: center; padding: 40px;">
+            <h3>Noch keine Charaktere</h3>
+            <p>Du hast noch keine Charaktere. Wende dich an Gott, damit er dir einen Charakter zuweist.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach(var character in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="pergament-card">
+                        <div class="card-corner top-left"></div>
+                        <div class="card-corner top-right"></div>
+                        <div class="card-corner bottom-left"></div>
+                        <div class="card-corner bottom-right"></div>
+                
+                        @if(!string.IsNullOrEmpty(character.ImagePath))
+                        {
+                            <img src="@character.ImagePath" alt="@character.Vorname"
+                                style="width:100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;" />
+                        }
+
+                        <h3 class="card-title">@character.Vorname @character.Nachname</h3>
+
+                        <div class="card-content" style="text-align: left;">
+                            <p><strong>Rasse:</strong> @character.Rasse?.Name</p>
+                            <p><strong>Status:</strong> @character.Lebensstatus?.Name</p>
+                            <p><strong>Gilde:</strong> @character.Affiliation?.Guild?.Name</p>
+                        </div>
+
+                        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                            <a asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@character.Id"
+                                class="medieval-btn" style="text-decoration: none;">
+                                Characterbogen
+                            </a>
+                            <a asp-controller="Character" asp-action="Form" asp-route-id="@character.Id"
+                               class="medieval-btn edit-btn" style="text-decoration: none;">
+                                Bearbeiten
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

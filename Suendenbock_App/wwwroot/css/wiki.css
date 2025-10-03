@@ -66,20 +66,24 @@
     margin-bottom: 1rem;
 }
 
-    .wiki-infobox h4 {
-        color: #5d4e37;
-        border-bottom: 1px solid #d4c4a8;
-        padding-bottom: 0.5rem;
-        margin-bottom: 1rem;
-    }
+.wiki-infobox h4 {
+    color: #5d4e37;
+    border-bottom: 1px solid #d4c4a8;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
 
 .wiki-description {
+    text-align: justify;
     line-height: 1.6;
     color: #4a4237;
+    font-family: Georgia, 'Times New Roman', serif; /* ✅ Lesbarere Schrift */
+    font-size: 1rem;
+    text-transform: none; /* ✅ Explizit: Keine Großschreibung */
+    letter-spacing: normal; /* ✅ Normaler Buchstabenabstand */
 }
 
-/* Character-Links (für @-Mentions) */
-.character-mention {
+.wiki-description a {
     background: linear-gradient(45deg, #d4af37, #b8941f);
     color: white;
     padding: 2px 6px;
@@ -89,83 +93,9 @@
     transition: all 0.3s ease;
 }
 
-    .character-mention:hover {
-        background: linear-gradient(45deg, #b8941f, #9d7a1a);
-        color: white;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-/* Erweiterte Entity-Mentions */
-.entity-mention {
-    padding: 2px 6px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 2px;
-}
-
-    .entity-mention:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        text-decoration: none;
-    }
-
-/* Spezifische Stile für jeden Entity-Typ */
-.character-mention {
-    background: linear-gradient(45deg, #d4af37, #b8941f);
+.wiki-description a:hover {
+    background: linear-gradient(45deg, #b8941f, #9d7a1a);
     color: white;
-}
-
-    .character-mention:hover {
-        background: linear-gradient(45deg, #b8941f, #9d7a1a);
-        color: white;
-    }
-
-.guild-mention {
-    background: linear-gradient(45deg, #198754, #145c3a);
-    color: white;
-}
-
-    .guild-mention:hover {
-        background: linear-gradient(45deg, #145c3a, #0f4530);
-        color: white;
-    }
-
-.infanterie-mention {
-    background: linear-gradient(45deg, #dc3545, #b02a37);
-    color: white;
-}
-
-    .infanterie-mention:hover {
-        background: linear-gradient(45deg, #b02a37, #8d212a);
-        color: white;
-    }
-
-.monster-mention {
-    background: linear-gradient(45deg, #6f42c1, #5a3399);
-    color: white;
-}
-
-    .monster-mention:hover {
-        background: linear-gradient(45deg, #5a3399, #4a2b7a);
-        color: white;
-    }
-
-.magicclass-mention {
-    background: linear-gradient(45deg, #fd7e14, #e55a00);
-    color: white;
-}
-
-    .magicclass-mention:hover {
-        background: linear-gradient(45deg, #e55a00, #cc5500);
-        color: white;
-    }
-
-/* Mention-Hilfe */
-.mention-help {
-    margin-top: 0.5rem;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }

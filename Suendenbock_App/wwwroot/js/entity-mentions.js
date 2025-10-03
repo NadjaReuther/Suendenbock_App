@@ -76,21 +76,32 @@
     }
 
     handleCKEditorInput() {
-        // Hole den aktuellen Text aus dem Editor (ohne HTML-Tags)
-        const htmlContent = this.editor.getData();
-        const text = htmlContent.replace(/<[^>]*>/g, ''); // Entferne HTML-Tags
-
-        // Hole die aktuelle Cursor-Position
         const selection = this.editor.model.document.selection;
         const position = selection.getFirstPosition();
 
-        // Berechne ungefähre Cursor-Position im Text
-        const cursorPos = text.length;
-        const beforeCursor = text.substring(Math.max(0, cursorPos - 50), cursorPos);
+        // Hole den Text VOR der Cursor-Position
+        const root = this.editor.model.document.getRoot();
+        const range = this.editor.model.createRange(
+            this.editor.model.createPositionAt(root, 0),
+            position
+        );
 
-        // Erweiterte Regex für alle Mention-Typen
+        // Extrahiere den Text aus dem Range
+        let textBeforeCursor = '';
+        for (const item of range.getItems()) {
+            if (item.is('$textProxy')) {
+                textBeforeCursor += item.data;
+            } else if (item.is('$text')) {
+                textBeforeCursor += item.data;
+            }
+        }
+
+        console.log(`📝 Text vor Cursor: "${textBeforeCursor.substring(Math.max(0, textBeforeCursor.length - 20))}"`);
+
+        // Suche nach Mention-Pattern in den letzten 50 Zeichen
+        const searchText = textBeforeCursor.substring(Math.max(0, textBeforeCursor.length - 50));
         const mentionPattern = /([@#§&%])(\w*)$/;
-        const match = beforeCursor.match(mentionPattern);
+        const match = searchText.match(mentionPattern);
 
         if (match) {
             const symbol = match[1];
@@ -99,11 +110,12 @@
             console.log(`🔍 Mention erkannt: ${symbol}${searchTerm}`);
 
             this.currentMention = {
-                start: cursorPos - match[0].length,
-                end: cursorPos,
+                start: textBeforeCursor.length - match[0].length,
+                end: textBeforeCursor.length,
                 term: searchTerm,
                 symbol: symbol,
-                type: this.mentionTypes[symbol]?.type || 'all'
+                type: this.mentionTypes[symbol]?.type || 'all',
+                position: position  // ✅ Speichere die echte Position für später
             };
 
             if (searchTerm.length >= 1) {
@@ -115,7 +127,6 @@
             this.hideDropdown();
         }
     }
-
     handleCKEditorKeydown(data) {
         if (this.dropdown.style.display === 'none') return;
 
@@ -128,94 +139,47 @@
     insertEntityInCKEditor(entity) {
         console.log('✅ Füge Entity in CKEditor ein:', entity.name);
 
-        // Erstelle HTML-Link
-        const linkHtml = `<a href="${entity.url}" class="entity-link ${entity.type}-link" data-entity-type="${entity.type}" data-entity-id="${entity.id}">${entity.name}</a>&nbsp;`;
+        // Emoji-Mapping
+        const emojiMap = {
+            'character': '👤',
+            'guild': '🏰',
+            'infanterie': '⚔️',
+            'monster': '👹',
+            'magicclass': '🔮'
+        };
 
-        const textToDelete = this.currentMention.symbol + this.currentMention.term;
-        const deleteLength = textToDelete.length;
+        const emoji = emojiMap[entity.type] || '🔗';
 
-        // Lösche das getippte Symbol + Suchbegriff
-        this.editor.model.change(writer => {
-            const selection = this.editor.model.document.selection;
-            const position = selection.getFirstPosition();
+        // ✅ Einfacher Link mit nur Emoji, keine CSS-Klassen
+        const linkHtml = `<a href="${entity.url}" data-entity-type="${entity.type}" data-entity-id="${entity.id}">${emoji}${entity.name}</a>`;
 
-            //StartPosition der Zeichen
-            const startPosition = this.findPositionBackwards(currentPosition, deleteLength, writer);
+        const textToReplace = this.currentMention.symbol + this.currentMention.term;
+        const currentContent = this.editor.getData();
 
-            if (!startPosition) {
-                return;
-            }
+        const lastIndex = currentContent.lastIndexOf(textToReplace);
 
-            //Reichweite von Start bis aktuelle Postion
-            const rangeToDelete = writer.createRange(startPosition, currentPosition);
-            writer.remove(rangeToDelete);
-            
-            // Füge Link ein
-            const viewFragment = this.editor.data.processor.toView(linkHtml);
-            const modelFragment = this.editor.data.toModel(viewFragment);
+        if (lastIndex !== -1) {
+            const newContent =
+                currentContent.substring(0, lastIndex) +
+                linkHtml +
+                ' ' +
+                currentContent.substring(lastIndex + textToReplace.length);
 
-            writer.insert(modelFragment, startPosition);
+            this.editor.setData(newContent);
 
-            //Cursor hinter link
-            const newPosition = writer.createPositionAfter(modelFragment.getChild(0));
-            writer.setSelection(newPosition);
-        });
-        this.editor.editing.view.focus();
-    }
+            setTimeout(() => {
+                this.editor.editing.view.focus();
+                const model = this.editor.model;
+                const root = model.document.getRoot();
+                const endPosition = model.createPositionAt(root, 'end');
 
-    findPositionBackwards(position, steps, writer) {
-        if (steps === 0) return position;
-
-        let currentPos = position;
-        let remainingSteps = steps;
-
-        while (remainingSteps > 0) {
-            const parent = currentPos.parent;
-            if (!parent) return null;
-
-            const textNode = currentPos.textNode;
-            const offset = currentPos.offset;
-
-            if (textNode && textNode.is($text)) {
-                if (offset >= remainigSteps) {
-                    return writer.createPositionAt(textNode, offset - remainigSteps);
-                } else {
-                    remainingSteps -= offset;
-                    const prevSibling = textNode.previousSibling;
-
-                    if (prevSibling && prevSibling.is($text)) {
-                        currentPos = writer.createPositionAt(prevSibling, 'end');
-                    } else if (prevSibling) {
-                        currentPos = writer.createPositionBefore(prevSibling);
-                    } else {
-                        const parentOffset = parent.offsetOf(textNode);
-                        if (parentOffset > 0) {
-                            currentPos = writer.createPositionAt(parent, parentOffset);
-                        } else {
-                            return writer.createPositionAt(parent, 0);
-                        }
-                    }
-                }
-            } else {
-                if (offset > 0) {
-                    const prevChild = parent.getChild(offset - 1);
-                    if (prevChild & prevChild.is($text)) {
-                        currentPos = writer.createPositionAt(prevChild, 'end');
-                    } else if (prevChild) {
-                        currentPos = writer.createPositionBefore(prevChild);
-                    } else {
-                        return null;
-                    }
-                } else {
-                    return writer.createPositionAt(parent, 0);
-                }
-            }
-
-            if (remainingSteps > 1000) {
-                return null;
-            }
+                model.change(writer => {
+                    writer.setSelection(endPosition);
+                });
+            }, 50);
         }
-        return currentPos;
+
+        this.editor.editing.view.focus();
     }
 
     createHelpTooltip() {
@@ -321,38 +285,101 @@
             return;
         }
 
-        const rect = this.textarea.getBoundingClientRect();
-        const style = window.getComputedStyle(this.textarea);
-        const lineHeight = parseInt(style.lineHeight) || 20;
+        // ✅ Unterschiedliche Positionierung für CKEditor vs. Textarea
+        let rect, top, left;
 
-        this.dropdown.style.left = rect.left + 'px';
-        this.dropdown.style.top = (rect.top + lineHeight + 5) + 'px';
+        if (this.editor) {
+            // CKEditor-Modus: Positioniere am CKEditor-Element
+            const editorElement = document.querySelector('.ck-editor__editable');
+
+            if (editorElement) {
+                rect = editorElement.getBoundingClientRect();
+
+                // Versuche die Cursor-Position zu bekommen
+                const selection = this.editor.editing.view.document.selection;
+                const range = selection.getFirstRange();
+
+                if (range) {
+                    // Hole die DOM-Position des Cursors
+                    const domRange = this.editor.editing.view.domConverter.viewRangeToDom(range);
+
+                    if (domRange) {
+                        const cursorRect = domRange.getBoundingClientRect();
+
+                        // Positioniere direkt unter dem Cursor
+                        left = cursorRect.left;
+                        top = cursorRect.bottom + 5;
+
+                        console.log(`📍 Dropdown-Position: left=${left}px, top=${top}px (am Cursor)`);
+                    } else {
+                        // Fallback: Unter dem Editor
+                        left = rect.left;
+                        top = rect.top + 50;
+                        console.log(`📍 Dropdown-Position: left=${left}px, top=${top}px (am Editor-Start)`);
+                    }
+                } else {
+                    // Fallback: Unter dem Editor
+                    left = rect.left;
+                    top = rect.top + 50;
+                }
+            } else {
+                // Fallback auf Textarea
+                rect = this.textarea.getBoundingClientRect();
+                left = rect.left;
+                top = rect.top + 30;
+            }
+        } else {
+            // Textarea-Modus: Alte Logik
+            rect = this.textarea.getBoundingClientRect();
+            const style = window.getComputedStyle(this.textarea);
+            const lineHeight = parseInt(style.lineHeight) || 20;
+
+            left = rect.left;
+            top = rect.top + lineHeight + 5;
+        }
+
+        // ✅ Setze Position
+        this.dropdown.style.left = left + 'px';
+        this.dropdown.style.top = top + 'px';
         this.dropdown.style.display = 'block';
+
+        // Prüfe ob Dropdown außerhalb des Viewports ist
+        const dropdownRect = this.dropdown.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+
+        // Wenn Dropdown nach unten aus dem Viewport ragt, zeige es oberhalb
+        if (dropdownRect.bottom > viewportHeight) {
+            const newTop = top - dropdownRect.height - 30; // 30px Abstand
+            if (newTop > 0) {
+                this.dropdown.style.top = newTop + 'px';
+                console.log(`⬆️ Dropdown nach oben verschoben: ${newTop}px`);
+            }
+        }
 
         // Erweiterte Dropdown-Items mit Icons und Typen
         this.dropdown.innerHTML = this.entities.map((entity, index) => `
-            <div class="entity-mention-item ${entity.type === 'help' ? 'help-item' : ''}" 
-                 data-index="${index}" 
-                 style="
-                    padding: 10px 12px;
-                    cursor: ${entity.type === 'help' ? 'default' : 'pointer'};
-                    border-bottom: 1px solid #eee;
-                    display: flex;
-                    align-items: center;
-                    ${entity.type === 'help' ? 'background: #f8f9fa; font-style: italic;' : ''}
-                ">
-                <span style="margin-right: 10px; font-size: 1.2em;">${entity.icon}</span>
-                <div style="flex: 1;">
-                    <div style="font-weight: 600; color: ${this.getTypeColor(entity.type)};">
-                        ${entity.name}
-                    </div>
-                    ${entity.subtitle ? `<div style="font-size: 0.85em; color: #666;">${entity.subtitle}</div>` : ''}
+        <div class="entity-mention-item ${entity.type === 'help' ? 'help-item' : ''}" 
+             data-index="${index}" 
+             style="
+                padding: 10px 12px;
+                cursor: ${entity.type === 'help' ? 'default' : 'pointer'};
+                border-bottom: 1px solid #eee;
+                display: flex;
+                align-items: center;
+                ${entity.type === 'help' ? 'background: #f8f9fa; font-style: italic;' : ''}
+            ">
+            <span style="margin-right: 10px; font-size: 1.2em;">${entity.icon}</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; color: ${this.getTypeColor(entity.type)};">
+                    ${entity.name}
                 </div>
-                <span style="font-size: 0.75em; color: #999; text-transform: uppercase;">
-                    ${this.getTypeLabel(entity.type)}
-                </span>
+                ${entity.subtitle ? `<div style="font-size: 0.85em; color: #666;">${entity.subtitle}</div>` : ''}
             </div>
-        `).join('');
+            <span style="font-size: 0.75em; color: #999; text-transform: uppercase;">
+                ${this.getTypeLabel(entity.type)}
+            </span>
+        </div>
+    `).join('');
 
         // Click-Events nur für echte Entitäten
         this.dropdown.querySelectorAll('.entity-mention-item:not(.help-item)').forEach(item => {
@@ -414,20 +441,6 @@
         }
 
         this.hideDropdown();
-    }
-
-    // Neue Methode für WYSIWYG-Integration
-    insertEntityInWYSIWYG(entity) {
-        const linkHtml = `<a href="/wiki/${entity.type}/${entity.id}" class="entity-link ${entity.type}-link">${entity.name}</a>`;
-
-        // In CKEditor einfügen
-        this.editor.model.change(writer => {
-            const htmlDataProcessor = this.editor.data.processor;
-            const viewFragment = htmlDataProcessor.toView(linkHtml);
-            const modelFragment = this.editor.data.toModel(viewFragment);
-
-            this.editor.model.insertContent(modelFragment);
-        });
     }
 
     hideDropdown() {

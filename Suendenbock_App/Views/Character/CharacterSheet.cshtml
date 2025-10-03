@@ -32,7 +32,7 @@
             <div class="wiki-description">
                 @if (!string.IsNullOrEmpty(Model.Details?.Description))
                 {
-                    @Model.Details.Description
+                    @Html.Raw(Model.Details.Description)
                 }
                 else
                 {

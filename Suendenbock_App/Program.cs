@@ -35,21 +35,12 @@ var app = builder.Build();
 
 using(var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await RoleSeeder.SeedRolesAsync(roleManager);
 
-    await CreateRole(roleManager, "Administrator");
-    await CreateDefaultUser(userManager, "Administrator", "gott@suendenbock.lore", "Adrijan1618!");
-}
-async Task CreateRole(RoleManager<IdentityRole> roleManager, string roleName)
-{
-    // exists the used role
-    if(!await roleManager.RoleExistsAsync(roleName))
-    {
-        // then new administrator role
-        await roleManager.CreateAsync(new IdentityRole(roleName));
-    }
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+    await CreateDefaultUser(userManager, "Gott", "gott@suendenbock.lore", "Adrijan1618!");
 }
 
 async Task CreateDefaultUser(UserManager<IdentityUser> userManager, string roleName, string userName, string password)

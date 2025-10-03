@@ -8,9 +8,22 @@
     @* <li class="nav-item">
         <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @User.Identity?.Name!</a>
     </li> *@
-    <li class="nav-item">
-       <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">Adminbereich</a>
-    </li>
+    @if(User.IsInRole("Gott"))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">
+                Götter-Bereich
+            </a>
+        </li>
+    }
+    @if(User.IsInRole("Spieler"))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Player" asp-action="Index">
+                Spieler-Bereich
+            </a>
+        </li>        
+    }
     <li class="nav-item">
         <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
             <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>

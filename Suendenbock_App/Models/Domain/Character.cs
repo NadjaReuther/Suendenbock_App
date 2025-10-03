@@ -13,6 +13,7 @@
         public string Vorname { get; set; } = string.Empty;
         public string Rufname { get; set; } = string.Empty;
         public string Geschlecht { get; set; } = string.Empty;
+        public string? UserId { get; set; } //optionaler Foreign-Key zu User
 
         //Pflicht-Foreign-Keys
         public int RasseId { get; set; }

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
@@ -7,16 +9,23 @@ using System.Threading.Tasks;
 
 namespace Suendenbock_App.Controllers
 {
+    [Authorize]
     public class CharacterController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IImageUploadService _imageUploadService;
         private readonly IWebHostEnvironment _environment;
-        public CharacterController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment)
+        private readonly UserManager<IdentityUser> _userManager;
+        public CharacterController(
+            ApplicationDbContext context, 
+            IImageUploadService imageUploadService, 
+            IWebHostEnvironment environment,
+            UserManager<IdentityUser> userManager)
         {
             _context = context;
             _imageUploadService = imageUploadService;
             _environment = environment;
+            _userManager = userManager;
         }
         public IActionResult Index()
         {
@@ -68,10 +77,8 @@ namespace Suendenbock_App.Controllers
         }
         public IActionResult Form(int id = 0, int step = 1)
         {
-            //Lade Basis-Daten für das Formular
-            LoadFormViewBagData();
-
-            ViewBag.Step = step;
+            var userId = _userManager.GetUserId(User);
+            var isGod = User.IsInRole("Gott");
             
             if (id > 0)
             {
@@ -81,10 +88,25 @@ namespace Suendenbock_App.Controllers
                 {
                     return NotFound();
                 }
+                if (!isGod && character.UserId == userId)
+                {
+                    TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten";
+                    return RedirectToAction("Index", "Player");
+                }
+                //Lade Basis-Daten für das Formular
+                LoadFormViewBagData();
+                ViewBag.Step = step;
                 return View(character);
             }
-            // neuen leeren Charakter erstellen
-            return View();
+            if (!isGod)
+            {
+                TempData["Error"] = "Nur Gott darf neue Character erstellen!";
+                return RedirectToAction("Index", "Player");
+            }
+            
+            LoadFormViewBagData();
+            ViewBag.Step = step;
+            return View(new Character());
         }
 
         [HttpPost]
@@ -93,6 +115,9 @@ namespace Suendenbock_App.Controllers
                                                    Dictionary<int, int> selectedSpecializations, 
                                                    IFormFile? characterImage)
         {
+            var userId = _userManager?.GetUserId(User);
+            var isGod = User.IsInRole("Gott");
+
             try
             {
                 if(!ValidateStep1(character, selectedMagicClasses))
@@ -104,6 +129,11 @@ namespace Suendenbock_App.Controllers
                 }
                 if (character.Id == 0)
                 {
+                    if (!isGod)
+                    {
+                        TempData["Error"] = "Nur Gott darf neue Characters erstellen!";
+                        return RedirectToAction("Index", "Player");
+                    }
                     if (characterImage != null && characterImage.Length > 0)
                     {
                         try
@@ -124,8 +154,15 @@ namespace Suendenbock_App.Controllers
                 else
                 {
                     var existingCharacter = _context.Characters.Find(character.Id);
+                    
                     if (existingCharacter != null)
                     {
+                        if (!isGod && existingCharacter?.UserId != userId)
+                        {
+                            TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten!";
+                            return RedirectToAction("Index", "Player");
+                        }
+
                         if (characterImage != null && characterImage.Length > 0)
                         {
                             try
@@ -164,6 +201,9 @@ namespace Suendenbock_App.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveStep2(int id, int? standId, string? beruf, int? blutgruppeId, int? hausId, int? herkunftslandId, int? bodyHeight, string? description)
         {
+            var userId = _userManager?.GetUserId(User);
+            var isGod = User.IsInRole("Gott");
+
             try
             {
                 var character = await _context.Characters.Include(c => c.Details).FirstOrDefaultAsync(c => c.Id == id);
@@ -175,10 +215,20 @@ namespace Suendenbock_App.Controllers
                 // CharacterDetails erstellen oder aktualisieren
                 if (character.Details == null)
                 {
+                    if(!isGod)
+                    {
+                        TempData["Error"] = "Nur Gott darf neue Characters erstellen!";
+                        return RedirectToAction("Index", "Player");
+                    }
                     character.Details = new CharacterDetails { CharacterId = id };
+
                     _context.CharacterDetails.Add(character.Details);
                 }
-
+                if (!isGod && character?.UserId != userId)
+                {
+                    TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten!";
+                    return RedirectToAction("Index", "Player");
+                }
                 character.Details.StandId = standId;
                 character.Details.Beruf = beruf;
                 character.Details.BlutgruppeId = blutgruppeId;
@@ -202,6 +252,8 @@ namespace Suendenbock_App.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveStep3(int id, int? guildId, int? religionId, int? regimentId, int? infanterierangId)
         {
+            var userId = _userManager?.GetUserId(User);
+            var isGod = User.IsInRole("Gott");
             try
             {
                 var character = await _context.Characters.Include(c => c.Affiliation).FirstOrDefaultAsync(c => c.Id == id);
@@ -212,8 +264,18 @@ namespace Suendenbock_App.Controllers
                 // CharacterAffiliation erstellen oder aktualisieren
                 if (character.Affiliation == null)
                 {
+                    if (!isGod)
+                    {
+                        TempData["Error"] = "Nur Gott darf neue Characters erstellen!";
+                        return RedirectToAction("Index", "Player");
+                    }
                     character.Affiliation = new CharacterAffiliation { CharacterId = id };
                     _context.CharacterAffiliations.Add(character.Affiliation);
+                }
+                if (!isGod && character?.UserId != userId)
+                {
+                    TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten!";
+                    return RedirectToAction("Index", "Player");
                 }
                 character.Affiliation.GuildId = guildId;
                 character.Affiliation.ReligionId = religionId;
@@ -221,6 +283,10 @@ namespace Suendenbock_App.Controllers
                 character.Affiliation.InfanterierangId = infanterierangId;
                 
                 character.CompletionLevel = CharacterCompleteness.Complete;
+                if(isGod && !string.IsNullOrEmpty(Request.Form["userId"]))
+                {
+                    character.UserId = Request.Form["userId"];
+                }
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Charakter erfolgreich erfolgreich erstellt/aktualisiert!";
@@ -301,6 +367,11 @@ namespace Suendenbock_App.Controllers
             ViewBag.Religions = _context.Religions.ToList();
             ViewBag.Regiment = _context.Regiments.ToList();
             ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
+            ViewBag.Players = _userManager.Users
+                .ToList()
+                .Where(u => _userManager.IsInRoleAsync(u, "Spieler").Result)
+                .Select(u => new { u.Id, u.Email })
+                .ToList();
         }
         private Character LoadCharacterForEditing(int id)
         {

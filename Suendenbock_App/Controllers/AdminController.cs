@@ -6,7 +6,7 @@ using Suendenbock_App.Models.ViewModels;
 
 namespace Suendenbock_App.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Gott")]
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;

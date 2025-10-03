@@ -102,6 +102,24 @@
                             <input type="text" class="form-control" id="rufname" name="rufname"
                                value="@(Model != null ? Model.Rufname : "")" required placeholder="Rufname *">
                         </div>
+                        @if(User.IsInRole("Gott"))
+                        {
+                            <div class="form-group">
+                                <label for="userId">Spieler zuweisen (optional)</label>
+                                <select class="form-control" id="userId" name="userId">
+                                    <option value="">-- kein Spieler (NPC) --</option>
+                                    @foreach(var player in ViewBag.Players)
+                                    {
+                                        <option value="@player.Id" selected="@(Model?.UserId == player.Id)">
+                                            @player.Email
+                                        </option>
+                                    }
+                                </select>
+                                <small class="form-text text-muted">
+                                    Wähle einen Spieler aus, der diesen Character bearbeiten darf
+                                </small>
+                            </div>
+                        }
                     </div>
                 </div>
                 <div class="row">
