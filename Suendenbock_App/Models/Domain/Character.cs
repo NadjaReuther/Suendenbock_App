@@ -14,8 +14,8 @@
         public string Rufname { get; set; } = string.Empty;
         public string Geschlecht { get; set; } = string.Empty;
         public string? UserId { get; set; } //optionaler Foreign-Key zu User
-        public bool? Profan {  get; set; }
-        public bool? Beschraenkt { get; set; }
+        public bool Profan { get; set; } = false;
+        public bool Beschraenkt { get; set; } = false;
 
         //Pflicht-Foreign-Keys
         public int RasseId { get; set; }

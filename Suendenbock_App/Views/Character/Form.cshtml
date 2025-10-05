@@ -232,94 +232,123 @@
                             }
                         </select>
                     </div>
-                </div>
-
-                <!-- Magieklassen -->
-                <div class="mb-3 row">
-                    <div class="col-md-6">
-                        <input type="radio" value="" />
-                    </div>
-                    <label class="form-label">Magieklassen (maximal 2) *</label>
+                </div>              
+                <!-- NACHHER: Profan/Beschraenkt Checkboxen + 2 Magie-Dropdowns -->
+                <div class="mb-3">
+                    <label class="form-label">Magie-Status</label>
                     <div class="card p-3">
-                        <div class="row" id="magicClassContainer">
-                            @if (ViewBag.MagicClasses != null)
-                            {
-                                var selectedMagicClasses = ViewBag.SelectedMagicClasses as int[] ?? new int[0];
-                                foreach (var magicclass in ViewBag.MagicClasses)
-                                {
-                                    bool isSelected = Array.Exists(selectedMagicClasses, x => x == magicclass.Id);
-                                    <div class="col-md-3 col-sm-6 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input magic-class-checkbox" type="checkbox"
-                                                    name="selectedMagicClasses"
-                                                    value="@magicclass.Id"
-                                                    id="magic-@magicclass.Id"
-                                                    @(isSelected ? "checked" : "")>
-                                            <label class="form-check-label" for="magic-@magicclass.Id">
-                                                <div class="d-flex align-items-center">
-                                                    @if (!string.IsNullOrEmpty(magicclass.ImagePath))
-                                                    {
-                                                        <img src="@magicclass.ImagePath" class="magicclassIcon me-2" alt="@magicclass.Bezeichnung" />
-                                                    }
-                                                    <span>@magicclass.Bezeichnung</span>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                }
-                            }
+                        <!-- NACHHER - funktioniert -->
+                        <div class="mb-3">
+                            <label class="form-label">Magie-Status</label>
+                            <div class="card p-3">
+                               
+
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input magic-status-checkbox"
+                                           type="checkbox"
+                                           id="profan"
+                                           asp-for="Profan"
+                                           data-excludes="beschraenkt">
+                                    <label class="form-check-label" for="profan">Profan</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input magic-status-checkbox"
+                                           type="checkbox"
+                                           id="beschraenkt"
+                                           asp-for="Beschraenkt"
+                                           data-excludes="profan">
+                                    <label class="form-check-label" for="beschraenkt">Beschränkt</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Spezialisierungen -->
-                <div class="mb-3" id="specializationsContainer">
-                    <label class="form-label">Spezialisierungen</label>
-                    <div class="card p-3">
-                        <div class="row" id="specializationsRow">
-                            @if (ViewBag.MagicClasses != null && ViewBag.Specializations != null)
+                <!-- Erste Magie -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label>Obermagie 1</label>
+                        <select class="form-select obermagie-select"
+                                id="obermagie1"
+                                data-target="1">
+                            <option value="">Bitte wählen...</option>
+                            @foreach (var om in ViewBag.Obermagien)
                             {
-                                var selectedMagicClasses = ViewBag.SelectedMagicClasses as int[] ?? new int[0];
-                                var selectedSpecializations = ViewBag.SelectedSpecializations as Dictionary<int, int> ?? new Dictionary<int, int>();
-                                var allSpecializations = ViewBag.Specializations as List<MagicClassSpecialization> ?? new List<MagicClassSpecialization>();
-
-                                foreach (var magicClass in ViewBag.MagicClasses)
+                                @if (ViewBag.SelectedObermagie1 == om.Id)
                                 {
-                                    var specializations = allSpecializations.Where(s => s.MagicClassId == magicClass.Id).ToList();
-
-                                    if (specializations.Any())
-                                    {
-                                        <div class="col-md-6 mb-3 specialization-column" data-magic-class-id="@magicClass.Id" style="display: none;">
-                                            <label class="form-label">@magicClass.Bezeichnung</label>
-                                            <select class="form-select" name="selectedSpecializations[@magicClass.Id]">
-                                                <option value="">Keine Spezialisierung</option>
-                                                @foreach (var spec in specializations)
-                                                {
-                                                    bool isSpecSelected = false;
-                                                    if (selectedSpecializations.ContainsKey(magicClass.Id))
-                                                    {
-                                                        if (selectedSpecializations[magicClass.Id] == spec.Id)
-                                                        {
-                                                            isSpecSelected = true;
-                                                        }
-                                                    }
-                                                    @if (isSpecSelected)
-                                                    {
-                                                        <option value="@spec.Id" selected>@spec.Name</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@spec.Id">@spec.Name</option>
-                                                    }
-                                                }
-                                            </select>
-                                        </div>
-                                    }
+                                    <option value="@om.Id" selected>@om.Bezeichnung</option>
+                                }
+                                else
+                                {
+                                    <option value="@om.Id">@om.Bezeichnung</option>
                                 }
                             }
-                        </div>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Magieklasse 1</label>
+                        <select class="form-select magicclass-select"
+                                id="magicclass1"
+                                name="selectedMagicClasses"
+                                data-target="1"
+                                data-preselect="@(ViewBag.SelectedMagicClass1 ?? 0)">
+                            <option value="">Erst Obermagie wählen</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 specialization-container"
+                         id="spec-container-1"
+                         style="display:none;">
+                        <label>Spezialisierung 1</label>
+                        <select class="form-select"
+                                name="selectedSpecializations[1]"
+                                data-preselect="@(ViewBag.SelectedSpecialization1 ?? 0)">
+                            <option value="">Keine</option>
+                        </select>
                     </div>
                 </div>
+
+                <!-- Zweite Magie -->
+                <div class="row">
+                    <div class="col-md-4">
+                        <label>Obermagie 2</label>
+                        <select class="form-select obermagie-select"
+                                id="obermagie2"
+                                data-target="2">
+                            <option value="">Bitte wählen...</option>
+                            @foreach (var om in ViewBag.Obermagien)
+                            {
+                                @if (ViewBag.SelectedObermagie2 == om.Id)
+                                {
+                                    <option value="@om.Id" selected>@om.Bezeichnung</option>
+                                }
+                                else
+                                {
+                                    <option value="@om.Id">@om.Bezeichnung</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label>Magieklasse 2</label>
+                        <select class="form-select magicclass-select"
+                                id="magicclass2"
+                                name="selectedMagicClasses"
+                                data-target="2"
+                                data-preselect="@(ViewBag.SelectedMagicClass2 ?? 0)">
+                            <option value="">Erst Obermagie wählen</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 specialization-container"
+                         id="spec-container-2"
+                         style="display:none;">
+                        <label>Spezialisierung 2</label>
+                        <select class="form-select"
+                                name="selectedSpecializations[2]"
+                                data-preselect="@(ViewBag.SelectedSpecialization2 ?? 0)">
+                            <option value="">Keine</option>
+                        </select>
+                    </div>
+                </div>                
                 <div class="text-center">
                     <button type="submit" class="btn-wachs">Gebilligt</button>
                 </div>
@@ -512,7 +541,7 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                         <label for="regimentsId" class="form-label">Regiment</label>
-                        <select class="form-select" id="regimentsId" name="regimentsId">
+                        <select class="form-select" id="regimentsId" name="RegimentId">
                             <option value="">Regiment wählen...</option>
                             @if(ViewBag.Regiment != null)
                             {
@@ -584,42 +613,21 @@
         enableImageDragDrop('#character-drop-zone', 'characterImageUpload');
 
         $(document).ready(function() {
-           const currentStep = @currentStep;
+            const currentStep = @currentStep;
 
+            // ========================================
+            // WYSIWYG-Editor (nur Schritt 2)
+            // ========================================
             if (currentStep === 2) {
-                console.log('✅ Schritt 2 aktiv - Initialisiere WYSIWYG-Editor');
-
-                // Zuerst WYSIWYG-Editor initialisieren
                 const wikiEditor = new WikiWYSIWYGEditor('#description');
-
-                // Dann EntityMentions mit kleiner Verzögerung
                 setTimeout(() => {
-                    console.log('🔄 Initialisiere EntityMentions...');
                     new EntityMentions('#description');
                 }, 800);
-            } else {
-                console.log('⏭️ Schritt ' + currentStep + ' aktiv - Kein WYSIWYG-Editor benötigt');
             }
 
-
-            $('form[asp-action="SaveStep1"]').on('submit', function(e) {
-                var checkedCount = $('input[name="selectedMagicClasses"]:checked').length;
-
-                if (checkedCount === 0) {
-                    e.preventDefault();
-                    alert('Bitte wähle mindestens eine Magieklasse aus.');
-                    return false;
-                }
-
-                if (checkedCount > 2) {
-                    e.preventDefault();
-                    alert('Du kannst maximal 2 Magieklassen auswählen.');
-                    return false;
-                }
-
-                // Wenn alles OK ist, nichts machen -> normale Übermittlung
-            });
-            // Väter (nur männlich)
+            // ========================================
+            // Eltern-Auswahl (Select2)
+            // ========================================
             $('.character-select-male').select2({
                 ajax: {
                     url: '/api/Character/dropdown',
@@ -645,21 +653,9 @@
                 },
                 minimumInputLength: 1,
                 placeholder: 'Vater suchen...',
-                allowClear: true,
-                language: {
-                    inputTooShort: function() {
-                        return "";
-                    },
-                    noResults: function() {
-                        return "Keine männlichen Charaktere gefunden";
-                    },
-                    searching: function() {
-                        return "Suche nach Vätern...";
-                    }
-                }
+                allowClear: true
             });
 
-            // Mütter (nur weiblich)
             $('.character-select-female').select2({
                 ajax: {
                     url: '/api/Character/dropdown',
@@ -685,48 +681,176 @@
                 },
                 minimumInputLength: 1,
                 placeholder: 'Mutter suchen...',
-                allowClear: true,
-                language: {
-                    inputTooShort: function() {
-                        return "";
-                    },
-                    noResults: function() {
-                        return "Keine weiblichen Charaktere gefunden";
-                    },
-                    searching: function() {
-                        return "Suche nach Müttern...";
+                allowClear: true
+            });
+
+            // ========================================
+            // MAGIE-SYSTEM (nur Schritt 1)
+            // ========================================
+            if (currentStep === 1) {
+                // Daten aus ViewBag
+                const allMagicClasses = @Html.Raw(Json.Serialize(ViewBag.MagicClassesJson ?? new List<object>()));
+                const allSpecializations = @Html.Raw(Json.Serialize(ViewBag.SpecializationsJson ?? new List<object>()));
+                const unbegabtId = 16;
+
+                // ========================================
+                // Profan/Beschränkt - gegenseitig ausschließend
+                // ========================================
+                $('.magic-status-checkbox').on('change', function() {
+                    if ($(this).is(':checked')) {
+                        const excludeId = $(this).data('excludes');
+                        $('#' + excludeId).prop('checked', false);
+                        console.log('✅ ' + $(this).attr('id') + ' aktiviert, ' + excludeId + ' deaktiviert');
                     }
-                }
-            });
 
-            // Maximal 2 Checkboxen erlauben
-            $('input[name="selectedMagicClasses"]').change(function() {
-                var checkedCount = $('input[name="selectedMagicClasses"]:checked').length;
-                if (checkedCount > 2) {
-                    this.checked = false;
-                    alert('Du kannst maximal 2 Magieklassen auswählen.');
-                }
-                // Zeige/Verstecke Spezialisierungen
-                toggleSpecializations();
-            });
-
-            function toggleSpecializations() {
-                // Alle Spezialisierungen verstecken
-                $('.specialization-column').hide();
-
-                // Nur die der ausgewählten Magieklassen zeigen
-                $('input[name="selectedMagicClasses"]:checked').each(function() {
-                    var magicClassId = $(this).val();
-                    $('.specialization-column[data-magic-class-id="' + magicClassId + '"]').show();
+                    // Specializations neu laden
+                    $('.magicclass-select').trigger('change');
                 });
-            }
 
-             new WikiWYSIWYGEditor('#description');
-            // Beim Laden der Seite Spezialisierungen aktualisieren
-            toggleSpecializations();
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            new EntityMentions('#description');
+                        // Obermagie-Auswahl
+                $('.obermagie-select').on('change', function() {
+                    const obermagieId = $(this).val();
+                    const target = $(this).data('target');
+                    const magicClassSelect = $(`#magicclass${target}`);
+                    const specContainer = $(`#spec-container-${target}`);
+
+                    // MagicClass-Dropdown zurücksetzen
+                    magicClassSelect.empty();
+                    magicClassSelect.append('<option value="">Bitte wählen...</option>');
+                    specContainer.hide();
+
+                    // ✨ NEU: Wenn Unbegabt in Slot 1, dann zweite Magie ausblenden
+                    if (target == 1 && obermagieId == unbegabtId) {
+                        // Zweite Magie-Reihe ausblenden
+                        $('#obermagie2').closest('.row').hide();
+
+                        // Zweite Magie zurücksetzen
+                        $('#obermagie2').val('');
+                        $('#magicclass2').empty().append('<option value="">Erst Obermagie wählen</option>').prop('disabled', true);
+                        $('#spec-container-2').hide();
+
+                        // Erste Magie deaktivieren
+                        magicClassSelect.prop('disabled', true);
+                        magicClassSelect.empty();
+                        magicClassSelect.append('<option value="">Keine Magieklassen</option>');
+                        return;
+                    }
+
+                    // ✨ NEU: Wenn Unbegabt NICHT gewählt, zweite Magie wieder einblenden
+                    if (target == 1 && obermagieId != unbegabtId) {
+                        $('#obermagie2').closest('.row').show();
+                    }
+
+                    // Wenn "Unbegabt" in Slot 2 ausgewählt
+                    if (target == 2 && obermagieId == unbegabtId) {
+                        magicClassSelect.prop('disabled', true);
+                        magicClassSelect.empty();
+                        magicClassSelect.append('<option value="">Keine Magieklassen</option>');
+                        return;
+                    }
+
+                    // Wenn eine Obermagie gewählt wurde
+                    if (obermagieId) {
+                        // Passende MagicClasses filtern
+                        const filteredClasses = allMagicClasses.filter(
+                            mc => mc.obermagieId == obermagieId
+                        );
+                        // Dropdown befüllen
+                        filteredClasses.forEach(mc => {
+                            magicClassSelect.append(
+                                `<option value="${mc.id}">${mc.bezeichnung}</option>`
+                            );
+                        });
+
+                        magicClassSelect.prop('disabled', false);
+                        console.log(`✅ ${filteredClasses.length} MagicClasses geladen`);
+                    } else {
+                        magicClassSelect.prop('disabled', true);
+                        console.log('⏸️ Keine Obermagie gewählt');
+                    }
+                });
+
+                // ========================================
+                // MagicClass-Auswahl
+                // ========================================
+                $('.magicclass-select').on('change', function() {
+                    const magicClassId = $(this).val();
+                    const target = $(this).data('target');
+                    const specContainer = $(`#spec-container-${target}`);
+                    const specSelect = specContainer.find('select');
+                    // Reset
+                    specSelect.empty();
+                    specSelect.append('<option value="">Keine</option>');
+                    specContainer.hide();
+
+                    // Prüfe ob Profan oder Beschränkt
+                    const isProfan = $('#profan').is(':checked');
+                    const isBeschraenkt = $('#beschraenkt').is(':checked');
+
+                    if (isProfan || isBeschraenkt) {
+                        return;
+                    }
+
+                    // Wenn MagicClass gewählt
+                    if (magicClassId) {
+                        // Passende Specializations filtern
+                        const filteredSpecs = allSpecializations.filter(
+                            s => s.magicClassId == magicClassId
+                        );
+                        if (filteredSpecs.length > 0) {
+                            filteredSpecs.forEach(spec => {
+                                specSelect.append(
+                                    `<option value="${spec.id}">${spec.name}</option>`
+                                );
+                            });
+                            specContainer.show();
+                        }
+                    }
+                });
+                // Slot 1 laden
+                const preselectedObermagie1 = $('#obermagie1').val();
+                if (preselectedObermagie1) {
+                    $('#obermagie1').trigger('change');
+
+                    // Warte kurz, dann MagicClass setzen
+                    setTimeout(() => {
+                        const preselectedMagicClass1 = $('#magicclass1').data('preselect');
+                        if (preselectedMagicClass1 && preselectedMagicClass1 > 0) {
+                            $('#magicclass1').val(preselectedMagicClass1);
+                            $('#magicclass1').trigger('change');
+
+                            // Warte kurz, dann Specialization setzen
+                            setTimeout(() => {
+                                const preselectedSpec1 = $('#spec-container-1 select').data('preselect');
+                                if (preselectedSpec1 && preselectedSpec1 > 0) {
+                                    $('#spec-container-1 select').val(preselectedSpec1);
+                                }
+                            }, 100);
+                        }
+                    }, 100);
+                }
+
+                // Slot 2 laden
+                const preselectedObermagie2 = $('#obermagie2').val();
+                if (preselectedObermagie2) {
+                    $('#obermagie2').trigger('change');
+
+                    setTimeout(() => {
+                        const preselectedMagicClass2 = $('#magicclass2').data('preselect');
+                        if (preselectedMagicClass2 && preselectedMagicClass2 > 0) {
+                            $('#magicclass2').val(preselectedMagicClass2);
+                            $('#magicclass2').trigger('change');
+
+                            setTimeout(() => {
+                                const preselectedSpec2 = $('#spec-container-2 select').data('preselect');
+                                if (preselectedSpec2 && preselectedSpec2 > 0) {
+                                    $('#spec-container-2 select').val(preselectedSpec2);
+                                }
+                            }, 100);
+                        }
+                    }, 100);
+                }
+            }
         });
     </script>
 }

@@ -353,8 +353,12 @@ namespace Suendenbock_App.Controllers
         {
 
             // Load data for dropdowns
-            ViewBag.MagicClasses = _context.MagicClasses.Include(mc => mc.Obermagie).ThenInclude(o => o.LightCard).ToList();
-            ViewBag.Specializations = _context.MagicClassSpecializations.Include(s => s.MagicClass).ToList();
+            ViewBag.Obermagien = _context.Obermagien.ToList();
+            ViewBag.MagicClasses = _context.MagicClasses
+                .Include(mc => mc.Obermagie)
+                .ThenInclude(o => o.LightCard).ToList();
+            ViewBag.Specializations = _context.MagicClassSpecializations
+                .Include(s => s.MagicClass).ToList();
             ViewBag.Rassen = _context.Rassen.ToList();
             ViewBag.Lebensstatus = _context.Lebensstati.ToList();
             ViewBag.Eindruecke = _context.Eindruecke.ToList();
@@ -372,6 +376,22 @@ namespace Suendenbock_App.Controllers
                 .Where(u => _userManager.IsInRoleAsync(u, "Spieler").Result)
                 .Select(u => new { u.Id, u.Email })
                 .ToList();
+
+            ViewBag.MagicClassesJson = _context.MagicClasses
+                .Include(mc => mc.Obermagie)
+                .Select(mc => new {
+                    Id = mc.Id,
+                    Bezeichnung = mc.Bezeichnung,
+                    ObermagieId = mc.ObermagieId,
+                    ImagePath = mc.ImagePath
+                }).ToList();
+
+            ViewBag.SpecializationsJson = _context.MagicClassSpecializations
+                .Select(s => new {
+                    Id = s.Id,
+                    Name = s.Name,
+                    MagicClassId = s.MagicClassId
+                }).ToList();
         }
         private Character LoadCharacterForEditing(int id)
         {
@@ -380,6 +400,7 @@ namespace Suendenbock_App.Controllers
                     .Include(c => c.Affiliation)
                     .Include(c => c.CharacterMagicClasses)
                         .ThenInclude(cmc => cmc.MagicClass)
+                            .ThenInclude(om => om.Obermagie)
                     .Include(c => c.CharacterMagicClasses)
                         .ThenInclude(cmc => cmc.MagicClassSpecialization)                     
                     .Include(c => c.Rasse)
@@ -392,10 +413,31 @@ namespace Suendenbock_App.Controllers
             if (character != null)
             {
                 // Ausgewählte Magieklassen und Spezialisierungen in ViewBag speichern
-                var selectedMagicClasses = character.CharacterMagicClasses.Select(cmc => cmc.MagicClassId).ToArray();
+                var selectedMagicClasses = character.CharacterMagicClasses
+                    .Select(cmc => cmc.MagicClassId).ToArray();
                 var selectedSpecializations = character.CharacterMagicClasses
                     .Where(cmc => cmc.MagicClassSpecializationId.HasValue)
                     .ToDictionary(cmc => cmc.MagicClassId, cmc => cmc.MagicClassSpecializationId.Value);
+
+                var magicClassesList = character.CharacterMagicClasses.ToList();
+
+                if (magicClassesList.Count > 0)
+                {
+                    // Erste Magie
+                    var firstMagic = magicClassesList[0];
+                    ViewBag.SelectedObermagie1 = firstMagic.MagicClass?.ObermagieId;
+                    ViewBag.SelectedMagicClass1 = firstMagic.MagicClassId;
+                    ViewBag.SelectedSpecialization1 = firstMagic.MagicClassSpecializationId;
+                }
+
+                if (magicClassesList.Count > 1)
+                {
+                    // Zweite Magie
+                    var secondMagic = magicClassesList[1];
+                    ViewBag.SelectedObermagie2 = secondMagic.MagicClass?.ObermagieId;
+                    ViewBag.SelectedMagicClass2 = secondMagic.MagicClassId;
+                    ViewBag.SelectedSpecialization2 = secondMagic.MagicClassSpecializationId;
+                }
 
                 SetSelectedMagicClassesViewBag(selectedMagicClasses, selectedSpecializations);
             }
@@ -408,6 +450,13 @@ namespace Suendenbock_App.Controllers
         }
         private bool ValidateStep1(Character character, int[] selectedMagicClasses)
         {
+            bool isUnbegabt = false;
+
+            var magicClassCheck = isUnbegabt ? true :
+                (selectedMagicClasses != null &&
+                selectedMagicClasses.Length >= 1 &&
+                selectedMagicClasses.Length <= 2);
+
             return !string.IsNullOrEmpty(character.Vorname) &&
                    !string.IsNullOrEmpty(character.Nachname) &&
                    !string.IsNullOrEmpty(character.Rufname) &&
@@ -417,7 +466,8 @@ namespace Suendenbock_App.Controllers
                    character.EindruckId > 0 &&
                    selectedMagicClasses != null &&
                    selectedMagicClasses.Length >= 1 && 
-                   selectedMagicClasses.Length <= 2;
+                   selectedMagicClasses.Length <= 2 &&
+                   magicClassCheck;
         }
         private void UpdateCharacterStep1(Character existingCharacter, Character newCharacter)
         {
@@ -432,6 +482,8 @@ namespace Suendenbock_App.Controllers
             existingCharacter.EindruckId = newCharacter.EindruckId;
             existingCharacter.VaterId = newCharacter.VaterId;
             existingCharacter.MutterId = newCharacter.MutterId;
+            existingCharacter.Profan = newCharacter.Profan;
+            existingCharacter.Beschraenkt = newCharacter.Beschraenkt;
         }
         private async Task SaveCharacterMagicClasses(int characterId, int[] selectedMagicClasses, Dictionary<int, int> selectedSpecializations)
         {
