@@ -31,6 +31,7 @@ namespace Suendenbock_App.Controllers
         {
             return View();
         }
+        [AllowAnonymous]
         public IActionResult CharacterSheet(int id)
         {
             var character = _context.Characters
@@ -111,7 +112,8 @@ namespace Suendenbock_App.Controllers
 
         [HttpPost]
         public async Task<IActionResult> SaveStep1(Character character, 
-                                                   int[] selectedMagicClasses, 
+                                                   int[] selectedMagicClasses,
+                                                   int[] selectedObermagien,
                                                    Dictionary<int, int> selectedSpecializations, 
                                                    IFormFile? characterImage)
         {
@@ -120,7 +122,7 @@ namespace Suendenbock_App.Controllers
 
             try
             {
-                if(!ValidateStep1(character, selectedMagicClasses))
+                if(!ValidateStep1(character, selectedMagicClasses, selectedObermagien))
                 {                    
                     LoadFormViewBagData();
                     SetSelectedMagicClassesViewBag(selectedMagicClasses, selectedSpecializations);
@@ -147,6 +149,10 @@ namespace Suendenbock_App.Controllers
                         }
                     }
                     character.CompletionLevel = CharacterCompleteness.BasicInfo;
+                    // ✨ NEU: Unbegabt-Status setzen
+                    const int unbegabtId = 16;
+                    character.IsUnbegabt = selectedObermagien != null &&
+                                           selectedObermagien.Contains(unbegabtId);
                     _context.Characters.Add(character);
                     _context.SaveChanges();
 
@@ -182,6 +188,10 @@ namespace Suendenbock_App.Controllers
                                 TempData["Error"] = $"Bild-Upload fehlgeschlagen: {ex.Message}";
                             }
                         }
+                        // ✨ NEU: Unbegabt-Status setzen
+                        const int unbegabtId = 16;
+                        existingCharacter.IsUnbegabt = selectedObermagien != null &&
+                                               selectedObermagien.Contains(unbegabtId);
                         UpdateCharacterStep1(existingCharacter, character);
                     }
                 }
@@ -448,26 +458,33 @@ namespace Suendenbock_App.Controllers
             ViewBag.SelectedMagicClasses = selectedMagicClasses ?? new int[0];
             ViewBag.SelectedSpecializations = selectedSpecializations ?? new Dictionary<int, int>();
         }
-        private bool ValidateStep1(Character character, int[] selectedMagicClasses)
+        // NACHHER - einfach und klar
+        private bool ValidateStep1(Character character, int[] selectedMagicClasses, int[] selectedObermagien)
         {
-            bool isUnbegabt = false;
+            // Basisfelder prüfen
+            var basicFieldsValid = !string.IsNullOrEmpty(character.Vorname) &&
+                                  !string.IsNullOrEmpty(character.Nachname) &&
+                                  !string.IsNullOrEmpty(character.Rufname) &&
+                                  !string.IsNullOrEmpty(character.Geschlecht) &&
+                                  character.RasseId > 0 &&
+                                  character.LebensstatusId > 0 &&
+                                  character.EindruckId > 0;
 
-            var magicClassCheck = isUnbegabt ? true :
-                (selectedMagicClasses != null &&
-                selectedMagicClasses.Length >= 1 &&
-                selectedMagicClasses.Length <= 2);
+            if (!basicFieldsValid)
+                return false;
 
-            return !string.IsNullOrEmpty(character.Vorname) &&
-                   !string.IsNullOrEmpty(character.Nachname) &&
-                   !string.IsNullOrEmpty(character.Rufname) &&
-                   !string.IsNullOrEmpty(character.Geschlecht) &&
-                   character.RasseId > 0 &&
-                   character.LebensstatusId > 0 &&
-                   character.EindruckId > 0 &&
-                   selectedMagicClasses != null &&
-                   selectedMagicClasses.Length >= 1 && 
-                   selectedMagicClasses.Length <= 2 &&
-                   magicClassCheck;
+            const int unbegabtId = 16;
+            bool isUnbegabt = selectedObermagien != null &&
+                              selectedObermagien.Contains(unbegabtId);
+
+            // Wenn Unbegabt: keine MagicClasses nötig
+            if (isUnbegabt)
+                return true;
+
+            // Wenn NICHT Unbegabt: 1-2 MagicClasses erforderlich
+            return selectedMagicClasses != null &&
+                   selectedMagicClasses.Length >= 1 &&
+                   selectedMagicClasses.Length <= 2;
         }
         private void UpdateCharacterStep1(Character existingCharacter, Character newCharacter)
         {

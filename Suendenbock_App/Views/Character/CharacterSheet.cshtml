@@ -50,16 +50,57 @@
                 {
                     <p><strong>Geboren:</strong> @Model.Geburtsdatum</p>
                 }
-                <p><strong>Magie:</strong>
-                @if (Model.CharacterMagicClasses.Any())
-                {
-                    @foreach (var cmc in Model.CharacterMagicClasses)
+                <p>
+                    <strong>Magie:</strong>
+                    @if (Model.IsUnbegabt)
                     {
-                        <div style="margin-left: 10px; font-size: 0.9em; color: #666;">
-                            @(cmc.MagicClass?.Obermagie?.Bezeichnung) → @(cmc.MagicClass?.Bezeichnung) → @(cmc.MagicClassSpecialization?.Name ?? "Keine Spezialisierung")
+                        <div style="margin-left: 10px; margin-top: 5px;">
+                            <span class="badge" style="background: linear-gradient(45deg, #666, #888); color: white; font-size: 0.9em;">
+                                ⛔ Unbegabt
+                            </span>
+                            <div style="font-size: 0.85em; color: #999; margin-top: 5px;">
+                                <em>Dieser Charakter besitzt keine magischen Fähigkeiten.</em>
+                            </div>
                         </div>
                     }
-                }
+                    else if (Model.CharacterMagicClasses.Any())
+                    {
+                        <div style="margin-top: 8px;">
+                            @foreach (var cmc in Model.CharacterMagicClasses)
+                            {
+                                <div style="margin-left: 10px; font-size: 0.9em; color: #666; margin-bottom: 8px;">
+                                    @(cmc.MagicClass?.Obermagie?.Bezeichnung) → @(cmc.MagicClass?.Bezeichnung)
+
+                                    @if (Model.Profan || Model.Beschraenkt)
+                                    {
+                                        <span style="color: #999; margin-left: 8px;">
+                                            @if (Model.Profan)
+                                            {
+                                                <span class="badge" style="background: linear-gradient(45deg, #8b4513, #a0522d); color: white; font-size: 0.85em;">
+                                                    Profan
+                                                </span>
+                                            }
+                                            else if (Model.Beschraenkt)
+                                            {
+                                                <span class="badge" style="background: linear-gradient(45deg, #d2691e, #cd853f); color: white; font-size: 0.85em;">
+                                                    Beschränkt
+                                                </span>
+                                            }
+                                            <em>(Keine Spezialisierung)</em>
+                                        </span>
+                                    }
+                                    else if (cmc.MagicClassSpecialization != null)
+                                    {
+                                        <span>→ <strong>@cmc.MagicClassSpecialization.Name</strong></span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Keine Magieklassen zugewiesen</span>
+                    }
                 </p>
                 <p><strong>Beruf:</strong> @Model.Details?.Beruf</p>
                 <p><strong>Haus:</strong> @Model.Details?.Haus?.Name</p>

@@ -16,6 +16,7 @@
         public string? UserId { get; set; } //optionaler Foreign-Key zu User
         public bool Profan { get; set; } = false;
         public bool Beschraenkt { get; set; } = false;
+        public bool IsUnbegabt { get; set; } = false;
 
         //Pflicht-Foreign-Keys
         public int RasseId { get; set; }

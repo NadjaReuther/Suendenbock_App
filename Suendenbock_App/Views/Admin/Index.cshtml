@@ -63,11 +63,19 @@
                                     <td>@character.Details?.Herkunftsland?.Name</td>
                                     <td>@character.Details?.Blutgruppe?.Name</td>
                                     <td>
-                                        @if (character.CharacterMagicClasses.Any())
+                                        @if (character.IsUnbegabt)
+                                        {
+                                            <span class="badge rounded-pill"
+                                                  style="background: linear-gradient(45deg, #666, #888); color: white;">
+                                                ⛔ Unbegabt
+                                            </span>
+                                        }
+                                        else if (character.CharacterMagicClasses.Any())
                                         {
                                             <div class="magic-classes">
                                                 @foreach (var cmc in character.CharacterMagicClasses.Take(2))
                                                 {
+
                                                     <span class="badge rounded-pill"
                                                           style="background: linear-gradient(45deg, #d4af37, #b8941f); color: white; margin: 1px;">
                                                         🔮 @cmc?.MagicClass?.Bezeichnung

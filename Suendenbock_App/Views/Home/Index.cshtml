@@ -10,7 +10,7 @@
 }
 <!-- Header -->
 <header class="antique-header">
-    <h1 class="main-title">Sündenbock</h1>
+    <h1 class="main-title">Sündenbock 1618</h1>
 </header>
 
 <div class="main-container">
@@ -78,24 +78,16 @@
             </div>
         
     </section>
-
-    <!-- Magieklassen Sektion mit echten Daten -->
-    <section class="magic-section">
+    <!-- Sternzeichen Übersicht -->
+    <section class="zodiac-section">
         <h2 class="section-title">
-            Schulen der Magie
+            <span class="title-decoration left">✨</span>
+            Sternzeichen
+            <span class="title-decoration right">✨</span>
         </h2>
 
-        <div class="magic-grid">
-            @foreach (var magicClass in Model.MagicClasses)
-            {
-                    <div class="magic-card @(magicClass.Obermagie?.LightCard?.CssClass ?? "default")-hover" data-tilt>
-                        <img src="@magicClass.ImagePath" class="magic-icon" alt="@magicClass.Bezeichnung" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="magic-icon-fallback" style="display:none;">🔮</div>
-
-                        <div class="magic-name">@magicClass.Bezeichnung</div>
-                        <div class="magic-school">@(magicClass.Obermagie?.Bezeichnung ?? "Unbekannt")</div>
-                    </div>
-            }
+        <div class="zodiac-chart-container">
+            <canvas id="zodiacChart"></canvas>
         </div>
     </section>
 
@@ -176,42 +168,12 @@
             </div>
         </div>
     </section>
-
-    <!-- Neueste Charaktere -->
-    <section class="recent-characters">
-        <h2 class="section-title">
-            <span class="title-decoration left">⚔️</span>
-            Jüngst Registrierte
-            <span class="title-decoration right">🛡️</span>
-        </h2>
-
-        <div class="character-scrolls">
-            @foreach (var character in Model.recentCharacters.Take(6))
-            {
-                    <div class="character-scroll" data-tilt>
-                        <div class="scroll-header">
-                            <div class="character-seal">@character.Vorname.FirstOrDefault()</div>
-                        </div>
-                        <div class="scroll-body">
-                            <h4>@character.Vorname @character.Nachname</h4>
-                            <p><strong>Geschlecht:</strong> @character.Geschlecht</p>
-                            <p><strong>Gilde:</strong>Gilde</p>
-                            <p><strong>Religion:</strong>Religion</p>
-
-                            @if (character.CharacterMagicClasses.Any())
-                            {
-                                    <div class="character-magic">
-                                        <small>Magie: @string.Join(", ", character.CharacterMagicClasses.Take(2).Select(cmc => cmc.MagicClass?.Bezeichnung))</small>
-                                    </div>
-                            }
-                        </div>
-                    </div>
-            }
-        </div>
-    </section>
 </div>
 
 @section Scripts {
+    <!-- NEU: Chart.js Bibliothek einbinden -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // Animierte Zahlen für Statistiken
@@ -270,5 +232,211 @@
                     decoration.style.animationDelay = `${index * 0.5}s`;
                 });
             });
+
+        // Sternzeichen-Daten
+        const zodiacDataFromServer = @Html.Raw(Json.Serialize(Model.ZodiacStats));
+
+        const zodiacSigns = [
+            {
+                name: 'Widder',
+                symbol: '♈',
+                element: 'Feuer',
+                info: 'bisher nicht aktiviert',
+                characters: zodiacDataFromServer['Widder'] || []
+            },
+            {
+                name: 'Stier',
+                symbol: '♉',
+                element: 'Erde',
+                info: 'Effekt: Stände sind egal',
+                characters: zodiacDataFromServer['Stier'] || []
+            },
+            {
+                name: 'Zwillinge',
+                symbol: '♊',
+                element: 'Luft',
+                info: 'Effekt: keine Lügen',
+                characters: zodiacDataFromServer['Zwillinge'] || []
+            },
+            {
+                name: 'Krebs',
+                symbol: '♋',
+                element: 'Wasser',
+                info: 'Effekt: doppelter Sozialwert',
+                characters: zodiacDataFromServer['Krebs'] || []
+            },
+            {
+                name: 'Löwe',
+                symbol: '♌',
+                element: 'Feuer',
+                info: 'Effekt: Nachteil bei Beeinflussung',
+                characters: zodiacDataFromServer['Löwe'] || []
+            },
+            {
+                name: 'Jungfrau',
+                symbol: '♍',
+                element: 'Erde',
+                info: 'Effekt: Kritwerte halbiert',
+                characters: zodiacDataFromServer['Jungfrau'] || []
+            },
+            {
+                name: 'Waage',
+                symbol: '♎',
+                element: 'Luft',
+                info: 'Effekt: keine Handelsfähigkeiten',
+                characters: zodiacDataFromServer['Waage'] || []
+            },
+            {
+                name: 'Skorpion',
+                symbol: '♏',
+                element: 'Wasser',
+                info: 'Effekt: keine Menschenkenntnistalente',
+                characters: zodiacDataFromServer['Skorpion'] || []
+            },
+            {
+                name: 'Schütze',
+                symbol: '♐',
+                element: 'Feuer',
+                info: 'bisher nicht aktiviert',
+                characters: zodiacDataFromServer['Schütze'] || []
+            },
+            {
+                name: 'Steinbock',
+                symbol: '♑',
+                element: 'Erde',
+                info: 'Effekt: Wissenstalente im Vorteil',
+                characters: zodiacDataFromServer['Steinbock'] || []
+            },
+            {
+                name: 'Wassermann',
+                symbol: '♒',
+                element: 'Luft',
+                info: 'Effekt: einen zusätzlichen Geistesblitzpunkt in Soziales',
+                characters: zodiacDataFromServer['Wassermann'] || []
+            },
+            {
+                name: 'Fische',
+                symbol: '♓',
+                element: 'Wasser',
+                info: 'bisher nicht aktiviert',
+                characters: zodiacDataFromServer['Fische'] || []
+            }
+        ];
+
+        const elementColors = {
+            'Feuer': '#8B0000',      // Dunkles Burgunderrot (wie Drachenblut-Pigment)
+            'Erde': '#6B4423',       // Reiches Erdbraun (wie Umbra)
+            'Luft': '#5F7A8A',       // Schieferblau (wie verblasstes Azurit)
+            'Wasser': '#1B4D6D'      // Tiefes Marineblau (wie Indigo)
+        };
+        
+        // NEU: Plugin zum Zeichnen der Symbole IN den Tortenstücken
+        const zodiacSymbolPlugin = {
+            id: 'zodiacSymbols',
+            afterDatasetsDraw(chart) {
+                const { ctx, chartArea: { width, height } } = chart;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    
+                    meta.data.forEach((arc, index) => {
+                        // Berechne die Mitte des Tortenstücks
+                        const angle = (arc.startAngle + arc.endAngle) / 2;
+                        const radius = (arc.innerRadius + arc.outerRadius) / 2;
+                        
+                        // Position für das Symbol
+                        const x = centerX + Math.cos(angle) * (radius+50);
+                        const y = centerY + Math.sin(angle) * (radius+50);
+
+                        // Symbol zeichnen
+                        ctx.save();
+                        ctx.font = 'bold 32px "Segoe UI Symbol", "DejaVu Sans", Arial';
+                        ctx.fillStyle = '#ffffff';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        // Schatten für bessere Lesbarkeit
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';  // Dunklerer Schatten
+                        ctx.shadowBlur = 6;
+                        ctx.shadowOffsetX = 2;
+                        ctx.shadowOffsetY = 2;
+
+                        // WICHTIG: Zweimal zeichnen für solidere Farbe
+                        ctx.fillText(zodiacSigns[index].symbol, x, y);
+                        ctx.shadowColor = 'transparent';  // Schatten ausschalten
+                        ctx.fillText(zodiacSigns[index].symbol, x, y);  // Nochmal ohne Schatten
+                        ctx.restore();
+                    });
+                });
+            }
+        };
+        
+        // Tortendiagramm erstellen
+        const ctx = document.getElementById('zodiacChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: zodiacSigns.map(z => z.name), // Namen statt Symbole für Legende
+                datasets: [{
+                    data: Array(12).fill(1), // Alle gleich groß
+                    backgroundColor: zodiacSigns.map(z => elementColors[z.element]),
+                    borderWidth: 3,
+                    borderColor: '#fff',
+                    hoverBorderWidth: 5,
+                    hoverBorderColor: '#6e4b1f'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                         display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(110, 75, 31, 0.95)',
+                        titleFont: { size: 18, family: 'Cinzel' },
+                        bodyFont: { size: 14, family: 'MedievalSharp' },
+                        padding: 15,
+                        borderColor: '#d4af37',
+                        borderWidth: 2,
+                        callbacks: {
+                            title: function(context) {
+                                const index = context[0].dataIndex;
+                                const sign = zodiacSigns[index];
+                                return `${sign.symbol} ${sign.name}`;
+                            },
+                            label: function(context) {
+                                return '';
+                            },
+                            afterLabel: function(context) {
+                                const index = context.dataIndex;
+                                const sign = zodiacSigns[index];
+                                
+                                let lines = [
+                                    `Element: ${sign.element}`,
+                                    '',
+                                    sign.info
+                                ];
+                                
+                                // Später: Charaktere aus Datenbank
+                                if (sign.characters.length > 0) {
+                                    lines.push('');
+                                    lines.push('Charaktere:');
+                                    sign.characters.forEach(char => {
+                                        lines.push(`• ${char}`);
+                                    });
+                                }
+                                
+                                return lines;
+                            }
+                        }
+                    }
+                }
+            },
+            plugins: [zodiacSymbolPlugin] // NEU: Plugin registrieren
+        });
         </script>
 }

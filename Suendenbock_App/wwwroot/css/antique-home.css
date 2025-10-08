@@ -907,3 +907,18 @@ body {
         padding: 2rem;
     }
 }
+
+/* NEU: Zodiac Chart Sektion */
+.zodiac-section {
+    margin: 4rem auto;
+    max-width: 700px;
+    padding: 2rem;
+}
+
+.zodiac-chart-container {
+    background: linear-gradient(135deg, #f5f5dc 0%, #fff8dc 100%);
+    border: 3px solid #6e4b1f;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(110, 75, 31, 0.3);
+}

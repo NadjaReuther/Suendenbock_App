@@ -284,6 +284,7 @@
                                 }
                             }
                         </select>
+                        <input type="hidden" id="selectedObermagie1-hidden" name="selectedObermagien" value="" />                        
                     </div>
                     <div class="col-md-4">
                         <label>Magieklasse 1</label>
@@ -327,6 +328,7 @@
                                 }
                             }
                         </select>
+                        <input type="hidden" id="selectedObermagie2-hidden" name="selectedObermagien" value="" />
                     </div>
                     <div class="col-md-4">
                         <label>Magieklasse 2</label>
@@ -714,6 +716,8 @@
                     const magicClassSelect = $(`#magicclass${target}`);
                     const specContainer = $(`#spec-container-${target}`);
 
+                    // ✨ NEU: Hidden Input aktualisieren
+                    $(`#selectedObermagie${target}-hidden`).val(obermagieId || '');
                     // MagicClass-Dropdown zurücksetzen
                     magicClassSelect.empty();
                     magicClassSelect.append('<option value="">Bitte wählen...</option>');

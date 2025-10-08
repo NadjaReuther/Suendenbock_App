@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Helpers;
 using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Models.ViewModels;
 
@@ -26,11 +27,6 @@ namespace Suendenbock_App.Controllers
                 .ToList();
             var allGuilds = _context.Guilds.ToList();
             var allInfanteries = _context.Infanterien.ToList();
-            // die 6 neuesten Charaktere
-            var recentCharacters = _context.Characters
-                .OrderByDescending(c => c.Id)
-                .Take(6)
-                .ToList();
             // alle Charakter
             var Characters = _context.Characters.ToList();
             var Monstertypen = _context.MonsterTypes.ToList();
@@ -58,17 +54,28 @@ namespace Suendenbock_App.Controllers
                 .GroupBy(c => c.Geschlecht)
                 .ToDictionary(g => g.Key, g => g.Count());
 
+            // Sternzeichen-Statistik
+            var zodiacGroups = Characters
+                .Where(c => !string.IsNullOrEmpty(c.Geburtsdatum))
+                .GroupBy(c => ZodiacHelper.GetZodiacElement(c.Geburtsdatum))
+                .Where(g => g.Key != null)
+                .ToDictionary(
+                    g => g.Key!, 
+                    g => g.Select(c => $"{c.Vorname} {c.Nachname}"
+                )
+                .ToList());
+
             // Erstelle das ViewModel
             var viewModel = new HomeViewModel
             {
-                MagicClassStats = magicClassStats,
-                recentCharacters = recentCharacters,
+                MagicClassStats = magicClassStats,               
                 Characters = Characters,
                 MagicClasses = allMagicClasses,
                 Guilds = allGuilds,
                 Infanteries = allInfanteries,
                 GenderStats = genderStats,
-                Monstertyps = Monstertypen
+                Monstertyps = Monstertypen,
+                ZodiacStats = zodiacGroups
             };      
             return View(viewModel);
         }
