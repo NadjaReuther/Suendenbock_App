@@ -97,6 +97,29 @@ namespace Suendenbock_App.Controllers
             return View(monstertyp);
         }
 
+        // Übersicht Infanterien
+        // / GET: /Home/InfanterieOverview
+        public IActionResult InfanterieOverview()
+        {
+            var infanterien = _context.Infanterien
+                .Include(r => r.Regiments)
+                .OrderBy(i => i.Id)
+                .ToList();
+            return View(infanterien);
+        }
+
+        // Übersicht Gilden
+        // / GET: /Home/GuildOverview
+        public IActionResult GuildOverview()
+        {
+            var guilds = _context.Guilds
+                .Include(g => g.LeaderCharacter)
+                .Include(g => g.VertreterCharacter)
+                .OrderBy(g => g.Name)
+                .ToList();
+            return View(guilds);
+        }
+
         //Einbau Familienstammbaum
         public IActionResult FamilyTree(int characterId = 0)
         {
