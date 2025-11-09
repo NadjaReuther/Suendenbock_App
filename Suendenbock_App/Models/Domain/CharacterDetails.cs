@@ -1,19 +1,31 @@
-﻿namespace Suendenbock_App.Models.Domain
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Suendenbock_App.Models.Domain
 {
     public class CharacterDetails
     {
         public int Id { get; set; }
         public int CharacterId { get; set; } // Foreign key to Character
+        [Display(Name = "Zitat")]
         public string? quote { get; set; }
+        [Display(Name = "Urheber des Zitats")]
         public string? urheber { get; set; }
+        [Display(Name = "Beschreibung")]
         public string? Description { get; set; }
+        [Display(Name = "Beruf")]
+        [StringLength(200)]
         public string? Beruf { get; set; }
         //Körperliche Eigenschaften
-        public int? BodyHeight { get; set; } 
+        [Display(Name = "Körpergröße (cm)")]
+        public int? BodyHeight { get; set; }
         //Herkunft und Status (alles optional)        
+        [Display(Name = "Stand")]
         public int? StandId { get; set; }
+        [Display(Name = "Blutgruppe")]
         public int? BlutgruppeId { get; set; }
+        [Display(Name = "Haus")]
         public int? HausId { get; set; }
+        [Display(Name = "Herkunftsland")]
         public int? HerkunftslandId { get; set; }
         //Navigation Properties
         public virtual Character? Character { get; set; } = null!; // Navigation property for Character

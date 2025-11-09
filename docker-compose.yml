@@ -4,3 +4,5 @@ services:
     build:
       context: .
       dockerfile: Suendenbock_App/Dockerfile
+    volumes:                                     
+      - ./uploads:/app/wwwroot/images            

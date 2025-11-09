@@ -1,0 +1,132 @@
+﻿/* Container für den ganzen Kalender */
+.advent-container {
+    position: relative;
+    min-height: 100vh;
+}
+.advent-container::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 100vh;
+    background-image: url("../images/spieler/Weihnachten/Background.svg");
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+}
+.advent-title {
+    text-align: center;
+    padding-top: 2rem;
+    margin-bottom: 2rem;
+}
+/*
+    Schrift der Anleitung
+*/
+.font-weihnachten {
+    font-family: Mistake;
+    font-size: 1.5rem;
+    color: #FFBD59;
+}
+/* Das Gitter mit allen Türchen */
+.advent-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    padding: 20px;
+}
+/* Jedes einzelne Türchen */
+.advent-door {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* Macht quadratische Türchen */
+    cursor: pointer;
+    perspective: 1000px; /* Wichtig für 3D-Effekt! */
+}
+
+/* Vorderseite des Türchens */
+.door-front {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+    transition: transform 0.8s ease;
+    backface-visibility: hidden;
+    overflow: hidden;
+}
+
+/* Rückseite des Türchens */
+.door-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #f9f6f0, #e8dcc0);
+    border: 3px solid #d4af37;
+    border-radius: 8px;
+    transform: rotateY(180deg);
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Wenn das Türchen geöffnet wird */
+.advent-door.opened .door-front {
+    transform: rotateY(-180deg); /* Dreht die Vorderseite weg */
+}
+
+.advent-door.opened .door-back {
+    transform: rotateY(0deg); /* Dreht die Rückseite nach vorne */
+}
+
+/* Hover-Effekt bevor man klickt */
+.advent-door:not(.opened):hover .door-front {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+}
+.door-lock {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    z-index: 10;
+    background: rgba(0,0,0,0.7);
+    padding: 1rem;
+    border-radius: 50%;
+}
+
+.door-lock.shaking {
+    animation: shake 0.5s ease-in-out infinite;
+}
+
+/* Schüttel-Animation für das Schloss */
+@keyframes shake {
+    0%, 100% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(-50%, -50%) rotate(-10deg);
+    }
+
+    75% {
+        transform: translate(-50%, -50%) rotate(10deg);
+    }
+}
+/*
+    Fonts
+*/
+@font-face {
+    font-family: 'Mistake';
+    src: url('fonts/Mistake Note.otf') format('opentype'); 
+    font-weight: normal;
+    font-style: normal;
+}

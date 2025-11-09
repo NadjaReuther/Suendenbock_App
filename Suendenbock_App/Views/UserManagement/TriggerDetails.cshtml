@@ -1,0 +1,169 @@
+﻿@model ApplicationUser
+@{
+    ViewData["Title"] = "Triggerpunkt Details";
+    var categories = ViewBag.Categories as List<TriggerCategory>;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Triggerpunkte: @Model.Email</h1>
+        <a asp-action="TriggerOverview" class="btn btn-secondary">← Zurück zur Übersicht</a>
+    </div>
+
+    <!-- ============================= -->
+    <!-- PERSÖNLICHE DATEN -->
+    <!-- ============================= -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Persönliche Daten</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>📧 Email:</strong> @Model.Email
+                </div>
+                <div class="col-md-6">
+                    <strong>🎂 Geburtstag:</strong>
+                    @if (Model.Birthday.HasValue)
+                    {
+                        <span>@Model.Birthday.Value.ToString("dd.MM.yyyy")</span>
+
+                        var today = DateTime.Today;
+                        var nextBirthday = new DateTime(today.Year, Model.Birthday.Value.Month, Model.Birthday.Value.Day);
+                        if (nextBirthday < today)
+                        {
+                            nextBirthday = nextBirthday.AddYears(1);
+                        }
+                        var daysUntil = (nextBirthday - today).Days;
+
+                        @if (daysUntil == 0)
+                        {
+                            <span class="badge bg-warning text-dark ms-2">🎉 Heute Geburtstag!</span>
+                        }
+                        else if (daysUntil <= 7)
+                        {
+                            <span class="badge bg-info ms-2">In @daysUntil Tagen</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="text-muted">Nicht angegeben</span>
+                    }
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.CustomTrigger))
+            {
+                <div class="alert alert-danger mt-3" role="alert">
+                    <strong>⚠️ Persönlicher Trigger:</strong><br>
+                    @Model.CustomTrigger
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- TRIGGERPUNKTE PRO KATEGORIE -->
+    <!-- ============================= -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Triggerpunkt-Einstellungen</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <strong>Legende:</strong><br>
+                <span class="badge bg-success">✓ Ist Okay</span>
+                <span class="badge bg-warning text-dark">⚠ Vorsichtig</span>
+                <span class="badge bg-danger">🛑 Stop!</span>
+                <span class="badge bg-secondary">— Nicht gewählt</span>
+            </div>
+
+            @if (categories != null)
+            {
+                @foreach (var category in categories)
+                {
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2">@category.Name</h5>
+
+                        <table class="table table-sm">
+                            <tbody>
+                                @foreach (var topic in category.Topics.OrderBy(t => t.SortOrder))
+                                {
+                                    var preference = Model.TriggerPreferences
+                                    .FirstOrDefault(p => p.TopicId == topic.Id);
+
+                                    <tr>
+                                        <td style="width: 70%">@topic.Name</td>
+                                        <td style="width: 30%" class="text-end">
+                                            @if (preference?.Preference == null)
+                                            {
+                                                <span class="badge bg-secondary">— Nicht gewählt</span>
+                                            }
+                                            else if (preference.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Okay)
+                                            {
+                                                <span class="badge bg-success">✓ Ist Okay</span>
+                                            }
+                                            else if (preference.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Vorsichtig)
+                                            {
+                                                <span class="badge bg-warning text-dark">⚠ Vorsichtig</span>
+                                            }
+                                            else if (preference.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Stop)
+                                            {
+                                                <span class="badge bg-danger">🛑 Stop!</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    <!-- ============================= -->
+    <!-- STATISTIK -->
+    <!-- ============================= -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Statistik</h5>
+        </div>
+        <div class="card-body">
+            @{
+                var totalCount = categories?.Sum(c => c.Topics.Count) ?? 0;
+                var filledCount = Model.TriggerPreferences.Count(p => p.Preference != null);
+                var stopCount = Model.TriggerPreferences.Count(p => p.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Stop);
+                var vorsichtigCount = Model.TriggerPreferences.Count(p => p.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Vorsichtig);
+                var okayCount = Model.TriggerPreferences.Count(p => p.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Okay);
+            }
+
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="border rounded p-3">
+                        <h3>@filledCount / @totalCount</h3>
+                        <small class="text-muted">Ausgefüllt</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 bg-danger bg-opacity-10">
+                        <h3 class="text-danger">@stopCount</h3>
+                        <small class="text-muted">🛑 Stop!</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 bg-warning bg-opacity-10">
+                        <h3 class="text-warning">@vorsichtigCount</h3>
+                        <small class="text-muted">⚠ Vorsichtig</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="border rounded p-3 bg-success bg-opacity-10">
+                        <h3 class="text-success">@okayCount</h3>
+                        <small class="text-muted">✓ Ist Okay</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

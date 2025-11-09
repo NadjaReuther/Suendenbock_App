@@ -1,0 +1,63 @@
+﻿@{
+    // Liste mit Zahlen 1-24 erstellen
+    var days = Enumerable.Range(1, 24).ToList();
+
+    // Durcheinander würfeln
+    Random rnd = new Random();
+    days = days.OrderBy(x => rnd.Next()).ToList();
+}
+<!-- Die Kalender-Container -->
+<div class="advent-container">
+    <h1 class="advent-title"><img width="70%"; src="~/images/spieler/Weihnachten/LOGO.svg" /></h1>
+
+    <div class="advent-grid">
+        <!-- Türchen 1 bis 24 -->
+        @foreach (var day in days)
+        {
+            <div class="advent-door" data-day="@day">
+                <div class="door-front" style="background-image: url('/images/spieler/Weihnachten/Kalenderzahlen/@(day).svg');">
+                    <!-- NEU: Vorhängeschloss wenn Tag noch nicht erreicht -->
+                    <div class="door-lock" style="display: none;">
+                        🔒
+                    </div>
+                </div>
+
+                <div class="door-back">
+                    <!-- Hier kommt der Inhalt rein -->
+                    <div class="door-content">
+                        🎄
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <a asp-controller="Player" asp-action="Weihnachtenuebersicht">
+        <div class="advent-title"><img width="50%" src="~/images/spieler/Weihnachten/zurueck.svg" alt="zurueck" /></div>
+    </a>
+</div>
+<!-- Bootstrap Modal für Nachrichten -->
+<div class="modal fade" id="adventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background: linear-gradient(145deg, #f9f6f0, #e8dcc0); border: 3px solid #d4af37;">
+
+            <div class="modal-header" style="border-bottom: 2px solid #d4af37;">
+                <h5 class="modal-title" id="adventModalTitle" style="font-family: 'Cinzel', serif; color: #5d4e37;">
+                    <!-- Titel wird dynamisch gefüllt -->
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body text-center" id="adventModalBody" style="font-family: 'MedievalSharp', cursive; color: #5d4e37;">
+                <!-- Inhalt wird dynamisch gefüllt -->
+            </div>
+
+            <div class="modal-footer" style="border-top: 2px solid #d4af37;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        style="background: linear-gradient(145deg, #8b7355, #6e5b3f); border: none;">
+                    Schließen
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,258 @@
+﻿@model List<ApplicationUser>
+@{
+    ViewData["Title"] = "Triggerpunkte Übersicht";
+    var totalTopicsCount = ViewBag.TotalTopicsCount as int? ?? 0;
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas fa-shield-alt"></i> Triggerpunkte-Verwaltung</h1>
+            <p class="text-muted mb-0">Übersicht aller Spieler und ihrer sensiblen Themen</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Zurück zur User-Verwaltung
+            </a>
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> Es gibt noch keine Spieler mit Triggerpunkt-Einstellungen.
+        </div>
+    }
+    else
+    {
+        <!-- Statistik-Karten -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <h2 class="text-primary mb-0">@Model.Count</h2>
+                        <small class="text-muted">Spieler gesamt</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        @{
+                            var vollstaendig = Model.Count(u => u.TriggerPreferences.Count(p => p.Preference != null) == totalTopicsCount);
+                        }
+                        <h2 class="text-success mb-0">@vollstaendig</h2>
+                        <small class="text-muted">Vollständig ausgefüllt</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        @{
+                            var mitGeburtstag = Model.Count(u => u.Birthday.HasValue);
+                        }
+                        <h2 class="text-warning mb-0">@mitGeburtstag</h2>
+                        <small class="text-muted">Mit Geburtstag</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-danger">
+                    <div class="card-body text-center">
+                        @{
+                            var mitCustomTrigger = Model.Count(u => !string.IsNullOrEmpty(u.CustomTrigger));
+                        }
+                        <h2 class="text-danger mb-0">@mitCustomTrigger</h2>
+                        <small class="text-muted">Mit persönlichem Trigger</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spieler-Tabelle -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-users"></i> Spieler-Übersicht</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="triggerTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 25%">Spieler</th>
+                                <th style="width: 15%" class="text-center">Geburtstag</th>
+                                <th style="width: 20%" class="text-center">Fortschritt</th>
+                                <th style="width: 25%" class="text-center">Triggerpunkte</th>
+                                <th style="width: 15%" class="text-center">Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.OrderBy(u => u.Email))
+                            {
+                                var filledTopics = user.TriggerPreferences.Count(p => p.Preference != null);
+                                var progressPercent = totalTopicsCount > 0 ? (filledTopics * 100 / totalTopicsCount) : 0;
+                                var stopCount = user.TriggerPreferences.Count(p => p.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Stop);
+                                var vorsichtigCount = user.TriggerPreferences.Count(p => p.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Vorsichtig);
+                                var okayCount = user.TriggerPreferences.Count(p => p.Preference == Suendenbock_App.Models.Domain.TriggerPreferenceLevel.Okay);
+
+                                <tr>
+                                    <!-- Email -->
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white me-2">
+                                                @user.Email?.Substring(0, 1).ToUpper()
+                                            </div>
+                                            <div>
+                                                <strong>@user.Email</strong>
+                                                @if (!string.IsNullOrEmpty(user.CustomTrigger))
+                                                {
+                                                    <br>
+                                        
+                                                    <span class="badge bg-danger" title="@user.CustomTrigger">
+                                                        <i class="fas fa-exclamation-triangle"></i> Persönlicher Trigger
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Geburtstag -->
+                                    <td class="text-center">
+                                        @if (user.Birthday.HasValue)
+                                        {
+                                            var today = DateTime.Today;
+                                            var nextBirthday = new DateTime(today.Year, user.Birthday.Value.Month, user.Birthday.Value.Day);
+                                            if (nextBirthday < today)
+                                            {
+                                                nextBirthday = nextBirthday.AddYears(1);
+                                            }
+                                            var daysUntil = (nextBirthday - today).Days;
+
+                                            <div>
+                                                <i class="fas fa-birthday-cake text-warning"></i>
+                                                @user.Birthday.Value.ToString("dd.MM.yyyy")
+                                            </div>
+                                            @if (daysUntil == 0)
+                                            {
+                                                <span class="badge bg-warning text-dark mt-1">
+                                                    <i class="fas fa-gift"></i> HEUTE!
+                                                </span>
+                                            }
+                                            else if (daysUntil <= 7)
+                                            {
+                                                <small class="text-muted">in @daysUntil Tagen</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+
+                                    <!-- Fortschritt -->
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="progress flex-grow-1 me-2" style="height: 25px;">
+                                                <div class="progress-bar @(progressPercent == 100 ? "bg-success" : progressPercent >= 50 ? "bg-info" : "bg-warning")"
+                                                     role="progressbar"
+                                                     style="width: @progressPercent%"
+                                                     aria-valuenow="@progressPercent"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                    <strong>@progressPercent%</strong>
+                                                </div>
+                                            </div>
+                                            <small class="text-nowrap">@filledTopics/@totalTopicsCount</small>
+                                        </div>
+                                    </td>
+
+                                    <!-- Triggerpunkte Zusammenfassung -->
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                            @if (stopCount > 0)
+                                            {
+                                                <span class="badge bg-danger" style="min-width: 60px;">
+                                                    <i class="fas fa-ban"></i> @stopCount Stop
+                                                </span>
+                                            }
+                                            @if (vorsichtigCount > 0)
+                                            {
+                                                <span class="badge bg-warning text-dark" style="min-width: 80px;">
+                                                    <i class="fas fa-exclamation"></i> @vorsichtigCount Vorsichtig
+                                                </span>
+                                            }
+                                            @if (okayCount > 0)
+                                            {
+                                                <span class="badge bg-success" style="min-width: 60px;">
+                                                    <i class="fas fa-check"></i> @okayCount Okay
+                                                </span>
+                                            }
+                                            @if (stopCount == 0 && vorsichtigCount == 0 && okayCount == 0)
+                                            {
+                                                <span class="text-muted">Keine Auswahl</span>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <!-- Aktionen -->
+                                    <td class="text-center">
+                                        <a asp-action="TriggerDetails"
+                                           asp-route-id="@user.Id"
+                                           class="btn btn-sm btn-primary"
+                                           title="Details ansehen">
+                                            <i class="fas fa-eye"></i> Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+
+        .progress {
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            font-size: 12px;
+            line-height: 25px;
+        }
+
+        .badge {
+            font-size: 0.85em;
+            padding: 0.4em 0.6em;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Optional: Sortierbare Tabelle
+        $(document).ready(function() {
+            // Tooltip für Custom Trigger
+            $('[title]').tooltip();
+        });
+    </script>
+}

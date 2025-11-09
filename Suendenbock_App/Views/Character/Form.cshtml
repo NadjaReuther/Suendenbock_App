@@ -2,7 +2,6 @@
 @model Character
 @{
     ViewData["Title"] = Model != null && Model.Id > 0 ? "Charakter bearbeiten" : "Charakter erstellen";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 
     // Vereinfachte Step-Logik
     int currentStep = 1;
@@ -88,67 +87,58 @@
                                 📷 Bild wählen
                             </button>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="row mb-3">
-                            <input type="text" class="form-control" id="vorname" name="vorname"
-                                    value="@(Model != null ? Model.Vorname : "")" required placeholder="Vorname *">
-                        </div>
-                        <div class="row mb-3">
-                            <input type="text" class="form-control" id="nachname" name="nachname"
-                                   value="@(Model != null ? Model.Nachname : "")" required placeholder="Nachname *">
-                        </div>
-                        <div class="row mb-3">
-                            <input type="text" class="form-control" id="rufname" name="rufname"
-                               value="@(Model != null ? Model.Rufname : "")" required placeholder="Rufname *">
-                        </div>
-                        @if(User.IsInRole("Gott"))
+                        @if (User.IsInRole("Gott"))
                         {
                             <div class="form-group">
                                 <label for="userId">Spieler zuweisen (optional)</label>
-                                <select class="form-control" id="userId" name="userId">
+                                <select class="form-control" id="userId" asp-for="UserId">
                                     <option value="">-- kein Spieler (NPC) --</option>
-                                    @foreach(var player in ViewBag.Players)
+                                    @foreach (var player in ViewBag.Players)
                                     {
                                         <option value="@player.Id" selected="@(Model?.UserId == player.Id)">
                                             @player.Email
                                         </option>
                                     }
                                 </select>
-                                <small class="form-text text-muted">
-                                    Wähle einen Spieler aus, der diesen Character bearbeiten darf
-                                </small>
+                                <select class="form-control" id="userColor" name="userColor">
+                                    <option value="">-- kein Farbcode --</option>
+                                    @foreach (var color in ViewBag.Lightcards)
+                                    {
+                                        <option value="@color.Farbcode">@color.Farbcode</option>                                        
+                                    }
+                                </select>
                             </div>
                         }
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <input type="text" class="form-control" id="vorname" asp-for="Vorname" placeholder="Vorname *" required>
+                        </div>
+                        <div class="row mb-3">
+                            <input type="text" class="form-control" id="nachname" asp-for="Nachname" placeholder="Nachname *" required>
+                        </div>
+                        <div class="row mb-3">
+                            <input type="text" class="form-control" id="rufname" asp-for="Rufname" placeholder="Rufname *">
+                        </div>
+                        <label for="partnerId" class="form-label">Ehepartner</label>
+                        <select class="form-select character-select" id="partnerId" name="partnerId">
+                            @if (Model?.Partner != null)
+                            {
+                                <option value="@Model.Partner.Id" selected>@Model.Partner.Vorname @Model.Partner.Nachname</option>
+                            }
+                        </select>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="geschlecht" class="form-label">Geschlecht *</label>
-                        <select class="form-select" id="geschlecht" name="geschlecht" required>
+                        <label asp-for="Geschlecht" class="form-label"></label>
+                        <select class="form-select" asp-for="Geschlecht" asp-items="ViewBag.Geschlechter" required>
                             <option value="">Geschlecht auswählen...</option>
-                            @if (Model != null && Model.Geschlecht == "männlich")
-                            {
-                                <option value="männlich" selected>männlich</option>
-                            }
-                            else
-                            {
-                                <option value="männlich">männlich</option>
-                            }
-
-                            @if (Model != null && Model.Geschlecht == "weiblich")
-                            {
-                                <option value="weiblich" selected>weiblich</option>
-                            }
-                            else
-                            {
-                                <option value="weiblich">weiblich</option>
-                            }
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="geburtsdatum" class="form-label">Geburtsdatum</label>
-                        <input type="date" class="form-control" id="geburtsdatum" name="geburtsdatum" value="@(Model?.Geburtsdatum ?? "")" min="100-01-01" max="1619-12-31" />
+                        <label asp-for="Geburtsdatum" class="form-label"></label>
+                        <input asp-for="Geburtsdatum" type="date" class="form-control" min="100-01-01" max="1619-12-31" />
                     </div>
                 </div>
                 <div class="row">
@@ -173,63 +163,21 @@
                 </div>
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <label for="rasseId" class="form-label">Rasse *</label>
-                        <select class="form-select" id="rasseId" name="rasseId" required>
+                        <label asp-for="RasseId" class="form-label"></label>
+                        <select class="form-select" asp-for="RasseId" asp-items="ViewBag.Rassen" required>
                             <option value="">Rasse auswählen...</option>
-                            @if(ViewBag.Rassen != null)
-                            {
-                                foreach (var rasse in ViewBag.Rassen)
-                                {
-                                    if(Model?.Rasse?.Name == rasse.Name)
-                                    {
-                                        <option value="@rasse.Id" selected>@rasse.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@rasse.Id">@rasse.Name</option>
-                                    }
-                                }
-                            }
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="lebensstatusId" class="form-label">Lebensstatus *</label>
-                        <select class="form-select" id="lebensstatusId" name="lebensstatusId" required>
-                            <option value="">Lebensstatus auswählen...</option>
-                            @if (ViewBag.Lebensstatus != null)
-                            {
-                                foreach(var status in ViewBag.Lebensstatus)
-                                {
-                                    if(Model?.Lebensstatus?.Name == status.Name)
-                                    {
-                                        <option value="@status.Id" selected>@status.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@status.Id">@status.Name</option>
-                                    }
-                                }
-                            }
+                        <label asp-for="LebensstatusId" class="form-label"></label>
+                        <select class="form-select" asp-for="LebensstatusId" asp-items="ViewBag.Lebensstatus" required>
+                            <option value="">Lebensstatus auswählen...</option>                            
                         </select>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <label for="eindruckId" class="form-label">Eindruck *</label>
-                        <select class="form-select" id="eindruckId" name="eindruckId" required>
-                            <option value="">Eindruck auswählen...</option>
-                            @if (ViewBag.Eindruecke != null)
-                            {
-                                foreach(var eindruck in ViewBag.Eindruecke)
-                                {
-                                    if(Model?.Eindruck?.Name == eindruck.Name)
-                                    {
-                                        <option value="@eindruck.Id" selected>@eindruck.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@eindruck.Id">@eindruck.Name</option>
-                                    }
-                                }
-                            }
+                        <label asp-for="EindruckId" class="form-label"></label>
+                        <select class="form-select" asp-for="EindruckId" asp-items="ViewBag.Eindruecke" required>
+                            <option value="">Eindruck auswählen...</option>                            
                         </select>
                     </div>
                 </div>              
@@ -241,8 +189,6 @@
                         <div class="mb-3">
                             <label class="form-label">Magie-Status</label>
                             <div class="card p-3">
-                               
-
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input magic-status-checkbox"
                                            type="checkbox"
@@ -284,7 +230,7 @@
                                 }
                             }
                         </select>
-                        <input type="hidden" id="selectedObermagie1-hidden" name="selectedObermagien" value="" />                        
+                        <input type="hidden" id="selectedObermagie1-hidden" name="selectedObermagien" value="@(ViewBag.SelectedObermagie1 ?? "")" />                        
                     </div>
                     <div class="col-md-4">
                         <label>Magieklasse 1</label>
@@ -328,7 +274,7 @@
                                 }
                             }
                         </select>
-                        <input type="hidden" id="selectedObermagie2-hidden" name="selectedObermagien" value="" />
+                        <input type="hidden" id="selectedObermagie2-hidden" name="selectedObermagien" value="@(ViewBag.SelectedObermagie2 ?? "")" />
                     </div>
                     <div class="col-md-4">
                         <label>Magieklasse 2</label>
@@ -350,7 +296,7 @@
                             <option value="">Keine</option>
                         </select>
                     </div>
-                </div>                
+                </div>
                 <div class="text-center">
                     <button type="submit" class="btn-wachs">Gebilligt</button>
                 </div>
@@ -368,105 +314,46 @@
                         
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="standId" class="form-label">Stand</label>
-                            <select class="form-select" id="standId" name="standId">
+                            <label for="StandId" class="form-label">Stand</label>
+                            <select class="form-select" asp-for="Details.StandId" asp-items="ViewBag.Staende">
                                 <option value="">Stand auswählen...</option>
-                                @if (ViewBag.Staende != null)
-                                {
-                                    foreach (var stand in ViewBag.Staende)
-                                    {
-                                        if (Model?.Details?.Stand == stand)
-                                        {
-                                            <option value="@stand.Id" selected>@stand.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@stand.Id">@stand.Name</option>
-                                        }
-                                    }
-                                }
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="beruf" class="form-label">Beruf</label>
-                            <input type="text" class="form-control" id="beruf" name="beruf"
-                                   value="@(Model?.Details?.Beruf ?? "")" />
+                            <label for="Beruf" class="form-label">Beruf</label>
+                            <input asp-for="Details.Beruf" type="text" class="form-control" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="hausId" class="form-label">Haus</label>
-                            <select class="form-select" id="hausId" name="hausId">
+                            <label for="HausId" class="form-label">Haus</label>
+                            <select class="form-select" asp-for="Details.HausId" asp-items="ViewBag.Haeuser">
                                 <option value="">Haus auswählen...</option>
-                                @if (ViewBag.Haeuser != null)
-                                {
-                                    foreach (var haus in ViewBag.Haeuser)
-                                    {
-                                        if (Model?.Details?.Haus?.Name == haus.Name)
-                                        {
-                                            <option value="@haus.Id" selected>@haus.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@haus.Id">@haus.Name</option>
-                                        }
-                                    }
-                                }
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="herkunftslandId" class="form-label">Herkunftsland</label>
-                            <select class="form-select" id="herkunftslandId" name="herkunftslandId">
+                            <label for="HerkunftslandId" class="form-label">Herkunftsland</label>
+                            <select class="form-select" asp-for="Details.HerkunftslandId" asp-items="ViewBag.Herkunftslaender">
                                 <option value="">Herkunftsland wählen...</option>
-                                @if (ViewBag.Herkunftslaender != null)
-                                {
-                                    foreach (var herkunftsland in ViewBag.Herkunftslaender)
-                                    {
-                                        if (Model?.Details?.Herkunftsland?.Name == herkunftsland.Name)
-                                        {
-                                            <option value="@herkunftsland.Id" selected>@herkunftsland.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@herkunftsland.Id">@herkunftsland.Name</option>
-                                        }
-                                    }
-                                }
                             </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6  mb-3">
-                            <label for="blutgruppeId" class="form-label">Blutgruppe</label>
-                            <select class="form-select" id="blutgruppeId" name="blutgruppeId">
+                            <label for="BlutgruppeId" class="form-label">Blutgruppe</label>
+                            <select class="form-select" asp-for="Details.BlutgruppeId" name="ViewBag.Blutgruppen">
                                 <option value="">Blutgruppe wählen...</option>
-                                @if(ViewBag.Blutgruppen != null)
-                                {
-                                    foreach(var blutgruppe in ViewBag.Blutgruppen)
-                                    {
-                                        if(Model?.Details?.Blutgruppe?.Name == blutgruppe.Name)
-                                        {
-                                            <option value="@blutgruppe.Id" selected>@blutgruppe.Name</option>
-                                        }                                        
-                                        else
-                                        {
-                                            <option value="@blutgruppe.Id">@blutgruppe.Name</option>
-                                        }
-                                    }                                    
-                                }                     
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="bodyHeight" class="form-label">Körpergröße (cm)</label>
-                            <input type="number" class="form-control" id="bodyHeight" name="bodyHeight" 
-                                    value="@(Model?.Details?.BodyHeight ?? 0)" placeholder="z.B. 175" min="50" max="600" />         
+                            <label for="Details.BodyHeight" class="form-label">Körpergröße (cm)</label>
+                            <input asp-for="Details.BodyHeight" type="number" class="form-control" placeholder="z.B. 175" min="50" max="600" />         
                         </div>
                     </div>
-
                     <div class="description-container">
                         <div id="editor-wrapper">
-                            <textarea class="form-control d-none" id="description" name="description" required>
+                            <textarea class="form-control d-none" id="description" name="description">
                                 @(Model?.Details?.Description ?? "")
                             </textarea>
                             <div id="wysiwyg-editor"></div>
@@ -500,85 +387,29 @@
                 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="guldId" class="form-label">Gilde</label>
-                            <select class="form-select" id="guildId" name="guildId">
+                            <label for="GuldId" class="form-label">Gilde</label>
+                            <select class="form-select" asp-for="Affiliation.GuildId" asp-items="ViewBag.Guilds">
                                 <option value="" disabled selected>Gilde auswählen...</option>
-                                @if (ViewBag.Guilds != null)
-                                {
-                                    foreach (var guild in ViewBag.Guilds)
-                                    {
-                                        if(Model?.Affiliation?.Guild?.Name == guild.Name)
-                                        {
-                                            <option value="@guild.Id" selected>@guild.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@guild.Id">@guild.Name</option>
-                                        }
-                                    }
-                                }
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="religionId" class="form-label">Religion</label>
-                            <select class="form-select" id="religionId" name="religionId">
+                            <label for="ReligionId" class="form-label">Religion</label>
+                            <select class="form-select" asp-for="Affiliation.ReligionId" asp-items="ViewBag.Religions">
                                 <option value="" disabled selected>Religion auswählen...</option>
-                                @if (ViewBag.Religions != null)
-                                {
-                                    foreach (var religion in ViewBag.Religions)
-                                    {
-                                        if(Model?.Affiliation?.Religion?.Type == religion.Type)
-                                        {
-                                            <option value="@religion.Id" selected>@religion.Type</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@religion.Id" selected>@religion.Type</option>  
-                                        }
-                                    }
-                                }
                             </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                        <label for="regimentsId" class="form-label">Regiment</label>
-                        <select class="form-select" id="regimentsId" name="RegimentId">
-                            <option value="">Regiment wählen...</option>
-                            @if(ViewBag.Regiment != null)
-                            {
-                                foreach(var regiment in ViewBag.Regiment)
-                                {
-                                    if(Model?.Affiliation?.Regiment?.Name == regiment.Name)
-                                    {
-                                        <option value="@regiment.Id" selected>@regiment.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@regiment.Id">@regiment.Name</option>
-                                    }
-                                }
-                            }                                                            
+                        <label for="RegimentsId" class="form-label">Regiment</label>
+                        <select class="form-select" asp-for="Affiliation.RegimentId" asp-items="ViewBag.Regiment">
+                            <option value="">Regiment wählen...</option>                 
                         </select>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="infanterierangId" class="form-label">Infanterierang</label>
-                        <select class="form-select" id="infanterierangId" name="infanterierangId">
+                        <label for="InfanterierangId" class="form-label">Infanterierang</label>
+                        <select class="form-select" asp-for="Affiliation.InfanterierangId" asp-items="ViewBag.Infanterieraenge">
                             <option value="">Infanterierang wählen...</option>
-                            @if(ViewBag.Infanterieraenge != null)
-                            {
-                                foreach(var infanterierang in ViewBag.Infanterieraenge)
-                                {
-                                    if(Model?.Affiliation?.Infanterierang?.Name == infanterierang.Name)
-                                    {
-                                        <option value="@infanterierang.Id" selected>@infanterierang.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@infanterierang.Id">@infanterierang.Name</option>
-                                    }
-                                }
-                            }                     
                         </select>
                     </div>
                 </div>
@@ -610,6 +441,7 @@
     <script src="~/js/imagePreview.js"></script>
     <script src="~/js/wysiwyg-editor.js"></script>
     <script src="~/js/entity-mentions.js"></script>
+    
     <script>
         // Bild-Upload Drag & Drop aktivieren
         enableImageDragDrop('#character-drop-zone', 'characterImageUpload');
@@ -630,6 +462,8 @@
             // ========================================
             // Eltern-Auswahl (Select2)
             // ========================================
+
+            // Vater - Auswahl (nur männliche Charaktere)
             $('.character-select-male').select2({
                 ajax: {
                     url: '/api/Character/dropdown',
@@ -657,7 +491,7 @@
                 placeholder: 'Vater suchen...',
                 allowClear: true
             });
-
+            // Mutter - Auswahl (nur weibliche Charaktere)
             $('.character-select-female').select2({
                 ajax: {
                     url: '/api/Character/dropdown',
@@ -685,7 +519,33 @@
                 placeholder: 'Mutter suchen...',
                 allowClear: true
             });
-
+            // Ehepartner - Auswahl (unabhängig vom Geschlecht)
+            $('.character-select').select2({
+                ajax: {
+                    url: '/api/Character/dropdown',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term,
+                            page: params.page || 1,
+                            excludeId: @(Model?.Id ?? 0)
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.results.map(item => ({
+                                id: item.id,
+                                text: item.fullName
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1,
+                placeholder: 'Ehepartner suchen...',
+                allowClear: true
+            });
             // ========================================
             // MAGIE-SYSTEM (nur Schritt 1)
             // ========================================
@@ -695,112 +555,83 @@
                 const allSpecializations = @Html.Raw(Json.Serialize(ViewBag.SpecializationsJson ?? new List<object>()));
                 const unbegabtId = 16;
 
-                // ========================================
-                // Profan/Beschränkt - gegenseitig ausschließend
-                // ========================================
+                // Profan/Beschränkt - Gegenseitiger Ausschluss
                 $('.magic-status-checkbox').on('change', function() {
                     if ($(this).is(':checked')) {
                         const excludeId = $(this).data('excludes');
                         $('#' + excludeId).prop('checked', false);
                         console.log('✅ ' + $(this).attr('id') + ' aktiviert, ' + excludeId + ' deaktiviert');
                     }
-
-                    // Specializations neu laden
                     $('.magicclass-select').trigger('change');
                 });
 
-                        // Obermagie-Auswahl
+                // Obermagie-Auswahl: Lädt passende MagicClasses
                 $('.obermagie-select').on('change', function() {
                     const obermagieId = $(this).val();
                     const target = $(this).data('target');
                     const magicClassSelect = $(`#magicclass${target}`);
                     const specContainer = $(`#spec-container-${target}`);
 
-                    // ✨ NEU: Hidden Input aktualisieren
+                    // Hidden Input aktualisieren
                     $(`#selectedObermagie${target}-hidden`).val(obermagieId || '');
-                    // MagicClass-Dropdown zurücksetzen
+                    
+                    // Dropdown zurücksetzen
                     magicClassSelect.empty();
                     magicClassSelect.append('<option value="">Bitte wählen...</option>');
                     specContainer.hide();
 
-                    // ✨ NEU: Wenn Unbegabt in Slot 1, dann zweite Magie ausblenden
+                    // Unbegabt in Slot 1: Zweite Magie ausblenden
                     if (target == 1 && obermagieId == unbegabtId) {
-                        // Zweite Magie-Reihe ausblenden
                         $('#obermagie2').closest('.row').hide();
-
-                        // Zweite Magie zurücksetzen
                         $('#obermagie2').val('');
                         $('#magicclass2').empty().append('<option value="">Erst Obermagie wählen</option>').prop('disabled', true);
                         $('#spec-container-2').hide();
-
-                        // Erste Magie deaktivieren
-                        magicClassSelect.prop('disabled', true);
-                        magicClassSelect.empty();
-                        magicClassSelect.append('<option value="">Keine Magieklassen</option>');
+                        magicClassSelect.prop('disabled', true).empty().append('<option value="">Keine Magieklassen</option>');
                         return;
                     }
 
-                    // ✨ NEU: Wenn Unbegabt NICHT gewählt, zweite Magie wieder einblenden
+                    // Unbegabt NICHT gewählt: zweite Magie einblenden
                     if (target == 1 && obermagieId != unbegabtId) {
                         $('#obermagie2').closest('.row').show();
                     }
 
-                    // Wenn "Unbegabt" in Slot 2 ausgewählt
+                    // Unbegabt in Slot 2: MagicClass deaktivieren
                     if (target == 2 && obermagieId == unbegabtId) {
-                        magicClassSelect.prop('disabled', true);
-                        magicClassSelect.empty();
-                        magicClassSelect.append('<option value="">Keine Magieklassen</option>');
+                        magicClassSelect.prop('disabled', true).empty().append('<option value="">Keine Magieklassen</option>');
                         return;
                     }
 
-                    // Wenn eine Obermagie gewählt wurde
+                    // Normale Obermagie: MagicClasses laden
                     if (obermagieId) {
-                        // Passende MagicClasses filtern
-                        const filteredClasses = allMagicClasses.filter(
-                            mc => mc.obermagieId == obermagieId
-                        );
-                        // Dropdown befüllen
+                        const filteredClasses = allMagicClasses.filter(mc => mc.obermagieId == obermagieId);                        
                         filteredClasses.forEach(mc => {
-                            magicClassSelect.append(
-                                `<option value="${mc.id}">${mc.bezeichnung}</option>`
-                            );
+                            magicClassSelect.append(`<option value="${mc.id}">${mc.bezeichnung}</option>`);
                         });
-
                         magicClassSelect.prop('disabled', false);
-                        console.log(`✅ ${filteredClasses.length} MagicClasses geladen`);
                     } else {
                         magicClassSelect.prop('disabled', true);
-                        console.log('⏸️ Keine Obermagie gewählt');
                     }
                 });
 
-                // ========================================
-                // MagicClass-Auswahl
-                // ========================================
+                // MagicClass-Auswahl: Lädt passende Spezialisierungen
                 $('.magicclass-select').on('change', function() {
                     const magicClassId = $(this).val();
                     const target = $(this).data('target');
                     const specContainer = $(`#spec-container-${target}`);
                     const specSelect = specContainer.find('select');
-                    // Reset
-                    specSelect.empty();
-                    specSelect.append('<option value="">Keine</option>');
+                
+                    // Spezialisierung zurücksetzen
+                    specSelect.empty().append('<option value="">Keine</option>');
                     specContainer.hide();
 
-                    // Prüfe ob Profan oder Beschränkt
+                    // Profan/Beschränkt: Keine Spezialisierungen
                     const isProfan = $('#profan').is(':checked');
                     const isBeschraenkt = $('#beschraenkt').is(':checked');
+                    if (isProfan || isBeschraenkt) return;
 
-                    if (isProfan || isBeschraenkt) {
-                        return;
-                    }
-
-                    // Wenn MagicClass gewählt
-                    if (magicClassId) {
-                        // Passende Specializations filtern
-                        const filteredSpecs = allSpecializations.filter(
-                            s => s.magicClassId == magicClassId
-                        );
+                    // Spezialisierungen laden und anzeigen
+                    if (magicClassId) {                        
+                        const filteredSpecs = allSpecializations.filter(s => s.magicClassId == magicClassId);
                         if (filteredSpecs.length > 0) {
                             filteredSpecs.forEach(spec => {
                                 specSelect.append(
@@ -811,19 +642,15 @@
                         }
                     }
                 });
-                // Slot 1 laden
+
+                // Vorauswahl laden: Slot 1
                 const preselectedObermagie1 = $('#obermagie1').val();
                 if (preselectedObermagie1) {
                     $('#obermagie1').trigger('change');
-
-                    // Warte kurz, dann MagicClass setzen
                     setTimeout(() => {
                         const preselectedMagicClass1 = $('#magicclass1').data('preselect');
                         if (preselectedMagicClass1 && preselectedMagicClass1 > 0) {
-                            $('#magicclass1').val(preselectedMagicClass1);
-                            $('#magicclass1').trigger('change');
-
-                            // Warte kurz, dann Specialization setzen
+                            $('#magicclass1').val(preselectedMagicClass1).trigger('change');
                             setTimeout(() => {
                                 const preselectedSpec1 = $('#spec-container-1 select').data('preselect');
                                 if (preselectedSpec1 && preselectedSpec1 > 0) {
@@ -834,17 +661,14 @@
                     }, 100);
                 }
 
-                // Slot 2 laden
+                // Vorauswahl laden: Slot 2
                 const preselectedObermagie2 = $('#obermagie2').val();
                 if (preselectedObermagie2) {
                     $('#obermagie2').trigger('change');
-
                     setTimeout(() => {
                         const preselectedMagicClass2 = $('#magicclass2').data('preselect');
                         if (preselectedMagicClass2 && preselectedMagicClass2 > 0) {
-                            $('#magicclass2').val(preselectedMagicClass2);
-                            $('#magicclass2').trigger('change');
-
+                            $('#magicclass2').val(preselectedMagicClass2).trigger('change');
                             setTimeout(() => {
                                 const preselectedSpec2 = $('#spec-container-2 select').data('preselect');
                                 if (preselectedSpec2 && preselectedSpec2 > 0) {
@@ -854,6 +678,26 @@
                         }
                     }, 100);
                 }
+                    
+                // Form Submit: Spezialisierung-Namen anpassen
+                // (Namen müssen MagicClassId statt Slot-Nummer enthalten)
+                $('form').on('submit', function(e) {
+                    const magicClass1 = $('#magicclass1').val();
+                    const spec1Select = $('#spec-container-1 select');
+                    const spec1Value = spec1Select.val();
+
+                    if (magicClass1 && spec1Value) {
+                        spec1Select.attr('name', `selectedSpecializations[${magicClass1}]`);
+                    }
+
+                    const magicClass2 = $('#magicclass2').val();
+                    const spec2Select = $('#spec-container-2 select');
+                    const spec2Value = spec2Select.val();
+
+                    if (magicClass2 && spec2Value) {
+                        spec2Select.attr('name', `selectedSpecializations[${magicClass2}]`);
+                    }
+                });
             }
         });
     </script>

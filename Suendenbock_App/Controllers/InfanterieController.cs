@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Services;
@@ -136,6 +137,29 @@ namespace Suendenbock_App.Controllers
             target.LightCardId = source.LightCardId;
             target.LeaderId = source.LeaderId;
             target.VertreterId = source.VertreterId;
+        }
+
+        public IActionResult InfanterieSheet(int id)
+        {
+            if (id == 0)
+            {
+                return NotFound();
+            }
+            var infanterie = _context.Infanterien
+            .Include(r => r.Regiments)
+                .ThenInclude(r => r.Regimentsleiter)
+            .Include(r => r.Regiments)
+                .ThenInclude(r => r.Adjutant)
+            .Include(r => r.LeaderCharacter)
+            .Include(r => r.VertreterCharacter)
+            .FirstOrDefault(c => c.Id == id);
+
+            if (infanterie == null)
+            {
+                return BadRequest();
+            }
+
+            return View(infanterie);
         }
     }
 }

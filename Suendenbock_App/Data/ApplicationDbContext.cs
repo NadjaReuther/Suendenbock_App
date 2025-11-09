@@ -4,11 +4,17 @@ using Suendenbock_App.Models.Domain;
 
 namespace Suendenbock_App.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         // ===============================
         // DBSETS - ALLE ENTITÄTEN
         // ===============================
+
+        // NEU: Trigger-System
+        public DbSet<TriggerCategory> TriggerCategories { get; set; }
+        public DbSet<TriggerTopic> TriggerTopics { get; set; }
+        public DbSet<UserTriggerPreference> UserTriggerPreferences { get; set; }
+
 
         // Kern-Entitäten
         public DbSet<Character> Characters { get; set; }
@@ -57,6 +63,10 @@ namespace Suendenbock_App.Data
         public DbSet<Monstertypimmunitaeten> Monstertypimmunitaeten { get; set; }
         public DbSet<Monstertypanfaelligkeiten> Monstertypanfaelligkeiten { get; set; }
         public DbSet<Monstertypvorkommen> Monstertypvorkommen { get; set; }
+
+        //Weihnachtsabenteuer
+        public DbSet<AdventDoor> AdventDoors { get; set; }
+        public DbSet<UserAdventChoice> userAdventChoices { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -422,6 +432,36 @@ namespace Suendenbock_App.Data
                 .WithMany(mv => mv.MonstertypenVorkommen)
                 .HasForeignKey(mtv => mtv.MonstervorkommenId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // ===============================
+            // TRIGGER-SYSTEM
+            // ===============================
+
+            // TriggerTopic -> TriggerCategory (CASCADE)
+            builder.Entity<TriggerTopic>()
+                .HasOne(tt => tt.Category)
+                .WithMany(tc => tc.Topics)
+                .HasForeignKey(tt => tt.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UserTriggerPreference -> ApplicationUser (CASCADE)
+            builder.Entity<UserTriggerPreference>()
+                .HasOne(utp => utp.User)
+                .WithMany(u => u.TriggerPreferences)
+                .HasForeignKey(utp => utp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UserTriggerPreference -> TriggerTopic (CASCADE)
+            builder.Entity<UserTriggerPreference>()
+                .HasOne(utp => utp.Topic)
+                .WithMany(tt => tt.UserPreferences)
+                .HasForeignKey(utp => utp.TopicId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique Constraint: Ein User kann pro Topic nur eine Präferenz haben
+            builder.Entity<UserTriggerPreference>()
+                .HasIndex(utp => new { utp.UserId, utp.TopicId })
+                .IsUnique();
         }
     }
 }

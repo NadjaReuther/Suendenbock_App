@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Meine Daten bearbeiten";
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Was möchtest du ändern?
+    </h3>
+</header>
+<div class="container mt-5">
+    
+    <div class="row justify-content-center">
+        <div class="d-grid gap-5 col-6">
+            <a asp-area="Identity" asp-page="/Account/Manage/ChangePassword" class="btn shadow-lg p-3 hover-card w-100">Password</a>
+            <a asp-action="Geburtstag" class="btn shadow-lg p-3 hover-card w-100">Geburtstag</a>
+            <a asp-action="Triggerpunkte" class="btn shadow-lg p-3 hover-card w-100">Triggerpunkte</a>
+        </div>     
+    </div>
+</div>

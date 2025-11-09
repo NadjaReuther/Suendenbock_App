@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Data.Seeders;
+using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Services;
 using System.Text;
 
@@ -17,7 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // integrates Authentication with roles (RequireConfirmedAccount = false, no Mail needed), Registration offline
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>() // Role Support
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -38,17 +39,17 @@ using(var scope = app.Services.CreateScope())
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     await RoleSeeder.SeedRolesAsync(roleManager);
 
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
     await CreateDefaultUser(userManager, "Gott", "gott@suendenbock.lore", "Adrijan1618!");
 }
 
-async Task CreateDefaultUser(UserManager<IdentityUser> userManager, string roleName, string userName, string password)
+async Task CreateDefaultUser(UserManager<ApplicationUser> userManager, string roleName, string userName, string password)
 {
     var user = await userManager.FindByNameAsync(userName);
     if (user == null)
     {
-        var newUser = new IdentityUser()
+        var newUser = new ApplicationUser()
         {
             UserName = userName,
             Email = userName
@@ -63,6 +64,13 @@ async Task CreateDefaultUser(UserManager<IdentityUser> userManager, string roleN
 }
 
 DatabaseSeeder.Seed(app.Services);
+
+// NEU: Trigger-System seeden
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    TriggerSeeder.Seed(context);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

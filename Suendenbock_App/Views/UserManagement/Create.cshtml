@@ -1,0 +1,31 @@
+﻿<div class="container mt-4">
+    <h2>Neuen Benutzer anlegen</h2>
+
+    <form method="post" asp-controller="UserManagement" asp-action="Create">
+        <div class="mb-3">
+            <label for="email" class="form-label">E-Mail-Adresse *</label>
+            <input type="email" class="form-control" id="email" name="email" required placeholder="rufname@suendenbock.lore" />
+        </div>
+        
+        <div class="mb-3">
+            <label for="role" class="form-label">Rolle *</label>
+            <select class="form-select" id="role" name="role" required>
+                <option value="">Bitte wählen...</option>
+                <option value="Spieler">Spieler</option>
+                <option value="Gott">Gott</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="initialPassword" class="form-label">initiales Passwort *</label>
+            <input type="password" class="form-control" id="initialPassword" name="initialPassword" required 
+            minlength="6" />
+            <small class="form-text text-muted">
+                Mindestens 6 Zeichen. Der Benutzer kann das Passwort später ändern.
+            </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Benutzer erstellen</button>
+        <a asp-action="Index" class="btn btn-secondary">Abbrechen</a>
+    </form>
+</div>

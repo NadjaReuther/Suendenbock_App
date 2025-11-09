@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Migrations;
 using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Services;
 using System.Threading.Tasks;
@@ -15,12 +17,12 @@ namespace Suendenbock_App.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageUploadService _imageUploadService;
         private readonly IWebHostEnvironment _environment;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         public CharacterController(
             ApplicationDbContext context, 
             IImageUploadService imageUploadService, 
             IWebHostEnvironment environment,
-            UserManager<IdentityUser> userManager)
+            UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _imageUploadService = imageUploadService;
@@ -89,7 +91,7 @@ namespace Suendenbock_App.Controllers
                 {
                     return NotFound();
                 }
-                if (!isGod && character.UserId == userId)
+                if (!isGod && character.UserId != userId)
                 {
                     TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten";
                     return RedirectToAction("Index", "Player");
@@ -120,22 +122,27 @@ namespace Suendenbock_App.Controllers
             var userId = _userManager?.GetUserId(User);
             var isGod = User.IsInRole("Gott");
 
+            // Validierung: Prüfe Pflichtfelder und Magie-Auswahl
+            if (!ValidateStep1(character, selectedMagicClasses, selectedObermagien))
+            {
+                LoadFormViewBagData();
+                SetSelectedMagicClassesViewBag(selectedMagicClasses, selectedSpecializations);
+                TempData["Error"] = "Bitte fülle alle Pflichtfelder aus und wähle 1-2 Magieklassen oder Unbegabt.";
+                return View("Form", character);
+            }
+
             try
             {
-                if(!ValidateStep1(character, selectedMagicClasses, selectedObermagien))
-                {                    
-                    LoadFormViewBagData();
-                    SetSelectedMagicClassesViewBag(selectedMagicClasses, selectedSpecializations);
-                    TempData["Error"] = "Bitte füllen Sie alle Pflichtfelder aus und wählen Sie 1-2 Magieklassen.";
-                    return View("Form", character);
-                }
                 if (character.Id == 0)
                 {
+                    // Neuen Charakter erstellen
                     if (!isGod)
                     {
                         TempData["Error"] = "Nur Gott darf neue Characters erstellen!";
                         return RedirectToAction("Index", "Player");
                     }
+
+                    // Bild hochladen (falls vorhanden)
                     if (characterImage != null && characterImage.Length > 0)
                     {
                         try
@@ -149,35 +156,40 @@ namespace Suendenbock_App.Controllers
                         }
                     }
                     character.CompletionLevel = CharacterCompleteness.BasicInfo;
-                    // ✨ NEU: Unbegabt-Status setzen
+                    
+                    // Unbegabt-Status setzen
                     const int unbegabtId = 16;
                     character.IsUnbegabt = selectedObermagien != null &&
-                                           selectedObermagien.Contains(unbegabtId);
+                                            selectedObermagien.Contains(unbegabtId);
                     _context.Characters.Add(character);
                     _context.SaveChanges();
-
                 }
                 else
                 {
+                    // Bestehenden Charakter aktualisieren
                     var existingCharacter = _context.Characters.Find(character.Id);
-                    
+
                     if (existingCharacter != null)
                     {
+                        // Berechtigungsprüfung
                         if (!isGod && existingCharacter?.UserId != userId)
                         {
                             TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten!";
                             return RedirectToAction("Index", "Player");
                         }
 
+                        // Neues Bild hochladen (falls vorhanden)
                         if (characterImage != null && characterImage.Length > 0)
                         {
                             try
                             {
+                                // Altes Bild löschen
                                 if (!string.IsNullOrEmpty(existingCharacter.ImagePath))
                                 {
                                     DeleteOldImage(existingCharacter.ImagePath);
                                 }
 
+                                // Neues Bild mit Timestamp speichern
                                 var timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
                                 var uniqueName = $"{character.Vorname}_{character.Nachname}_{timestamp}";
                                 var uploadedImagePath = await _imageUploadService.UploadImageAsync(characterImage, "characters", uniqueName);
@@ -188,25 +200,33 @@ namespace Suendenbock_App.Controllers
                                 TempData["Error"] = $"Bild-Upload fehlgeschlagen: {ex.Message}";
                             }
                         }
-                        // ✨ NEU: Unbegabt-Status setzen
+
+                        // Unbegabt-Status aktualisieren
                         const int unbegabtId = 16;
                         existingCharacter.IsUnbegabt = selectedObermagien != null &&
-                                               selectedObermagien.Contains(unbegabtId);
+                                                selectedObermagien.Contains(unbegabtId);
+                        
+                        //Gott kann User zuweisen
+                        if (isGod)
+                        {
+                            existingCharacter.UserId = character.UserId;
+                            existingCharacter.UserColor = character.UserColor;
+                        }
                         UpdateCharacterStep1(existingCharacter, character);
                     }
                 }
+
                 //Magieklassen und Spezialisierung speichern
                 await SaveCharacterMagicClasses(character.Id, selectedMagicClasses, selectedSpecializations);
-
                 TempData["Success"] = "Schritt 1 erfolgreich gespeichert!";
-                return RedirectToAction("Form", new { id = character.Id, step = 2 });
+                return RedirectToAction("Form", new { id = character.Id, step = 2 });                
             }
             catch (Exception ex)
             {
                 TempData["Error"] = $"Fehler beim Speichern: {ex.Message}";
                 LoadFormViewBagData();
                 return View("Form", character);
-            }
+            }            
         }
         [HttpPost]
         public async Task<IActionResult> SaveStep2(int id, int? standId, string? beruf, int? blutgruppeId, int? hausId, int? herkunftslandId, int? bodyHeight, string? description)
@@ -369,18 +389,23 @@ namespace Suendenbock_App.Controllers
                 .ThenInclude(o => o.LightCard).ToList();
             ViewBag.Specializations = _context.MagicClassSpecializations
                 .Include(s => s.MagicClass).ToList();
-            ViewBag.Rassen = _context.Rassen.ToList();
-            ViewBag.Lebensstatus = _context.Lebensstati.ToList();
-            ViewBag.Eindruecke = _context.Eindruecke.ToList();
+
+            ViewBag.Rassen = new SelectList(_context.Rassen.ToList(),"Id","Name");
+            ViewBag.Lebensstatus = new SelectList(_context.Lebensstati.ToList(),"Id","Name");
+            ViewBag.Eindruecke = new SelectList(_context.Eindruecke.ToList(), "Id", "Name");
+            ViewBag.Geschlechter = new SelectList(new[] { "männlich", "weiblich" });
+
             ViewBag.Characters = _context.Characters.ToList();
-            ViewBag.Staende = _context.Staende.ToList();
-            ViewBag.Blutgruppen = _context.Blutgruppen.ToList();
-            ViewBag.Haeuser = _context.Haeuser.ToList();
-            ViewBag.Herkunftslaender = _context.Herkunftslaender.ToList();
-            ViewBag.Guilds = _context.Guilds.ToList();
-            ViewBag.Religions = _context.Religions.ToList();
-            ViewBag.Regiment = _context.Regiments.ToList();
-            ViewBag.Infanterieraenge = _context.Infanterieraenge.ToList();
+            
+            ViewBag.Staende = new SelectList(_context.Staende.ToList(), "Id", "Name");
+            ViewBag.Blutgruppen = new SelectList(_context.Blutgruppen.ToList(), "Id", "Name");
+            ViewBag.Haeuser = new SelectList(_context.Haeuser.ToList(), "Id", "Name");
+            ViewBag.Herkunftslaender = new SelectList(_context.Herkunftslaender.ToList(), "Id", "Name");
+            ViewBag.Guilds = new SelectList(_context.Guilds.ToList(), "Id", "Name");
+            ViewBag.Religions = new SelectList(_context.Religions.ToList(), "Id", "Type");
+            ViewBag.Regiment = new SelectList(_context.Regiments.ToList(), "Id", "Name");
+            ViewBag.Infanterieraenge = new SelectList(_context.Infanterieraenge.ToList(), "Id", "Name");
+
             ViewBag.Players = _userManager.Users
                 .ToList()
                 .Where(u => _userManager.IsInRoleAsync(u, "Spieler").Result)
@@ -402,7 +427,13 @@ namespace Suendenbock_App.Controllers
                     Name = s.Name,
                     MagicClassId = s.MagicClassId
                 }).ToList();
+            ViewBag.Lightcards = _context.LightCards.ToList();
         }
+        /// <summary>
+        /// Lädt einen Charakter zum Bearbeiten mit allen Magie-Daten
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         private Character LoadCharacterForEditing(int id)
         {
             var character = _context.Characters
@@ -422,7 +453,18 @@ namespace Suendenbock_App.Controllers
 
             if (character != null)
             {
-                // Ausgewählte Magieklassen und Spezialisierungen in ViewBag speichern
+                // Unbegabt: Setze nur Obermagie-ID
+                const int unbegabtId = 16;
+                if(character.IsUnbegabt)
+                {
+                    ViewBag.SelectedObermagie1 = unbegabtId;
+                    ViewBag.SelectedMagicClass1 = null;
+                    ViewBag.SelectedSpecialization1 = null;
+                    SetSelectedMagicClassesViewBag(new int[0], new Dictionary<int, int>());
+                    return character;
+                }
+
+                // Normale Magie: Lade alle Daten
                 var selectedMagicClasses = character.CharacterMagicClasses
                     .Select(cmc => cmc.MagicClassId).ToArray();
                 var selectedSpecializations = character.CharacterMagicClasses
@@ -431,18 +473,18 @@ namespace Suendenbock_App.Controllers
 
                 var magicClassesList = character.CharacterMagicClasses.ToList();
 
+                // Erste Magie
                 if (magicClassesList.Count > 0)
                 {
-                    // Erste Magie
                     var firstMagic = magicClassesList[0];
                     ViewBag.SelectedObermagie1 = firstMagic.MagicClass?.ObermagieId;
                     ViewBag.SelectedMagicClass1 = firstMagic.MagicClassId;
                     ViewBag.SelectedSpecialization1 = firstMagic.MagicClassSpecializationId;
                 }
 
+                // Zweite Magie
                 if (magicClassesList.Count > 1)
                 {
-                    // Zweite Magie
                     var secondMagic = magicClassesList[1];
                     ViewBag.SelectedObermagie2 = secondMagic.MagicClass?.ObermagieId;
                     ViewBag.SelectedMagicClass2 = secondMagic.MagicClassId;
@@ -458,37 +500,49 @@ namespace Suendenbock_App.Controllers
             ViewBag.SelectedMagicClasses = selectedMagicClasses ?? new int[0];
             ViewBag.SelectedSpecializations = selectedSpecializations ?? new Dictionary<int, int>();
         }
-        // NACHHER - einfach und klar
+
+        /// <summary>
+        /// Validiert die Pflichtfelder und Magie-Auswahl für Schritt 1
+        /// </summary>
+        /// <param name="character"></param>
+        /// <param name="selectedMagicClasses"></param>
+        /// <param name="selectedObermagien"></param>
+        /// <returns></returns>
         private bool ValidateStep1(Character character, int[] selectedMagicClasses, int[] selectedObermagien)
         {
             // Basisfelder prüfen
-            var basicFieldsValid = !string.IsNullOrEmpty(character.Vorname) &&
-                                  !string.IsNullOrEmpty(character.Nachname) &&
-                                  !string.IsNullOrEmpty(character.Rufname) &&
-                                  !string.IsNullOrEmpty(character.Geschlecht) &&
-                                  character.RasseId > 0 &&
-                                  character.LebensstatusId > 0 &&
-                                  character.EindruckId > 0;
-
-            if (!basicFieldsValid)
+            if (string.IsNullOrWhiteSpace(character.Vorname) ||
+                string.IsNullOrWhiteSpace(character.Nachname) ||
+                string.IsNullOrWhiteSpace(character.Rufname) ||
+                string.IsNullOrWhiteSpace(character.Geschlecht) ||
+                character.RasseId <= 0 ||
+                character.LebensstatusId <= 0 ||
+                character.EindruckId <= 0)
+            {
                 return false;
+            }
 
+            // Magie-Validierung
             const int unbegabtId = 16;
             bool isUnbegabt = selectedObermagien != null &&
                               selectedObermagien.Contains(unbegabtId);
 
-            // Wenn Unbegabt: keine MagicClasses nötig
+            // Unbegabt: keine MagicClasses erforderlich
             if (isUnbegabt)
                 return true;
 
-            // Wenn NICHT Unbegabt: 1-2 MagicClasses erforderlich
+            // Normal: 1-2 MagicClasses erforderlich
             return selectedMagicClasses != null &&
                    selectedMagicClasses.Length >= 1 &&
                    selectedMagicClasses.Length <= 2;
         }
+        /// <summary>
+        /// Aktualisiert die Basis-Felder eines bestehenden Characters
+        /// </summary>
+        /// <param name="existingCharacter"></param>
+        /// <param name="newCharacter"></param>
         private void UpdateCharacterStep1(Character existingCharacter, Character newCharacter)
         {
-            // Der existingCharacter ist bereits geladen, keine neue Datenbankabfrage nötig
             existingCharacter.Vorname = newCharacter.Vorname;
             existingCharacter.Nachname = newCharacter.Nachname;
             existingCharacter.Rufname = newCharacter.Rufname;
@@ -502,12 +556,20 @@ namespace Suendenbock_App.Controllers
             existingCharacter.Profan = newCharacter.Profan;
             existingCharacter.Beschraenkt = newCharacter.Beschraenkt;
         }
+        /// <summary>
+        /// Speichert die Magieklassen und Spezialisierungen eines Characters
+        /// </summary>
+        /// <param name="characterId"></param>
+        /// <param name="selectedMagicClasses"></param>
+        /// <param name="selectedSpecializations"></param>
+        /// <returns></returns>
         private async Task SaveCharacterMagicClasses(int characterId, int[] selectedMagicClasses, Dictionary<int, int> selectedSpecializations)
         {
-            // Alle bestehenden MagicClasses für diesen Charakter entfernen
+            // Alte Magieklassen entfernen
             var existingMagicClasses = _context.CharacterMagicClasses.Where(cmc => cmc.CharacterId == characterId);
             _context.CharacterMagicClasses.RemoveRange(existingMagicClasses);
 
+            // Neue Magieklassen hinzufügen
             if(selectedMagicClasses != null)
             {
                 foreach (var magicClassId in selectedMagicClasses)
@@ -518,7 +580,7 @@ namespace Suendenbock_App.Controllers
                         MagicClassId = magicClassId
                     };
 
-                    // Spezialisierung hinzufügen, falls ausgewählt
+                    // Spezialisierung hinzufügen (falls vorhanden)
                     if (selectedSpecializations.ContainsKey(magicClassId))
                     {
                         characterMagicCLass.MagicClassSpecializationId = selectedSpecializations[magicClassId];

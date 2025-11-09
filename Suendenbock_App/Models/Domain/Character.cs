@@ -1,4 +1,6 @@
-﻿namespace Suendenbock_App.Models.Domain
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Suendenbock_App.Models.Domain
 {
     public enum CharacterCompleteness
     {
@@ -9,28 +11,50 @@
     public class Character
     {
         public int Id { get; set; }
+      
+        [Display(Name = "Nachname")]
         public string Nachname { get; set; } = string.Empty;
+
+        [Display(Name = "Vorname")]
         public string Vorname { get; set; } = string.Empty;
+
+        [Display(Name = "Rufname")]
         public string Rufname { get; set; } = string.Empty;
+
+        [Display(Name = "Geschlecht")]
         public string Geschlecht { get; set; } = string.Empty;
         public string? UserId { get; set; } //optionaler Foreign-Key zu User
+        public string? UserColor { get; set; } //optionale benutzerdefinierte Farbe für den Charakter   
+        [Display(Name = "Profan")]
         public bool Profan { get; set; } = false;
+        [Display(Name = "Beschränkt")]
         public bool Beschraenkt { get; set; } = false;
         public bool IsUnbegabt { get; set; } = false;
 
         //Pflicht-Foreign-Keys
+        [Display(Name = "Rasse")]
         public int RasseId { get; set; }
+
+        [Display(Name = "Lebensstatus")]
         public int LebensstatusId { get; set; }
+
+        [Display(Name = "Eindruck")]
         public int EindruckId { get; set; }
 
         //Optionale Basis-Informationen
+        [Display(Name = "Geburtsdatum")]
         public string? Geburtsdatum { get; set; }
         public string? ImagePath { get; set; }
-        
+
         //Eltern-Beziehungen (optional)
+        [Display(Name = "Vater")]
         public int? VaterId { get; set; }
+        [Display(Name = "Mutter")]
         public int? MutterId { get; set; }
-        
+        //Partner-Beziehung (optional, wechselseitig)
+        [Display(Name = "Partner")]
+        public int? PartnerId { get; set; } //optional Foreign-Key zu Partner (Character)
+
         //Vollständigkeits-Status
         public CharacterCompleteness CompletionLevel { get; set; } = CharacterCompleteness.BasicInfo;
         
@@ -41,7 +65,7 @@
         //Navigation Properties für Eltern
         public virtual Character? Vater { get; set; } //character has one father
         public virtual Character? Mutter { get; set; } //character has one mother
-        
+        public virtual Character? Partner { get; set; } //character has one partner
         //Navigation Properties für andere Tabellen
         public virtual CharacterDetails? Details { get; set; }
         public virtual CharacterAffiliation? Affiliation { get; set; }

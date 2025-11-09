@@ -1,0 +1,14 @@
+﻿@{
+    if(User.IsInRole("Gott"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml"; 
+    }
+    else if(User.IsInRole("Spieler"))
+    {
+        Layout = "~/Views/Shared/_PlayerLayout.cshtml"; 
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml"; 
+    }
+}

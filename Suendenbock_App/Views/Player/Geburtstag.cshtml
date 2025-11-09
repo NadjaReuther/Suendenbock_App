@@ -1,0 +1,49 @@
+﻿@model ApplicationUser
+@{
+    ViewData["Title"] = "Geburtstag";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">🎂 Geburtstag</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Trage hier deinen Geburtstag ein, damit der Spielleiter dir gratulieren kann!
+                    </p>
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Geburtstag" method="post">
+                        <div class="mb-4">
+                            <label for="birthday" class="form-label">Dein Geburtstag</label>
+                            <input type="date"
+                                   class="form-control form-control-lg"
+                                   id="birthday"
+                                   name="birthday"
+                                   value="@(Model?.Birthday?.ToString("yyyy-MM-dd"))" />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                💾 Speichern
+                            </button>
+                            <a asp-action="MeineDaten" class="btn btn-secondary">
+                                Zurück
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

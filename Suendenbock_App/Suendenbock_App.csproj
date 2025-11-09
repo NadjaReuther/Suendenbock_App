@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\images\religion\**" />
+    <Content Remove="wwwroot\images\religion\**" />
+    <EmbeddedResource Remove="wwwroot\images\religion\**" />
+    <None Remove="wwwroot\images\religion\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.15" />
@@ -22,8 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\images\characters\" />
     <Folder Include="wwwroot\images\guild\" />
-    <Folder Include="wwwroot\images\religion\" />
+    <Folder Include="wwwroot\images\infanterie\" />
   </ItemGroup>
 
 </Project>

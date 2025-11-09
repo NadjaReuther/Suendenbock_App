@@ -1,1 +1,28 @@
-﻿<h1>Hier entsteht die Übersicht zu Infanterien und ihren Regimenten</h1>
+﻿@using Suendenbock_App.Models.Domain
+@model List<Infanterie>
+@section Styles {
+    <link href="/css/antique-home.css" rel="stylesheet" />
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+}
+
+<div class="main-container">
+    <!-- Hero Pergament Karten mit echten Daten -->
+    <section class="hero-section">
+        @foreach (var infanterie in Model)
+        {
+            <a class="card-link" asp-controller="Infanterie" asp-action="InfanterieSheet" asp-route-id="@infanterie.Id">
+                <div class="pergament-card" data-tilt>
+                    <div class="card-corner top-left"></div>
+                    <div class="card-corner top-right"></div>
+                    <div class="card-corner bottom-left"></div>
+                    <div class="card-corner bottom-right"></div>
+                    <h1 class="card-title">@infanterie.Bezeichnung</h1>
+                    <div class="card-content">
+                        <img width="104" src="~/images/infanterie/@(infanterie.ImagePath).svg" /><br />
+                    </div>
+                </div>
+            </a>
+        }
+    </section>
+</div>

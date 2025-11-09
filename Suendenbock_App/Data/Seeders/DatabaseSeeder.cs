@@ -52,6 +52,9 @@ namespace Suendenbock_App.Data.Seeders
                 MonstertypimmunitaetenSeeder.Seed(context);
                 MonstertypvorkommenSeeder.Seed(context);
 
+                // 5. Triggers
+                //TriggerSeeder.Seed(context);
+
                 Console.WriteLine("Database seeding completed successfully!");
             }
             catch (Exception ex)

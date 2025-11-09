@@ -1,0 +1,161 @@
+﻿@{
+    ViewData["Title"] = "Meine Triggerpunkte";
+    var categories = ViewBag.Categories as List<Suendenbock_App.Models.Domain.TriggerCategory>;
+    var userPreferences = ViewBag.UserPreferences as Dictionary<int, Suendenbock_App.Models.Domain.TriggerPreferenceLevel?>;
+    var birthday = ViewBag.Birthday as DateTime?;
+    var customTrigger = ViewBag.CustomTrigger as string;
+}
+
+<div class="container mt-4">
+    <h1>Meine Triggerpunkte</h1>
+    <p class="text-muted">
+        Hier kannst du eintragen, welche Themen für dich in Ordnung sind und welche der Spielleiter vermeiden soll.
+    </p>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <form asp-action="SaveTriggerpunkte" method="post">
+
+        <!-- ============================= -->
+        <!-- GEBURTSTAG UND CUSTOM TRIGGER -->
+        <!-- ============================= -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Persönliche Daten</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="birthday" class="form-label">Geburtstag</label>
+                        <input type="date"
+                               class="form-control"
+                               id="birthday"
+                               name="birthday"
+                               value="@(birthday?.ToString("yyyy-MM-dd"))" />
+                        <small class="form-text text-muted">
+                            Damit der Spielleiter dir zum Geburtstag gratulieren kann 🎂
+                        </small>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="customTrigger" class="form-label">Mein persönlicher Trigger</label>
+                    <textarea class="form-control"
+                              id="customTrigger"
+                              name="customTrigger"
+                              rows="3"
+                              placeholder="Gibt es ein Thema, das nicht in der Liste steht, aber für dich wichtig ist?">@customTrigger</textarea>
+                    <small class="form-text text-muted">
+                        Hier kannst du Themen eintragen, die nicht in der Liste stehen.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================= -->
+        <!-- TRIGGERPUNKTE KATEGORIEN -->
+        <!-- ============================= -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Meine Triggerpunkte</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    <strong>Legende:</strong><br>
+                    <span class="badge bg-success">Ist Okay</span> - Das Thema ist für mich in Ordnung. Es kann detailliert im Spiel vorkommen.<br>
+                    <span class="badge bg-warning text-dark">Vorsichtig</span> - Ich bin mir unsicher. Bitte nur andeuten und keine grafischen Details.<br>
+                    <span class="badge bg-danger">Stop!</span> - Dies ist ein Triggerpunkt für mich. Bitte vollständig auslassen.
+                </p>
+
+                <div class="accordion" id="triggerAccordion">
+                    @if (categories != null)
+                    {
+                        @for (int i = 0; i < categories.Count; i++)
+                        {
+                            var category = categories[i];
+                            var accordionId = "category" + category.Id;
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#@accordionId">
+                                        @category.Name
+                                    </button>
+                                </h2>
+                                <div id="@accordionId"
+                                     class="accordion-collapse collapse"
+                                     data-bs-parent="#triggerAccordion">
+                                    <div class="accordion-body">
+                                        @foreach (var topic in category.Topics.OrderBy(t => t.SortOrder))
+                                        {
+                                            var selectedValue = userPreferences?.ContainsKey(topic.Id) == true
+                                            ? userPreferences[topic.Id]?.ToString()
+                                            : null;
+
+                                            <div class="mb-3">
+                                                <label class="form-label">@topic.Name</label>
+                                                <select class="form-select" name="preferences[@topic.Id]">
+                                                    <option value="" selected="@(string.IsNullOrEmpty(selectedValue))">
+                                                        -- Bitte wählen --
+                                                    </option>
+                                                    <option value="Okay" selected="@(selectedValue == "Okay")">
+                                                        ✓ Ist Okay
+                                                    </option>
+                                                    <option value="Vorsichtig" selected="@(selectedValue == "Vorsichtig")">
+                                                        ⚠ Vorsichtig
+                                                    </option>
+                                                    <option value="Stop" selected="@(selectedValue == "Stop")">
+                                                        🛑 Stop!
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================= -->
+        <!-- SPEICHERN BUTTON -->
+        <!-- ============================= -->
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg">
+                💾 Triggerpunkte speichern
+            </button>
+        </div>
+
+        <div class="text-center mt-3 mb-5">
+            <a asp-action="Index" class="btn btn-secondary">Zurück zur Übersicht</a>
+        </div>
+    </form>
+</div>
+@section Styles {
+    <style>
+        .accordion-button:not(.collapsed) {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .badge {
+            padding: 0.5em 0.75em;
+            margin-right: 0.5em;
+        }
+    </style>
+}

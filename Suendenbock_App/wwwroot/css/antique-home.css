@@ -288,17 +288,17 @@ body {
     cursor: pointer;
 }
 
-    .pergament-card::before {
-        content: '';
-        position: absolute;
-        top: 5px;
-        left: 5px;
-        right: 5px;
-        bottom: 5px;
-        border: 1px solid #e8dcc0;
-        border-radius: 12px;
-        pointer-events: none;
-    }
+.pergament-card::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 1px solid #e8dcc0;
+    border-radius: 12px;
+    pointer-events: none;
+}
 
 /* Karten-Ecken für Vintage-Effekt */
 .card-corner {
@@ -308,33 +308,33 @@ body {
     border: 2px solid #8b7355;
 }
 
-    .card-corner.top-left {
-        top: 8px;
-        left: 8px;
-        border-right: none;
-        border-bottom: none;
-    }
+.card-corner.top-left {
+    top: 8px;
+    left: 8px;
+    border-right: none;
+    border-bottom: none;
+}
 
-    .card-corner.top-right {
-        top: 8px;
-        right: 8px;
-        border-left: none;
-        border-bottom: none;
-    }
+.card-corner.top-right {
+    top: 8px;
+    right: 8px;
+    border-left: none;
+    border-bottom: none;
+}
 
-    .card-corner.bottom-left {
-        bottom: 8px;
-        left: 8px;
-        border-right: none;
-        border-top: none;
-    }
+.card-corner.bottom-left {
+    bottom: 8px;
+    left: 8px;
+    border-right: none;
+    border-top: none;
+}
 
-    .card-corner.bottom-right {
-        bottom: 8px;
-        right: 8px;
-        border-left: none;
-        border-top: none;
-    }
+.card-corner.bottom-right {
+    bottom: 8px;
+    right: 8px;
+    border-left: none;
+    border-top: none;
+}
 
 .card-number {
     font-family: 'Uncial Antiqua', serif;
@@ -921,4 +921,15 @@ body {
     border-radius: 15px;
     padding: 2rem;
     box-shadow: 0 10px 30px rgba(110, 75, 31, 0.3);
+}
+
+.hover-card {
+    font-size: 24px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }

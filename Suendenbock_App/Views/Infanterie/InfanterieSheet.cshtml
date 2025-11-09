@@ -1,0 +1,41 @@
+﻿@model Infanterie
+@{
+    ViewData["Title"] = "InfanterieSheet";
+}
+<div class="row mt-5">
+@foreach (var regiment in Model.Regiments)
+{
+    <div class="col-md-6 mb-3">
+        <div class="card border-secondary">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">🎖️ @regiment.Name</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-1">
+                    <strong>Regimentsleiter:</strong>
+                    @if(regiment.Regimentsleiter != null)
+                    {
+                        @regiment.Regimentsleiter.Vorname  @regiment.Regimentsleiter.Nachname
+                    }
+                    else
+                    {
+                        <em>Kein Regimentsleiter zugewiesen</em>
+                    }
+                </p>
+                <p class="mb-1">
+                    <strong>Adjutant:</strong>
+                    @if(regiment.Adjutant != null)
+                    {
+                        @regiment.Adjutant.Vorname  @regiment.Adjutant.Nachname
+                    }
+                    else
+                    {
+                        <em>Kein Adjutant zugewiesen</em>
+                    }
+                </p>
+                    <div class="mb-0"><small class="text-muted">@Html.Raw(regiment.Description)</small></div>
+            </div>
+        </div>
+    </div>
+}
+</div>

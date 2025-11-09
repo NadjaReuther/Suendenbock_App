@@ -1,0 +1,20 @@
+﻿@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+    if (action == "Form")
+    {
+        Layout = "_AdminLayout";
+    }
+    else if (User.IsInRole("Gott"))
+    {
+        Layout = "_AdminLayout";
+    }
+    else if (User.IsInRole("Spieler"))
+    {
+        Layout = "_PlayerLayout";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
+}

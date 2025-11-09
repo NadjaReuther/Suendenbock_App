@@ -1,0 +1,44 @@
+﻿@model List<UserViewModel>
+
+<div class="container mt-4">
+    <h2>Benutzerverwaltung</h2>
+
+    <div class="mb-3">
+        <a asp-action="Create" class="btn btn-success">
+            <i class="fas fa-user-plus"></i> Neuer Benutzer
+        </a>
+        <a asp-action="TriggerOverview" class="btn btn-warning">
+            <i class="fas fa-shield-alt"></i> Triggerpunkte verwalten
+        </a>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Rolle</th>
+                <th>Anzahl Characters</th>
+                <th>Aktionen</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Email</td>
+                    <td>
+                        <span class="badge bg-@(user.Role == "Gott" ? "danger" : "primary")">
+                            @user.Role
+                        </span>
+                    </td>
+                    <td>@user.CharacterCount</td>
+                    <td>
+                        <a asp-action="ResetPassword" asp-route-id="@user.Id" class="btn btn-sm btn-warning">Passwort zurücksetzen</a>                        
+                        <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-danger btn-sm" 
+                           onclick="return confirm('Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?');">Löschen</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
