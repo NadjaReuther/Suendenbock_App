@@ -138,28 +138,5 @@ namespace Suendenbock_App.Controllers
             target.LeaderId = source.LeaderId;
             target.VertreterId = source.VertreterId;
         }
-
-        public IActionResult InfanterieSheet(int id)
-        {
-            if (id == 0)
-            {
-                return NotFound();
-            }
-            var infanterie = _context.Infanterien
-            .Include(r => r.Regiments)
-                .ThenInclude(r => r.Regimentsleiter)
-            .Include(r => r.Regiments)
-                .ThenInclude(r => r.Adjutant)
-            .Include(r => r.LeaderCharacter)
-            .Include(r => r.VertreterCharacter)
-            .FirstOrDefault(c => c.Id == id);
-
-            if (infanterie == null)
-            {
-                return BadRequest();
-            }
-
-            return View(infanterie);
-        }
     }
 }

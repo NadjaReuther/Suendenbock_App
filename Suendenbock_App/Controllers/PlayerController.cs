@@ -13,13 +13,24 @@ namespace Suendenbock_App.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
+        /// <summary>
+        /// Konstruktor ruft die DbContext- und UserManager-Instanzen ab
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="userManager"></param>
         public PlayerController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
-        // Zeigt nur die Character die dem User zugeordnet sind
+        /// <summary>
+        /// Displays the main view for the current user's character.
+        /// </summary>
+        /// <remarks>This method retrieves the character associated with the currently logged-in user,
+        /// including related magic classes and their associated details, and returns a view displaying this
+        /// information.</remarks>
+        /// <returns>An <see cref="IActionResult"/> that renders the view for the user's character.</returns>
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);

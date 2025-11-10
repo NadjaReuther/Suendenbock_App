@@ -102,9 +102,14 @@ namespace Suendenbock_App.Controllers
         public IActionResult InfanterieOverview()
         {
             var infanterien = _context.Infanterien
-                .Include(r => r.Regiments)
-                .OrderBy(i => i.Id)
-                .ToList();
+            .Include(i => i.LeaderCharacter)
+            .Include(i => i.VertreterCharacter)
+            .Include(i => i.Regiments)
+                .ThenInclude(r => r.Regimentsleiter)
+            .Include(i => i.Regiments)
+                .ThenInclude(r => r.Adjutant)
+            .ToList();
+
             return View(infanterien);
         }
 

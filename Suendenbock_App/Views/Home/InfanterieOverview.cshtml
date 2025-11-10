@@ -1,28 +1,220 @@
 ﻿@using Suendenbock_App.Models.Domain
 @model List<Infanterie>
+
 @section Styles {
     <link href="/css/antique-home.css" rel="stylesheet" />
     <link href="/css/character.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Mittelalterliches Accordion-Styling */
+        .infanterie-accordion .accordion-item {
+            background-color: #f5f1e8;
+            border: 2px solid #8b7355;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .infanterie-accordion .accordion-button {
+            background-color: #d4c4a8;
+            color: #3e2723;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 1.2rem;
+            border: none;
+        }
+
+            .infanterie-accordion .accordion-button:not(.collapsed) {
+                background-color: #8b7355;
+                color: #fff;
+            }
+
+            .infanterie-accordion .accordion-button:focus {
+                box-shadow: 0 0 0 0.25rem rgba(139, 115, 85, 0.5);
+            }
+
+        .infanterie-accordion .accordion-body {
+            background-color: #faf8f3;
+            padding: 20px;
+        }
+
+        .infanterie-logo {
+            width: 60px;
+            height: 60px;
+            margin-right: 15px;
+            vertical-align: middle;
+        }
+
+        .info-section {
+            background-color: #fff;
+            border: 1px solid #d4c4a8;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #5d4e37;
+        }
+    </style>
 }
 
 <div class="main-container">
-    <!-- Hero Pergament Karten mit echten Daten -->
-    <section class="hero-section">
+    <header class="antique-header mb-4">
+        <h1 class="main-title">⚔️ Infanterien des Reiches</h1>
+    </header>
+
+    <div class="accordion infanterie-accordion" id="infanterieAccordion">
         @foreach (var infanterie in Model)
         {
-            <a class="card-link" asp-controller="Infanterie" asp-action="InfanterieSheet" asp-route-id="@infanterie.Id">
-                <div class="pergament-card" data-tilt>
-                    <div class="card-corner top-left"></div>
-                    <div class="card-corner top-right"></div>
-                    <div class="card-corner bottom-left"></div>
-                    <div class="card-corner bottom-right"></div>
-                    <h1 class="card-title">@infanterie.Bezeichnung</h1>
-                    <div class="card-content">
-                        <img width="104" src="~/images/infanterie/@(infanterie.ImagePath).svg" /><br />
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading-@infanterie.Id">
+                    <button class="accordion-button collapsed" type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse-@infanterie.Id"
+                            aria-expanded="false"
+                            aria-controls="collapse-@infanterie.Id">
+                        @if (!string.IsNullOrEmpty(infanterie.ImagePath))
+                        {
+                            <img src="~/images/infanterie/@(infanterie.ImagePath).svg"
+                                 alt="Standarte"
+                                 class="infanterie-logo" />
+                        }
+                        @infanterie.Bezeichnung. Infanterie
+                    </button>
+                </h2>
+                <div id="collapse-@infanterie.Id"
+                     class="accordion-collapse collapse"
+                     aria-labelledby="heading-@infanterie.Id"
+                     data-bs-parent="#infanterieAccordion">
+                    <div class="accordion-body">
+                        <!-- Infanterie-Informationen -->
+                        <div class="info-section">
+                            <h4 class="mb-3">📜 Infanterie-Informationen</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p>
+                                        <span class="info-label">General:</span>
+                                        @if (infanterie.LeaderCharacter != null)
+                                        {
+                                            <a asp-controller="Character"
+                                               asp-action="CharacterSheet"
+                                               asp-route-id="@infanterie.LeaderCharacter.Id"
+                                               class="character-link">
+                                                @infanterie.LeaderCharacter.Vorname @infanterie.LeaderCharacter.Nachname
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <em>Kein General zugewiesen</em>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p>
+                                        <span class="info-label">Vertreter:</span>
+                                        @if (infanterie.VertreterCharacter != null)
+                                        {
+                                            <a asp-controller="Character"
+                                               asp-action="CharacterSheet"
+                                               asp-route-id="@infanterie.VertreterCharacter.Id"
+                                               class="character-link">
+                                                @infanterie.VertreterCharacter.Vorname @infanterie.VertreterCharacter.Nachname
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <em>Kein Vertreter zugewiesen</em>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                            <p>
+                                <span class="info-label">Sitz:</span> @infanterie.Sitz
+                            </p>
+                            @if (!string.IsNullOrEmpty(infanterie.description))
+                            {
+                                <p>
+                                    <span class="info-label">Beschreibung:</span><br />
+                                    @Html.Raw(infanterie.description)
+                                </p>
+                            }
+                        </div>
+
+                        <!-- Regimente -->
+                        <h5 class="mb-3">🎖️ Regimente (@infanterie.Regiments.Count)</h5>
+                        @if (infanterie.Regiments.Any())
+                        {
+                            <div class="row">
+                                @foreach (var regiment in infanterie.Regiments)
+                                {
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card border-secondary">
+                                            <div class="card-header bg-secondary text-white">
+                                                <h6 class="mb-0">🎖️ @regiment.Name</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="mb-1">
+                                                    <strong>Regimentsleiter:</strong>
+                                                    @if (regiment.Regimentsleiter != null)
+                                                    {
+                                                        <a asp-controller="Character"
+                                                           asp-action="CharacterSheet"
+                                                           asp-route-id="@regiment.RegimentsleiterId"
+                                                           class="character-link">
+                                                            @regiment.Regimentsleiter.Vorname @regiment.Regimentsleiter.Nachname
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <em>Nicht zugewiesen</em>
+                                                    }
+                                                </p>
+                                                <p class="mb-1">
+                                                    <strong>Adjutant:</strong>
+                                                    @if (regiment.Adjutant != null)
+                                                    {
+                                                        <a asp-controller="Character"
+                                                           asp-action="CharacterSheet"
+                                                           asp-route-id="@regiment.AdjutantId"
+                                                           class="character-link">
+                                                            @regiment.Adjutant.Vorname @regiment.Adjutant.Nachname
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <em>Nicht zugewiesen</em>
+                                                    }
+                                                </p>
+                                                @if (!string.IsNullOrEmpty(regiment.Description))
+                                                {
+                                                    <div class="mb-0 mt-2">
+                                                        <small class="text-muted">@Html.Raw(regiment.Description)</small>
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info">
+                                Dieser Infanterie sind noch keine Regimente zugeordnet.
+                            </div>
+                        }
                     </div>
                 </div>
-            </a>
+            </div>
         }
-    </section>
+    </div>
 </div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning text-center mt-5">
+        <h4>Keine Infanterien vorhanden</h4>
+        <p>Es wurden noch keine Infanterien angelegt.</p>
+    </div>
+}
