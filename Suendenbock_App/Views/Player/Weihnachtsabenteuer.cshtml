@@ -8,14 +8,14 @@
 }
 <!-- Die Kalender-Container -->
 <div class="advent-container">
-    <h1 class="advent-title"><img width="70%"; src="~/images/spieler/Weihnachten/LOGO.svg" /></h1>
+    <h1 class="advent-title"><img width="70%"; src="~/assets/spieler/Weihnachten/LOGO.svg" /></h1>
 
     <div class="advent-grid">
         <!-- Türchen 1 bis 24 -->
         @foreach (var day in days)
         {
             <div class="advent-door" data-day="@day">
-                <div class="door-front" style="background-image: url('/images/spieler/Weihnachten/Kalenderzahlen/@(day).svg');">
+                <div class="door-front" style="background-image: url('/assets/spieler/Weihnachten/Kalenderzahlen/@(day).svg');">
                     <!-- NEU: Vorhängeschloss wenn Tag noch nicht erreicht -->
                     <div class="door-lock" style="display: none;">
                         🔒
@@ -32,7 +32,7 @@
         }
     </div>
     <a asp-controller="Player" asp-action="Weihnachtenuebersicht">
-        <div class="advent-title"><img width="50%" src="~/images/spieler/Weihnachten/zurueck.svg" alt="zurueck" /></div>
+        <div class="advent-title"><img width="50%" src="~/assets/spieler/Weihnachten/zurueck.svg" alt="zurueck" /></div>
     </a>
 </div>
 <!-- Bootstrap Modal für Nachrichten -->

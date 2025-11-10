@@ -11,7 +11,7 @@
     transform: translateX(-50%);
     width: 100vw;
     height: 100vh;
-    background-image: url("../images/spieler/Weihnachten/Background.svg");
+    background-image: url("../assets/spieler/Weihnachten/Background.svg");
     background-size: cover;
     background-position: center;
     z-index: -1;
