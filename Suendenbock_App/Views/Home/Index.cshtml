@@ -6,6 +6,7 @@
 @section Styles {
         <link href="/css/antique-home.css" rel="stylesheet" />
         <link href="/css/character.css" rel="stylesheet" />
+        <link href="/css/fortune-wheel.css" rel="stylesheet" asp-append-version="true" />
         <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
 }
 <!-- Header -->
@@ -91,7 +92,24 @@
         </h2>
 
         <div class="zodiac-chart-container">
-            <canvas id="zodiacChart"></canvas>
+            <div class="zodiac-wheel-wrapper">
+                <div class="zodiac-pointer"></div>
+                <canvas id="zodiacChart"></canvas>
+                <div class="zodiac-center-button">
+                    <span>Drehen!</span>
+                </div>
+            </div>
+            <div id="zodiac-result" class="zodiac-result" style="display: none;">
+                <div class="result-content">
+                    <h3 id="result-title"></h3>
+                    <p id="result-info"></p>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <button id="resetButton" class="zodiac-reset-button" style="display: none;">
+                    Zurück zur Startposition
+                </button>
+            </div>
         </div>
     </section>
 
@@ -336,22 +354,22 @@
             'Wasser': '#1B4D6D'      // Tiefes Marineblau (wie Indigo)
         };
         
-        // NEU: Plugin zum Zeichnen der Symbole IN den Tortenstücken
+        // Plugin zum Zeichnen der Symbole IN den Tortenstücken
         const zodiacSymbolPlugin = {
             id: 'zodiacSymbols',
             afterDatasetsDraw(chart) {
                 const { ctx, chartArea: { width, height } } = chart;
                 const centerX = width / 2;
                 const centerY = height / 2;
-                
+
                 chart.data.datasets.forEach((dataset, datasetIndex) => {
                     const meta = chart.getDatasetMeta(datasetIndex);
-                    
+
                     meta.data.forEach((arc, index) => {
                         // Berechne die Mitte des Tortenstücks
                         const angle = (arc.startAngle + arc.endAngle) / 2;
                         const radius = (arc.innerRadius + arc.outerRadius) / 2;
-                        
+
                         // Position für das Symbol
                         const x = centerX + Math.cos(angle) * (radius+50);
                         const y = centerY + Math.sin(angle) * (radius+50);
@@ -364,21 +382,21 @@
                         ctx.textBaseline = 'middle';
 
                         // Schatten für bessere Lesbarkeit
-                        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';  // Dunklerer Schatten
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
                         ctx.shadowBlur = 6;
                         ctx.shadowOffsetX = 2;
                         ctx.shadowOffsetY = 2;
 
-                        // WICHTIG: Zweimal zeichnen für solidere Farbe
+                        // Zweimal zeichnen für solidere Farbe
                         ctx.fillText(zodiacSigns[index].symbol, x, y);
-                        ctx.shadowColor = 'transparent';  // Schatten ausschalten
-                        ctx.fillText(zodiacSigns[index].symbol, x, y);  // Nochmal ohne Schatten
+                        ctx.shadowColor = 'transparent';
+                        ctx.fillText(zodiacSigns[index].symbol, x, y);
                         ctx.restore();
                     });
                 });
             }
         };
-        
+
         // Tortendiagramm erstellen
         const ctx = document.getElementById('zodiacChart').getContext('2d');
         new Chart(ctx, {
@@ -402,6 +420,7 @@
                          display: false
                     },
                     tooltip: {
+                        enabled: true,
                         backgroundColor: 'rgba(110, 75, 31, 0.95)',
                         titleFont: { size: 18, family: 'Cinzel' },
                         bodyFont: { size: 14, family: 'MedievalSharp' },
@@ -420,14 +439,13 @@
                             afterLabel: function(context) {
                                 const index = context.dataIndex;
                                 const sign = zodiacSigns[index];
-                                
+
                                 let lines = [
                                     `Element: ${sign.element}`,
                                     '',
                                     sign.info
                                 ];
-                                
-                                // Später: Charaktere aus Datenbank
+
                                 if (sign.characters.length > 0) {
                                     lines.push('');
                                     lines.push('Charaktere:');
@@ -435,14 +453,113 @@
                                         lines.push(`• ${char}`);
                                     });
                                 }
-                                
+
                                 return lines;
                             }
                         }
                     }
                 }
             },
-            plugins: [zodiacSymbolPlugin] // NEU: Plugin registrieren
+            plugins: [zodiacSymbolPlugin]
+        });
+
+        // Chart-Referenz für spätere Manipulation speichern
+        const zodiacChart = Chart.getChart('zodiacChart');
+
+        // Glücksrad-Funktionalität
+        let currentRotation = 0;
+        let isSpinning = false;
+        const canvas = document.getElementById('zodiacChart');
+        const centerButton = document.querySelector('.zodiac-center-button');
+        const resultDiv = document.getElementById('zodiac-result');
+        const resultTitle = document.getElementById('result-title');
+        const resultInfo = document.getElementById('result-info');
+        const resetButton = document.getElementById('resetButton');
+
+        centerButton.addEventListener('click', function() {
+            if (isSpinning) return;
+
+            // Tooltips deaktivieren für Glücksrad-Modus
+            zodiacChart.options.plugins.tooltip.enabled = false;
+            zodiacChart.update('none');
+
+            // Spinning starten
+            isSpinning = true;
+            centerButton.classList.add('disabled');
+            resultDiv.style.display = 'none';
+
+            // Zufällige Anzahl an vollständigen Umdrehungen (5-8) plus zufällige Endposition
+            const spins = 5 + Math.floor(Math.random() * 4); // 5-8 Umdrehungen
+            const randomDegree = Math.floor(Math.random() * 360); // Zufällige Endposition
+            const totalRotation = (spins * 360) + randomDegree;
+
+            // Neue Gesamtrotation berechnen
+            currentRotation += totalRotation;
+
+            // Canvas drehen
+            canvas.classList.add('spinning');
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Nach der Animation: Ergebnis berechnen und anzeigen
+            setTimeout(function() {
+                // Normalisiere die Rotation auf 0-360 (positiv)
+                const normalizedRotation = ((currentRotation % 360) + 360) % 360;
+
+                // Das Rad dreht im Uhrzeigersinn
+                // Bei 0° ist Segment 0 oben unter dem Pointer
+                // Bei 30° ist Segment 11 oben (ein Segment zurück)
+                // Bei 60° ist Segment 10 oben usw.
+
+                // Berechne welches Segment unter dem Pointer ist
+                // Wir müssen die Rotation umkehren und durch Segmentgröße teilen
+                const segmentIndex = Math.floor((360 - normalizedRotation) / 30) % 12;
+
+                // Hole das entsprechende Sternzeichen
+                const selectedSign = zodiacSigns[segmentIndex];
+
+                // Ergebnis anzeigen
+                resultTitle.textContent = `${selectedSign.symbol} ${selectedSign.name}`;
+                resultInfo.innerHTML = `
+                    <strong>Element:</strong> ${selectedSign.element}<br>
+                    <strong>Effekt:</strong> ${selectedSign.info}
+                    ${selectedSign.characters.length > 0 ? '<br><br><strong>Charaktere mit diesem Sternzeichen:</strong><br>' + selectedSign.characters.join(', ') : ''}
+                `;
+                resultDiv.style.display = 'block';
+
+                // Reset-Button anzeigen
+                resetButton.style.display = 'inline-block';
+
+                // Scroll zum Ergebnis
+                setTimeout(function() {
+                    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+
+                // Button wieder aktivieren
+                isSpinning = false;
+                centerButton.classList.remove('disabled');
+                canvas.classList.remove('spinning');
+            }, 6000); // 6 Sekunden = Dauer der CSS-Transition
+        });
+
+        // Reset-Funktionalität
+        resetButton.addEventListener('click', function() {
+            // Rad zurück auf Startposition drehen
+            currentRotation = 0;
+            canvas.style.transition = 'transform 1s ease-out';
+            canvas.style.transform = 'rotate(0deg)';
+
+            // Tooltips wieder aktivieren
+            zodiacChart.options.plugins.tooltip.enabled = true;
+            zodiacChart.update('none');
+
+            // UI zurücksetzen
+            resultDiv.style.display = 'none';
+            resetButton.style.display = 'none';
+
+            // Transition zurücksetzen nach der Animation
+            setTimeout(function() {
+                canvas.style.transition = '';
+            }, 1000);
         });
         </script>
 }

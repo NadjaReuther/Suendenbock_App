@@ -1,0 +1,151 @@
+/* Glücksrad / Fortune Wheel Styling */
+
+.zodiac-wheel-wrapper {
+    position: relative;
+    width: 500px;
+    height: 500px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zodiac-pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-top: 50px solid #d4af37;
+    z-index: 10;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
+}
+
+#zodiacChart {
+    transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    cursor: pointer;
+}
+
+#zodiacChart.spinning {
+    transition: transform 6s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+}
+
+.zodiac-center-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, #d4af37, #b8941f);
+    border-radius: 50%;
+    border: 4px solid #8b7355;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+}
+
+/* Beim Hovern über das Rad: Button transparent machen für Tooltips */
+.zodiac-wheel-wrapper:hover .zodiac-center-button {
+    opacity: 0.15;
+}
+
+/* Beim Hovern über den Button selbst: Volle Opacity wiederherstellen */
+.zodiac-center-button:hover {
+    opacity: 1 !important;
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+}
+
+.zodiac-center-button:active {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+.zodiac-center-button span {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: #3e2723;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    text-align: center;
+}
+
+.zodiac-center-button.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.zodiac-result {
+    margin-top: 40px;
+    padding: 30px;
+    background: linear-gradient(135deg, #faf8f3, #f5f1e8);
+    border: 3px solid #8b7355;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-content {
+    text-align: center;
+}
+
+.result-content h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    color: #5d4e37;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.result-content p {
+    font-family: 'MedievalSharp', serif;
+    font-size: 18px;
+    color: #3e2723;
+    line-height: 1.6;
+}
+
+.zodiac-reset-button {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    font-size: 16px;
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #8b7355, #6b5644);
+    color: #faf8f3;
+    border: 2px solid #5d4e37;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.zodiac-reset-button:hover {
+    background: linear-gradient(135deg, #6b5644, #5d4e37);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.zodiac-reset-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
