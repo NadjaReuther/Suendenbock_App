@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
@@ -6,6 +7,7 @@ using Suendenbock_App.Services;
 
 namespace Suendenbock_App.Controllers
 {
+    [Authorize]
     public class GuildController : BaseOrganizationController
     {
         private readonly ICachedDataService _cachedData;
@@ -17,17 +19,40 @@ namespace Suendenbock_App.Controllers
         {
             return View();
         }
+        [AllowAnonymous]
+        public IActionResult Overview()
+        {
+            var guilds = _context.Guilds
+                .Include(g => g.LeaderCharacter)
+                .Include(g => g.VertreterCharacter)
+                .OrderBy(g => g.Name)
+                .ToList();
+            return View(guilds);
+        }
+        [AllowAnonymous]
         public IActionResult GuildSheet(int id)
         {
             var guild = _context.Guilds
-                .Include(c => c.LeaderCharacter)
-                .Include(c => c.VertreterCharacter)
-                .FirstOrDefault(c => c.Id == id);
+                .Include(g => g.AbenteuerrangNavigation)
+                .Include(g => g.AnmeldungsstatusNavigation)
+                .Include(g => g.LeaderCharacter)
+                .Include(g => g.VertreterCharacter)
+                .Include(g => g.Gildenlizenzen).ThenInclude(gl => gl.Lizenzen)
+                .FirstOrDefault(g => g.Id == id);
 
             if (guild == null)
             {
                 return NotFound();
             }
+
+            // Alle Gildenmitglieder laden
+            var members = _context.CharacterAffiliations
+                .Include(ca => ca.Character)
+                .Where(ca => ca.GuildId == id)
+                .Select(ca => ca.Character)
+                .ToList();
+
+            ViewBag.Members = members;
             return View(guild);
         }
         public async Task<IActionResult> Form(int id = 0)

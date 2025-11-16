@@ -93,13 +93,50 @@
     </div>    
 </div>
 </div>
-        <div class="mt-5 pergament-card" data-tilt>
-            <div class="card-corner top-left"></div>
-            <div class="card-corner top-right"></div>
-            <div class="card-corner bottom-left"></div>
-            <div class="card-corner bottom-right"></div>
-            <h3 class="card-title">viele Monster<br /></h3>
-            <div class="card-content">
-               
-            </div>
-        </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            var encounteredMonsters = Model.Monster?.Where(m => m.encounter).ToList();
+            if (encounteredMonsters != null && encounteredMonsters.Any())
+            {
+                <div class="mt-5 pergament-card" data-tilt>
+                    <div class="card-corner top-left"></div>
+                    <div class="card-corner top-right"></div>
+                    <div class="card-corner bottom-left"></div>
+                    <div class="card-corner bottom-right"></div>
+                    <h3 class="card-title">👹 Begegnete Monster (@encounteredMonsters.Count)<br /></h3>
+                    <div class="card-content">
+                        <div class="row">
+                            @foreach (var monster in encounteredMonsters)
+                            {
+                                <div class="col-md-4 mb-3">
+                                    <div class="monster-encounter-card" style="background: linear-gradient(145deg, #faf8f3, #f0e6d2); border: 2px solid #d4c4a8; border-radius: 8px; padding: 1rem; text-align: center;">
+                                        @if (!string.IsNullOrEmpty(monster.ImagePath))
+                                        {
+                                            <img src="@monster.ImagePath" alt="@monster.Name" style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid #d4af37; margin-bottom: 0.5rem;">
+                                        }
+                                        else
+                                        {
+                                            <div style="width: 60px; height: 60px; border-radius: 50%; border: 2px solid #d4c4a8; background: linear-gradient(45deg, #8b7355, #6b5345); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1.5rem;">
+                                                👹
+                                            </div>
+                                        }
+                                        <h5 style="font-family: 'Cinzel', serif; color: #5d4e37; margin: 0.5rem 0;">@monster.Name</h5>
+                                        @if (monster.perfected)
+                                        {
+                                            <span style="background: linear-gradient(45deg, #d4af37, #b8941f); color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
+                                                ✨ Komplett erforscht
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="@Url.Action("PlayerOverview", "Monster")" class="btn btn-primary" style="background: linear-gradient(45deg, #d4af37, #b8941f); border: none;">
+                                📖 Zum vollständigen Monster-Kompendium
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }

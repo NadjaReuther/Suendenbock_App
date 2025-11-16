@@ -18,7 +18,7 @@
     <section class="hero-section">
         
         <div class="pergament-card" data-tilt>
-            <a class="card-link" asp-controller="Home" asp-action="CharacterOverview">
+            <a class="card-link" asp-controller="Character" asp-action="Overview">
             <div class="card-corner top-left"></div>
             <div class="card-corner top-right"></div>
             <div class="card-corner bottom-left"></div>
@@ -34,7 +34,7 @@
         </div>
         
         <div class="pergament-card" data-tilt>
-            <a class="card-link" asp-controller="Home" asp-action="InfanterieOverview">
+            <a class="card-link" asp-controller="Infanterie" asp-action="Overview">
             <div class="card-corner top-left"></div>
             <div class="card-corner top-right"></div>
             <div class="card-corner bottom-left"></div>
@@ -50,7 +50,7 @@
         </div>
 
         <div class="pergament-card" data-tilt>
-            <a class="card-link" asp-controller="Home" asp-action="GuildOverview">
+            <a class="card-link" asp-controller="Guild" asp-action="Overview">
             <div class="card-corner top-left"></div>
             <div class="card-corner top-right"></div>
             <div class="card-corner bottom-left"></div>
@@ -65,7 +65,7 @@
             </a>
         </div>
             <div class="pergament-card" data-tilt>
-        <a class="card-link" asp-controller="Home" asp-action="MonsterOverview">
+        <a class="card-link" asp-controller="Monster" asp-action="Overview">
 
                 <div class="card-corner top-left"></div>
                 <div class="card-corner top-right"></div>
@@ -107,6 +107,7 @@
             <div class="scroll-content">
                 @foreach (var guild in Model.Guilds.Take(6))
                 {
+                    <a asp-controller="Guild" asp-action="GuildSheet" asp-route-id="@guild.Id" class="text-decoration-none">
                         <div class="guild-banner">
                             <div class="banner-pole"></div>
                             <div class="banner-flag">
@@ -114,6 +115,7 @@
                                 <div class="guild-name">@guild.Name</div>
                             </div>
                         </div>
+                    </a>
                 }
             </div>
         </div>

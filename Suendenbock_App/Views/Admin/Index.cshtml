@@ -216,6 +216,75 @@
                 </div>
             </div>        
         </div>
+
+        <div class="row">
+            <!-- Monster Pergament -->
+            <div class="col-md-6">
+                <div class="pergament-table-card">
+                    <h3 class="pergament-header">Monster</h3>
+                    <table id="monsterTable" class="medieval-table w-100">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Monstertyp</th>
+                                <th>⚔️ Encounter</th>
+                                <th>✨ Perfected</th>
+                                <th>🗡️ Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var monster in Model.Monsters)
+                            {
+                                <tr data-monster-id="@monster.Id">
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(monster.ImagePath))
+                                        {
+                                            <img src="@monster.ImagePath" alt="Logo" style="width: 30px; height: 30px; margin-left: 5px; border-radius: 50%;">
+                                        }
+                                        <strong>@monster.Name</strong>
+                                    </td>
+
+                                    <td>@(monster.Monstertyp?.Name)</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input monster-toggle"
+                                                   type="checkbox"
+                                                   data-monster-id="@monster.Id"
+                                                   data-toggle-type="encounter"
+                                                   @(monster.encounter ? "checked" : "")
+                                                   title="Encounter aktivieren/deaktivieren">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input monster-toggle"
+                                                   type="checkbox"
+                                                   data-monster-id="@monster.Id"
+                                                   data-toggle-type="perfected"
+                                                   @(monster.perfected ? "checked" : "")
+                                                   title="Extra-Infos aktivieren/deaktivieren">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="medieval-actions">
+                                            <a asp-controller="Monster" asp-action="Form" asp-route-id="@monster.Id"
+                                               class="medieval-btn edit-btn" title="Monster bearbeiten">
+                                                ✏️
+                                            </a>
+                                            <button class="medieval-btn delete-btn"
+                                                    onclick="deleteContent(@monster.Id, 'Monster')"
+                                                    title="Monster löschen">
+                                                🗡️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @section Scripts {
@@ -251,6 +320,13 @@
 
             // Guild Table
             $('#guildTable').DataTable({
+                ...medievalTableConfig,
+                order: [[0, 'asc']]
+            });
+
+
+            // Monster Table
+            $('#monsterTable').DataTable({
                 ...medievalTableConfig,
                 order: [[0, 'asc']]
             });
@@ -418,6 +494,50 @@ function deleteContent(Id, controllerName) {
         }
     });
 }
+
+// Monster Toggle-Funktionalität
+$(document).on('change', '.monster-toggle', function() {
+    const checkbox = $(this);
+    const monsterId = checkbox.data('monster-id');
+    const toggleType = checkbox.data('toggle-type');
+    const isChecked = checkbox.is(':checked');
+
+    // Checkbox vorübergehend deaktivieren
+    checkbox.prop('disabled', true);
+
+    $.ajax({
+        type: "POST",
+        url: "/api/monster/toggle",
+        data: JSON.stringify({
+            id: monsterId,
+            field: toggleType,
+            value: isChecked
+        }),
+        contentType: "application/json",
+        success: function (response) {
+            // Toast-Nachricht anzeigen
+            const message = toggleType === 'encounter' ? 'Encounter' : 'Extra-Infos';
+            const status = isChecked ? 'aktiviert' : 'deaktiviert';
+            showToast(`${message} ${status} für Monster`);
+
+            // Checkbox wieder aktivieren
+            checkbox.prop('disabled', false);
+        },
+        error: function (xhr, status, error) {
+            console.error('Fehler beim Update:', error);
+
+            // Bei Fehler Checkbox zurücksetzen
+            checkbox.prop('checked', !isChecked);
+            checkbox.prop('disabled', false);
+
+            Swal.fire({
+                title: "Fehler!",
+                text: "Das Monster konnte nicht aktualisiert werden.",
+                icon: "error"
+            });
+        }
+    });
+});
 </script>
 }
 

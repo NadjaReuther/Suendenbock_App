@@ -342,7 +342,7 @@
                     <div class="row">
                         <div class="col-md-6  mb-3">
                             <label for="BlutgruppeId" class="form-label">Blutgruppe</label>
-                            <select class="form-select" asp-for="Details.BlutgruppeId" name="ViewBag.Blutgruppen">
+                            <select class="form-select" asp-for="Details.BlutgruppeId" asp-items="ViewBag.Blutgruppen">
                                 <option value="">Blutgruppe wählen...</option>
                             </select>
                         </div>
@@ -353,7 +353,7 @@
                     </div>
                     <div class="description-container">
                         <div id="editor-wrapper">
-                            <textarea class="form-control d-none" id="description" name="description">
+                            <textarea class="form-control d-none" id="description" name="Details.Description">
                                 @(Model?.Details?.Description ?? "")
                             </textarea>
                             <div id="wysiwyg-editor"></div>

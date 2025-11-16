@@ -99,3 +99,216 @@
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+
+/* Quote/Zitat Styling */
+.wiki-quote-box {
+    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+    border-left: 4px solid #d4af37;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: 0 2px 8px rgba(93, 78, 55, 0.1);
+}
+
+.wiki-quote {
+    margin: 0;
+    font-family: 'Cinzel', serif;
+    font-style: italic;
+    color: #5d4e37;
+}
+
+.wiki-quote p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.wiki-quote footer {
+    text-align: right;
+    color: #8b7355;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Gildenführung Styling */
+.guild-leadership {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.leadership-member {
+    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+    border: 2px solid #d4c4a8;
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.leadership-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.leadership-link:hover {
+    transform: translateY(-2px);
+}
+
+.leadership-member:hover {
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+    border-color: #d4af37;
+}
+
+.leadership-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #d4af37;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.leadership-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.leadership-role {
+    font-size: 0.85rem;
+    color: #8b7355;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.leadership-name {
+    font-size: 1.2rem;
+    color: #5d4e37;
+    font-weight: 700;
+    font-family: 'Cinzel', serif;
+}
+
+/* Mitgliederliste Grid */
+.guild-members-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.member-card {
+    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+    border: 2px solid #d4c4a8;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.member-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(212, 175, 55, 0.3);
+    border-color: #d4af37;
+}
+
+.member-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #d4c4a8;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.member-card:hover .member-avatar {
+    border-color: #d4af37;
+    transform: scale(1.05);
+}
+
+.member-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #5d4e37;
+    font-family: 'Cinzel', serif;
+    text-align: center;
+    word-wrap: break-word;
+}
+
+/* Wiki-Listen */
+.wiki-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.5rem 0;
+}
+
+.wiki-list li {
+    padding: 0.3rem 0;
+    padding-left: 1.2rem;
+    position: relative;
+    color: #5d4e37;
+}
+
+.wiki-list li:before {
+    content: "⚔️";
+    position: absolute;
+    left: 0;
+    font-size: 0.9rem;
+}
+
+/* Allgemeine Wiki-Links */
+.wiki-link {
+    color: #d4af37;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.wiki-link:hover {
+    color: #b8941f;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .wiki-content {
+        grid-template-columns: 1fr;
+    }
+
+    .wiki-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .wiki-avatar {
+        margin-right: 0;
+        margin-bottom: 1rem;
+    }
+
+    .guild-leadership {
+        grid-template-columns: 1fr;
+    }
+
+    .guild-members-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .member-avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .member-name {
+        font-size: 0.85rem;
+    }
+}

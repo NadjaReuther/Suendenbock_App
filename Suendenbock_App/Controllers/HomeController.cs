@@ -79,51 +79,6 @@ namespace Suendenbock_App.Controllers
             };      
             return View(viewModel);
         }
-        // Übersicht Character
-        // / GET: /Home/CharacterOverview
-        public IActionResult CharacterOverview()
-        {
-            var characters = _context.Characters.ToList();
-            return View(characters);
-        }
-
-        // Übersicht Monstertyp
-        // / GET: /Home/MonsterOverview
-        public IActionResult MonsterOverview()
-        {
-            var monstertyp = _context.MonsterTypes
-                .OrderBy(mt => mt.MonsterwuerfelId)
-                .ToList();
-            return View(monstertyp);
-        }
-
-        // Übersicht Infanterien
-        // / GET: /Home/InfanterieOverview
-        public IActionResult InfanterieOverview()
-        {
-            var infanterien = _context.Infanterien
-            .Include(i => i.LeaderCharacter)
-            .Include(i => i.VertreterCharacter)
-            .Include(i => i.Regiments)
-                .ThenInclude(r => r.Regimentsleiter)
-            .Include(i => i.Regiments)
-                .ThenInclude(r => r.Adjutant)
-            .ToList();
-
-            return View(infanterien);
-        }
-
-        // Übersicht Gilden
-        // / GET: /Home/GuildOverview
-        public IActionResult GuildOverview()
-        {
-            var guilds = _context.Guilds
-                .Include(g => g.LeaderCharacter)
-                .Include(g => g.VertreterCharacter)
-                .OrderBy(g => g.Name)
-                .ToList();
-            return View(guilds);
-        }
 
         //Einbau Familienstammbaum
         public IActionResult FamilyTree(int characterId = 0)

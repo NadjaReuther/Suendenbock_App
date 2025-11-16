@@ -76,7 +76,7 @@
                             aria-controls="collapse-@infanterie.Id">
                         @if (!string.IsNullOrEmpty(infanterie.ImagePath))
                         {
-                            <img src="~/images/infanterie/@(infanterie.ImagePath).svg"
+                            <img src="~/images/infanterie/@(infanterie.ImagePath)"
                                  alt="Standarte"
                                  class="infanterie-logo" />
                         }
@@ -217,4 +217,46 @@
         <h4>Keine Infanterien vorhanden</h4>
         <p>Es wurden noch keine Infanterien angelegt.</p>
     </div>
+}
+
+@section Scripts {
+    <script>
+        // Automatisches Öffnen des richtigen Accordion-Items basierend auf URL-Parameter
+        document.addEventListener('DOMContentLoaded', function() {
+            // Query-Parameter aus URL auslesen
+            const urlParams = new URLSearchParams(window.location.search);
+            const infanterieId = urlParams.get('id');
+
+            if (infanterieId) {
+                // Das entsprechende Accordion-Element finden
+                const targetCollapse = document.getElementById('collapse-' + infanterieId);
+
+                if (targetCollapse) {
+                    // Bootstrap Collapse-Instanz erstellen und öffnen
+                    const bsCollapse = new bootstrap.Collapse(targetCollapse, {
+                        toggle: true
+                    });
+
+                    // Smooth scroll zum Element
+                    setTimeout(function() {
+                        const targetHeader = document.getElementById('heading-' + infanterieId);
+                        if (targetHeader) {
+                            targetHeader.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+
+                            // Optional: Kleiner Offset nach oben für bessere Sichtbarkeit
+                            setTimeout(function() {
+                                window.scrollBy({
+                                    top: -20,
+                                    behavior: 'smooth'
+                                });
+                            }, 300);
+                        }
+                    }, 200);
+                }
+            }
+        });
+    </script>
 }

@@ -1,0 +1,164 @@
+﻿@using Suendenbock_App.Models.Domain
+@model Monster
+@{
+    ViewData["Title"] = "Monster erstellen";
+}
+@section Styles {
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="/css/wysiwyg-editor.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="~/css/Monsterstyle.css" rel="stylesheet" />
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        <strong>Fehler:</strong> @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <strong>Erfolg:</strong> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="steckbrief-container">
+    <div class="steckbrief-title">Monster</div>
+    <form asp-controller="Monster" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
+        @if (Model != null && Model.Id > 0)
+        {
+            <input type="hidden" name="Id" value="@Model.Id" />
+        }
+        <div class="row mb-3">
+            <div class="col-6">
+                <div class="image-upload-container">
+                    <div class="image-preview" id="monster-drop-zone" onclick="document.getElementById('monsterzeichenUpload').click()">
+                        @if (!string.IsNullOrEmpty(Model?.ImagePath))
+                        {
+                            <img src="@Model.ImagePath" alt="@Model.ImagePath" style="width: 100%; height: 100%; object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <div class="image-placeholder">                                
+                                <div>Monsterbild<br /><small>Klicken zum Hochladen</small></div>
+                            </div>
+                        }
+                    </div>
+
+                    <input type="file" id="monsterzeichenUpload" name="monsterzeichen" accept="image/jpeg,image/jpg,image/png" style="display: none;" onchange="previewImage(this, '.image-preview')">
+                    <button type="button" class="image-upload-btn" onclick="document.getElementById('monsterzeichenUpload').click()">📷 Logo wählen</button>
+                </div>
+            </div>
+            <div class="col-5">                
+                <div class="row">
+                    <input type="text" class="form-control" id="Bezeichnung" asp-for="Name" placeholder="Monsterbezeichnung" required>
+                </div>
+                <br />
+                <br />
+                <div class="row">                    
+                    <select class="form-select" asp-for="MonstertypId" asp-items="ViewBag.Monstertyp" required>
+                        <option value="">Monstertyp auswählen...</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <!-- Encounter Sektion -->
+        <div class="monster-section mb-4">
+            <div class="row align-items-start">
+                <div class="col-lg-2">
+                    <div class="toggle-container">
+                        <div class="form-check form-switch medieval-switch">
+                            <input class="form-check-input" type="checkbox" id="encounterSwitch" asp-for="encounter" value="true">
+                            <label class="form-check-label" for="encounterSwitch">
+                                <div class="switch-label">
+                                    <span class="switch-icon">⚔️</span>
+                                    <span class="switch-text">Encounter<br/><small class="text-muted">Für Spieler aktivieren</small></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-10">
+                    <label for="description" class="form-label monster-label">
+                        <span class="label-icon">📜</span> Beschreibung
+                    </label>
+                    <small class="form-text text-muted d-block mb-2">
+                        Diese Beschreibung wird angezeigt, wenn "Encounter" aktiviert ist.
+                    </small>
+                    <div id="editor-wrapper">
+                        <textarea class="form-control d-none" id="description" name="description">@(Model?.Description ?? "")</textarea>
+                        <div id="wysiwyg-editor1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Perfected Sektion -->
+        <div class="monster-section mb-4">
+            <div class="row align-items-start">
+                <div class="col-lg-2">
+                    <div class="toggle-container">
+                        <div class="form-check form-switch medieval-switch">
+                            <input class="form-check-input" type="checkbox" id="perfectedSwitch" asp-for="perfected" value="true">
+                            <label class="form-check-label" for="perfectedSwitch">
+                                <div class="switch-label">
+                                    <span class="switch-icon">✨</span>
+                                    <span class="switch-text">Perfected<br/><small class="text-muted">Extra-Infos aktivieren</small></span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-10">
+                    <label for="processeddescription" class="form-label monster-label">
+                        <span class="label-icon">📖</span> Extra-Informationen
+                    </label>
+                    <small class="form-text text-muted d-block mb-2">
+                        Diese Informationen werden nur angezeigt, wenn "Encounter" UND "Perfected" aktiviert sind.
+                    </small>
+                    <div id="editor-wrapper">
+                        <textarea class="form-control d-none" id="processeddescription" name="processeddescription">@(Model?.ProcessedDescription ?? "")</textarea>
+                        <div id="wysiwyg-editor2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center">
+            <button type="submit" class="btn-wachs">Gebilligt</button>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <script src="~/js/imagePreview.js"></script>
+    <script src="~/js/wysiwyg-editor.js"></script>
+    <script src="~/js/entity-mentions.js"></script>
+    <script>
+        // Tooltips aktivieren
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        enableImageDragDrop('#monster-drop-zone', 'monsterzeichenUpload');
+
+        $(document).ready(function() {
+            // Zuerst WYSIWYG-Editor initialisieren
+            const wikiEditor = new WikiWYSIWYGEditor('#description');
+
+            // Dann EntityMentions mit kleiner Verzögerung
+            setTimeout(() => {
+                new EntityMentions('#description');
+            }, 800);
+
+            const wikiEditorpro = new WikiWYSIWYGEditor('#processeddescription');
+
+            // Dann EntityMentions mit kleiner Verzögerung
+            setTimeout(() => {
+                new EntityMentions('#processeddescription');
+            }, 800);
+        });
+    </script>
+}

@@ -43,6 +43,9 @@ namespace Suendenbock_App.Controllers
                 .Include(c => c.Details)
                     .ThenInclude(b => b.Blutgruppe)
                 .ToList();
+            var allMonsters = _context.Monsters
+                .Include(m => m.Monstertyp)
+                .ToList();
 
             var viewModel = new AdminViewModel
             {
@@ -51,6 +54,7 @@ namespace Suendenbock_App.Controllers
                 Infanteries = allInfanteries,
                 Regiments = allRegiments,
                 Characters = allCharacters,
+                Monsters = allMonsters
             };
             return View(viewModel);
         }

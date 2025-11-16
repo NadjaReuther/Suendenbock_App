@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
@@ -6,6 +7,7 @@ using Suendenbock_App.Services;
 
 namespace Suendenbock_App.Controllers
 {
+    [Authorize]
     public class InfanterieController : BaseOrganizationController
     {
         public InfanterieController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment): base(context, imageUploadService, environment)
@@ -16,7 +18,21 @@ namespace Suendenbock_App.Controllers
         {
             return View();
         }
-        
+        [AllowAnonymous]
+        public IActionResult Overview()
+        {
+            var infanterien = _context.Infanterien
+            .Include(i => i.LeaderCharacter)
+            .Include(i => i.VertreterCharacter)
+            .Include(i => i.Regiments)
+                .ThenInclude(r => r.Regimentsleiter)
+            .Include(i => i.Regiments)
+                .ThenInclude(r => r.Adjutant)
+            .ToList();
+
+            return View(infanterien);
+        }
+
         public IActionResult Form(int id = 0)
         {
             LoadCommonViewBagData();

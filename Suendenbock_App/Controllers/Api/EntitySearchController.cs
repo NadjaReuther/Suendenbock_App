@@ -103,7 +103,7 @@ namespace Suendenbock_App.Controllers.Api
                     name = i.Bezeichnung + ". Infanterie",
                     type = "infanterie",
                     icon = "⚔️",
-                    url = $"/Infanterie/InfanterieSheet/{i.Id}",
+                    url = $"/Infanterie/Overview?id={i.Id}",
                     subtitle = i.Sitz
                 })
                 .ToListAsync<object>();

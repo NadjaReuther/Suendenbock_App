@@ -34,6 +34,12 @@ namespace Suendenbock_App.Controllers
             return View();
         }
         [AllowAnonymous]
+        public IActionResult Overview()
+        {
+            var characters = _context.Characters.ToList();
+            return View(characters);
+        }
+        [AllowAnonymous]
         public IActionResult CharacterSheet(int id)
         {
             var character = _context.Characters
@@ -82,7 +88,7 @@ namespace Suendenbock_App.Controllers
         {
             var userId = _userManager.GetUserId(User);
             var isGod = User.IsInRole("Gott");
-            
+
             if (id > 0)
             {
                 // Load character data for editing
@@ -96,6 +102,17 @@ namespace Suendenbock_App.Controllers
                     TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten";
                     return RedirectToAction("Index", "Player");
                 }
+
+                // Initialisiere Details und Affiliation falls NULL
+                if (character.Details == null)
+                {
+                    character.Details = new CharacterDetails { CharacterId = id };
+                }
+                if (character.Affiliation == null)
+                {
+                    character.Affiliation = new CharacterAffiliation { CharacterId = id };
+                }
+
                 //Lade Basis-Daten für das Formular
                 LoadFormViewBagData();
                 ViewBag.Step = step;
@@ -106,7 +123,7 @@ namespace Suendenbock_App.Controllers
                 TempData["Error"] = "Nur Gott darf neue Character erstellen!";
                 return RedirectToAction("Index", "Player");
             }
-            
+
             LoadFormViewBagData();
             ViewBag.Step = step;
             return View(new Character());
@@ -229,7 +246,7 @@ namespace Suendenbock_App.Controllers
             }            
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep2(int id, int? standId, string? beruf, int? blutgruppeId, int? hausId, int? herkunftslandId, int? bodyHeight, string? description)
+        public async Task<IActionResult> SaveStep2(int id, [Bind(Prefix = "Details")] CharacterDetails details)
         {
             var userId = _userManager?.GetUserId(User);
             var isGod = User.IsInRole("Gott");
@@ -242,6 +259,13 @@ namespace Suendenbock_App.Controllers
                     return NotFound();
                 }
 
+                // Berechtigungsprüfung
+                if (!isGod && character?.UserId != userId)
+                {
+                    TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten!";
+                    return RedirectToAction("Index", "Player");
+                }
+
                 // CharacterDetails erstellen oder aktualisieren
                 if (character.Details == null)
                 {
@@ -251,23 +275,19 @@ namespace Suendenbock_App.Controllers
                         return RedirectToAction("Index", "Player");
                     }
                     character.Details = new CharacterDetails { CharacterId = id };
-
                     _context.CharacterDetails.Add(character.Details);
                 }
-                if (!isGod && character?.UserId != userId)
-                {
-                    TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten!";
-                    return RedirectToAction("Index", "Player");
-                }
-                character.Details.StandId = standId;
-                character.Details.Beruf = beruf;
-                character.Details.BlutgruppeId = blutgruppeId;
-                character.Details.HausId = hausId;
-                character.Details.HerkunftslandId = herkunftslandId;
-                character.Details.BodyHeight = bodyHeight;
-                character.Details.Description = description;
+
+                // Werte aus dem gebundenen Details-Objekt übernehmen
+                character.Details.StandId = details.StandId;
+                character.Details.Beruf = details.Beruf;
+                character.Details.BlutgruppeId = details.BlutgruppeId;
+                character.Details.HausId = details.HausId;
+                character.Details.HerkunftslandId = details.HerkunftslandId;
+                character.Details.BodyHeight = details.BodyHeight;
+                character.Details.Description = details.Description;
                 character.CompletionLevel = CharacterCompleteness.WithDetails;
-                
+
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Schritt 2 erfolgreich gespeichert!";
@@ -280,7 +300,7 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep3(int id, int? guildId, int? religionId, int? regimentId, int? infanterierangId)
+        public async Task<IActionResult> SaveStep3(int id, [Bind(Prefix = "Affiliation")] CharacterAffiliation affiliation)
         {
             var userId = _userManager?.GetUserId(User);
             var isGod = User.IsInRole("Gott");
@@ -291,6 +311,14 @@ namespace Suendenbock_App.Controllers
                 {
                     return NotFound();
                 }
+
+                // Berechtigungsprüfung
+                if (!isGod && character?.UserId != userId)
+                {
+                    TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten!";
+                    return RedirectToAction("Index", "Player");
+                }
+
                 // CharacterAffiliation erstellen oder aktualisieren
                 if (character.Affiliation == null)
                 {
@@ -302,16 +330,13 @@ namespace Suendenbock_App.Controllers
                     character.Affiliation = new CharacterAffiliation { CharacterId = id };
                     _context.CharacterAffiliations.Add(character.Affiliation);
                 }
-                if (!isGod && character?.UserId != userId)
-                {
-                    TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten!";
-                    return RedirectToAction("Index", "Player");
-                }
-                character.Affiliation.GuildId = guildId;
-                character.Affiliation.ReligionId = religionId;
-                character.Affiliation.RegimentId = regimentId;
-                character.Affiliation.InfanterierangId = infanterierangId;
-                
+
+                // Werte aus dem gebundenen Affiliation-Objekt übernehmen
+                character.Affiliation.GuildId = affiliation.GuildId;
+                character.Affiliation.ReligionId = affiliation.ReligionId;
+                character.Affiliation.RegimentId = affiliation.RegimentId;
+                character.Affiliation.InfanterierangId = affiliation.InfanterierangId;
+
                 character.CompletionLevel = CharacterCompleteness.Complete;
                 if(isGod && !string.IsNullOrEmpty(Request.Form["userId"]))
                 {
@@ -319,8 +344,17 @@ namespace Suendenbock_App.Controllers
                 }
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "Charakter erfolgreich erfolgreich erstellt/aktualisiert!";
-                return RedirectToAction("Index", "Admin");
+                TempData["Success"] = "Charakter erfolgreich erstellt/aktualisiert!";
+
+                // Rollen-basiertes Redirect
+                if (isGod)
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+                else
+                {
+                    return RedirectToAction("CharacterSheet", "Character", new { id = character.Id });
+                }
             }
             catch (Exception ex)
             {

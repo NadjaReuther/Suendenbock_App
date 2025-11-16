@@ -1,0 +1,35 @@
+﻿@using Suendenbock_App.Models.Domain
+@model List<Guild>
+@section Styles {
+    <link href="/css/antique-home.css" rel="stylesheet" />
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+}
+
+<section class="main-container">
+    <section class="character-scrolls">
+        @foreach (var guild in Model)
+        {
+
+            <div class="character-scroll" data-tilt>
+                <a class="card-link" asp-controller="Guild" asp-action="GuildSheet" asp-route-id="@guild.Id">
+                    <div class="scroll-header">
+                        @if (guild.ImagePath == null)
+                        {
+                            <!-- Zeigt die Initialen des Benutzers -->
+                            <div class="character-seal">@guild.Name.FirstOrDefault()</div>
+                        }
+                        else
+                        {
+                            <img class="card-title" src="@guild.ImagePath" style="width: 100%; height: 150px; object-fit: cover; top: 0;" />
+                        }
+                    </div>
+                    <div class="scroll-body">
+                        <h4>@guild.Name</h4>
+                    </div>
+                </a>
+            </div>
+        }
+    </section>
+</section>
+

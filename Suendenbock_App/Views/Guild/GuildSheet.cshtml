@@ -28,30 +28,182 @@
 
     <div class="wiki-content">
         <div class="wiki-main">
+            @* Quote/Zitat Sektion *@
+            @if (!string.IsNullOrEmpty(Model.quote))
+            {
+                <div class="wiki-quote-box">
+                    <blockquote class="wiki-quote">
+                        <p>"@Html.Raw(Model.quote)"</p>
+                        @if (!string.IsNullOrEmpty(Model.urheber))
+                        {
+                            <footer>— @Model.urheber</footer>
+                        }
+                    </blockquote>
+                </div>
+            }
+
             <h3>📜 Gildenbeschreibung</h3>
             <div class="wiki-description">
                 @if (!string.IsNullOrEmpty(Model.Description))
                 {
-                    @Model.Description
+                    @Html.Raw(Model.Description)
                 }
                 else
                 {
                     <em class="text-muted">Keine Beschreibung verfügbar.</em>
                 }
             </div>
+
+            @* Führungssektion *@
+            <h3>👑 Gildenführung</h3>
+            <div class="guild-leadership">
+                @if (Model.LeaderCharacter != null)
+                {
+                    <div class="leadership-member">
+                        <a href="@Url.Action("CharacterSheet", "Character", new { id = Model.LeaderCharacter.Id })" class="leadership-link">
+                            @if (!string.IsNullOrEmpty(Model.LeaderCharacter.ImagePath))
+                            {
+                                <img src="@Model.LeaderCharacter.ImagePath" alt="@Model.LeaderCharacter.Vorname @Model.LeaderCharacter.Nachname" class="leadership-avatar">
+                            }
+                            else
+                            {
+                                <div class="leadership-avatar" style="background: linear-gradient(45deg, #d4af37, #b8941f); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                    @Model.LeaderCharacter.Vorname?.Substring(0, 1)@Model.LeaderCharacter.Nachname?.Substring(0, 1)
+                                </div>
+                            }
+                            <div class="leadership-info">
+                                <span class="leadership-role">Anführer</span>
+                                <span class="leadership-name">@Model.LeaderCharacter.Vorname @Model.LeaderCharacter.Nachname</span>
+                            </div>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="leadership-member">
+                        <span class="text-muted">Kein Anführer ernannt</span>
+                    </div>
+                }
+
+                @if (Model.VertreterCharacter != null)
+                {
+                    <div class="leadership-member">
+                        <a href="@Url.Action("CharacterSheet", "Character", new { id = Model.VertreterCharacter.Id })" class="leadership-link">
+                            @if (!string.IsNullOrEmpty(Model.VertreterCharacter.ImagePath))
+                            {
+                                <img src="@Model.VertreterCharacter.ImagePath" alt="@Model.VertreterCharacter.Vorname @Model.VertreterCharacter.Nachname" class="leadership-avatar">
+                            }
+                            else
+                            {
+                                <div class="leadership-avatar" style="background: linear-gradient(45deg, #8b7355, #6b5345); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                    @Model.VertreterCharacter.Vorname?.Substring(0, 1)@Model.VertreterCharacter.Nachname?.Substring(0, 1)
+                                </div>
+                            }
+                            <div class="leadership-info">
+                                <span class="leadership-role">Stellvertreter</span>
+                                <span class="leadership-name">@Model.VertreterCharacter.Vorname @Model.VertreterCharacter.Nachname</span>
+                            </div>
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="leadership-member">
+                        <span class="text-muted">Kein Stellvertreter ernannt</span>
+                    </div>
+                }
+            </div>
+
+            @* Mitgliederliste *@
+            @{
+                var members = ViewBag.Members as List<Character>;
+            }
+            @if (members != null && members.Any())
+            {
+                <h3>⚔️ Gildenmitglieder (@members.Count)</h3>
+                <div class="guild-members-grid">
+                    @foreach (var member in members)
+                    {
+                        <a href="@Url.Action("CharacterSheet", "Character", new { id = member.Id })" class="member-card">
+                            @if (!string.IsNullOrEmpty(member.ImagePath))
+                            {
+                                <img src="@member.ImagePath" alt="@member.Vorname @member.Nachname" class="member-avatar">
+                            }
+                            else
+                            {
+                                <div class="member-avatar" style="background: linear-gradient(45deg, #5d4e37, #4a3f2f); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                    @member.Vorname?.Substring(0, 1)@member.Nachname?.Substring(0, 1)
+                                </div>
+                            }
+                            <span class="member-name">@member.Vorname @member.Nachname</span>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <h3>⚔️ Gildenmitglieder</h3>
+                <p class="text-muted">Noch keine Mitglieder in dieser Gilde.</p>
+            }
         </div>
 
         <div class="wiki-sidebar">
             <div class="wiki-infobox">
                 <h4>📊 Gildendaten</h4>
-                <p><strong>Rang:</strong> </p>
-                <p><strong>anführer:</strong></p>               
-                <p><strong>Stellvertreter:</strong></p>
-                <p><strong>Anmeldestatus:</strong> @Model.AnmeldungsstatusNavigation.Name</p>
-                <p><strong>Lizenzen:</strong> </p>
+
+                @if (Model.AbenteuerrangNavigation != null)
+                {
+                    <p><strong>Rang:</strong> @Model.AbenteuerrangNavigation.Name</p>
+                }
+
+                @if (Model.LeaderCharacter != null)
+                {
+                    <p>
+                        <strong>Anführer:</strong>
+                        <a href="@Url.Action("CharacterSheet", "Character", new { id = Model.LeaderCharacter.Id })" class="wiki-link">
+                            @Model.LeaderCharacter.Vorname @Model.LeaderCharacter.Nachname
+                        </a>
+                    </p>
+                }
+                else
+                {
+                    <p><strong>Anführer:</strong> <em class="text-muted">Nicht ernannt</em></p>
+                }
+
+                @if (Model.VertreterCharacter != null)
+                {
+                    <p>
+                        <strong>Stellvertreter:</strong>
+                        <a href="@Url.Action("CharacterSheet", "Character", new { id = Model.VertreterCharacter.Id })" class="wiki-link">
+                            @Model.VertreterCharacter.Vorname @Model.VertreterCharacter.Nachname
+                        </a>
+                    </p>
+                }
+                else
+                {
+                    <p><strong>Stellvertreter:</strong> <em class="text-muted">Nicht ernannt</em></p>
+                }
+
+                @if (Model.AnmeldungsstatusNavigation != null)
+                {
+                    <p><strong>Anmeldestatus:</strong> @Model.AnmeldungsstatusNavigation.Name</p>
+                }
+
+                @if (Model.Gildenlizenzen != null && Model.Gildenlizenzen.Any())
+                {
+                    <p><strong>Lizenzen:</strong></p>
+                    <ul class="wiki-list">
+                        @foreach (var gildenlizenz in Model.Gildenlizenzen)
+                        {
+                            <li>@gildenlizenz.Lizenzen?.Name</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p><strong>Lizenzen:</strong> <em class="text-muted">Keine Lizenzen</em></p>
+                }
             </div>
-
-
         </div>
     </div>
 </div>

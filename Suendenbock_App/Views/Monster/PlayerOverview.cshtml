@@ -1,0 +1,234 @@
+@using Suendenbock_App.Models.Domain
+@model List<Monstertyp>
+
+@section Styles {
+    <link href="/css/antique-home.css" rel="stylesheet" />
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="/css/wiki.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Monster Overview Styling */
+        .monster-overview-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .monster-type-section {
+            background: linear-gradient(145deg, #faf8f3, #f0ede6);
+            border: 3px solid #8b7355;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            box-shadow: 0 8px 24px rgba(93, 78, 55, 0.2);
+        }
+
+        .monster-type-header {
+            font-family: 'Uncial Antiqua', serif;
+            font-size: 2rem;
+            color: #5d4e37;
+            border-bottom: 3px solid #d4af37;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .monster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .monster-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #d4c4a8;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monster-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+            border-color: #d4af37;
+        }
+
+        .monster-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #d4c4a8;
+        }
+
+        .monster-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #d4af37;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .monster-image-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #d4c4a8;
+            background: linear-gradient(45deg, #8b7355, #6b5345);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .monster-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #5d4e37;
+            margin: 0;
+        }
+
+        .monster-description {
+            font-family: Georgia, serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #4a4237;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(250, 248, 243, 0.6);
+            border-radius: 8px;
+            border-left: 4px solid #d4af37;
+        }
+
+        .monster-extra-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+            border: 2px solid #d4af37;
+            border-radius: 8px;
+        }
+
+        .monster-extra-info-header {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            color: #5d4e37;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .monster-extra-info-content {
+            font-family: Georgia, serif;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #4a4237;
+        }
+
+        .no-monsters-message {
+            text-align: center;
+            padding: 3rem;
+            color: #8b7355;
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+        }
+
+        .monster-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: linear-gradient(45deg, #d4af37, #b8941f);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+    </style>
+}
+
+<div class="monster-overview-container">
+    <header class="antique-header mb-4">
+        <h1 class="main-title">👹 Monster-Kompendium</h1>
+        <p class="subtitle">Begegnete Kreaturen und ihre Geheimnisse</p>
+    </header>
+
+    @if (Model != null && Model.Any(mt => mt.Monster.Any()))
+    {
+        @foreach (var monsterType in Model.Where(mt => mt.Monster.Any()))
+        {
+            <div class="monster-type-section">
+                <div class="monster-type-header">
+                    <span>👾</span>
+                    <span>@monsterType.Name</span>
+                    <span class="monster-badge">@monsterType.Monster.Count() @(monsterType.Monster.Count() == 1 ? "Monster" : "Monster")</span>
+                </div>
+
+                <div class="monster-grid">
+                    @foreach (var monster in monsterType.Monster.Where(m => m.encounter))
+                    {
+                        <div class="monster-card">
+                            <div class="monster-card-header">
+                                @if (!string.IsNullOrEmpty(monster.ImagePath))
+                                {
+                                    <img src="@monster.ImagePath" alt="@monster.Name" class="monster-image">
+                                }
+                                else
+                                {
+                                    <div class="monster-image-placeholder">
+                                        👹
+                                    </div>
+                                }
+                                <h3 class="monster-name">@monster.Name</h3>
+                            </div>
+
+                            @* Beschreibung - wird angezeigt wenn encounter=true *@
+                            @if (!string.IsNullOrEmpty(monster.Description))
+                            {
+                                <div class="monster-description">
+                                    @Html.Raw(monster.Description)
+                                </div>
+                            }
+
+                            @* Extra-Informationen - nur wenn encounter=true UND perfected=true *@
+                            @if (monster.perfected && !string.IsNullOrEmpty(monster.ProcessedDescription))
+                            {
+                                <div class="monster-extra-info">
+                                    <div class="monster-extra-info-header">
+                                        <span>✨</span>
+                                        <span>Zusätzliche Erkenntnisse</span>
+                                    </div>
+                                    <div class="monster-extra-info-content">
+                                        @Html.Raw(monster.ProcessedDescription)
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="monster-type-section">
+            <div class="no-monsters-message">
+                <p>📜 Noch keine Monster begegnet</p>
+                <p style="font-size: 0.9rem; color: #8b7355; margin-top: 1rem;">
+                    Sobald ihr auf euren Abenteuern Kreaturen begegnet, werden diese hier erscheinen.
+                </p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="~/js/character-mentions.js"></script>
+}
