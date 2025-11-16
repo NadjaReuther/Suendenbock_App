@@ -1,0 +1,92 @@
+﻿@{
+    ViewData["Title"] = "QR Code Generator";
+}
+@section Styles {
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+    <link href="/css/qrcode-style.css" rel="stylesheet" />
+}
+
+<div class="container">
+    <h1 style="font-family: 'Uncial Antiqua', serif; color: #d4af37; text-align: center; margin: 2rem 0;">
+        📜 QR-Code Generator
+    </h1>
+</div>
+
+<div class="generator-wrapper">
+    <!-- Eingabebereich -->
+    <div class="input-section">
+        <div class="input-group">
+            <label for="text-input">Text oder URL eingeben:</label>
+            <textarea id="text-input" placeholder="z.B. https://example.com oder beliebiger Text" rows="4"></textarea>
+        </div>
+
+        <div class="settings-grid">
+            <!-- Größenanpassung -->
+            <div class="input-group">
+                <label for="size-input">QR-Code Größe: <span id="size-value">256</span>px</label>
+                <input type="range" id="size-input" min="128" max="512" value="256" step="32">
+            </div>
+
+            <!-- Fehlerkorrektur-Level -->
+            <div class="input-group">
+                <label for="error-level">Fehlerkorrektur:</label>
+                <select id="error-level">
+                    <option value="L">Niedrig (7%)</option>
+                    <option value="M" selected>Mittel (15%)</option>
+                    <option value="Q">Hoch (25%)</option>
+                    <option value="H">Sehr Hoch (30%)</option>
+                </select>
+            </div>
+
+            <!-- Vordergrundfarbe -->
+            <div class="input-group">
+                <label for="fg-color">Vordergrundfarbe:</label>
+                <div class="color-picker">
+                    <input type="color" id="fg-color" value="#000000">
+                    <input type="text" id="fg-color-text" value="#000000" maxlength="7">
+                </div>
+            </div>
+
+            <!-- Hintergrundfarbe -->
+            <div class="input-group">
+                <label for="bg-color">Hintergrundfarbe:</label>
+                <div class="color-picker">
+                    <input type="color" id="bg-color" value="#ffffff">
+                    <input type="text" id="bg-color-text" value="#ffffff" maxlength="7">
+                </div>
+            </div>
+        </div>
+
+        <!-- Logo-Upload -->
+        <div class="input-group">
+            <label for="logo-input">Logo hochladen (optional):</label>
+            <input type="file" id="logo-input" accept="image/*">
+            <button id="remove-logo" class="btn-secondary" style="display: none;">Logo entfernen</button>
+        </div>
+
+        <!-- Logo-Größe -->
+        <div class="input-group" id="logo-size-group" style="display: none;">
+            <label for="logo-size">Logo-Größe: <span id="logo-size-value">20</span>%</label>
+            <input type="range" id="logo-size" min="10" max="30" value="20" step="5">
+        </div>
+
+        <!-- Generieren-Button -->
+        <button id="generate-btn" class="btn-primary">QR-Code generieren</button>
+    </div>
+
+    <!-- Vorschaubereich -->
+    <div class="preview-section">
+        <h2>Vorschau</h2>
+        <div id="qr-code-container">
+            <div id="qr-code"></div>
+            <p class="placeholder-text">Ihr QR-Code erscheint hier</p>
+        </div>
+        <button id="download-btn" class="btn-primary" style="display: none;">Als PNG herunterladen</button>
+    </div>
+</div>
+@section Scripts {
+    <!-- QR-Code Bibliothek -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="/js/qrgenerator-script.js"></script>
+}

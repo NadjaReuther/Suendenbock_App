@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.7/css/dataTables.dataTables.css" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="~/css/wysiwyg-editor.css" rel="stylesheet" />
+    <link href="~/css/admin-nested-dropdown.css" rel="stylesheet" asp-append-version="true" />
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -25,7 +26,12 @@
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-controller="Admin" asp-action="Index">
-                                Übersicht
+                                Admin-Übersicht
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-controller="Admin" asp-action="QRGenerator">
+                                QR-Code Generator
                             </a>
                         </li>
                         <li class="nav-item dropdown">
@@ -34,7 +40,7 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="Character" asp-action="Form">Neuer Charakter</a></li>
-                                <li><a class="dropdown-item" asp-controller="Character" asp-action="Index">Alle Charaktere</a></li>
+                                <li><a class="dropdown-item" asp-controller="Character" asp-action="Overview">Alle Charaktere</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
@@ -43,17 +49,44 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="Monster" asp-action="Form">Neues Monster</a></li>
-                                <li><a class="dropdown-item" asp-controller="Monster" asp-action="Index">Alle Monster</a></li>
+                                <li><a class="dropdown-item" asp-controller="Monster" asp-action="Overview">Alle Monster</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-flag"></i> Verbände
                             </a>
-                            <ul class="dropdown-menu">                               
-                                <li><a class="dropdown-item" asp-controller="Guild" asp-action="Form">Neue Gilde</a></li>                                
-                                <li><a class="dropdown-item" asp-controller="Infanterie" asp-action="Form">Neue Infanterie</a></li>
-                                <li><a class="dropdown-item" asp-controller="Regiment" asp-action="Form">Neues Regiment</a></li>
+                            <ul class="dropdown-menu">
+                                <!-- Gilden Submenu -->
+                                <li class="dropdown-submenu">
+                                    <a class="dropdown-item dropdown-toggle" href="#">
+                                        <i class="fas fa-shield-alt"></i> Gilden
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Guild" asp-action="Form">Neue Gilde</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Guild" asp-action="Overview">Alle Gilden</a></li>
+                                    </ul>
+                                </li>
+                                <!-- Infanterien Submenu -->
+                                <li class="dropdown-submenu">
+                                    <a class="dropdown-item dropdown-toggle" href="#">
+                                        <i class="fas fa-flag"></i> Infanterien
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Infanterie" asp-action="Form">Neue Infanterie</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Infanterie" asp-action="Overview">Alle Infanterien</a></li>
+                                    </ul>
+                                </li>
+                                <!-- Regimenter Submenu -->
+                                <li class="dropdown-submenu">
+                                    <a class="dropdown-item dropdown-toggle" href="#">
+                                        <i class="fas fa-users"></i> Regimente
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Regiment" asp-action="Form">Neues Regiment</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Infanterie" asp-action="Overview">Alle Regimente</a></li>
+                                    </ul>
+                                </li>
                             </ul>
                         </li>
                     </ul>
@@ -120,6 +153,46 @@
     <script src="https://cdn.datatables.net/2.1.7/js/dataTables.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+    <!-- JavaScript für verschachtelte Dropdowns -->
+    <script>
+        $(document).ready(function() {
+            // Desktop: Hover-Funktionalität
+            if ($(window).width() > 768) {
+                $('.dropdown-submenu > a').on("mouseenter", function(e) {
+                    var $submenu = $(this).next('.dropdown-menu');
+                    $submenu.css('display', 'block');
+                });
+
+                $('.dropdown-submenu').on("mouseleave", function(e) {
+                    $(this).children('.dropdown-menu').css('display', 'none');
+                });
+            }
+            // Mobile: Click-Funktionalität
+            else {
+                $('.dropdown-submenu > a').on("click", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    var $submenu = $(this).next('.dropdown-menu');
+
+                    // Schließe andere Untermenüs
+                    $('.dropdown-submenu .dropdown-menu').not($submenu).slideUp();
+
+                    // Toggle aktuelles Untermenü
+                    $submenu.slideToggle();
+                });
+            }
+
+            // Verhindere, dass Hauptmenü sich schließt beim Klick auf Untermenü-Toggle
+            $('.dropdown-submenu > a.dropdown-toggle').on('click', function(e) {
+                if ($(window).width() > 768) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

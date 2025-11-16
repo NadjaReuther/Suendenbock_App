@@ -58,5 +58,10 @@ namespace Suendenbock_App.Controllers
             };
             return View(viewModel);
         }
+
+        public IActionResult QRGenerator()
+        {
+            return View();
+        }
     }
 }

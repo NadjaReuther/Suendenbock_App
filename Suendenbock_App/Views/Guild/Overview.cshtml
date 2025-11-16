@@ -1,5 +1,10 @@
 ﻿@using Suendenbock_App.Models.Domain
 @model List<Guild>
+@{
+    // Prüfen ob User Admin/God ist
+    var isAdmin = User.IsInRole("Gott");
+    Layout = isAdmin ? "_AdminLayout" : "_Layout";
+}
 @section Styles {
     <link href="/css/antique-home.css" rel="stylesheet" />
     <link href="/css/character.css" rel="stylesheet" />
