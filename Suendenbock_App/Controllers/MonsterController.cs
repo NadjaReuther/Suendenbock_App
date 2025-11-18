@@ -30,14 +30,15 @@ namespace Suendenbock_App.Controllers
             return View();
         }
         [AllowAnonymous]
-        public IActionResult PlayerOverview()
+        public IActionResult Overview(int? monsterId = null, int? monstertypId = null)
         {
-            // Lade alle Monster gruppiert nach Monstertyp
-            // Nur Monster mit encounter=true werden angezeigt
             var monsterTypes = _context.MonsterTypes
-                .Include(mt => mt.Monster.Where(m => m.encounter))
+                .Include(mt => mt.Monster)
                 .OrderBy(mt => mt.Name)
                 .ToList();
+
+            ViewBag.SelectedMonsterId = monsterId;
+            ViewBag.SelectedMonstertypId = monstertypId;
 
             return View(monsterTypes);
         }
@@ -63,7 +64,7 @@ namespace Suendenbock_App.Controllers
             {
                 if (monster.Id == 0)
                 {
-                    var uploadedImagePath = await _imageUploadService.UploadImageAsync(monsterzeichen, monster.Name, "monster");
+                    var uploadedImagePath = await _imageUploadService.UploadImageAsync(monsterzeichen, "monster", monster.Name);
                     if (uploadedImagePath != null)
                     {
                         monster.ImagePath = uploadedImagePath;
@@ -91,7 +92,7 @@ namespace Suendenbock_App.Controllers
                         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                         var uniqueName = $"{monster.Name}_{timestamp}";
 
-                        var uploadedImagePath = await _imageUploadService.UploadImageAsync(monsterzeichen, uniqueName, "monster");
+                        var uploadedImagePath = await _imageUploadService.UploadImageAsync(monsterzeichen, "monster", uniqueName);
                         if (uploadedImagePath != null)
                         {
                             // Altes Bild löschen (NACH erfolgreichem Upload)

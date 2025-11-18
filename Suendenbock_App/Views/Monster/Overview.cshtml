@@ -1,0 +1,176 @@
+@using Suendenbock_App.Models.Domain
+@model List<Monstertyp>
+@{
+    var selectedMonsterId = ViewBag.SelectedMonsterId as int?;
+    var selectedMonstertypId = ViewBag.SelectedMonstertypId as int?;
+}
+
+@section Styles {
+    <link href="/css/antique-home.css" rel="stylesheet" />
+    <link href="/css/character.css" rel="stylesheet" />
+    <link href="/css/wiki.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+}
+
+<div class="monster-overview-container">
+    <header class="antique-header mb-4">
+        <h1 class="main-title">👹 Monster-Kompendium</h1>
+        <p class="subtitle">Begegnete Kreaturen und ihre Geheimnisse</p>
+    </header>
+
+    @if (Model != null && Model.Any(mt => mt.Monster.Any()))
+    {
+        <div class="accordion monster-accordion" id="monsterAccordion">
+            @foreach (var monsterType in Model.Where(mt => mt.Monster.Any()))
+            {
+                var typeId = $"type{monsterType.Id}";
+                var isTypeOpen = selectedMonstertypId == monsterType.Id || monsterType.Monster.Any(m => m.Id == selectedMonsterId);
+                var encounterCount = monsterType.Monster.Count(m => m.encounter);
+                var totalCount = monsterType.Monster.Count();
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading@(typeId)">
+                        <button class="accordion-button @(isTypeOpen ? "" : "collapsed")" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapse@(typeId)"
+                                aria-expanded="@(isTypeOpen ? "true" : "false")" aria-controls="collapse@(typeId)">
+                            <h3>@monsterType.Name</h3>
+                            <span class="ms-auto me-3" style="font-size: 0.9rem;">
+                                (@encounterCount/@totalCount entdeckt)
+                            </span>
+                        </button>
+                    </h2>
+                    <div id="collapse@(typeId)" class="accordion-collapse collapse @(isTypeOpen ? "show" : "")"
+                         aria-labelledby="heading@(typeId)" data-bs-parent="#monsterAccordion">
+                        <div class="accordion-body">
+                            @foreach (var monster in monsterType.Monster)
+                            {
+                                var isLocked = !monster.encounter;
+                                var monsterId = $"monster{monster.Id}";
+                                var isMonsterOpen = selectedMonsterId == monster.Id;
+
+                                <div class="accordion monster-accordion mb-3" id="accordion@(monsterId)">
+                                    <div class="accordion-item @(isLocked ? "locked-monster" : "")">
+                                        <h2 class="accordion-header" id="heading@(monsterId)">
+                                            <button class="accordion-button @(isMonsterOpen ? "" : "collapsed")" type="button"
+                                                    data-bs-toggle="collapse" data-bs-target="#collapse@(monsterId)"
+                                                    aria-expanded="@(isMonsterOpen ? "true" : "false")" aria-controls="collapse@(monsterId)"
+                                                    style="display: flex; align-items: center;">
+                                                @if (isLocked)
+                                                {
+                                                    <span style="margin-right: 0.75rem; font-size: 1.2rem;">🔒</span>
+                                                }
+                                                else if (!string.IsNullOrEmpty(monster.ImagePath))
+                                                {
+                                                    <img src="@monster.ImagePath" alt="@monster.Name"
+                                                         style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid #d4af37; margin-right: 0.75rem; object-fit: cover;">
+                                                }
+                                                else
+                                                {
+                                                    <span style="margin-right: 0.75rem; font-size: 1.2rem;">👹</span>
+                                                }
+                                                <span style="@(isLocked ? "filter: blur(3px);" : "")">
+                                                    @(isLocked ? "???" : monster.Name)
+                                                </span>
+                                                @if (!isLocked && monster.perfected)
+                                                {
+                                                    <span class="ms-auto me-3" style="font-size: 0.8rem; color: #d4af37;">
+                                                        ✨ Erforscht
+                                                    </span>
+                                                }
+                                            </button>
+                                        </h2>
+                                        <div id="collapse@(monsterId)" class="accordion-collapse collapse @(isMonsterOpen ? "show" : "")"
+                                             aria-labelledby="heading@(monsterId)" data-bs-parent="#accordion@(monsterId)">
+                                            <div class="accordion-body">
+                                                @if (isLocked)
+                                                {
+                                                    <div class="text-center" style="padding: 2rem;">
+                                                        <div style="font-size: 3rem; filter: blur(5px);">👹</div>
+                                                        <p style="color: #8b7355; margin-top: 1rem;">
+                                                            Dieses Monster wurde noch nicht entdeckt
+                                                        </p>
+                                                        <span class="locked-badge">🔒 Nicht freigeschaltet</span>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="monster-image-container">
+                                                        @if (!string.IsNullOrEmpty(monster.ImagePath))
+                                                        {
+                                                            <img src="@monster.ImagePath" alt="@monster.Name">
+                                                        }
+                                                        else
+                                                        {
+                                                            <div style="font-size: 4rem;">👹</div>
+                                                        }
+                                                    </div>
+
+                                                    @if (!string.IsNullOrEmpty(monster.Description))
+                                                    {
+                                                        <div class="monster-inner-card">
+                                                            <h5 style="font-family: 'Cinzel', serif; color: #5d4e37; margin-bottom: 1rem;">
+                                                                📜 Beschreibung
+                                                            </h5>
+                                                            @Html.Raw(monster.Description)
+                                                        </div>
+                                                    }
+
+                                                    @if (monster.perfected && !string.IsNullOrEmpty(monster.ProcessedDescription))
+                                                    {
+                                                        <div class="monster-inner-card">
+                                                            <h5 style="font-family: 'Cinzel', serif; color: #d4af37; margin-bottom: 1rem;">
+                                                                ✨ Zusätzliche Erkenntnisse
+                                                            </h5>
+                                                            @Html.Raw(monster.ProcessedDescription)
+                                                        </div>
+                                                    }
+
+                                                    <div class="text-center">
+                                                        @if (monster.perfected)
+                                                        {
+                                                            <span class="perfected-badge">✨ Komplett erforscht</span>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="monster-type-section">
+            <div class="no-monsters-message">
+                <p>📜 Noch keine Monster begegnet</p>
+                <p style="font-size: 0.9rem; color: #8b7355; margin-top: 1rem;">
+                    Sobald ihr auf euren Abenteuern Kreaturen begegnet, werden diese hier erscheinen.
+                </p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Automatisch zum aufgeklappten Monster scrollen
+        @if (selectedMonsterId.HasValue)
+        {
+            <text>
+            $(document).ready(function() {
+                setTimeout(function() {
+                    var monsterElement = document.getElementById('collapseMonster@selectedMonsterId');
+                    if (monsterElement) {
+                        monsterElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 500);
+            });
+            </text>
+        }
+    </script>
+}
