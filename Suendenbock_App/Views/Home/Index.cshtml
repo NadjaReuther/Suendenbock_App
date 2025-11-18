@@ -66,7 +66,7 @@
             </a>
         </div>
             <div class="pergament-card" data-tilt>
-        <a class="card-link" asp-controller="Monster" asp-action="Overview">
+        <a class="card-link" asp-controller="Monstertyp" asp-action="Overview">
 
                 <div class="card-corner top-left"></div>
                 <div class="card-corner top-right"></div>
@@ -177,12 +177,12 @@
                 <div class="magic-distribution">
                     <h3>Verteilung der Magieschulen</h3>
                     <div class="distribution-bars">
-                        @foreach (var stat in Model.MagicClassStats.Take(5))
+                        @foreach (var stat in Model.Obermagien)
                         {
                                 <div class="distribution-item">
                                     <span class="distribution-label">@stat.Key</span>
                                     <div class="distribution-bar">
-                                        <div class="distribution-fill" style="width: @(Math.Max(5, (stat.Value * 100) / Math.Max(1, Model.MagicClassStats.Values.Max())))%"></div>
+                                        <div class="distribution-fill" style="width: @(Math.Max(5, (stat.Value * 100) / Math.Max(1, Model.Obermagien.Values.Max())))%"></div>
                                         <span class="distribution-value">@stat.Value</span>
                                     </div>
                                 </div>

@@ -1,7 +1,8 @@
 ﻿@using Suendenbock_App.Models.Domain
 @model Guild
 @{
-    ViewData["Title"] = "Gilde erstellen";
+    ViewData["Title"] = Model.Id == 0 ? "Neue Gilde" : "Gilde bearbeiten";
+    Layout = "_AdminLayout";
 }
 @section Styles {
     <link href="/css/character.css" rel="stylesheet" />
@@ -23,8 +24,15 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
+
 <div class="steckbrief-container">
     <div class="steckbrief-title">Gilde</div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Index">Admin</a></li>
+            <li class="breadcrumb-item active">@ViewData["Title"]</li>
+        </ol>
+    </nav>
     <form id="formular" asp-controller="Guild" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
         @if (Model != null && Model.Id > 0)
         {

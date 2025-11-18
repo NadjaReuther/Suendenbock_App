@@ -1,11 +1,11 @@
 ﻿class EntityMentions {
     constructor(textareaSelector) {
+        this.textareaSelector = textareaSelector;
         this.textarea = document.querySelector(textareaSelector);
         this.dropdown = null;
         this.entities = [];
         this.currentMention = null;
 
-        // Verschiedene Mention-Typen definieren
         this.mentionTypes = {
             '@': { type: 'character', name: 'Charaktere', color: '#d4af37' },
             '#': { type: 'guild', name: 'Gilden', color: '#198754' },
@@ -43,21 +43,26 @@
     }
 
     initCKEditorMode() {
-        // Warte auf CKEditor-Instanz
+        console.log('🔍 Suche Editor für:', this.textareaSelector);
+        console.log('📦 Verfügbare Editoren:', Object.keys(window.editors || {}));
+
         let attempts = 0;
-        const maxAttempts = 50; // 5 Sekunden
+        const maxAttempts = 50;
 
         const checkInterval = setInterval(() => {
             attempts++;
 
-            if (window.currentEditor) {
+            const editorInstance = window.editors?.[this.textareaSelector] || window.currentEditor;
+
+            if (editorInstance) {
                 clearInterval(checkInterval);
-                this.editor = window.currentEditor;
-                console.log('✅ CKEditor-Instanz gefunden');
+                this.editor = editorInstance;
+                console.log('✅ Editor gefunden für:', this.textareaSelector);
                 this.setupCKEditorListeners();
             } else if (attempts >= maxAttempts) {
                 clearInterval(checkInterval);
-                console.error('❌ CKEditor-Instanz nicht gefunden nach 5 Sekunden');
+                console.error('❌ Editor NICHT gefunden für:', this.textareaSelector);
+                console.log('📦 Verfügbare Editoren:', Object.keys(window.editors || {}));
             }
         }, 100);
     }
@@ -209,14 +214,14 @@
         this.dropdown = document.createElement('div');
         this.dropdown.className = 'entity-mention-dropdown';
         this.dropdown.style.cssText = `
-            position: absolute;
+            position: fixed;
             background: white;
             border: 2px solid #d4c4a8;
             border-radius: 8px;
             max-height: 300px;
             min-width: 300px;
             overflow-y: auto;
-            z-index: 1000;
+            z-index: 10000;
             display: none;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         `;
@@ -285,51 +290,38 @@
             return;
         }
 
-        // ✅ Unterschiedliche Positionierung für CKEditor vs. Textarea
         let rect, top, left;
 
         if (this.editor) {
-            // CKEditor-Modus: Positioniere am CKEditor-Element
-            const editorElement = document.querySelector('.ck-editor__editable');
+            const editorElement = this.editor.ui.view.editable.element;
 
             if (editorElement) {
                 rect = editorElement.getBoundingClientRect();
 
-                // Versuche die Cursor-Position zu bekommen
                 const selection = this.editor.editing.view.document.selection;
                 const range = selection.getFirstRange();
 
                 if (range) {
-                    // Hole die DOM-Position des Cursors
                     const domRange = this.editor.editing.view.domConverter.viewRangeToDom(range);
 
                     if (domRange) {
                         const cursorRect = domRange.getBoundingClientRect();
-
-                        // Positioniere direkt unter dem Cursor
                         left = cursorRect.left;
                         top = cursorRect.bottom + 5;
-
-                        console.log(`📍 Dropdown-Position: left=${left}px, top=${top}px (am Cursor)`);
                     } else {
-                        // Fallback: Unter dem Editor
                         left = rect.left;
                         top = rect.top + 50;
-                        console.log(`📍 Dropdown-Position: left=${left}px, top=${top}px (am Editor-Start)`);
                     }
                 } else {
-                    // Fallback: Unter dem Editor
                     left = rect.left;
                     top = rect.top + 50;
                 }
             } else {
-                // Fallback auf Textarea
                 rect = this.textarea.getBoundingClientRect();
                 left = rect.left;
                 top = rect.top + 30;
             }
         } else {
-            // Textarea-Modus: Alte Logik
             rect = this.textarea.getBoundingClientRect();
             const style = window.getComputedStyle(this.textarea);
             const lineHeight = parseInt(style.lineHeight) || 20;

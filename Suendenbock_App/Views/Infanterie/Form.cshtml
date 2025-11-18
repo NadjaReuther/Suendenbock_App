@@ -26,6 +26,12 @@
 
 <div class="steckbrief-container">
     <div class="steckbrief-title">Infanterie</div>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Index">Admin</a></li>
+            <li class="breadcrumb-item active">@ViewData["Title"]</li>
+        </ol>
+    </nav>
     <form asp-controller="Infanterie" asp-action="CreateEdit" method="post" enctype="multipart/form-data">
         @if (Model != null && Model.Id > 0)
         {

@@ -12,5 +12,6 @@ namespace Suendenbock_App.Models.ViewModels
         public List<Infanterie> Infanteries { get; set; } = new List<Infanterie>();
         public List<Regiment> Regiments { get; set; } = new List<Regiment>();
         public List<Monster> Monsters { get; set; } = new List<Monster>();
+        public List<Monstertyp> Monstertypen { get; set; } = new List<Monstertyp>();
     }
 }

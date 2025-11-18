@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,24 +10,25 @@ using Suendenbock_App.Services;
 namespace Suendenbock_App.Controllers
 {
     [Authorize]
-    public class MonsterController : BaseOrganizationController
+    public class MonsterController : Controller
     {
-        public MonsterController(ApplicationDbContext context, IImageUploadService imageUploadService, IWebHostEnvironment environment) : base(context, imageUploadService, environment)
+        private readonly ApplicationDbContext _context;
+        private readonly IImageUploadService _imageUploadService;
+        private readonly IWebHostEnvironment _environment;
+        public MonsterController(
+            ApplicationDbContext context,
+            IImageUploadService imageUploadService,
+            IWebHostEnvironment environment)
         {
+            _context = context;
+            _imageUploadService = imageUploadService;
+            _environment = environment;
         }
+      
         public IActionResult Index()
         {
             return View();
         }
-        [AllowAnonymous]
-        public IActionResult Overview()
-        {
-            var monstertyp = _context.MonsterTypes
-                .OrderBy(mt => mt.MonsterwuerfelId)
-                .ToList();
-            return View(monstertyp);
-        }
-
         [AllowAnonymous]
         public IActionResult PlayerOverview()
         {
@@ -39,28 +41,6 @@ namespace Suendenbock_App.Controllers
 
             return View(monsterTypes);
         }
-        [AllowAnonymous]
-        public IActionResult MonstertypSheet(int id)
-        {
-            var monstertyp = _context.MonsterTypes
-                .Include(mt => mt.Monster)
-                .Include(mt => mt.Monstergruppen)
-                .Include(mt => mt.Monsterintelligenz)
-                .Include(mt => mt.Monsterwuerfel)
-                .Include(mt => mt.MonstertypImmunitaeten)
-                    .ThenInclude(im => im.Monsterimmunitaeten)
-                .Include(mt => mt.MonstertypenVorkommen)
-                    .ThenInclude(vo => vo.Monstervorkommen)
-                .Include(mt => mt.MonstertypAnfaelligkeiten)
-                    .ThenInclude(an => an.Monsteranfaelligkeiten)
-                .FirstOrDefault(mt => mt.Id == id);
-            if (monstertyp == null)
-            {
-                return NotFound();
-            }
-            return View(monstertyp);
-        }
-
         public IActionResult Form(int id = 0)
         {
             ViewBag.Monstertyp = new SelectList(_context.MonsterTypes.ToList(), "Id", "Name");
@@ -83,7 +63,7 @@ namespace Suendenbock_App.Controllers
             {
                 if (monster.Id == 0)
                 {
-                    var uploadedImagePath = await ProcessImageUpload(monsterzeichen, monster.Name, "monster");
+                    var uploadedImagePath = await _imageUploadService.UploadImageAsync(monsterzeichen, monster.Name, "monster");
                     if (uploadedImagePath != null)
                     {
                         monster.ImagePath = uploadedImagePath;
@@ -92,14 +72,14 @@ namespace Suendenbock_App.Controllers
                 }
                 else
                 {
-                    var monsterToUpdate = _context.Monsters.Find(monster);
+                    var monsterToUpdate = _context.Monsters.Find(monster.Id);
                     if (monsterToUpdate == null)
                     {
                         return NotFound();
                     }
 
                     // Eigenschaften aktualisieren (OHNE ImagePath)
-                    MonsterInfanterieProperties(monsterToUpdate, monster);
+                    UpdateMonsterProperties(monsterToUpdate, monster);
 
                     // **NUR bei neuem Bild das alte löschen und ersetzen**
                     if (monsterzeichen != null && monsterzeichen.Length > 0)
@@ -111,7 +91,7 @@ namespace Suendenbock_App.Controllers
                         var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
                         var uniqueName = $"{monster.Name}_{timestamp}";
 
-                        var uploadedImagePath = await ProcessImageUpload(monsterzeichen, uniqueName, "monster");
+                        var uploadedImagePath = await _imageUploadService.UploadImageAsync(monsterzeichen, uniqueName, "monster");
                         if (uploadedImagePath != null)
                         {
                             // Altes Bild löschen (NACH erfolgreichem Upload)
@@ -123,7 +103,7 @@ namespace Suendenbock_App.Controllers
                 }
 
                 _context.SaveChanges();
-                SetMessage(true, "Monster");
+                TempData["Success"] = "Monster erfolgreich erstellt/aktualisiert!";
                 return RedirectToAction("Index", "Admin");
             }
             catch (Exception ex)
@@ -132,10 +112,45 @@ namespace Suendenbock_App.Controllers
                 return RedirectToAction("Form", new { id = monster.Id });
             }
         }
+        public IActionResult Delete(int id)
+        {
+            var monster = _context.Monsters.Find(id);
+            if (monster == null)
+            {
+                return NotFound();
+            }
+
+            DeleteOldImage(monster.ImagePath);
+
+            _context.Monsters.Remove(monster);
+            _context.SaveChanges();
+
+            TempData["Success"] = "Monster gelöscht!";
+            return RedirectToAction("Index", "Admin");
+        }
+        private void DeleteOldImage(string? imagePath)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    var fullPath = Path.Combine(_environment.WebRootPath, imagePath.TrimStart('/'));
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        System.IO.File.Delete(fullPath);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Logging aber nicht den ganzen Prozess stoppen
+                Console.WriteLine($"Fehler beim Löschen des alten Bildes: {ex.Message}");
+            }
+        }
         /// <summary>
         /// Aktualisiert die Eigenschaften des Monsters außer dem ImagePath
         /// </summary>
-        private void MonsterInfanterieProperties(Monster target, Monster source)
+        private void UpdateMonsterProperties(Monster target, Monster source)
         {
             target.Name = source.Name;
             target.Description = source.Description;

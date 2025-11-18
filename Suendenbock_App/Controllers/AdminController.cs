@@ -46,6 +46,11 @@ namespace Suendenbock_App.Controllers
             var allMonsters = _context.Monsters
                 .Include(m => m.Monstertyp)
                 .ToList();
+            var allMonstertypen = _context.MonsterTypes
+                .Include(mt => mt.Monsterwuerfel)
+                .Include(mt => mt.Monsterintelligenz)
+                .Include(mt => mt.Monstergruppen)
+                .ToList();
 
             var viewModel = new AdminViewModel
             {
@@ -54,7 +59,8 @@ namespace Suendenbock_App.Controllers
                 Infanteries = allInfanteries,
                 Regiments = allRegiments,
                 Characters = allCharacters,
-                Monsters = allMonsters
+                Monsters = allMonsters,
+                Monstertypen = allMonstertypen
             };
             return View(viewModel);
         }

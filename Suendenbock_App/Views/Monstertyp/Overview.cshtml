@@ -16,13 +16,18 @@
     <section class="hero-section">
         @foreach (var monstertyp in Model)
         {
-            <a class="card-link" asp-controller="Monster" asp-action="MonstertypSheet" asp-route-id="@monstertyp.Id">
+            <a class="card-link" asp-controller="Monstertyp" asp-action="MonstertypSheet" asp-route-id="@monstertyp.Id">
                 <div class="pergament-card" data-tilt>
                     <div class="card-corner top-left"></div>
                     <div class="card-corner top-right"></div>
                     <div class="card-corner bottom-left"></div>
                     <div class="card-corner bottom-right"></div>
-                    <h1 class="card-title">@monstertyp.Name</h1>
+                    <h1 class="card-title">
+                        @monstertyp.Name<br />
+                        <span style="font-size: 0.7em; color: #8b7355;">
+                            (@(monstertyp.Monster?.Count(m => m.encounter) ?? 0)/@(monstertyp.Monster?.Count ?? 0))
+                        </span>
+                    </h1>
                     <div class="card-content">
                             <img width="104" src="~/assets/wuerfel/@(monstertyp.MonsterwuerfelId).svg" /><br />
                     </div>

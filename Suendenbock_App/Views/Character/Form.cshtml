@@ -24,6 +24,19 @@
 <div class="steckbrief-background">
     <div class="steckbrief-container">
         <div class="steckbrief-title">@ViewData["Title"]</div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                @if (User.IsInRole("Gott"))
+                {
+                    <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Index">Admin</a></li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                }
+                <li class="breadcrumb-item active">@ViewData["Title"]</li>
+            </ol>
+        </nav>
         <!-- drei Schritt Navigation -->
         <div class="step-navigation">
             <div class="step-item @(currentStep >= 1 ? "active" : "") @(currentStep > 1 ? "completed" : "")">
@@ -453,7 +466,7 @@
             // WYSIWYG-Editor (nur Schritt 2)
             // ========================================
             if (currentStep === 2) {
-                const wikiEditor = new WikiWYSIWYGEditor('#description');
+                const wikiEditor = new WikiWYSIWYGEditor('#description', '#wysiwyg-editor');
                 setTimeout(() => {
                     new EntityMentions('#description');
                 }, 800);

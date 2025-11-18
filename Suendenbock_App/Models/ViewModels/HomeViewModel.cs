@@ -14,5 +14,6 @@ namespace Suendenbock_App.Models.ViewModels
         public Dictionary<string, int> MagicClassStats { get; set; } = new Dictionary<string, int>();
         public Dictionary<string, int> GenderStats { get; set; } = new Dictionary<string, int>();
         public Dictionary<string, List<string>> ZodiacStats { get; set; } = new Dictionary<string, List<string>>();
+        public Dictionary<string, int> Obermagien { get; set; } = new Dictionary<string, int>();
     }
 }

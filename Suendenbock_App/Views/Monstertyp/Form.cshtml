@@ -1,0 +1,183 @@
+@model Suendenbock_App.Models.Domain.Monstertyp
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Neuer Monstertyp" : "Monstertyp bearbeiten";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <link href="~/css/wysiwyg-editor.css" rel="stylesheet" />
+    <link href="~/css/character.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="display-4">@ViewData["Title"]</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Index">Admin</a></li>
+                    <li class="breadcrumb-item active">@ViewData["Title"]</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="steckbrief-container">
+        <div class="steckbrief-title">Monstertyp</div>
+
+        <form asp-action="Save" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ProcessedDescription" />
+
+            <!-- Basis-Informationen -->
+            <div class="monster-section mb-4">
+                <label asp-for="Name" class="form-label monster-label">
+                    <span class="label-icon">📋</span> Name des Monstertyps
+                </label>
+                <input asp-for="Name" class="form-control" placeholder="z.B. Draconide, Ogroide, ..." required />
+            </div>
+
+            <!-- Eigenschaften -->
+            <div class="monster-section mb-4">
+                <h5 class="monster-label mb-3">
+                    <span class="label-icon">⚔️</span> Eigenschaften
+                </h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="MonsterwuerfelId" class="form-label monster-label">Monsterwürfel</label>
+                        <select asp-for="MonsterwuerfelId" class="form-select" required>
+                            <option value="">-- Bitte wählen --</option>
+                            @foreach (var item in ViewBag.Monsterwuerfel)
+                            {
+                                <option value="@item.Id">@item.Wuerfel</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="MonsterintelligenzId" class="form-label monster-label">Intelligenz</label>
+                        <select asp-for="MonsterintelligenzId" class="form-select" required>
+                            <option value="">-- Bitte wählen --</option>
+                            @foreach (var item in ViewBag.Monsterintelligenz)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="MonstergruppenId" class="form-label monster-label">Monstergruppe</label>
+                        <select asp-for="MonstergruppenId" class="form-select" required>
+                            <option value="">-- Bitte wählen --</option>
+                            @foreach (var item in ViewBag.Monstergruppen)
+                            {
+                                <option value="@item.Id">@item.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Immunitäten, Vorkommen, Anfälligkeiten -->
+            <div class="monster-section mb-4">
+                <h5 class="monster-label mb-3">
+                    <span class="label-icon">🛡️</span> Immunitäten, Vorkommen & Anfälligkeiten
+                </h5>
+
+                <div class="row">
+                    <!-- Immunitäten -->
+                    <div class="col-md-4 mb-3">
+                        <label for="immunitaetenIds" class="form-label monster-label">Immunitäten</label>
+                        <select id="immunitaetenIds" name="immunitaetenIds" class="form-select select2-multi" multiple>
+                            @foreach (var item in ViewBag.Monsterimmunitaeten)
+                            {
+                                var isSelectedImmunitaet = ViewBag.SelectedImmunitaeten != null && ViewBag.SelectedImmunitaeten.Contains(item.Id);
+                                <option value="@item.Id" selected="@isSelectedImmunitaet">@item.Name</option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">Mehrfachauswahl möglich</small>
+                    </div>
+
+                    <!-- Vorkommen -->
+                    <div class="col-md-4 mb-3">
+                        <label for="vorkommenIds" class="form-label monster-label">Vorkommen</label>
+                        <select id="vorkommenIds" name="vorkommenIds" class="form-select select2-multi" multiple>
+                            @foreach (var item in ViewBag.Monstervorkommen)
+                            {
+                                var isSelectedVorkommen = ViewBag.SelectedVorkommen != null && ViewBag.SelectedVorkommen.Contains(item.Id);
+                                <option value="@item.Id" selected="@isSelectedVorkommen">@item.Name</option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">Mehrfachauswahl möglich</small>
+                    </div>
+
+                    <!-- Anfälligkeiten -->
+                    <div class="col-md-4 mb-3">
+                        <label for="anfaelligkeitenIds" class="form-label monster-label">Anfälligkeiten</label>
+                        <select id="anfaelligkeitenIds" name="anfaelligkeitenIds" class="form-select select2-multi" multiple>
+                            @foreach (var item in ViewBag.Monsteranfaelligkeiten)
+                            {
+                                var isSelectedAnfaelligkeit = ViewBag.SelectedAnfaelligkeiten != null && ViewBag.SelectedAnfaelligkeiten.Contains(item.Id);
+                                <option value="@item.Id" selected="@isSelectedAnfaelligkeit">@item.Name</option>
+                            }
+                        </select>
+                        <small class="form-text text-muted">Mehrfachauswahl möglich</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Beschreibung -->
+            <div class="monster-section mb-4">
+                <label asp-for="Description" class="form-label monster-label">
+                    <span class="label-icon">📝</span> Beschreibung
+                </label>
+                <div id="editor-wrapper">
+                    <textarea class="form-control d-none" id="description" name="Description">@Model.Description</textarea>
+                    <div id="wysiwyg-editor"></div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="text-center">
+                <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary me-2">
+                    <i class="fas fa-times"></i> Abbrechen
+                </a>
+                <button type="submit" class="btn-wachs">
+                    <i class="fas fa-save"></i> Gebilligt
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/wysiwyg-editor.js"></script>
+    <script src="~/js/entity-mentions.js"></script>
+    <script>
+        $(document).ready(function() {
+            // WYSIWYG-Editor mit Entity-Mentions initialisieren
+            const wikiEditor = new WikiWYSIWYGEditor('#description', '#wysiwyg-editor');
+
+            setTimeout(() => {
+                new EntityMentions('#description');
+            }, 800);
+
+            // Initialize Select2 for multi-select dropdowns
+            $('.select2-multi').select2({
+                theme: 'bootstrap-5',
+                width: '100%',
+                placeholder: 'Auswählen...',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "Keine Ergebnisse gefunden";
+                    },
+                    searching: function() {
+                        return "Suche...";
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -21,69 +21,67 @@ namespace Suendenbock_App.Controllers
 
         public IActionResult Index()
         {
+            // Basis-Daten laden
             var allMagicClasses = _context.MagicClasses
                 .Include(mc => mc.Obermagie)
                 .ThenInclude(o => o.LightCard)
                 .ToList();
             var allGuilds = _context.Guilds.ToList();
             var allInfanteries = _context.Infanterien.ToList();
-            // alle Charakter
-            var Characters = _context.Characters.ToList();
-            var Monstertypen = _context.MonsterTypes.ToList();
+            var characters = _context.Characters.ToList();
+            var monstertypen = _context.MonsterTypes.ToList();
 
-            // Preload MagicClass names into a dictionary
-            var magicClassNames = _context.MagicClasses
-                .ToDictionary(mc => mc.Id, mc => mc.Bezeichnung);
-
-            // Now build the stats without querying inside the projection
-            var magicClassStats = _context.CharacterMagicClasses
-                .GroupBy(cmc => cmc.MagicClassId)
-                .Select(g => new { MagicClassId = g.Key, Count = g.Count() })
+            // Mapping: MagicClass ID -> Obermagie Bezeichnung
+            var magicClassToObermagie = _context.MagicClasses
+                .Include(mc => mc.Obermagie)
                 .ToDictionary(
-                    x => magicClassNames.ContainsKey(x.MagicClassId) ? magicClassNames[x.MagicClassId] : "Unbekannt",
-                x => x.Count);
+                    mc => mc.Id,
+                    mc => mc.Obermagie?.Bezeichnung ?? "Unbekannt"
+                );
 
-            // Charaktere ohne Magieklasse hinzufügen
-            var charactersWithoutMagic = _context.Characters.Count(c => !c.CharacterMagicClasses.Any());
-            if (charactersWithoutMagic > 0)
-            {
-                magicClassStats.Add("Keine Magieklasse", charactersWithoutMagic);
-            }
+            // Obermagien-Statistik: ZÃ¤hle Charaktere pro Obermagie
+            var obermagienStats = _context.CharacterMagicClasses
+                .AsEnumerable() // Zur Client-Evaluierung wechseln
+                .GroupBy(cmc => magicClassToObermagie.ContainsKey(cmc.MagicClassId)
+                    ? magicClassToObermagie[cmc.MagicClassId]
+                    : "Unbekannt")
+                .ToDictionary(g => g.Key, g => g.Count());
+
             // Geschlechter-Statistik
             var genderStats = _context.Characters
                 .GroupBy(c => c.Geschlecht)
                 .ToDictionary(g => g.Key, g => g.Count());
 
             // Sternzeichen-Statistik
-            var zodiacGroups = Characters
+            var zodiacGroups = characters
                 .Where(c => !string.IsNullOrEmpty(c.Geburtsdatum))
                 .GroupBy(c => ZodiacHelper.GetZodiacElement(c.Geburtsdatum))
                 .Where(g => g.Key != null)
                 .ToDictionary(
-                    g => g.Key!, 
-                    g => g.Select(c => $"{c.Vorname} {c.Nachname}"
-                )
-                .ToList());
+                    g => g.Key!,
+                    g => g.Select(c => $"{c.Vorname} {c.Nachname}").ToList()
+                );
 
-            // Erstelle das ViewModel
+            // ViewModel erstellen
             var viewModel = new HomeViewModel
             {
-                MagicClassStats = magicClassStats,               
-                Characters = Characters,
+                Characters = characters,
                 MagicClasses = allMagicClasses,
                 Guilds = allGuilds,
                 Infanteries = allInfanteries,
                 GenderStats = genderStats,
-                Monstertyps = Monstertypen,
-                ZodiacStats = zodiacGroups
-            };      
+                Monstertyps = monstertypen,
+                ZodiacStats = zodiacGroups,
+                Obermagien = obermagienStats
+            };
+
             return View(viewModel);
         }
 
         //Einbau Familienstammbaum
         public IActionResult FamilyTree(int characterId = 0)
         {
-            //wenn kein Chracter angegeben ist, nimm einen zufälligen
+            //wenn kein Chracter angegeben ist, nimm einen zufï¿½lligen
             if (characterId == 0)
             {
                 var randomCharacter = _context.Characters.FirstOrDefault();
@@ -131,7 +129,7 @@ namespace Suendenbock_App.Controllers
                         .Where(c => 
                             (character.VaterId.HasValue && c.VaterId == character.VaterId) ||
                             (character.MutterId.HasValue && c.MutterId == character.MutterId))
-                        .Where(c => c.Id != characterId) // ausgewählten Charakter ausschließen
+                        .Where(c => c.Id != characterId) // ausgewï¿½hlten Charakter ausschlieï¿½en
                         .ToList();
                 }
 

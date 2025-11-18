@@ -28,6 +28,12 @@
 <div class="steckbrief-background">
     <div class="steckbrief-container">
         <div class="steckbrief-title">Magieklasse</div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Admin" asp-action="Index">Admin</a></li>
+                <li class="breadcrumb-item active">@ViewData["Title"]</li>
+            </ol>
+        </nav>
         <form asp-controller="MagicClass" asp-action="CreateEdit">
             <input type="hidden" name="Id" value="@Model.Id" />
 
