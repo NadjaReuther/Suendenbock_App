@@ -2,12 +2,10 @@
 @model Guild
 @{
     ViewData["Title"] = Model.Id == 0 ? "Neue Gilde" : "Gilde bearbeiten";
-    Layout = "_AdminLayout";
 }
 @section Styles {
-    <link href="/css/character.css" rel="stylesheet" />
+    <link href="/css/forms.css" rel="stylesheet" />
     <link href="/css/wysiwyg-editor.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
 }
 @if (TempData["Error"] != null)
 {

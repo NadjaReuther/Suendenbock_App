@@ -1,14 +1,16 @@
 ﻿@{
-    if(User.IsInRole("Gott"))
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+    if (action == "Form")
     {
-        Layout = "~/Views/Shared/_AdminLayout.cshtml"; 
+        Layout = "_AdminLayout";
     }
-    else if(User.IsInRole("Spieler"))
+    else if (User.IsInRole("Spieler"))
     {
-        Layout = "~/Views/Shared/_PlayerLayout.cshtml"; 
+        Layout = "_PlayerLayout";
     }
     else
     {
-        Layout = "~/Views/Shared/_Layout.cshtml"; 
+        Layout = "_Layout";
     }
 }

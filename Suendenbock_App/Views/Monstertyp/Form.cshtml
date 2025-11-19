@@ -1,13 +1,11 @@
 @model Suendenbock_App.Models.Domain.Monstertyp
 @{
     ViewData["Title"] = Model.Id == 0 ? "Neuer Monstertyp" : "Monstertyp bearbeiten";
-    Layout = "_AdminLayout";
 }
 
 @section Styles {
-    <link href="~/css/wysiwyg-editor.css" rel="stylesheet" />
-    <link href="~/css/character.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&display=swap" rel="stylesheet">
+    <link href="/css/forms.css" rel="stylesheet" />
+    <link href="/css/wysiwyg-editor.css" rel="stylesheet" />
 }
 
 <div class="container-fluid">

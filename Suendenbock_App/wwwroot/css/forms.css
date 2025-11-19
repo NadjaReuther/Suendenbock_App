@@ -1,0 +1,257 @@
+/* ================================================
+   FORM-SPEZIFISCHE STYLES
+   ================================================ */
+
+/* Step Navigation */
+.step-navigation {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    max-width: 200px;
+}
+
+.step-number {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #d4c4a8;
+    color: #6e4b1f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.step-item.active .step-number {
+    background: #6e4b1f;
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.step-item.completed .step-number {
+    background: #4a7c59;
+    color: #fff;
+}
+
+.step-title {
+    font-weight: 600;
+    color: #6e4b1f;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.step-connector {
+    position: absolute;
+    top: 25px;
+    left: 50%;
+    right: -50%;
+    height: 2px;
+    background: #d4c4a8;
+    z-index: -1;
+}
+
+.step-item:last-child .step-connector {
+    display: none;
+}
+
+.step-item.completed .step-connector {
+    background: #4a7c59;
+}
+
+/* Form Steps */
+.form-step {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.form-step.active {
+    display: block;
+}
+
+/* Image Upload */
+.image-upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.image-preview {
+    width: 150px;
+    height: 150px;
+    border: 3px dashed #6e4b1f;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.image-preview:hover {
+    border-color: #4a7c59;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.image-placeholder {
+    text-align: center;
+    color: #6e4b1f;
+}
+
+.image-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.image-upload-btn {
+    background: #6e4b1f;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.image-upload-btn:hover {
+    background: #4a7c59;
+}
+
+/* Drag & Drop Styles */
+.drag-over {
+    border: 3px dashed #d4af37 !important;
+    background-color: rgba(212, 175, 55, 0.2) !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.6) !important;
+    transform: scale(1.02) !important;
+    animation: dragPulse 1s infinite alternate;
+}
+
+.dragging-out {
+    opacity: 0.7;
+    transform: scale(0.95);
+    border: 2px solid #ff9800;
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+}
+
+.drop-zone-hint {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #d4af37;
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.drag-over .drop-zone-hint {
+    opacity: 1;
+}
+
+.image-context-menu {
+    font-family: 'MedievalSharp', cursive;
+}
+
+.image-preview[draggable="true"] {
+    cursor: grab;
+}
+
+.image-preview[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.image-preview img[draggable="true"] {
+    cursor: grab;
+    user-select: none;
+}
+
+.image-preview img[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+/* Navigation Buttons */
+.step-navigation-buttons {
+    display: flex;
+    justify-content: between;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn-prev, .btn-next {
+    background: #6e4b1f;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-prev:hover, .btn-next:hover {
+    background: #4a7c59;
+    transform: translateY(-2px);
+}
+
+/* Wax Seal Button */
+.btn-wachs {
+    color: #cac4c4;
+    font-weight: bold;
+    font-size: 0.8rem;
+    text-shadow: 2px 2px 4px black;
+    background: url('/assets/character/wachs.png') no-repeat center;
+    background-size: contain;
+    width: 120px;
+    height: 120px;
+    border: none;
+    margin: 1rem auto;
+    display: block;
+    cursor: pointer;
+    filter: drop-shadow(0 0 10px #333333);
+    transform: scale(1.08);
+    transition: filter 0.3s ease;
+}
+
+.btn-wachs:hover {
+    filter: drop-shadow(0 0 5px #ff4444);
+}
+
+/* Specialization Group */
+.specialization-group {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+/* Magic Class Icon */
+.magicclassIcon {
+    width: 20px;
+    height: 20px;
+}

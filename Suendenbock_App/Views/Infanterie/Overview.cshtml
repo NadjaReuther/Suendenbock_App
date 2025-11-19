@@ -1,15 +1,8 @@
 ﻿@using Suendenbock_App.Models.Domain
 @model List<Infanterie>
-@{
-    // Prüfen ob User Admin/God ist
-    var isAdmin = User.IsInRole("Gott");
-    Layout = isAdmin ? "_AdminLayout" : "_Layout";
-}
+
 @section Styles {
-    <link href="/css/antique-home.css" rel="stylesheet" />
-    <link href="/css/character.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
-    <style>
+  <style>
         /* Mittelalterliches Accordion-Styling */
         .infanterie-accordion .accordion-item {
             background-color: #f5f1e8;

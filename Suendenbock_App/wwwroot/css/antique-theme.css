@@ -1,4 +1,8 @@
-﻿/* Basis-Styling und Schriften */
+/* ================================================
+   ANTIQUE THEME - Dekorationen & Spezielle Sektionen
+   ================================================ */
+
+/* Basis-Styling */
 * {
     margin: 0;
     padding: 0;
@@ -8,13 +12,15 @@
 body {
     font-family: 'Cinzel', serif;
     background: linear-gradient(45deg, #f4f1e8, #e8dcc0);
-    background-image: radial-gradient(circle at 20% 80%, rgba(139, 115, 85, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(139, 115, 85, 0.1) 0%, transparent 50%), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="0.5" fill="%23d4c4a8" opacity="0.3"/><circle cx="75" cy="75" r="0.3" fill="%23c4b49a" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    background-image: radial-gradient(circle at 20% 80%, rgba(139, 115, 85, 0.1) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 20%, rgba(139, 115, 85, 0.1) 0%, transparent 50%),
+                      url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="0.5" fill="%23d4c4a8" opacity="0.3"/><circle cx="75" cy="75" r="0.3" fill="%23c4b49a" opacity="0.2"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
 }
 
-/* Vintage Dekorationen mit 3D-Effekten */
+/* Vintage Dekorationen */
 .vintage-decorations {
     position: fixed;
     top: 0;
@@ -46,16 +52,6 @@ body {
     animation: scrollFloat 10s ease-in-out infinite reverse;
 }
 
-@keyframes scrollFloat {
-    0%, 100% {
-        transform: translateY(0px) rotateY(10deg) rotateZ(-15deg);
-    }
-
-    50% {
-        transform: translateY(-15px) rotateY(15deg) rotateZ(-12deg);
-    }
-}
-
 .coin-decoration {
     position: absolute;
     opacity: 0.25;
@@ -75,38 +71,6 @@ body {
     animation: coinSpin 15s linear infinite reverse, coinFloat 8s ease-in-out infinite reverse;
 }
 
-@keyframes coinSpin {
-    0% {
-        transform: rotateY(0deg) rotateX(0deg);
-    }
-
-    25% {
-        transform: rotateY(90deg) rotateX(10deg);
-    }
-
-    50% {
-        transform: rotateY(180deg) rotateX(0deg);
-    }
-
-    75% {
-        transform: rotateY(270deg) rotateX(-10deg);
-    }
-
-    100% {
-        transform: rotateY(360deg) rotateX(0deg);
-    }
-}
-
-@keyframes coinFloat {
-    0%, 100% {
-        transform: translateY(0px) scale(1);
-    }
-
-    50% {
-        transform: translateY(-10px) scale(1.05);
-    }
-}
-
 .quill-decoration {
     position: absolute;
     top: 60%;
@@ -117,16 +81,6 @@ body {
     animation: quillSway 12s ease-in-out infinite;
 }
 
-@keyframes quillSway {
-    0%, 100% {
-        transform: rotate(25deg) rotateY(5deg) translateX(0px);
-    }
-
-    50% {
-        transform: rotate(22deg) rotateY(8deg) translateX(-5px);
-    }
-}
-
 .compass-decoration {
     position: absolute;
     bottom: 30%;
@@ -134,26 +88,6 @@ body {
     opacity: 0.18;
     filter: drop-shadow(3px 3px 6px rgba(93, 78, 55, 0.5));
     animation: compassRotate 30s linear infinite, compassFloat 7s ease-in-out infinite;
-}
-
-@keyframes compassRotate {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes compassFloat {
-    0%, 100% {
-        transform: translateY(0px) scale(1);
-    }
-
-    50% {
-        transform: translateY(-8px) scale(1.02);
-    }
 }
 
 .key-decoration {
@@ -177,16 +111,6 @@ body {
     animation: keySwing 11s ease-in-out infinite reverse;
 }
 
-@keyframes keySwing {
-    0%, 100% {
-        transform: rotate(25deg) rotateY(10deg) translateY(0px);
-    }
-
-    50% {
-        transform: rotate(28deg) rotateY(15deg) translateY(-5px);
-    }
-}
-
 .hourglass-decoration {
     position: absolute;
     top: 50%;
@@ -196,62 +120,7 @@ body {
     animation: hourglassFloat 8s ease-in-out infinite, hourglassTilt 16s ease-in-out infinite;
 }
 
-@keyframes hourglassFloat {
-    0%, 100% {
-        transform: translateY(0px) scale(1);
-    }
-
-    50% {
-        transform: translateY(-12px) scale(1.03);
-    }
-}
-
-@keyframes hourglassTilt {
-    0%, 100% {
-        transform: rotateZ(0deg);
-    }
-
-    25% {
-        transform: rotateZ(5deg);
-    }
-
-    75% {
-        transform: rotateZ(-5deg);
-    }
-}
-
-/* Animationen */
-@keyframes float {
-    0%, 100% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-20px);
-    }
-}
-
-@keyframes rotate {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 0.15;
-    }
-
-    50% {
-        opacity: 0.25;
-    }
-}
-
-/* Header Styling */
+/* Header & Main Container */
 .antique-header {
     text-align: center;
     padding: 3rem 0 2rem;
@@ -260,7 +129,6 @@ body {
     overflow: hidden;
 }
 
-/* Main Container */
 .main-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -269,71 +137,12 @@ body {
     z-index: 2;
 }
 
-/* Hero Section - Pergament Karten */
+/* Hero Section */
 .hero-section {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 2rem;
     margin-bottom: 4rem;
-}
-
-.pergament-card {
-    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
-    border: 3px solid #d4c4a8;
-    border-radius: 15px;
-    padding: 2rem;
-    position: relative;
-    box-shadow: 0 8px 16px rgba(93, 78, 55, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.pergament-card::before {
-    content: '';
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    border: 1px solid #e8dcc0;
-    border-radius: 12px;
-    pointer-events: none;
-}
-
-/* Karten-Ecken für Vintage-Effekt */
-.card-corner {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    border: 2px solid #8b7355;
-}
-
-.card-corner.top-left {
-    top: 8px;
-    left: 8px;
-    border-right: none;
-    border-bottom: none;
-}
-
-.card-corner.top-right {
-    top: 8px;
-    right: 8px;
-    border-left: none;
-    border-bottom: none;
-}
-
-.card-corner.bottom-left {
-    bottom: 8px;
-    left: 8px;
-    border-right: none;
-    border-top: none;
-}
-
-.card-corner.bottom-right {
-    bottom: 8px;
-    right: 8px;
-    border-left: none;
-    border-top: none;
 }
 
 .card-number {
@@ -344,21 +153,6 @@ body {
     margin-bottom: 1rem;
     text-shadow: 2px 2px 4px rgba(93, 78, 55, 0.3);
     position: relative;
-}
-
-.card-title {
-    font-size: 1.4rem;
-    color: #5d4e37;
-    margin-bottom: 1rem;
-    text-align: center;
-    font-weight: 600;
-}
-
-.card-content {
-    color: #6d5d47;
-    line-height: 1.6;
-    text-align: center;
-    margin-bottom: 1rem;
 }
 
 .card-icon {
@@ -386,7 +180,7 @@ body {
     margin: 0 1rem;
 }
 
-/* Magieklassen Sektion */
+/* Magic Section */
 .magic-section {
     margin-bottom: 4rem;
 }
@@ -465,64 +259,23 @@ body {
     font-style: italic;
 }
 
-/* Hover-Effekte für verschiedene Magieschulen */
-.dunkel-hover:hover {
-    box-shadow: 0 0 25px rgba(75, 0, 130, 0.6);
-}
+/* Magic School Hover Effects */
+.dunkel-hover:hover { box-shadow: 0 0 25px rgba(75, 0, 130, 0.6); }
+.luft-hover:hover { box-shadow: 0 0 25px rgba(135, 206, 235, 0.6); }
+.wasser-hover:hover { box-shadow: 0 0 25px rgba(65, 105, 225, 0.6); }
+.seele-hover:hover { box-shadow: 0 0 25px rgba(138, 43, 226, 0.6); }
+.flora-hover:hover { box-shadow: 0 0 25px rgba(34, 139, 34, 0.6); }
+.fauna-hover:hover { box-shadow: 0 0 25px rgba(160, 82, 45, 0.6); }
+.licht-hover:hover { box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
+.schmerz-hover:hover { box-shadow: 0 0 25px rgba(220, 20, 60, 0.6); }
+.kunst-hover:hover { box-shadow: 0 0 25px rgba(255, 20, 147, 0.6); }
+.geist-hover:hover { box-shadow: 0 0 25px rgba(106, 90, 205, 0.6); }
+.feuer-hover:hover { box-shadow: 0 0 25px rgba(255, 69, 0, 0.6); }
+.zeit-hover:hover { box-shadow: 0 0 25px rgba(128, 128, 128, 0.6); }
+.mantik-hover:hover { box-shadow: 0 0 25px rgba(72, 61, 139, 0.6); }
+.daemmerung-hover:hover { box-shadow: 0 0 25px rgba(139, 69, 19, 0.6); }
 
-.luft-hover:hover {
-    box-shadow: 0 0 25px rgba(135, 206, 235, 0.6);
-}
-
-.wasser-hover:hover {
-    box-shadow: 0 0 25px rgba(65, 105, 225, 0.6);
-}
-
-.seele-hover:hover {
-    box-shadow: 0 0 25px rgba(138, 43, 226, 0.6);
-}
-
-.flora-hover:hover {
-    box-shadow: 0 0 25px rgba(34, 139, 34, 0.6);
-}
-
-.fauna-hover:hover {
-    box-shadow: 0 0 25px rgba(160, 82, 45, 0.6);
-}
-
-.licht-hover:hover {
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
-}
-
-.schmerz-hover:hover {
-    box-shadow: 0 0 25px rgba(220, 20, 60, 0.6);
-}
-
-.kunst-hover:hover {
-    box-shadow: 0 0 25px rgba(255, 20, 147, 0.6);
-}
-
-.geist-hover:hover {
-    box-shadow: 0 0 25px rgba(106, 90, 205, 0.6);
-}
-
-.feuer-hover:hover {
-    box-shadow: 0 0 25px rgba(255, 69, 0, 0.6);
-}
-
-.zeit-hover:hover {
-    box-shadow: 0 0 25px rgba(128, 128, 128, 0.6);
-}
-
-.mantik-hover:hover {
-    box-shadow: 0 0 25px rgba(72, 61, 139, 0.6);
-}
-
-.daemmerung-hover:hover {
-    box-shadow: 0 0 25px rgba(139, 69, 19, 0.6);
-}
-
-/* Gilden Sektion */
+/* Guild Section */
 .guild-section {
     margin-bottom: 4rem;
 }
@@ -567,16 +320,16 @@ body {
     transition: transform 0.3s ease;
 }
 
-    .banner-flag:hover {
-        transform: scale(1.1) rotate(5deg);
-    }
+.banner-flag:hover {
+    transform: scale(1.1) rotate(5deg);
+}
 
-    .banner-flag img {
-        width: 40px;
-        height: 40px;
-        margin-bottom: 0.5rem;
-        border-radius: 50%;
-    }
+.banner-flag img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0.5rem;
+    border-radius: 50%;
+}
 
 .guild-name {
     font-size: 0.9rem;
@@ -584,7 +337,7 @@ body {
     font-weight: 600;
 }
 
-/* Statistiken Sektion */
+/* Stats Section */
 .stats-section {
     margin-bottom: 4rem;
 }
@@ -639,27 +392,27 @@ body {
     position: relative;
 }
 
-    .stat-item::before {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        background: linear-gradient(45deg, #d4af37, transparent, #d4af37);
-        border-radius: 17px;
-        z-index: -1;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
+.stat-item::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #d4af37, transparent, #d4af37);
+    border-radius: 17px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
 
-    .stat-item:hover::before {
-        opacity: 1;
-    }
+.stat-item:hover::before {
+    opacity: 1;
+}
 
-    .stat-item:hover {
-        transform: translateY(-5px);
-    }
+.stat-item:hover {
+    transform: translateY(-5px);
+}
 
 .stat-icon {
     font-size: 2rem;
@@ -682,7 +435,7 @@ body {
     font-size: 1rem;
 }
 
-/* Magie-Verteilung */
+/* Magic Distribution */
 .magic-distribution {
     background: rgba(255, 255, 255, 0.5);
     border: 2px solid #d4c4a8;
@@ -690,12 +443,12 @@ body {
     padding: 2rem;
 }
 
-    .magic-distribution h3 {
-        color: #5d4e37;
-        margin-bottom: 1.5rem;
-        text-align: center;
-        font-family: 'MedievalSharp', cursive;
-    }
+.magic-distribution h3 {
+    color: #5d4e37;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-family: 'MedievalSharp', cursive;
+}
 
 .distribution-bars {
     display: flex;
@@ -734,25 +487,15 @@ body {
     position: relative;
 }
 
-    .distribution-fill::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: shine 2s ease-in-out infinite;
-    }
-
-@keyframes shine {
-    0% {
-        transform: translateX(-100%);
-    }
-
-    100% {
-        transform: translateX(100%);
-    }
+.distribution-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shine 2s ease-in-out infinite;
 }
 
 .distribution-value {
@@ -765,7 +508,7 @@ body {
     font-size: 0.8rem;
 }
 
-/* Neueste Charaktere */
+/* Recent Characters */
 .recent-characters {
     margin-bottom: 4rem;
 }
@@ -788,19 +531,19 @@ body {
 
 .character-scrolls .card-link {
     display: block;
-    width: 250px; /* Feste Breite für alle Links */
+    width: 250px;
     text-decoration: none;
 }
 
-    .character-scroll::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #d4af37, #b8941f, #d4af37);
-    }
+.character-scroll::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #d4af37, #b8941f, #d4af37);
+}
 
 .scroll-header {
     background: linear-gradient(145deg, #e8dcc0, #d4c4a8);
@@ -830,18 +573,18 @@ body {
     padding: 1.5rem;
 }
 
-    .scroll-body h4 {
-        color: #5d4e37;
-        margin-bottom: 1rem;
-        font-family: 'MedievalSharp', cursive;
-        text-align: center;
-    }
+.scroll-body h4 {
+    color: #5d4e37;
+    margin-bottom: 1rem;
+    font-family: 'MedievalSharp', cursive;
+    text-align: center;
+}
 
-    .scroll-body p {
-        color: #6d5d47;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
-    }
+.scroll-body p {
+    color: #6d5d47;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
 
 .character-magic {
     margin-top: 1rem;
@@ -849,21 +592,47 @@ body {
     border-top: 1px solid #e8dcc0;
 }
 
-    .character-magic small {
-        color: #8b7355;
-        font-style: italic;
-    }
+.character-magic small {
+    color: #8b7355;
+    font-style: italic;
+}
 
-/* Responsive Design */
+/* Zodiac Chart */
+.zodiac-section {
+    margin: 4rem auto;
+    max-width: 700px;
+    padding: 2rem;
+}
+
+.zodiac-chart-container {
+    background: linear-gradient(135deg, #f5f5dc 0%, #fff8dc 100%);
+    border: 3px solid #6e4b1f;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(110, 75, 31, 0.3);
+}
+
+.hover-card {
+    font-size: 24px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .main-title {
         font-size: 2.8rem;
     }
 
-        .main-title::before,
-        .main-title::after {
-            display: none;
-        }
+    .main-title::before,
+    .main-title::after {
+        display: none;
+    }
 
     .hero-section {
         grid-template-columns: 1fr;
@@ -906,30 +675,4 @@ body {
     .stats-parchment {
         padding: 2rem;
     }
-}
-
-/* NEU: Zodiac Chart Sektion */
-.zodiac-section {
-    margin: 4rem auto;
-    max-width: 700px;
-    padding: 2rem;
-}
-
-.zodiac-chart-container {
-    background: linear-gradient(135deg, #f5f5dc 0%, #fff8dc 100%);
-    border: 3px solid #6e4b1f;
-    border-radius: 15px;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(110, 75, 31, 0.3);
-}
-
-.hover-card {
-    font-size: 24px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
-}
-
-.hover-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }

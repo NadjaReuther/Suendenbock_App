@@ -6,30 +6,54 @@
     <title>@ViewData["Title"] - Spielerbereich</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/antique-home.css" />
-    <link rel="stylesheet" href="~/css/character.css" />
+    <link rel="stylesheet" href="~/Suendenbock_App.styles.css" asp-append-version="true" />
+    <link href="/css/components.css" rel="stylesheet" />
+    <link href="/css/animations.css" rel="stylesheet" />
+    <link href="/css/antique-theme.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/advent-calendar.css" />
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="~/css/wysiwyg-editor.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
     @RenderSection("Styles", required: false)
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-black text-white">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand text-white" asp-area="" asp-controller="Home" asp-action="Index">Sündenbock 1618</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Sündenbock 1618</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Monster" asp-action="Overview">
+                                    👹 Monster-Kompendium
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Character" asp-action="Overview">
+                                    👤 Charaktere
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Guild" asp-action="Overview">
+                                    🏰 Gilden
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Infanterie" asp-action="Overview">
+                                    ⚔️ Infanterien
+                                </a>
+                            </li>
+                        }
                     </ul>
                     <ul class="navbar-nav">
                         <li>
-                            <a class="nav-link" asp-controller="Player" asp-action="Index">Menü</a>
+                            <a class="nav-link" asp-controller="Player" asp-action="Index">Spieler-Menü</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button"
