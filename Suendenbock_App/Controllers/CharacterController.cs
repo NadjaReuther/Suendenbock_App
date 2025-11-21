@@ -587,6 +587,7 @@ namespace Suendenbock_App.Controllers
             existingCharacter.EindruckId = newCharacter.EindruckId;
             existingCharacter.VaterId = newCharacter.VaterId;
             existingCharacter.MutterId = newCharacter.MutterId;
+            existingCharacter.PartnerId = newCharacter.PartnerId;
             existingCharacter.Profan = newCharacter.Profan;
             existingCharacter.Beschraenkt = newCharacter.Beschraenkt;
         }

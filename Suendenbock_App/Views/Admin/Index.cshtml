@@ -237,6 +237,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Monstertyp</th>
+                                <th>Begegnung</th>
                                 <th>⚔️ Encounter</th>
                                 <th>✨ Perfected</th>
                                 <th>🗡️ Aktionen</th>
@@ -255,6 +256,16 @@
                                     </td>
 
                                     <td>@(monster.Monstertyp?.Name)</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input monster-toggle"
+                                                   type="checkbox"
+                                                   data-monster-id="@monster.Id"
+                                                   data-toggle-type="meet"
+                                                   @(monster.meet ? "checked" : "")
+                                                   title="Begegnung aktivieren/deaktivieren">
+                                        </div>
+                                    </td>
                                     <td>
                                         <div class="form-check form-switch">
                                             <input class="form-check-input monster-toggle"
@@ -340,6 +351,7 @@
     </div>
 </div>
 @section Scripts {
+    <script src="~/js/monster-toggle-validation.js"></script>
     <script>
         $(document).ready(function () {
             const medievalTableConfig = {
@@ -595,6 +607,13 @@ $(document).on('change', '.monster-toggle', function() {
     const toggleType = checkbox.data('toggle-type');
     const isChecked = checkbox.is(':checked');
 
+    // Validierung mit der wiederverwendbaren Funktion aus monster-toggle-validation.js
+    if (!validateMonsterToggle(monsterId, toggleType, isChecked)) {
+        // Validierung fehlgeschlagen - Checkbox zurücksetzen
+        checkbox.prop('checked', !isChecked);
+        return;
+    }
+
     // Checkbox vorübergehend deaktivieren
     checkbox.prop('disabled', true);
 
@@ -609,7 +628,7 @@ $(document).on('change', '.monster-toggle', function() {
         contentType: "application/json",
         success: function (response) {
             // Toast-Nachricht anzeigen
-            const message = toggleType === 'encounter' ? 'Encounter' : 'Extra-Infos';
+            const message = toggleType === 'encounter' ? 'Encounter' : toggleType === 'meet' ? 'Begegnung' : 'Extra-Infos';
             const status = isChecked ? 'aktiviert' : 'deaktiviert';
             showToast(`${message} ${status} für Monster`);
 
@@ -643,7 +662,7 @@ $(document).on('change', '.companion-toggle', function() {
 
     const action = isChecked ? 'setzen' : 'entfernen';
     const message = isChecked
-        ? 'Dieser Character wird als Begleitcharakter markiert. Es kann nur einen Begleitcharakter geben.'
+        ? 'Dieser Character wird als Begleitcharakter markiert. Es können maximal 2 Begleitcharaktere aktiv sein.'
         : 'Der Begleitcharakter-Status wird entfernt.';
 
     Swal.fire({

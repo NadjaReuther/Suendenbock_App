@@ -18,6 +18,6 @@ namespace Suendenbock_App.Models.ViewModels
 
         // Spielercharaktere und Begleiter
         public List<Character> PlayerCharacters { get; set; } = new List<Character>();
-        public Character? CompanionCharacter { get; set; }
+        public List<Character> CompanionCharacters { get; set; } = new List<Character>();
     }
 }

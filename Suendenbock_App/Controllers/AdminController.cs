@@ -83,14 +83,15 @@ namespace Suendenbock_App.Controllers
 
                 if (setAsCompanion)
                 {
-                    // Erst alle anderen Characters auf IsCompanion = false setzen
-                    var allCharacters = _context.Characters.ToList();
-                    foreach (var c in allCharacters)
+                    // Prüfe, ob bereits 2 Begleiter vorhanden sind
+                    var currentCompanionCount = _context.Characters.Count(c => c.IsCompanion);
+
+                    if (currentCompanionCount >= 2)
                     {
-                        c.IsCompanion = false;
+                        return Json(new { success = false, message = "Es können maximal 2 Begleitcharaktere gleichzeitig aktiv sein." });
                     }
 
-                    // Dann den ausgewählten Character auf IsCompanion = true setzen
+                    // Den ausgewählten Character auf IsCompanion = true setzen
                     character.IsCompanion = true;
                     _context.SaveChanges();
 

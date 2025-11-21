@@ -69,11 +69,11 @@ namespace Suendenbock_App.Controllers
                     .ThenInclude(cmc => cmc.MagicClass)
                 .ToList();
 
-            var companionCharacter = _context.Characters
+            var companionCharacters = _context.Characters
                 .Where(c => c.IsCompanion)
                 .Include(c => c.CharacterMagicClasses)
                     .ThenInclude(cmc => cmc.MagicClass)
-                .FirstOrDefault();
+                .ToList();
 
             // ViewModel erstellen
             var viewModel = new HomeViewModel
@@ -87,7 +87,7 @@ namespace Suendenbock_App.Controllers
                 ZodiacStats = zodiacGroups,
                 Obermagien = obermagienStats,
                 PlayerCharacters = playerCharacters,
-                CompanionCharacter = companionCharacter
+                CompanionCharacters = companionCharacters
             };
 
             return View(viewModel);

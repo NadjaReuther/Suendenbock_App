@@ -69,19 +69,45 @@
                 </div>
             </div>
         </div>
+        <!-- Basics Sektion -->
+        <div class="monster-section mb-4">
+            <div class="row align-items-start">
+                <div class="col-lg-2">
+                    <div class="toggle-container">
+                        <div class="medieval-switch">
+                            <input class="form-check-input" type="checkbox" id="meetSwitch" asp-for="meet" value="true">
+                            <div class="switch-label">
+                                <span class="switch-icon">⚔️</span>
+                                <span class="switch-text">Begegnung<br /><small class="text-muted">Für Spieler aktivieren</small></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-10">
+                    <label for="basics" class="form-label monster-label">
+                        <span class="label-icon">📜</span> Basics
+                    </label>
+                    <small class="form-text text-muted d-block mb-2">
+                        Diese Beschreibung wird angezeigt, wenn "Begegnung" aktiviert ist.
+                    </small>
+                    <div id="editor-wrapper">
+                        <textarea class="form-control d-none" id="basics" name="basics">@(Model?.Basics ?? "")</textarea>
+                        <div id="wysiwyg-editor"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Encounter Sektion -->
         <div class="monster-section mb-4">
             <div class="row align-items-start">
                 <div class="col-lg-2">
                     <div class="toggle-container">
-                        <div class="form-check form-switch medieval-switch">
+                        <div class="medieval-switch">
                             <input class="form-check-input" type="checkbox" id="encounterSwitch" asp-for="encounter" value="true">
-                            <label class="form-check-label" for="encounterSwitch">
-                                <div class="switch-label">
-                                    <span class="switch-icon">⚔️</span>
-                                    <span class="switch-text">Encounter<br/><small class="text-muted">Für Spieler aktivieren</small></span>
-                                </div>
-                            </label>
+                            <div class="switch-label">
+                                <span class="switch-icon">🎲</span>
+                                <span class="switch-text">Encounter<br/><small class="text-muted">Für Spieler aktivieren</small></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -94,7 +120,7 @@
                     </small>
                     <div id="editor-wrapper">
                         <textarea class="form-control d-none" id="description" name="description">@(Model?.Description ?? "")</textarea>
-                        <div id="wysiwyg-editor"></div>
+                        <div id="wysiwyg-editor1"></div>
                     </div>
                 </div>
             </div>
@@ -105,14 +131,12 @@
             <div class="row align-items-start">
                 <div class="col-lg-2">
                     <div class="toggle-container">
-                        <div class="form-check form-switch medieval-switch">
+                        <div class="medieval-switch">
                             <input class="form-check-input" type="checkbox" id="perfectedSwitch" asp-for="perfected" value="true">
-                            <label class="form-check-label" for="perfectedSwitch">
-                                <div class="switch-label">
-                                    <span class="switch-icon">✨</span>
-                                    <span class="switch-text">Perfected<br/><small class="text-muted">Extra-Infos aktivieren</small></span>
-                                </div>
-                            </label>
+                            <div class="switch-label">
+                                <span class="switch-icon">✨</span>
+                                <span class="switch-text">Perfected<br/><small class="text-muted">Extra-Infos aktivieren</small></span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -139,6 +163,7 @@
     <script src="~/js/imagePreview.js"></script>
     <script src="~/js/wysiwyg-editor.js"></script>
     <script src="~/js/entity-mentions.js"></script>
+    <script src="~/js/monster-toggle-validation.js"></script>
     <script>
         // Tooltips aktivieren
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -150,20 +175,43 @@
 
         $(document).ready(function() {
             // Erster WYSIWYG-Editor initialisieren
-            const wikiEditor = new WikiWYSIWYGEditor('#description', '#wysiwyg-editor');
+            const wikiEditor = new WikiWYSIWYGEditor('#basics', '#wysiwyg-editor');
 
             // EntityMentions für ersten Editor
+            setTimeout(() => {
+                new EntityMentions('#basics');
+            }, 800);
+
+            // Zweiter WYSIWYG-Editor initialisieren
+            const wikiEditordes = new WikiWYSIWYGEditor('#description', '#wysiwyg-editor1');
+
+            // EntityMentions für zweiten Editor
             setTimeout(() => {
                 new EntityMentions('#description');
             }, 800);
 
-            // Zweiter WYSIWYG-Editor initialisieren
+            // Dritter WYSIWYG-Editor initialisieren
             const wikiEditorpro = new WikiWYSIWYGEditor('#processeddescription', '#wysiwyg-editor2');
 
-            // EntityMentions für zweiten Editor
+            // EntityMentions für dritten Editor
             setTimeout(() => {
                 new EntityMentions('#processeddescription');
             }, 800);
+
+            // Toggle-Validierung mit wiederverwendbarer Klasse
+            const toggleValidator = new MonsterToggleValidator(
+                '#meetSwitch',
+                '#encounterSwitch',
+                '#perfectedSwitch'
+            );
+
+            // Form-Validierung vor dem Absenden
+            $('form').on('submit', function(e) {
+                if (!toggleValidator.validateForSubmit()) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
         });
     </script>
 }

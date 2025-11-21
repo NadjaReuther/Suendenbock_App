@@ -119,7 +119,7 @@
         </h2>
 
         <div class="character-scrolls">
-            @if (Model.PlayerCharacters.Any() || Model.CompanionCharacter != null)
+            @if (Model.PlayerCharacters.Any() || Model.CompanionCharacters.Any())
             {
                 @foreach (var character in Model.PlayerCharacters)
                 {
@@ -143,22 +143,22 @@
                     </div>
                 }
 
-                @if (Model.CompanionCharacter != null)
+                @foreach (var companion in Model.CompanionCharacters)
                 {
                     <div class="character-scroll companion-character" data-tilt>
-                        <a class="card-link" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@Model.CompanionCharacter.Id">
+                        <a class="card-link" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@companion.Id">
                             <div class="scroll-header">
-                                @if (Model.CompanionCharacter.ImagePath == null)
+                                @if (companion.ImagePath == null)
                                 {
-                                    <div class="character-seal">@Model.CompanionCharacter.Vorname.FirstOrDefault()@Model.CompanionCharacter.Nachname.FirstOrDefault()</div>
+                                    <div class="character-seal">@companion.Vorname.FirstOrDefault()@companion.Nachname.FirstOrDefault()</div>
                                 }
                                 else
                                 {
-                                    <img class="character-avatar-round" src="@Model.CompanionCharacter.ImagePath" alt="@Model.CompanionCharacter.Vorname @Model.CompanionCharacter.Nachname"/>
+                                    <img class="character-avatar-round" src="@companion.ImagePath" alt="@companion.Vorname @companion.Nachname"/>
                                 }
                             </div>
                             <div class="scroll-body">
-                                <h4>@Model.CompanionCharacter.Vorname @Model.CompanionCharacter.Nachname</h4>
+                                <h4>@companion.Vorname @companion.Nachname</h4>
                                 <span class="badge bg-success">🤝 Begleiter</span>
                             </div>
                         </a>

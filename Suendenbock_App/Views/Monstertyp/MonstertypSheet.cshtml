@@ -89,10 +89,9 @@
     </div>    
 </div>
 </div>
-        @if (User.Identity?.IsAuthenticated == true)
-        {
+        @{
             var allMonsters = Model.Monster?.ToList();
-            var encounteredCount = allMonsters?.Count(m => m.encounter) ?? 0;
+            var meetCount = allMonsters?.Count(m => m.meet) ?? 0;
             if (allMonsters != null && allMonsters.Any())
             {
                 <div class="mt-5 pergament-card" data-tilt>
@@ -100,12 +99,12 @@
                     <div class="card-corner top-right"></div>
                     <div class="card-corner bottom-left"></div>
                     <div class="card-corner bottom-right"></div>
-                    <h3 class="card-title">👹 Monster (@encounteredCount/@allMonsters.Count entdeckt)<br /></h3>
+                    <h3 class="card-title">👹 Monster (@meetCount/@allMonsters.Count entdeckt)<br /></h3>
                     <div class="card-content">
                         <div class="row">
                             @foreach (var monster in allMonsters)
                             {
-                                var isLocked = !monster.encounter;
+                                var isLocked = !monster.meet;
                                 <div class="col-md-4 mb-3">
                                     <div class="monster-encounter-card" style="background: linear-gradient(145deg, #faf8f3, #f0e6d2); border: 2px solid @(isLocked ? "#8b7355" : "#d4c4a8"); border-radius: 8px; padding: 1rem; text-align: center; @(isLocked ? "opacity: 0.7;" : "")">
                                         @if (!string.IsNullOrEmpty(monster.ImagePath))
@@ -121,6 +120,12 @@
                                         <h5 style="font-family: 'Cinzel', serif; color: #5d4e37; margin: 0.5rem 0; @(isLocked ? "filter: blur(5px);" : "")">
                                             @(isLocked ? "???" : monster.Name)
                                         </h5>
+                                        @if(!isLocked && monster.encounter && !monster.perfected)
+                                        {
+                                        <span style="background: linear-gradient(45deg, #C0C0C0, #A9A9A9); color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
+                                                🎲 teil erforscht
+                                            </span>
+                                        }
                                         @if (!isLocked && monster.perfected)
                                         {
                                             <span style="background: linear-gradient(45deg, #d4af37, #b8941f); color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">
@@ -139,7 +144,7 @@
                         </div>
                         <div class="text-center mt-3">
                             <a href="@Url.Action("Overview", "Monster", new { monstertypId = Model.Id })" class="btn btn-primary" style="background: linear-gradient(45deg, #d4af37, #b8941f); border: none;">
-                                👹 Monster-Kompendium
+                                👹 Bestiarium
                             </a>
                         </div>
                     </div>

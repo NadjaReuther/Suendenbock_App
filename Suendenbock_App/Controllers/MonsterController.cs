@@ -154,8 +154,10 @@ namespace Suendenbock_App.Controllers
         private void UpdateMonsterProperties(Monster target, Monster source)
         {
             target.Name = source.Name;
+            target.Basics = source.Basics;
             target.Description = source.Description;
             target.ProcessedDescription = source.ProcessedDescription;
+            target.meet = source.meet;
             target.encounter = source.encounter;
             target.perfected = source.perfected;
             target.MonstertypId = source.MonstertypId;
@@ -174,7 +176,11 @@ namespace Suendenbock_App.Controllers
                 }
 
                 // Feld basierend auf dem Request aktualisieren
-                if (request.Field.ToLower() == "encounter")
+                if(request.Field.ToLower() == "meet")
+                {
+                    monster.meet = request.Value;
+                }
+                else if (request.Field.ToLower() == "encounter")
                 {
                     monster.encounter = request.Value;
                 }

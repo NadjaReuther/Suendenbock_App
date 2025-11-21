@@ -35,7 +35,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: center;
+    gap: 1rem;
 }
 
     .medieval-switch .form-check-input {
@@ -45,6 +46,7 @@
         background-color: #8b7355;
         border: 2px solid #6e4b1f;
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        margin: 0;
     }
 
         .medieval-switch .form-check-input:checked {
@@ -61,6 +63,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     text-align: center;
     font-family: 'Cinzel', serif;
 }
