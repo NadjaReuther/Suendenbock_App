@@ -45,6 +45,7 @@
                                 <th>Herkunftsland</th>
                                 <th>Blutgruppe</th>
                                 <th>Magie</th>
+                                <th>🤝 Begleiter</th>
                                 <th>⚔️ Aktionen</th>
                             </tr>
                         </thead>
@@ -90,6 +91,15 @@
                                         {
                                             <span class="text-muted">⚫ Keine Magie</span>
                                         }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input companion-toggle"
+                                                   type="checkbox"
+                                                   data-character-id="@character.Id"
+                                                   @(character.IsCompanion ? "checked" : "")
+                                                   title="Als Begleitcharakter markieren">
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="medieval-actions">
@@ -499,25 +509,26 @@
         console.log(`Ausgewählter Charakter: ${name}`);
         showToast(`Charakter "${name}" ausgewählt`);
     }
-
-    function showToast(message) {
-        const toastHtml = `
-            <div class="toast align-items-center text-white bg-primary border-0 position-fixed top-0 end-0 m-3" style="z-index: 1051;" role="alert">
-                <div class="d-flex">
-                    <div class="toast-body">${message}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', toastHtml);
-        const toastElement = document.querySelector('.toast:last-child');
-        const toast = new bootstrap.Toast(toastElement, { delay: 2000 });
-        toast.show();
-        toastElement.addEventListener('hidden.bs.toast', () => {
-            toastElement.remove();
-        });
-    }
 });
+
+// Toast-Funktion global definieren, damit sie von allen Event-Handlern genutzt werden kann
+function showToast(message) {
+    const toastHtml = `
+        <div class="toast align-items-center text-white bg-primary border-0 position-fixed top-0 end-0 m-3" style="z-index: 1051;" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = document.querySelector('.toast:last-child');
+    const toast = new bootstrap.Toast(toastElement, { delay: 2000 });
+    toast.show();
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
 
 function deleteContent(Id, controllerName) {
     Swal.fire({
@@ -617,6 +628,70 @@ $(document).on('change', '.monster-toggle', function() {
                 text: "Das Monster konnte nicht aktualisiert werden.",
                 icon: "error"
             });
+        }
+    });
+});
+
+// Begleitcharakter Toggle-Funktionalität
+$(document).on('change', '.companion-toggle', function() {
+    const checkbox = $(this);
+    const characterId = checkbox.data('character-id');
+    const isChecked = checkbox.is(':checked');
+
+    // Checkbox vorübergehend deaktivieren
+    checkbox.prop('disabled', true);
+
+    const action = isChecked ? 'setzen' : 'entfernen';
+    const message = isChecked
+        ? 'Dieser Character wird als Begleitcharakter markiert. Es kann nur einen Begleitcharakter geben.'
+        : 'Der Begleitcharakter-Status wird entfernt.';
+
+    Swal.fire({
+        title: `Begleitcharakter ${action}?`,
+        text: message,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: `Ja, ${action}!`,
+        cancelButtonText: 'Abbrechen'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("ToggleCompanion", "Admin")",
+                data: { characterId: characterId, setAsCompanion: isChecked },
+                success: function (response) {
+                    if (response.success) {
+                        // Toast anzeigen und dann Seite neu laden
+                        showToast(response.message);
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    } else {
+                        Swal.fire({
+                            title: 'Fehler!',
+                            text: response.message,
+                            icon: 'error'
+                        });
+                        // Bei Fehler Checkbox zurücksetzen
+                        checkbox.prop('checked', !isChecked);
+                        checkbox.prop('disabled', false);
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        title: 'Fehler!',
+                        text: 'Es ist ein Fehler aufgetreten.',
+                        icon: 'error'
+                    });
+                    // Bei Fehler Checkbox zurücksetzen
+                    checkbox.prop('checked', !isChecked);
+                    checkbox.prop('disabled', false);
+                }
+            });
+        } else {
+            // Bei Abbruch Checkbox zurücksetzen
+            checkbox.prop('checked', !isChecked);
+            checkbox.prop('disabled', false);
         }
     });
 });

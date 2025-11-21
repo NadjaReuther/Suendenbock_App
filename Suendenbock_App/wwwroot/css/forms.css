@@ -70,6 +70,31 @@
     background: #4a7c59;
 }
 
+/* Clickable Steps */
+.step-item.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.step-item.clickable:hover .step-number {
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(110, 75, 31, 0.4);
+}
+
+.step-item.clickable:hover .step-title {
+    color: #d4af37;
+}
+
+.step-item.clickable.active:hover .step-number {
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(110, 75, 31, 0.6);
+}
+
+.step-item.clickable.completed:hover .step-number {
+    transform: scale(1.15);
+    box-shadow: 0 0 15px rgba(74, 124, 89, 0.4);
+}
+
 /* Form Steps */
 .form-step {
     display: none;

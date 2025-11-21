@@ -31,6 +31,9 @@ namespace Suendenbock_App.Models.Domain
         public bool Beschraenkt { get; set; } = false;
         public bool IsUnbegabt { get; set; } = false;
 
+        [Display(Name = "Begleitcharakter")]
+        public bool IsCompanion { get; set; } = false;
+
         //Pflicht-Foreign-Keys
         [Display(Name = "Rasse")]
         public int RasseId { get; set; }

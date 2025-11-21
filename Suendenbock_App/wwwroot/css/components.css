@@ -22,6 +22,27 @@
     color: #6e4b1f;
 }
 
+/* Character Avatar Round - für Overview */
+.character-avatar-round {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 4px solid #d4af37;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.6),
+                inset 0 0 10px rgba(212, 175, 55, 0.3);
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.character-avatar-round:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.8),
+                inset 0 0 15px rgba(212, 175, 55, 0.4);
+    border-color: #b8941f;
+}
+
 /* Pergament Cards */
 .pergament-card {
     background: linear-gradient(145deg, #f9f6f0, #f0e6d2);

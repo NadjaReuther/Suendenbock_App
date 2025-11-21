@@ -73,7 +73,7 @@
                             aria-controls="collapse-@infanterie.Id">
                         @if (!string.IsNullOrEmpty(infanterie.ImagePath))
                         {
-                            <img src="~/images/infanterie/@(infanterie.ImagePath)"
+                            <img src="@(infanterie.ImagePath)"
                                  alt="Standarte"
                                  class="infanterie-logo" />
                         }

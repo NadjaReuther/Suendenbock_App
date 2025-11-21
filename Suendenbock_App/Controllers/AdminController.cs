@@ -69,5 +69,46 @@ namespace Suendenbock_App.Controllers
         {
             return View();
         }
+
+        [HttpPost]
+        public IActionResult ToggleCompanion(int characterId, bool setAsCompanion)
+        {
+            try
+            {
+                var character = _context.Characters.Find(characterId);
+                if (character == null)
+                {
+                    return Json(new { success = false, message = "Character nicht gefunden." });
+                }
+
+                if (setAsCompanion)
+                {
+                    // Erst alle anderen Characters auf IsCompanion = false setzen
+                    var allCharacters = _context.Characters.ToList();
+                    foreach (var c in allCharacters)
+                    {
+                        c.IsCompanion = false;
+                    }
+
+                    // Dann den ausgewählten Character auf IsCompanion = true setzen
+                    character.IsCompanion = true;
+                    _context.SaveChanges();
+
+                    return Json(new { success = true, message = $"{character.Vorname} {character.Nachname} wurde als Begleitcharakter gesetzt." });
+                }
+                else
+                {
+                    // Begleitcharakter-Status entfernen
+                    character.IsCompanion = false;
+                    _context.SaveChanges();
+
+                    return Json(new { success = true, message = $"Begleitcharakter-Status von {character.Vorname} {character.Nachname} wurde entfernt." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Fehler: {ex.Message}" });
+            }
+        }
     }
 }

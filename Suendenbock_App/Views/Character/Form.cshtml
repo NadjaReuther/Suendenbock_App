@@ -38,17 +38,17 @@
         </nav>
         <!-- drei Schritt Navigation -->
         <div class="step-navigation">
-            <div class="step-item @(currentStep >= 1 ? "active" : "") @(currentStep > 1 ? "completed" : "")">
+            <div class="step-item @(currentStep >= 1 ? "active" : "") @(currentStep > 1 ? "completed" : "") @(Model?.Id > 0 ? "clickable" : "")" data-step="1" data-character-id="@(Model?.Id ?? 0)">
                 <div class="step-number">1</div>
                 <div class="step-title">Basis-Informationen</div>
                 <div class="step-connector"></div>
             </div>
-            <div class="step-item @(currentStep >= 2 ? "active" : "") @(currentStep > 2 ? "completed" : "")">
+            <div class="step-item @(currentStep >= 2 ? "active" : "") @(currentStep > 2 ? "completed" : "") @(Model?.Id > 0 ? "clickable" : "")" data-step="2" data-character-id="@(Model?.Id ?? 0)">
                 <div class="step-number">2</div>
                 <div class="step-title">Persönliche Details</div>
                 <div class="step-connector"></div>
             </div>
-            <div class="step-item @(currentStep >= 3 ? "active" : "")">
+            <div class="step-item @(currentStep >= 3 ? "active" : "") @(Model?.Id > 0 ? "clickable" : "")" data-step="3" data-character-id="@(Model?.Id ?? 0)">
                 <div class="step-number">3</div>
                 <div class="step-title">Zugehörigkeiten</div>
             </div>
@@ -460,6 +460,15 @@
 
         $(document).ready(function() {
             const currentStep = @currentStep;
+
+            // Schritt-Navigation klickbar machen
+            $('.step-item.clickable').click(function() {
+                const step = $(this).data('step');
+                const characterId = $(this).data('character-id');
+                if (characterId > 0) {
+                    window.location.href = '@Url.Action("Form", "Character")?id=' + characterId + '&step=' + step;
+                }
+            });
 
             // ========================================
             // WYSIWYG-Editor (nur Schritt 2)

@@ -110,29 +110,65 @@
         </div>
     </section>
 
-    <!-- Gilden Sektion -->
+    <!-- Spielercharaktere Sektion -->
     <section class="guild-section">
         <h2 class="section-title">
-            <span class="title-decoration left">⚜</span>
-            Ehrenwerte Gilden
-            <span class="title-decoration right">⚜</span>
+            <span class="title-decoration left">⚔️</span>
+            Unsere Helden
+            <span class="title-decoration right">⚔️</span>
         </h2>
 
-        <div class="guild-scroll">
-            <div class="scroll-content">
-                @foreach (var guild in Model.Guilds.Take(6))
+        <div class="character-scrolls">
+            @if (Model.PlayerCharacters.Any() || Model.CompanionCharacter != null)
+            {
+                @foreach (var character in Model.PlayerCharacters)
                 {
-                    <a asp-controller="Guild" asp-action="GuildSheet" asp-route-id="@guild.Id" class="text-decoration-none">
-                        <div class="guild-banner">
-                            <div class="banner-pole"></div>
-                            <div class="banner-flag">
-                                <img src="@guild.ImagePath" alt="@guild.Name" onerror="this.style.display='none';">
-                                <div class="guild-name">@guild.Name</div>
+                    <div class="character-scroll" data-tilt>
+                        <a class="card-link" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@character.Id">
+                            <div class="scroll-header">
+                                @if (character.ImagePath == null)
+                                {
+                                    <div class="character-seal">@character.Vorname.FirstOrDefault()@character.Nachname.FirstOrDefault()</div>
+                                }
+                                else
+                                {
+                                    <img class="character-avatar-round" src="@character.ImagePath" alt="@character.Vorname @character.Nachname"/>
+                                }
                             </div>
-                        </div>
-                    </a>
+                            <div class="scroll-body">
+                                <h4>@character.Vorname @character.Nachname</h4>
+                                <span class="badge bg-primary">🎭 Spieler</span>
+                            </div>
+                        </a>
+                    </div>
                 }
-            </div>
+
+                @if (Model.CompanionCharacter != null)
+                {
+                    <div class="character-scroll companion-character" data-tilt>
+                        <a class="card-link" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@Model.CompanionCharacter.Id">
+                            <div class="scroll-header">
+                                @if (Model.CompanionCharacter.ImagePath == null)
+                                {
+                                    <div class="character-seal">@Model.CompanionCharacter.Vorname.FirstOrDefault()@Model.CompanionCharacter.Nachname.FirstOrDefault()</div>
+                                }
+                                else
+                                {
+                                    <img class="character-avatar-round" src="@Model.CompanionCharacter.ImagePath" alt="@Model.CompanionCharacter.Vorname @Model.CompanionCharacter.Nachname"/>
+                                }
+                            </div>
+                            <div class="scroll-body">
+                                <h4>@Model.CompanionCharacter.Vorname @Model.CompanionCharacter.Nachname</h4>
+                                <span class="badge bg-success">🤝 Begleiter</span>
+                            </div>
+                        </a>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted">Noch keine Spielercharaktere vorhanden.</p>
+            }
         </div>
     </section>
 

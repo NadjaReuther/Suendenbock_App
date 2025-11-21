@@ -101,17 +101,51 @@
                         <span class="text-muted">Keine Magieklassen zugewiesen</span>
                     }
                 </p>
-                <p><strong>Beruf:</strong> @Model.Details?.Beruf</p>
-                <p><strong>Haus:</strong> @Model.Details?.Haus?.Name</p>
-                <p><strong>Herkunft:</strong> @Model.Details?.Herkunftsland?.Name</p>
-                <p><strong>Eltern:</strong>
-                    <div style="margin-left: 10px; font-size: 0.9em; color: #666;">Vater: @Model.Vater?.Vorname @Model.Vater?.Nachname</div>
-                    <div style="margin-left: 10px; font-size: 0.9em; color: #666;">Mutter: @Model.Mutter?.Vorname @Model.Mutter?.Nachname</div>
-                </p>
-                <p><strong>Blut:</strong> @Model.Details?.Blutgruppe?.Name</p>
-                <p><strong>Gilde:</strong> @Model.Affiliation?.Guild?.Name</p>
-                <p><strong>Regiment:</strong> @Model.Affiliation?.Regiment?.Name</p>
-                <p><strong>Infanterierang:</strong> @Model.Affiliation?.Infanterierang?.Name</p>
+                @if (!string.IsNullOrEmpty(Model.Details?.Beruf))
+                {
+                    <p><strong>Beruf:</strong> @Model.Details.Beruf</p>
+                }
+                @if (Model.Details?.Haus != null)
+                {
+                    <p><strong>Haus:</strong> @Model.Details.Haus.Name</p>
+                }
+                @if (Model.Details?.Herkunftsland != null)
+                {
+                    <p><strong>Herkunft:</strong> @Model.Details.Herkunftsland.Name</p>
+                }
+                @if (Model.Vater != null || Model.Mutter != null)
+                {
+                    <p><strong>Eltern:</strong>
+                        @if (Model.Vater != null)
+                        {
+                            <div style="margin-left: 10px; font-size: 0.9em; color: #666;">Vater: @Model.Vater.Vorname @Model.Vater.Nachname</div>
+                        }
+                        @if (Model.Mutter != null)
+                        {
+                            <div style="margin-left: 10px; font-size: 0.9em; color: #666;">Mutter: @Model.Mutter.Vorname @Model.Mutter.Nachname</div>
+                        }
+                    </p>
+                }
+                @if (Model.Partner != null)
+                {
+                    <p><strong>Partner:</strong> @Model.Partner.Vorname @Model.Partner.Nachname</p>
+                }
+                @if (Model.Details?.Blutgruppe != null)
+                {
+                    <p><strong>Blut:</strong> @Model.Details.Blutgruppe.Name</p>
+                }
+                @if (Model.Affiliation?.Guild != null)
+                {
+                    <p><strong>Gilde:</strong> @Model.Affiliation.Guild.Name</p>
+                }
+                @if (Model.Affiliation?.Regiment != null)
+                {
+                    <p><strong>Regiment:</strong> @Model.Affiliation.Regiment.Name</p>
+                }
+                @if (Model.Affiliation?.Infanterierang != null)
+                {
+                    <p><strong>Infanterierang:</strong> @Model.Affiliation.Infanterierang.Name</p>
+                }
             </div>
 
             

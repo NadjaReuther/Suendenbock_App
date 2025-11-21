@@ -62,6 +62,19 @@ namespace Suendenbock_App.Controllers
                     g => g.Select(c => $"{c.Vorname} {c.Nachname}").ToList()
                 );
 
+            // Spielercharaktere und Begleitcharakter laden
+            var playerCharacters = _context.Characters
+                .Where(c => c.UserId != null)
+                .Include(c => c.CharacterMagicClasses)
+                    .ThenInclude(cmc => cmc.MagicClass)
+                .ToList();
+
+            var companionCharacter = _context.Characters
+                .Where(c => c.IsCompanion)
+                .Include(c => c.CharacterMagicClasses)
+                    .ThenInclude(cmc => cmc.MagicClass)
+                .FirstOrDefault();
+
             // ViewModel erstellen
             var viewModel = new HomeViewModel
             {
@@ -72,7 +85,9 @@ namespace Suendenbock_App.Controllers
                 GenderStats = genderStats,
                 Monstertyps = monstertypen,
                 ZodiacStats = zodiacGroups,
-                Obermagien = obermagienStats
+                Obermagien = obermagienStats,
+                PlayerCharacters = playerCharacters,
+                CompanionCharacter = companionCharacter
             };
 
             return View(viewModel);

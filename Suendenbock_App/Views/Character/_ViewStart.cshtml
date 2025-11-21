@@ -3,7 +3,14 @@
 
     if (action == "Form")
     {
-        Layout = "_AdminLayout";
+        if (User.IsInRole("Admin"))
+        {
+            Layout = "_AdminFormLayout";
+        }
+        else if (User.IsInRole("Spieler"))
+        {
+            Layout = "_PlayerFormLayout";
+        }
     }
     else if (User.IsInRole("Spieler"))
     {
