@@ -51,9 +51,6 @@
             window.editors[this.editorContainerSelector] = this.editor;
             window.currentEditor = this.editor;
 
-            console.log('✅ Editor registriert:', this.textareaSelector, '→', this.editorContainerSelector);
-            console.log('📦 Alle Editoren:', Object.keys(window.editors));
-
             this.editor.setData(this.textarea.value);
 
             this.editor.model.document.on('change:data', () => {

@@ -28,8 +28,14 @@ namespace Suendenbock_App.Controllers
                 .ToList();
             var allGuilds = _context.Guilds.ToList();
             var allInfanteries = _context.Infanterien.ToList();
-            var characters = _context.Characters.ToList();
+            var characters = _context.Characters
+                .Include(c => c.Lebensstatus)
+                .Include(c => c.Eindruck)
+                .Include(c => c.Rasse)
+                .Include(c => c.CharacterMagicClasses)
+                .ToList();
             var monstertypen = _context.MonsterTypes.ToList();
+            var monsters = _context.Monsters.ToList();
 
             // Mapping: MagicClass ID -> Obermagie Bezeichnung
             var magicClassToObermagie = _context.MagicClasses
@@ -46,6 +52,21 @@ namespace Suendenbock_App.Controllers
                     ? magicClassToObermagie[cmc.MagicClassId]
                     : "Unbekannt")
                 .ToDictionary(g => g.Key, g => g.Count());
+
+            // Detaillierte Magieklassen-Statistik pro Obermagie für Tooltips
+            var magicClassDetails = _context.CharacterMagicClasses
+                .Include(cmc => cmc.MagicClass)
+                    .ThenInclude(mc => mc.Obermagie)
+                .AsEnumerable()
+                .GroupBy(cmc => cmc.MagicClass.Obermagie?.Bezeichnung ?? "Unbekannt")
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.GroupBy(cmc => cmc.MagicClass.Bezeichnung)
+                          .ToDictionary(
+                              mg => mg.Key,
+                              mg => mg.Count()
+                          )
+                );
 
             // Geschlechter-Statistik
             var genderStats = _context.Characters
@@ -75,6 +96,7 @@ namespace Suendenbock_App.Controllers
                     .ThenInclude(cmc => cmc.MagicClass)
                 .ToList();
 
+
             // ViewModel erstellen
             var viewModel = new HomeViewModel
             {
@@ -86,8 +108,10 @@ namespace Suendenbock_App.Controllers
                 Monstertyps = monstertypen,
                 ZodiacStats = zodiacGroups,
                 Obermagien = obermagienStats,
+                MagicClassDetails = magicClassDetails,
                 PlayerCharacters = playerCharacters,
-                CompanionCharacters = companionCharacters
+                CompanionCharacters = companionCharacters,
+                Monsters = monsters
             };
 
             return View(viewModel);

@@ -118,5 +118,55 @@ namespace Suendenbock_App.Controllers
             _context.SaveChanges();
             return RedirectToAction("Index", "Admin");
         }
+
+        public IActionResult Hierarchy()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult GetHierarchyData()
+        {
+            // Lade alle Obermagien
+            var obermagien = _context.Obermagien.ToList();
+
+            // Lade alle MagicClasses mit ihren Beziehungen
+            var magicClasses = _context.MagicClasses
+                .Include(mc => mc.Obermagie)
+                .Include(mc => mc.MagicClassSpecializations)
+                .ToList();
+
+            // Gruppiere MagicClasses nach Obermagie
+            var magicClassesByObermagie = magicClasses
+                .GroupBy(mc => mc.ObermagieId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Erstelle hierarchische Struktur für D3.js Collapsible Tree
+            var hierarchyData = new
+            {
+                name = "Magie-System",
+                children = obermagien.Select(obermagie =>
+                {
+                    var magicClassesForObermagie = magicClassesByObermagie.ContainsKey(obermagie.Id)
+                        ? magicClassesByObermagie[obermagie.Id]
+                        : new List<MagicClass>();
+
+                    return new
+                    {
+                        name = obermagie.Bezeichnung,
+                        children = magicClassesForObermagie.Select(magicClass => new
+                        {
+                            name = magicClass.Bezeichnung,
+                            children = magicClass.MagicClassSpecializations.Select(spec => new
+                            {
+                                name = spec.Name
+                            }).ToList()
+                        }).ToList()
+                    };
+                }).ToList()
+            };
+
+            return Json(hierarchyData);
+        }
     }
 }

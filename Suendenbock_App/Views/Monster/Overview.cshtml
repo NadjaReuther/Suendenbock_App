@@ -22,7 +22,7 @@
             {
                 var typeId = $"type{monsterType.Id}";
                 var isTypeOpen = selectedMonstertypId == monsterType.Id || monsterType.Monster.Any(m => m.Id == selectedMonsterId);
-                var encounterCount = monsterType.Monster.Count(m => m.encounter);
+                var meetCount = monsterType.Monster.Count(m => m.meet);
                 var totalCount = monsterType.Monster.Count();
 
                 <div class="accordion-item">
@@ -32,7 +32,7 @@
                                 aria-expanded="@(isTypeOpen ? "true" : "false")" aria-controls="collapse@(typeId)">
                             <h3>@monsterType.Name</h3>
                             <span class="ms-auto me-3" style="font-size: 0.9rem;">
-                                (@encounterCount/@totalCount entdeckt)
+                                (@meetCount/@totalCount entdeckt)
                             </span>
                         </button>
                     </h2>
@@ -41,7 +41,7 @@
                         <div class="accordion-body">
                             @foreach (var monster in monsterType.Monster)
                             {
-                                var isLocked = !monster.encounter;
+                                var isLocked = !monster.meet;
                                 var monsterId = $"monster{monster.Id}";
                                 var isMonsterOpen = selectedMonsterId == monster.Id;
 
@@ -68,10 +68,16 @@
                                                 <span style="@(isLocked ? "filter: blur(3px);" : "")">
                                                     @(isLocked ? "???" : monster.Name)
                                                 </span>
+                                                @if(!isLocked && monster.encounter && !monster.perfected)
+                                                {
+                                                    <span class="ms-auto me-3" style="font-size: 0.8rem; color: #C0C0C0;">
+                                                        ✨ teil erforscht
+                                                    </span>
+                                                }
                                                 @if (!isLocked && monster.perfected)
                                                 {
                                                     <span class="ms-auto me-3" style="font-size: 0.8rem; color: #d4af37;">
-                                                        ✨ Erforscht
+                                                        ✨ komplett erforscht
                                                     </span>
                                                 }
                                             </button>
@@ -102,7 +108,17 @@
                                                         }
                                                     </div>
 
-                                                    @if (!string.IsNullOrEmpty(monster.Description))
+                                                    @if (!string.IsNullOrEmpty(monster.Basics))
+                                                    {
+                                                        <div class="monster-inner-card">
+                                                            <h5 style="font-family: 'Cinzel', serif; color: #5d4e37; margin-bottom: 1rem;">
+                                                                📜 Basics
+                                                            </h5>
+                                                            @Html.Raw(monster.Basics)
+                                                        </div>
+                                                    }
+
+                                                    @if (monster.encounter && !string.IsNullOrEmpty(monster.Description))
                                                     {
                                                         <div class="monster-inner-card">
                                                             <h5 style="font-family: 'Cinzel', serif; color: #5d4e37; margin-bottom: 1rem;">

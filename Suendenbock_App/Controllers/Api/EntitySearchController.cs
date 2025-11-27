@@ -111,7 +111,7 @@ namespace Suendenbock_App.Controllers.Api
 
         private async Task<List<object>> SearchMonster(string query)
         {
-            return await _context.MonsterTypes
+            return await _context.Monsters
                 .Where(m => m.Name.Contains(query))
                 .Take(10)
                 .Select(m => new
@@ -120,8 +120,8 @@ namespace Suendenbock_App.Controllers.Api
                     name = m.Name,
                     type = "monster",
                     icon = "👹",
-                    url = $"/Monster/MonstertypSheet/{m.Id}",
-                    subtitle = "Monstertyp"
+                    url = $"/Monster/Overview?monsterId={m.Id}",
+                    subtitle = "Monster"
                 })
                 .ToListAsync<object>();
         }

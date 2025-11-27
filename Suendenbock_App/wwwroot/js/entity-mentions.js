@@ -20,19 +20,14 @@
     }
 
     init() {
-        console.log('🔄 EntityMentions: Initialisierung gestartet');
-
         // Prüfen ob CKEditor verwendet wird
-        if (this.checkForCKEditor()) {
-            console.log('✅ CKEditor-Modus erkannt');
+        if (this.checkForCKEditor()) {           
             this.initCKEditorMode();
         } else {
-            console.log('✅ Textarea-Modus erkannt');
             // Alte Textarea-Methode
             this.textarea.addEventListener('input', (e) => this.handleInput(e));
             this.textarea.addEventListener('keydown', (e) => this.handleKeydown(e));
         }
-
         this.createDropdown();
         this.createHelpTooltip();
     }
@@ -42,34 +37,25 @@
         return document.querySelector('.ck-editor') !== null;
     }
 
-    initCKEditorMode() {
-        console.log('🔍 Suche Editor für:', this.textareaSelector);
-        console.log('📦 Verfügbare Editoren:', Object.keys(window.editors || {}));
-
+    initCKEditorMode() {        
         let attempts = 0;
         const maxAttempts = 50;
 
         const checkInterval = setInterval(() => {
             attempts++;
-
             const editorInstance = window.editors?.[this.textareaSelector] || window.currentEditor;
 
             if (editorInstance) {
                 clearInterval(checkInterval);
                 this.editor = editorInstance;
-                console.log('✅ Editor gefunden für:', this.textareaSelector);
                 this.setupCKEditorListeners();
             } else if (attempts >= maxAttempts) {
                 clearInterval(checkInterval);
-                console.error('❌ Editor NICHT gefunden für:', this.textareaSelector);
-                console.log('📦 Verfügbare Editoren:', Object.keys(window.editors || {}));
             }
         }, 100);
     }
 
     setupCKEditorListeners() {
-        console.log('✅ Richte CKEditor-Listeners ein');
-
         // Lausche auf Tastatureingaben im Editor
         this.editor.editing.view.document.on('keyup', (evt, data) => {
             this.handleCKEditorInput();
@@ -100,9 +86,6 @@
                 textBeforeCursor += item.data;
             }
         }
-
-        console.log(`📝 Text vor Cursor: "${textBeforeCursor.substring(Math.max(0, textBeforeCursor.length - 20))}"`);
-
         // Suche nach Mention-Pattern in den letzten 50 Zeichen
         const searchText = textBeforeCursor.substring(Math.max(0, textBeforeCursor.length - 50));
         const mentionPattern = /([@#§&%])(\w*)$/;
@@ -111,8 +94,6 @@
         if (match) {
             const symbol = match[1];
             const searchTerm = match[2];
-
-            console.log(`🔍 Mention erkannt: ${symbol}${searchTerm}`);
 
             this.currentMention = {
                 start: textBeforeCursor.length - match[0].length,
@@ -142,8 +123,6 @@
     }
 
     insertEntityInCKEditor(entity) {
-        console.log('✅ Füge Entity in CKEditor ein:', entity.name);
-
         // Emoji-Mapping
         const emojiMap = {
             'character': '👤',
@@ -157,18 +136,30 @@
 
         // ✅ Einfacher Link mit nur Emoji, keine CSS-Klassen
         const linkHtml = `<a href="${entity.url}" data-entity-type="${entity.type}" data-entity-id="${entity.id}">${emoji}${entity.name}</a>`;
-
         const textToReplace = this.currentMention.symbol + this.currentMention.term;
-        const currentContent = this.editor.getData();
 
-        const lastIndex = currentContent.lastIndexOf(textToReplace);
+        // FIX: & wird zu &amp; encodiert - versuche beide Varianten
+        const textToReplaceEncoded = textToReplace.replace(/&/g, '&amp;');
+
+        const currentContent = this.editor.getData();
+        let lastIndex = currentContent.lastIndexOf(textToReplace);
+
+        // Wenn nicht gefunden, versuche die HTML-encodierte Version
+        if (lastIndex === -1) {
+            lastIndex = currentContent.lastIndexOf(textToReplaceEncoded);
+        }
 
         if (lastIndex !== -1) {
+            // Verwende die korrekte Länge (encodiert oder nicht)
+            const actualTextLength = currentContent.substring(lastIndex).startsWith(textToReplaceEncoded)
+                ? textToReplaceEncoded.length
+                : textToReplace.length;
+
             const newContent =
                 currentContent.substring(0, lastIndex) +
                 linkHtml +
                 ' ' +
-                currentContent.substring(lastIndex + textToReplace.length);
+                currentContent.substring(lastIndex + actualTextLength);
 
             this.editor.setData(newContent);
 
@@ -183,7 +174,6 @@
                 });
             }, 50);
         }
-
         this.editor.editing.view.focus();
     }
 
@@ -344,7 +334,6 @@
             const newTop = top - dropdownRect.height - 30; // 30px Abstand
             if (newTop > 0) {
                 this.dropdown.style.top = newTop + 'px';
-                console.log(`⬆️ Dropdown nach oben verschoben: ${newTop}px`);
             }
         }
 
@@ -416,22 +405,18 @@
 
         if (this.editor) {
             // CKEditor-Modus: HTML-Link einfügen
-            console.log('🔄 Füge Entity im CKEditor-Modus ein');
             this.insertEntityInCKEditor(entity);
         } else {
             // Textarea-Modus: Text-Symbol einfügen
-            console.log('🔄 Füge Entity im Textarea-Modus ein');
             const text = this.textarea.value;
             const beforeMention = text.substring(0, this.currentMention.start);
             const afterMention = text.substring(this.currentMention.end);
             const mention = `${this.currentMention.symbol}${entity.name}`;
             const newText = beforeMention + mention + ' ' + afterMention;
             this.textarea.value = newText;
-
             const newCursorPos = this.currentMention.start + mention.length + 1;
             this.textarea.setSelectionRange(newCursorPos, newCursorPos);
         }
-
         this.hideDropdown();
     }
 

@@ -5,11 +5,11 @@
     {
         if (User.IsInRole("Admin"))
         {
-            Layout = "_AdminFormLayout";
+            Layout = "_AdminLayout";
         }
         else if (User.IsInRole("Spieler"))
         {
-            Layout = "_PlayerFormLayout";
+            Layout = "_PlayerLayout";
         }
     }
     else if (User.IsInRole("Spieler"))

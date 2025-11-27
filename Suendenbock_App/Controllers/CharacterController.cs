@@ -49,6 +49,7 @@ namespace Suendenbock_App.Controllers
                 .Include(c => c.Eindruck)
                 .Include(c => c.Vater)
                 .Include(c => c.Mutter)
+                .Include(c => c.Partner)
 
                 // CharacterDetails mit allen verknüpften Tabellen
                 .Include(c => c.Details)
