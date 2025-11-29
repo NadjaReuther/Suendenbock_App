@@ -1,0 +1,205 @@
+@{
+    ViewData["Title"] = $"Türchen {ViewBag.Day}";
+    var day = ViewBag.Day;
+    var isGott = ViewBag.IsGott ?? false;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/advent-calendar.css" />
+}
+
+<div class="door-detail-container">
+    <div class="door-detail-content">
+        <div class="door-detail-header">
+            <h1>🎄 Türchen @day 🎄</h1>
+        </div>
+
+        <div id="doorContent" class="loading">
+            <div class="spinner-border text-warning" role="status">
+                <span class="visually-hidden">Lädt...</span>
+            </div>
+            <p style="margin-top: 1rem;">Inhalt wird geladen...</p>
+        </div>
+
+        <div class="text-center">
+            <a href="@Url.Action("Weihnachtsabenteuer", "Player")" class="back-button">
+                ← Zurück zum Kalender
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const day = @day;
+        const isGott = @(isGott ? "true" : "false");
+
+        // Beim Laden der Seite den Inhalt vom Server holen
+        document.addEventListener('DOMContentLoaded', function () {
+            loadDoorContent();
+        });
+
+        function loadDoorContent() {
+            fetch(`/AdventCalendar/GetContent?day=${day}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Fehler beim Laden');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const contentDiv = document.getElementById('doorContent');
+
+                    // Je nach Türchen-Typ unterschiedlich behandeln
+                    switch (data.doorType) {
+                        case 'simple':
+                            showSimpleContent(contentDiv, data);
+                            break;
+                        case 'choice':
+                            if (data.alreadyChosen) {
+                                showChoiceResult(contentDiv, data);
+                            } else {
+                                showChoiceOptions(contentDiv, data, day);
+                            }
+                            break;
+                        case 'directAudio':
+                            showDirectAudio(contentDiv, data);
+                            break;
+                        default:
+                            contentDiv.innerHTML = '<p class="text-danger">Unbekannter Türchen-Typ</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Fehler:', error);
+                    document.getElementById('doorContent').innerHTML =
+                        '<p class="text-danger">Fehler beim Laden des Inhalts :(</p>';
+                });
+        }
+
+        function showSimpleContent(contentDiv, data) {
+            contentDiv.className = 'advent-simple-content';
+            contentDiv.innerHTML = data.htmlContent;
+        }
+
+        function showDirectAudio(contentDiv, data) {
+            contentDiv.className = 'advent-audio-content text-center';
+            contentDiv.innerHTML = `
+                <div style="font-size: 2rem; margin-bottom: 1rem;">Beide gewinnen an Entschlossenheit!</div>
+                <audio controls autoplay style="width: 100%; max-width: 400px;">
+                    <source src="${data.audioPath}" type="audio/mpeg">
+                    Dein Browser unterstützt das Audio-Element nicht.
+                </audio>
+            `;
+        }
+
+        function showChoiceOptions(contentDiv, data, day) {
+            contentDiv.className = 'advent-choice-content text-center';
+            contentDiv.innerHTML = `
+                <div class="row">
+                    <div class="col-3">
+                        <div class="row" style="height:35%;"><div class="col"></div></div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="choice-card" onclick="makeChoice(${day}, 0)" style="cursor: pointer;">
+                                    <h6 style="font-family: 'MedievalSharp', cursive; color: #d4af37; font-size: 76px;">Emma</h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row"><div class="col"></div></div>                        
+                    </div>
+                    <div class="col-6">
+                        <img src="/assets/advent/wegweiser.png" alt="Wegweiser"
+                                style="max-width: 80%; border-radius: 8px; margin-bottom: 0.5rem;">
+                    </div>
+                    <div class="col-3">
+                        <div class="row"></div>
+                        <div class="row" style="height:15%;">
+                            <div class="col">
+                                <div class="choice-card" onclick="makeChoice(${day}, 1)" style="cursor: pointer;">
+                                    <h6 style="font-family: 'MedievalSharp', cursive; color: #d4af37;font-size: 76px;">Kasimir</h6>
+                                </div>
+                            </<div>
+                        </div>
+                        <div class="row"><div class="col"></div></div>
+                        <div class="row"><div class="col"></div></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showChoiceResult(contentDiv, data) {
+            const choiceName = data.choiceName || (data.choiceIndex === 0 ? 'Emma' : 'Kasimir');
+
+            contentDiv.className = 'choice-result text-center';
+            let html = `
+                <h5 style="font-family: 'Cinzel', serif; color: #5d4e37; margin-bottom: 1.5rem;">
+                    Deine Wahl
+                </h5>
+                <div style="margin: 1.5rem 0; padding: 1rem; background: rgba(212, 175, 55, 0.2); border-radius: 8px;">
+                    <p style="font-size: 1.2rem; color: #d4af37; font-weight: bold; margin-bottom: 0;">
+                        ${choiceName}s Entschlossenheit steigt!
+                    </p>
+                </div>
+            `;
+
+            if (data.audioPath) {
+                html += `
+                    <div style="margin-top: 1.5rem;">                        
+                        <audio controls autoplay style="width: 100%; max-width: 400px;">
+                            <source src="${data.audioPath}" type="audio/mpeg">
+                            Dein Browser unterstützt das Audio-Element nicht.
+                        </audio>
+                    </div>
+                `;
+            }
+
+            html += `
+                <p style="font-size: 0.9rem; color: #999; margin-top: 1.5rem;">
+                    <em>Diese Entscheidung ist endgültig</em>
+                </p>
+            `;
+
+            contentDiv.innerHTML = html;
+        }
+
+        function makeChoice(day, choiceIndex) {
+            const choiceCards = document.querySelectorAll('.choice-card');
+            choiceCards.forEach(card => {
+                card.style.pointerEvents = 'none';
+                card.style.opacity = '0.6';
+            });
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            fetch('/AdventCalendar/SaveChoice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({
+                    day: day,
+                    choiceIndex: choiceIndex
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Fehler beim Speichern');
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    // Erfolgreich gespeichert - Seite neu laden um Ergebnis anzuzeigen
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Fehler:', error);
+                    alert('Deine Auswahl konnte nicht gespeichert werden. Bitte versuche es erneut.');
+                    choiceCards.forEach(card => {
+                        card.style.pointerEvents = 'auto';
+                        card.style.opacity = '1';
+                    });
+                });
+        }
+    </script>
+}

@@ -1,0 +1,189 @@
+/* ===================================
+   ADVENT ADMIN DASHBOARD STYLES
+   =================================== */
+
+/* Statistik-Karten */
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 20px;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Player-Statistik-Karten */
+.player-stat-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-height: 150px;
+}
+
+.player-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+.player-stat-card .card-body {
+    padding: 1rem;
+}
+
+.player-choice-details {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.stat-card .card-body {
+    padding: 25px;
+    text-align: center;
+}
+
+.stat-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    opacity: 0.9;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.stat-label {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Card-Styling */
+.card {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    padding: 15px 20px;
+}
+
+/* Tabellen-Styling */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    color: #495057;
+}
+
+.table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badges */
+.badge-lg {
+    font-size: 1rem;
+    padding: 8px 12px;
+}
+
+.badge-pill {
+    font-size: 1rem;
+    padding: 6px 12px;
+}
+
+/* Progress Bars */
+.progress {
+    border-radius: 5px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 15px;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+    }
+
+    .display-4 {
+        font-size: 2rem;
+    }
+
+    .display-3 {
+        font-size: 2.5rem;
+    }
+}
+
+/* Farben für verschiedene Zustände */
+.bg-primary {
+    background-color: #007bff !important;
+}
+
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.bg-dark {
+    background-color: #343a40 !important;
+}
+
+/* Gradient-Farben */
+.bg-gradient-purple {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.bg-gradient-blue {
+    background: linear-gradient(135deg, #667eea 0%, #4299e1 100%) !important;
+}
+
+/* Button-Styling */
+.btn-outline-primary:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+/* Alert-Styling */
+.alert {
+    border-radius: 8px;
+    border-left: 4px solid;
+}
+
+.alert-info {
+    border-left-color: #17a2b8;
+}

@@ -66,7 +66,7 @@ namespace Suendenbock_App.Data
 
         //Weihnachtsabenteuer
         public DbSet<AdventDoor> AdventDoors { get; set; }
-        public DbSet<UserAdventChoice> userAdventChoices { get; set; }
+        public DbSet<UserAdventChoice> UserAdventChoices { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

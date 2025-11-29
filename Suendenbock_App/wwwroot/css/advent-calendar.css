@@ -21,14 +21,6 @@
     padding-top: 2rem;
     margin-bottom: 2rem;
 }
-/*
-    Schrift der Anleitung
-*/
-.font-weihnachten {
-    font-family: Mistake;
-    font-size: 1.5rem;
-    color: #FFBD59;
-}
 /* Das Gitter mit allen Türchen */
 .advent-grid {
     display: grid;
@@ -40,56 +32,45 @@
 .advent-door {
     position: relative;
     width: 100%;
-    padding-bottom: 100%; /* Macht quadratische Türchen */
     cursor: pointer;
-    perspective: 1000px; /* Wichtig für 3D-Effekt! */
+    transition: transform 0.3s ease;
 }
 
-/* Vorderseite des Türchens */
-.door-front {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform-style: preserve-3d;
-    transition: transform 0.8s ease;
-    backface-visibility: hidden;
-    overflow: hidden;
-}
-
-/* Rückseite des Türchens */
-.door-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(145deg, #f9f6f0, #e8dcc0);
-    border: 3px solid #d4af37;
+/* SVG-Bild im Türchen */
+.door-image {
+    width: 120%;
+    height: auto;
+    display: block;
     border-radius: 8px;
-    transform: rotateY(180deg);
-    backface-visibility: hidden;
+    transition: transform 0.3s ease;
+}
+
+/* Hover-Effekt */
+.advent-door:hover .door-image {
+    transform: scale(1.1);
+}
+
+/* Bereits geöffnete Türchen markieren */
+.advent-door.already-opened .door-image {
+    opacity: 0.5;
+}
+
+.advent-door.already-opened::after {
+    content: "✓";
+    position: absolute;
+    top: 10px;
+    right: 0;
+    font-size: 2rem;
+    color: #d4af37;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-/* Wenn das Türchen geöffnet wird */
-.advent-door.opened .door-front {
-    transform: rotateY(-180deg); /* Dreht die Vorderseite weg */
-}
-
-.advent-door.opened .door-back {
-    transform: rotateY(0deg); /* Dreht die Rückseite nach vorne */
-}
-
-/* Hover-Effekt bevor man klickt */
-.advent-door:not(.opened):hover .door-front {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+    font-weight: bold;
+    pointer-events: none;
 }
 .door-lock {
     position: absolute;
@@ -121,12 +102,90 @@
         transform: translate(-50%, -50%) rotate(10deg);
     }
 }
-/*
-    Fonts
-*/
-@font-face {
-    font-family: 'Mistake';
-    src: url('fonts/Mistake Note.otf') format('opentype'); 
-    font-weight: normal;
-    font-style: normal;
+/* ========================================
+   TÜRCHEN-INHALT: Audio Player
+   ======================================== */
+.advent-audio-content audio {
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
+
+.advent-audio-content audio::-webkit-media-controls-panel {
+    background-color: #f9f6f0;
+}
+
+/* ========================================
+   TÜRCHEN-INHALT: Simple HTML Content
+   ======================================== */
+.advent-simple-content {
+    padding: 1rem;
+}
+
+    .advent-simple-content img {
+        max-width: 45%;
+        height: auto;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+    }
+
+.advent-simple-content h1,
+.advent-simple-content h2,
+.advent-simple-content h3 {
+    font-family: 'Cinzel', serif;
+    color: #5d4e37;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+    .advent-simple-content p {
+        font-family: 'MedievalSharp', cursive;
+        color: #4a3f2e;
+        text-align: justify; 
+        padding:0 40px 0 40px;
+        font-size: 26px;
+        line-height: 1.6;
+    }
+
+.door-detail-container {
+    padding: 2rem;
+}
+
+.door-detail-content {
+    margin: 0 auto;
+    background: rgba(255,255,255,1);
+    border: 3px solid #d4af37;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    
+}
+
+.door-detail-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #d4af37;
+}
+
+    .door-detail-header h1 {
+        font-family: 'Cinzel', serif;
+        color: #5d4e37;
+        font-size: 2.5rem;
+    }
+
+.back-button {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.75rem 2rem;
+    background: linear-gradient(145deg, #d4af37, #b8941f);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-family: 'MedievalSharp', cursive;
+    transition: transform 0.3s ease;
+}
+
+    .back-button:hover {
+        transform: scale(1.05);
+        color: white;
+    }

@@ -1,0 +1,183 @@
+@using Suendenbock_App.Models.Domain
+@{
+    ViewData["Title"] = "Türchen Aktivität";
+    var door = (AdventDoor)ViewBag.Door;
+    var userChoices = (List<UserAdventChoice>)ViewBag.UserChoices;
+    var users = (Dictionary<string, string>)ViewBag.Users;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/advent-admin.css" />
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a asp-action="AdminDashboard" class="btn btn-outline-secondary mb-3">
+                ← Zurück zum Dashboard
+            </a>
+            <h1 class="display-4">🎄 Türchen @door.DayNumber - Details</h1>
+        </div>
+    </div>
+
+    <!-- Türchen-Info -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📋 Türchen-Informationen</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Tag:</strong> @door.DayNumber</p>
+                    <p><strong>Typ:</strong>
+                        @if (door.DoorType == DoorType.Simple)
+                        {
+                            <span class="badge bg-secondary">📄 Simple (HTML)</span>
+                        }
+                        else if (door.DoorType == DoorType.Choice)
+                        {
+                            <span class="badge badge-info">🎭 Choice (Emma/Kasimir)</span>
+                        }
+                        else if (door.DoorType == DoorType.DirectAudio)
+                        {
+                            <span class="badge badge-success">🎵 Direct Audio</span>
+                        }
+                    </p>
+                    <p><strong>Geöffnet:</strong> @userChoices.Count mal</p>
+
+                    @if (door.DoorType == DoorType.Choice)
+                    {
+                        var emmaCount = userChoices.Count(c => c.ChoiceIndex == 0);
+                        var kasimirCount = userChoices.Count(c => c.ChoiceIndex == 1);
+                        var noChoice = userChoices.Count(c => !c.ChoiceIndex.HasValue);
+
+                        <hr />
+                        <p><strong>Emma gewählt:</strong> <span class="text-success">@emmaCount</span></p>
+                        <p><strong>Kasimir gewählt:</strong> <span class="text-primary">@kasimirCount</span></p>
+                        @if (noChoice > 0)
+                        {
+                            <p><strong>Noch nicht gewählt:</strong> <span class="text-warning">@noChoice</span></p>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            @if (door.DoorType == DoorType.Choice && userChoices.Any())
+            {
+                var emmaCount = userChoices.Count(c => c.ChoiceIndex == 0);
+                var kasimirCount = userChoices.Count(c => c.ChoiceIndex == 1);
+                var total = emmaCount + kasimirCount;
+                var emmaPercentage = total > 0 ? (emmaCount * 100.0 / total) : 0;
+                var kasimirPercentage = total > 0 ? (kasimirCount * 100.0 / total) : 0;
+
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">📊 Auswahl-Verteilung</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center mb-3">
+                            <div class="col-6">
+                                <h2 class="text-success">👧 Emma</h2>
+                                <h1 class="display-3">@Math.Round(emmaPercentage, 1)%</h1>
+                                <p class="text-muted">@emmaCount von @total Auswahlen</p>
+                            </div>
+                            <div class="col-6">
+                                <h2 class="text-primary">🐉 Kasimir</h2>
+                                <h1 class="display-3">@Math.Round(kasimirPercentage, 1)%</h1>
+                                <p class="text-muted">@kasimirCount von @total Auswahlen</p>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar bg-success" role="progressbar"
+                                 style="width: @emmaPercentage%">
+                                Emma
+                            </div>
+                            <div class="progress-bar bg-primary" role="progressbar"
+                                 style="width: @kasimirPercentage%">
+                                Kasimir
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- User-Aktivitäten -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">👥 User-Aktivitäten (@userChoices.Count)</h5>
+                </div>
+                <div class="card-body">
+                    @if (userChoices.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Username</th>
+                                        <th>Geöffnet am</th>
+                                        @if (door.DoorType == DoorType.Choice)
+                                        {
+                                            <th>Auswahl</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var counter = 1;
+                                    }
+                                    @foreach (var choice in userChoices)
+                                    {
+                                        <tr>
+                                            <td>@counter</td>
+                                            <td>
+                                                <strong>@(users.ContainsKey(choice.UserId) ? users[choice.UserId] : "Unbekannt")</strong>
+                                            </td>
+                                            <td>
+                                                @choice.ChosenAt.ToString("dd.MM.yyyy HH:mm:ss")
+                                            </td>
+                                            @if (door.DoorType == DoorType.Choice)
+                                            {
+                                                <td>
+                                                    @if (choice.ChoiceIndex.HasValue)
+                                                    {
+                                                        if (choice.ChoiceIndex == 0)
+                                                        {
+                                                            <span class="badge badge-success badge-lg">👧 Emma</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-primary badge-lg">🐉 Kasimir</span>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-warning">⏳ Noch nicht gewählt</span>
+                                                    }
+                                                </td>
+                                            }
+                                        </tr>
+                                        counter++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <strong>ℹ️ Noch keine Aktivität</strong><br />
+                            Dieses Türchen wurde noch von keinem User geöffnet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

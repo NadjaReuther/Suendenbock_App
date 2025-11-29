@@ -42,6 +42,29 @@ namespace Suendenbock_App.Controllers
                     .ThenInclude(l => l.LightCard)
                 .FirstOrDefaultAsync();
 
+            // Adventskalender-Statistik laden
+            var userChoices = await _context.UserAdventChoices
+                .Where(c => c.UserId == userId)
+                .Include(c => c.AdventDoor)
+                .OrderBy(c => c.AdventDoor.DayNumber)
+                .ToListAsync();
+
+            var adventStats = new
+            {
+                TotalOpened = userChoices.Count,
+                EmmaChoices = userChoices.Count(c => c.ChoiceIndex == 0),
+                KasimirChoices = userChoices.Count(c => c.ChoiceIndex == 1),
+                Doors = userChoices.Select(c => new
+                {
+                    DayNumber = c.AdventDoor.DayNumber,
+                    DoorType = c.AdventDoor.DoorType,
+                    OpenedAt = c.ChosenAt,
+                    Choice = c.ChoiceIndex.HasValue ? (c.ChoiceIndex == 0 ? "Emma" : "Kasimir") : null
+                }).ToList()
+            };
+
+            ViewBag.AdventStats = adventStats;
+
             return View(character);
         }
 
@@ -177,8 +200,51 @@ namespace Suendenbock_App.Controllers
         {
             return View();
         }
-        public IActionResult Weihnachtsabenteuer()
+
+        [AllowAnonymous]
+        [Authorize]
+        public async Task<IActionResult> Weihnachtsabenteuer()
         {
+            // Prüfen ob User in Spieler oder Gott Rolle ist
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Redirect("/Identity/Account/Login");
+            }
+
+            var isSpieler = await _userManager.IsInRoleAsync(user, "Spieler");
+            var isGott = await _userManager.IsInRoleAsync(user, "Gott");
+
+            if (!isSpieler && !isGott)
+            {
+                return Forbid();
+            }
+
+            return View();
+        }
+
+        [AllowAnonymous]
+        [Authorize]
+        public async Task<IActionResult> WeihnachtstuerDetail(int day)
+        {
+            // Prüfen ob User in Spieler oder Gott Rolle ist
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Redirect("/Identity/Account/Login");
+            }
+
+            var isSpieler = await _userManager.IsInRoleAsync(user, "Spieler");
+            var isGott = await _userManager.IsInRoleAsync(user, "Gott");
+
+            if (!isSpieler && !isGott)
+            {
+                return Forbid();
+            }
+
+            ViewBag.Day = day;
+            ViewBag.IsGott = isGott;
+
             return View();
         }
     }

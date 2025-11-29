@@ -184,19 +184,22 @@ namespace Suendenbock_App.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ChoicesJson")
-                        .IsRequired()
+                    b.Property<string>("AudioPath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DayNumber")
                         .HasColumnType("int");
 
-                    b.Property<string>("ImagePath")
-                        .IsRequired()
+                    b.Property<int>("DoorType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EmmaAudioPath")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Question")
-                        .IsRequired()
+                    b.Property<string>("HtmlContentPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("KasimirAudioPath")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -1330,7 +1333,7 @@ namespace Suendenbock_App.Migrations
                     b.Property<int>("AdventDoorId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ChoiceIndex")
+                    b.Property<int?>("ChoiceIndex")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ChosenAt")
@@ -1344,7 +1347,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("AdventDoorId");
 
-                    b.ToTable("userAdventChoices");
+                    b.ToTable("UserAdventChoices");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.UserTriggerPreference", b =>

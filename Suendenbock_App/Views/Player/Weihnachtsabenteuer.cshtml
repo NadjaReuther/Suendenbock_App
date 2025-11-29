@@ -1,10 +1,16 @@
 ﻿@{
+    ViewData["Title"] = "Weihnachtsabenteuer";
+
     // Liste mit Zahlen 1-24 erstellen
     var days = Enumerable.Range(1, 24).ToList();
 
     // Durcheinander würfeln
     Random rnd = new Random();
     days = days.OrderBy(x => rnd.Next()).ToList();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/advent-calendar.css" />
 }
 <!-- Die Kalender-Container -->
 <div class="advent-container">
@@ -15,18 +21,9 @@
         @foreach (var day in days)
         {
             <div class="advent-door" data-day="@day">
-                <div class="door-front" style="background-image: url('/assets/spieler/Weihnachten/Kalenderzahlen/@(day).svg');">
-                    <!-- NEU: Vorhängeschloss wenn Tag noch nicht erreicht -->
-                    <div class="door-lock" style="display: none;">
-                        🔒
-                    </div>
-                </div>
-
-                <div class="door-back">
-                    <!-- Hier kommt der Inhalt rein -->
-                    <div class="door-content">
-                        🎄
-                    </div>
+                <img src="/assets/spieler/Weihnachten/Kalenderzahlen/@(day).svg" alt="Türchen @day" class="door-image" />
+                <div class="door-lock" style="display: none;">
+                    🔒
                 </div>
             </div>
         }
@@ -61,3 +58,7 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/advent-calendar.js"></script>
+}
