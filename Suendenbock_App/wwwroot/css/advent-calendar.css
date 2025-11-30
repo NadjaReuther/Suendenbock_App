@@ -21,6 +21,18 @@
     padding-top: 2rem;
     margin-bottom: 2rem;
 }
+.font-weihnachten {
+    background-color: rgba(212,175,55, 0.5);
+    color: white;
+    font-family:Georgia;
+    font-weight: 200;
+    font-size: 1.5rem;
+    text-align: justify;
+    margin: 0 200px;
+    border: 3px solid #d4af37;
+    padding: 24px 36px;
+    border-radius: 8px;
+}
 /* Das Gitter mit allen Türchen */
 .advent-grid {
     display: grid;

@@ -36,11 +36,11 @@
                         }
                         else if (door.DoorType == DoorType.Choice)
                         {
-                            <span class="badge badge-info">🎭 Choice (Emma/Kasimir)</span>
+                            <span class="badge bg-info">🎭 Choice (Emma/Kasimir)</span>
                         }
                         else if (door.DoorType == DoorType.DirectAudio)
                         {
-                            <span class="badge badge-success">🎵 Direct Audio</span>
+                            <span class="badge bg-success">🎵 Direct Audio</span>
                         }
                     </p>
                     <p><strong>Geöffnet:</strong> @userChoices.Count mal</p>
@@ -52,7 +52,7 @@
                         var noChoice = userChoices.Count(c => !c.ChoiceIndex.HasValue);
 
                         <hr />
-                        <p><strong>Emma gewählt:</strong> <span class="text-success">@emmaCount</span></p>
+                        <p><strong>Emma gewählt:</strong> <span class="text-success">🌊 @emmaCount</span></p>
                         <p><strong>Kasimir gewählt:</strong> <span class="text-primary">@kasimirCount</span></p>
                         @if (noChoice > 0)
                         {
@@ -79,7 +79,7 @@
                     <div class="card-body">
                         <div class="row text-center mb-3">
                             <div class="col-6">
-                                <h2 class="text-success">👧 Emma</h2>
+                                <h2 class="text-success">🌊 Emma</h2>
                                 <h1 class="display-3">@Math.Round(emmaPercentage, 1)%</h1>
                                 <p class="text-muted">@emmaCount von @total Auswahlen</p>
                             </div>
@@ -149,16 +149,16 @@
                                                     {
                                                         if (choice.ChoiceIndex == 0)
                                                         {
-                                                            <span class="badge badge-success badge-lg">👧 Emma</span>
+                                                            <span class="badge bg-success badge-lg">🌊 Emma</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="badge badge-primary badge-lg">🐉 Kasimir</span>
+                                                            <span class="badge bg-primary badge-lg">🐉 Kasimir</span>
                                                         }
                                                     }
                                                     else
                                                     {
-                                                        <span class="badge badge-warning">⏳ Noch nicht gewählt</span>
+                                                        <span class="badge bg-warning">⏳ Noch nicht gewählt</span>
                                                     }
                                                 </td>
                                             }

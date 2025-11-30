@@ -209,20 +209,25 @@ namespace Suendenbock_App.Controllers
                 .Where(c => playerUserIds.Contains(c.UserId))
                 .ToDictionaryAsync(c => c.UserId, c => c.UserColor);
 
-            // Für jeden Player die Statistik berechnen (nur mit Character)
+            // Für jeden Player die Statistik berechnen
             var playerStats = new List<dynamic>();
-            foreach (var player in playerUsers.Where(p => charactersWithColor.ContainsKey(p.Id)).OrderBy(p => p.UserName))
+            foreach (var player in playerUsers.OrderBy(p => p.UserName))
             {
                 var playerChoices = allChoices.Where(c => c.UserId == player.Id).ToList();
                 var emmaCount = playerChoices.Count(c => c.ChoiceIndex == 0);
                 var kasimirCount = playerChoices.Count(c => c.ChoiceIndex == 1);
                 var total = emmaCount + kasimirCount;
 
-                // Alle Player anzeigen (auch ohne Auswahlen)
+                // Farbcode: Character-Farbe falls vorhanden, sonst Standard-Grau
+                var farbcode = charactersWithColor.ContainsKey(player.Id)
+                    ? charactersWithColor[player.Id] ?? "#6c757d"
+                    : "#6c757d";
+
+                // Alle Player anzeigen (auch ohne Character und ohne Auswahlen)
                 playerStats.Add(new
                 {
                     UserName = player.UserName ?? "Unbekannt",
-                    Farbcode = charactersWithColor[player.Id] ?? "#6c757d", // Character-Farbe
+                    Farbcode = farbcode,
                     EmmaCount = emmaCount,
                     KasimirCount = kasimirCount,
                     Total = total,
@@ -248,9 +253,18 @@ namespace Suendenbock_App.Controllers
                 }
             }
 
+            // Gesamt-Statistik berechnen
+            var totalEmmaChoices = allChoices.Count(c => c.ChoiceIndex == 0);
+            var totalKasimirChoices = allChoices.Count(c => c.ChoiceIndex == 1);
+            var totalChoices = totalEmmaChoices + totalKasimirChoices;
+
             ViewBag.PlayerStats = playerStats;
             ViewBag.Doors = doors;
             ViewBag.FirstOpeners = firstOpeners;
+            ViewBag.Choices = allChoices;
+            ViewBag.TotalEmmaChoices = totalEmmaChoices;
+            ViewBag.TotalKasimirChoices = totalKasimirChoices;
+            ViewBag.TotalChoices = totalChoices;
 
             return View();
         }

@@ -24,45 +24,48 @@
             <div class="col-md-3 col-sm-6 mb-3">
                 <div class="card player-stat-card" style="background-color: @player.Farbcode; border: 2px solid rgba(0,0,0,0.2);">
                     <div class="card-body text-white">
-                        <h6 class="card-title text-white mb-3">
-                            <strong>@player.UserName</strong>
-                        </h6>
+                        <h4 class="card-title text-white mb-3">
+                            @{
+                                var SpielerName = player.UserName.Substring(0,player.UserName.IndexOf('@'));
+                            }
+                            <strong>@SpielerName</strong>
+                        </h4>
                         <div class="text-center mb-2">
-                            <h4 class="text-white mb-1">
+                            <h6 class="text-white mb-1">
                                 @if (player.Preference == "Keine Auswahl")
                                 {
-                                    <span>⏳ Keine Auswahl</span>
+                                    <span>Keine Auswahl</span>
                                 }
                                 else if (player.Preference == "Emma")
                                 {
-                                    <span>✓ Emma</span>
+                                    <span>unterstützt Emma</span>
                                 }
                                 else if (player.Preference == "Kasimir")
                                 {
-                                    <span>✓ Kasimir</span>
+                                    <span>unterstützt Kasimir</span>
                                 }
                                 else
                                 {
-                                    <span>= Gleich</span>
+                                    <span>unterstützt Beide</span>
                                 }
-                            </h4>
+                            </h6>
                         </div>
                         @if (player.Total > 0)
                         {
                             var emmaPercent = (player.EmmaCount * 100.0 / player.Total);
                             var kasimirPercent = (player.KasimirCount * 100.0 / player.Total);
-                            <div class="player-choice-details text-white">
+                            <div class="player-choice-details text-white text-center">
                                 <small>
-                                    Emma: @player.EmmaCount (@Math.Round(emmaPercent, 0)%)<br/>
+                                    Emma: @player.EmmaCount (@Math.Round(emmaPercent, 0)%) ----
                                     Kasimir: @player.KasimirCount (@Math.Round(kasimirPercent, 0)%)
                                 </small>
                             </div>
                         }
                         else
                         {
-                            <div class="player-choice-details text-white">
+                            <div class="player-choice-details text-white text-center">
                                 <small>
-                                    Noch keine Choice-Türchen gewählt
+                                    bisher keine Auswahl
                                 </small>
                             </div>
                         }
@@ -70,6 +73,108 @@
                 </div>
             </div>
         }
+    </div>
+
+    <!-- Gesamt-Statistik -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-dark shadow">
+                <div class="card-body">
+                    @{
+                        var totalEmma = (int)ViewBag.TotalEmmaChoices;
+                        var totalKasimir = (int)ViewBag.TotalKasimirChoices;
+                        var total = (int)ViewBag.TotalChoices;
+
+                        string leader = "";
+                        string leaderClass = "";
+                        double emmaPercentage = 0;
+                        double kasimirPercentage = 0;
+
+                        if (total > 0)
+                        {
+                            emmaPercentage = (totalEmma * 100.0 / total);
+                            kasimirPercentage = (totalKasimir * 100.0 / total);
+
+                            if (totalEmma > totalKasimir)
+                            {
+                                leader = "🌊 Emma ist entschlossener!";
+                                leaderClass = "text-primary";
+                            }
+                            else if (totalKasimir > totalEmma)
+                            {
+                                leader = "⏳ Kasimir ist entschlossener!";
+                                leaderClass = "text-warning";
+                            }
+                            else
+                            {
+                                leader = "⚖️ Beide sind entschlossen!";
+                                leaderClass = "text-secondary";
+                            }
+                        }
+                        else
+                        {
+                            leader = "Noch keine Auswahlen getroffen";
+                            leaderClass = "text-muted";
+                        }
+                    }
+
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <h2 class="display-4 text-primary mb-2">🌊 @totalEmma</h2>
+                                <h5>Emma</h5>
+                                @if (total > 0)
+                                {
+                                    <p class="text-muted">(@Math.Round(emmaPercentage, 1)%)</p>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-center justify-content-center">
+                            <div class="text-center">
+                                <h4 class="@leaderClass mb-3">@leader</h4>
+                                <p class="text-muted">Gesamt: <strong>@total</strong> Auswahlen</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3">
+                                <h2 class="display-4 text-warning mb-2">⏳ @totalKasimir</h2>
+                                <h5>Kasimir</h5>
+                                @if (total > 0)
+                                {
+                                    <p class="text-muted">(@Math.Round(kasimirPercentage, 1)%)</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (total > 0)
+                    {
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar bg-primary" role="progressbar"
+                                         style="width: @(emmaPercentage)%"
+                                         aria-valuenow="@totalEmma" aria-valuemin="0" aria-valuemax="@total">
+                                        @if (emmaPercentage > 10)
+                                        {
+                                            <strong>@Math.Round(emmaPercentage, 1)%</strong>
+                                        }
+                                    </div>
+                                    <div class="progress-bar bg-warning" role="progressbar"
+                                         style="width: @(kasimirPercentage)%"
+                                         aria-valuenow="@totalKasimir" aria-valuemin="0" aria-valuemax="@total">
+                                        @if (kasimirPercentage > 10)
+                                        {
+                                            <strong>@Math.Round(kasimirPercentage, 1)%</strong>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Türchen-Übersicht -->
@@ -137,7 +242,7 @@
                                         <td>
                                             @if (door.DoorType == DoorType.Choice)
                                             {
-                                                <strong>@emmaCount / @kasimirCount</strong>
+                                                <strong>🌊 @emmaCount / ⏳ @kasimirCount</strong>
                                             }
                                             else
                                             {

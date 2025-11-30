@@ -88,10 +88,7 @@ function handleDoorClick(doorElement) {
 // DATUMS-PRÜFUNG
 // ========================================
 function isDayAvailable(dayNumber) {
-    // TESTING: Alle Türchen immer verfügbar
-    return true;
-
-    /* ORIGINAL CODE - SPÄTER WIEDER AKTIVIEREN:
+   
     // God-User können alle Türchen öffnen (für Testing)
     if (isGodUser) {
         return true;
@@ -108,7 +105,6 @@ function isDayAvailable(dayNumber) {
 
     // Nur wenn der Tag erreicht oder überschritten ist
     return currentDay >= dayNumber;
-    */
 }
 
 // ========================================
