@@ -1,0 +1,164 @@
+@model List<Suendenbock_App.Models.Domain.GlossaryEntry>
+
+@{
+    ViewData["Title"] = "Glossar";
+}
+
+@section Styles {
+    <link href="/css/glossary.css" rel="stylesheet" />
+}
+
+<section class="main-container">
+    <header class="glossary-header">
+        <h1 class="main-title">Glossar</h1>
+        <p class="subtitle">Begriffe und spezielleres Wissen aus der Welt von Sündenbock 1618</p>
+        @if (User.IsInRole("Gott"))
+        {
+            <div class="mt-3">
+                <a asp-action="Index" class="btn btn-sm btn-light">
+                    <i class="bi bi-gear"></i> Zur Verwaltung
+                </a>
+            </div>
+        }
+    </header>
+
+    <!-- Suche und Filter -->
+    <div class="filter-section">
+        <form asp-action="Browse" method="get">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="searchTerm" class="form-label fw-bold">
+                        <i class="bi bi-search"></i> Suchbegriff
+                    </label>
+                    <input type="text"
+                           class="form-control"
+                           id="searchTerm"
+                           name="searchTerm"
+                           value="@ViewBag.SearchTerm"
+                           placeholder="Titel oder Beschreibung durchsuchen...">
+                </div>
+                <div class="col-md-4">
+                    <label for="entityType" class="form-label fw-bold">
+                        <i class="bi bi-filter"></i> Typ filtern
+                    </label>
+                    <select class="form-select" id="entityType" name="entityType">
+                        <option value="">Alle Typen</option>
+                        <option value="" selected="@(string.IsNullOrEmpty(ViewBag.EntityType) ? "selected" : null)">Freie Einträge</option>
+                        @foreach (var type in ViewBag.EntityTypes)
+                        {
+                            <option value="@type" selected="@(ViewBag.EntityType == type ? "selected" : null)">@type</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-dark w-100">
+                        <i class="bi bi-search"></i> Suchen
+                    </button>
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm) || !string.IsNullOrWhiteSpace(ViewBag.EntityType))
+            {
+                <div class="mt-3 text-center">
+                    <a asp-action="Browse" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Filter zurücksetzen
+                    </a>
+                </div>
+            }
+        </form>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm) || !string.IsNullOrWhiteSpace(ViewBag.EntityType))
+    {
+        <div class="mb-3 text-center text-muted">
+            <small>
+                @Model.Count Eintrag@(Model.Count != 1 ? "e" : "") gefunden
+                @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm))
+                {
+                    <text> für "<strong>@ViewBag.SearchTerm</strong>"</text>
+                }
+                @if (!string.IsNullOrWhiteSpace(ViewBag.EntityType))
+                {
+                    <text> im Typ "<strong>@ViewBag.EntityType</strong>"</text>
+                }
+            </small>
+        </div>
+    }
+
+    <!-- Glossar-Einträge -->
+    @if (Model.Any())
+    {
+        <div class="glossary-grid">
+            @foreach (var entry in Model)
+            {
+                var isLinked = !string.IsNullOrEmpty(entry.EntityType);
+                var icon = isLinked ? GetEntityIcon(entry.EntityType) : "📖";
+                var dataType = isLinked ? entry.EntityType : "free";
+                var badgeClass = isLinked ? $"type-badge type-{entry.EntityType}" : "type-badge type-free";
+
+                <a asp-action="Show" asp-route-id="@entry.Id" class="glossary-card" data-type="@dataType">
+                    @if (!string.IsNullOrEmpty(entry.ImagePath))
+                    {
+                        <img src="@entry.ImagePath" alt="@entry.Title" class="glossary-card-image">
+                    }
+                    else
+                    {
+                        <div class="glossary-card-icon">@icon</div>
+                    }
+                    <h3 class="glossary-card-title">@entry.Title</h3>
+                    <div class="glossary-card-type">
+                        @if (isLinked)
+                        {
+                            <span class="@badgeClass">@entry.EntityType</span>
+                        }
+                        else
+                        {
+                            <span class="type-badge type-free">Freier Eintrag</span>
+                        }
+                    </div>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center p-5">
+            <div style="font-size: 4rem; opacity: 0.3;">📚</div>
+            <h4 class="mt-3 text-muted">Keine Einträge gefunden</h4>
+            <p class="text-muted">
+                @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm) || !string.IsNullOrWhiteSpace(ViewBag.EntityType))
+                {
+                    <text>Versuche es mit anderen Suchkriterien.</text>
+                }
+                else
+                {
+                    <text>Das Glossar ist derzeit leer.</text>
+                }
+            </p>
+            @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm) || !string.IsNullOrWhiteSpace(ViewBag.EntityType))
+            {
+                <a asp-action="Browse" class="btn btn-primary mt-2">
+                    <i class="bi bi-arrow-left"></i> Alle Einträge anzeigen
+                </a>
+            }
+        </div>
+    }
+</section>
+
+@functions {
+    string GetEntityIcon(string? entityType)
+    {
+        return entityType switch
+        {
+            "Rasse" => "👥",
+            "MagicClass" => "✨",
+            "Obermagie" => "🔮",
+            "Blutgruppe" => "🩸",
+            "Haus" => "🏰",
+            "Herkunftsland" => "🗺️",
+            "Religion" => "⛪",
+            "Infanterierang" => "⚔️",
+            "Stand" => "👑",
+            _ => "📖"
+        };
+    }
+}

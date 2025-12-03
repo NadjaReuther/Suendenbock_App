@@ -26,6 +26,11 @@
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Glossary" asp-action="Browse">
+                                📚 Glossar
+                            </a>
+                        </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
@@ -66,11 +71,69 @@
             &copy; 2025 - Suendenbock_App - Author: acidlady
         </div>
     </footer>
+
+    <!-- Bildvergrößerungs-Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content" style="background: transparent; border: none;">
+                <div class="modal-body p-0" style="position: relative;">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Schließen" style="z-index: 1050; background-color: rgba(0,0,0,0.5); border-radius: 50%; padding: 10px;"></button>
+                    <img id="modalImage" src="" alt="" class="img-fluid w-100" style="border-radius: 8px; max-height: 90vh; object-fit: contain;">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+    <!-- Bildvergrößerungs-Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Alle img-Tags finden (außer Avatar-Icons und kleine Bilder)
+            const images = document.querySelectorAll('img:not(.character-seal):not(.navbar-brand img):not([data-no-zoom])');
+            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+            const modalImage = document.getElementById('modalImage');
+
+            images.forEach(function(img) {
+                // Cursor als Pointer setzen
+                img.style.cursor = 'pointer';
+                img.title = 'Klicken zum Vergrößern';
+
+                // Click-Event hinzufügen
+                img.addEventListener('click', function(e) {
+                    // Verhindere Standard-Verhalten und Link-Navigation
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Bild-URL und Alt-Text ins Modal laden
+                    modalImage.src = img.src;
+                    modalImage.alt = img.alt || 'Vergrößertes Bild';
+
+                    // Modal anzeigen
+                    modal.show();
+                });
+            });
+
+            // ESC-Taste zum Schließen
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    modal.hide();
+                }
+            });
+
+            // Klick auf das Modal-Hintergrundbild zum Schließen
+            document.getElementById('imageModal').addEventListener('click', function(e) {
+                if (e.target.id === 'imageModal' || e.target.classList.contains('modal-body')) {
+                    modal.hide();
+                }
+            });
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

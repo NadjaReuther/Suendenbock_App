@@ -2,7 +2,105 @@
 @model Character
 @section Styles {
     <link href="/css/wiki.css" rel="stylesheet" />
+    <style>
+        .character-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+        .nav-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .nav-button:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .nav-button:disabled,
+        .nav-button.disabled {
+            background: #ccc;
+            color: #666;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .back-to-overview {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .back-to-overview:hover {
+            background: #5a6268;
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
 }
+
+<!-- Navigation -->
+<div class="character-navigation container">
+    <div>
+        @if (ViewBag.HasPrevious)
+        {
+            <a class="nav-button"
+               asp-controller="Character"
+               asp-action="CharacterSheet"
+               asp-route-id="@ViewBag.PreviousId"
+               asp-route-searchTerm="@ViewBag.SearchTerm"
+               asp-route-characterIds="@ViewBag.CharacterIds">
+                <i class="bi bi-arrow-left"></i> Vorheriger
+            </a>
+        }
+        else
+        {
+            <span class="nav-button disabled">
+                <i class="bi bi-arrow-left"></i> Vorheriger
+            </span>
+        }
+    </div>
+
+    <div>
+        <a class="back-to-overview"
+           asp-controller="Character"
+           asp-action="Overview"
+           asp-route-searchTerm="@ViewBag.SearchTerm">
+            <i class="bi bi-grid-3x3"></i> Zurück zur Übersicht
+        </a>
+    </div>
+
+    <div>
+        @if (ViewBag.HasNext)
+        {
+            <a class="nav-button"
+               asp-controller="Character"
+               asp-action="CharacterSheet"
+               asp-route-id="@ViewBag.NextId"
+               asp-route-searchTerm="@ViewBag.SearchTerm"
+               asp-route-characterIds="@ViewBag.CharacterIds">
+                Nächster <i class="bi bi-arrow-right"></i>
+            </a>
+        }
+        else
+        {
+            <span class="nav-button disabled">
+                Nächster <i class="bi bi-arrow-right"></i>
+            </span>
+        }
+    </div>
+</div>
 
 <div class="wiki-container">
     <div class="wiki-header">
@@ -118,17 +216,38 @@
                     <p><strong>Eltern:</strong>
                         @if (Model.Vater != null)
                         {
-                            <div style="margin-left: 10px; font-size: 0.9em; color: #666;">Vater: @Model.Vater.Vorname @Model.Vater.Nachname</div>
+                            <div style="margin-left: 10px; font-size: 0.9em; color: #666;">
+                                Vater: <a asp-controller="Character"
+                                          asp-action="CharacterSheet"
+                                          asp-route-id="@Model.Vater.Id"
+                                          style="color: #0066cc; text-decoration: none;">
+                                    @Model.Vater.Vorname @Model.Vater.Nachname
+                                </a>
+                            </div>
                         }
                         @if (Model.Mutter != null)
                         {
-                            <div style="margin-left: 10px; font-size: 0.9em; color: #666;">Mutter: @Model.Mutter.Vorname @Model.Mutter.Nachname</div>
+                            <div style="margin-left: 10px; font-size: 0.9em; color: #666;">
+                                Mutter: <a asp-controller="Character"
+                                           asp-action="CharacterSheet"
+                                           asp-route-id="@Model.Mutter.Id"
+                                           style="color: #0066cc; text-decoration: none;">
+                                    @Model.Mutter.Vorname @Model.Mutter.Nachname
+                                </a>
+                            </div>
                         }
                     </p>
                 }
                 @if (Model.Partner != null)
                 {
-                    <p><strong>Partner:</strong> @Model.Partner.Vorname @Model.Partner.Nachname</p>
+                    <p><strong>Partner:</strong>
+                        <a asp-controller="Character"
+                           asp-action="CharacterSheet"
+                           asp-route-id="@Model.Partner.Id"
+                           style="color: #0066cc; text-decoration: none;">
+                            @Model.Partner.Vorname @Model.Partner.Nachname
+                        </a>
+                    </p>
                 }
                 @if (Model.Details?.Blutgruppe != null)
                 {

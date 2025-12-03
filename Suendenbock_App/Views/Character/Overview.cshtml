@@ -2,30 +2,72 @@
 @model List<Character>
 
 <section class="main-container">
+    <!-- Suchfeld -->
+    <div class="search-container mb-4">
+        <form asp-controller="Character" asp-action="Overview" method="get" class="search-form">
+            <div class="input-group" style="max-width: 600px; margin: 0 auto;">
+                <input type="text"
+                       name="searchTerm"
+                       class="form-control"
+                       placeholder="Suche nach Vor-, Nach- oder Rufname..."
+                       value="@ViewBag.SearchTerm"
+                       aria-label="Character suchen">
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search"></i> Suchen
+                </button>
+                @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm))
+                {
+                    <a asp-controller="Character" asp-action="Overview" class="btn btn-secondary d-inline-flex align-items-center">
+                        <i class="bi bi-x-circle"></i> Zurücksetzen
+                    </a>
+                }
+            </div>
+        </form>
+        @if (!string.IsNullOrWhiteSpace(ViewBag.SearchTerm))
+        {
+            <div class="mt-2 text-center text-muted">
+                <small>Suchergebnisse für: <strong>@ViewBag.SearchTerm</strong> (@Model.Count Ergebnis@(Model.Count != 1 ? "se" : ""))</small>
+            </div>
+        }
+    </div>
+
     <!-- Hero Pergament Karten mit echten Daten -->
     <section class="character-scrolls">
-        @foreach (var character in Model)
+        @if (Model.Any())
         {
-            
+            @foreach (var character in Model)
+            {
                 <div class="character-scroll" data-tilt>
-                    <a class="card-link" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@character.Id">
-                    <div class="scroll-header">
-                    @if(character.ImagePath == null)
-                    {
-                        <!-- Zeigt die Initialen des Benutzers -->
-                       <div class="character-seal">@character.Vorname.FirstOrDefault()@character.Nachname.FirstOrDefault()</div>
-                    }
-                    else
-                    {
-                        <img class="character-avatar-round" src="@character.ImagePath" alt="@character.Vorname @character.Nachname"/>
-                    }
-                    </div>
-                    <div class="scroll-body">
-                        <h4>@character.Vorname @character.Nachname</h4>
-                    </div>
-                </a>
+                    <a class="card-link"
+                       asp-controller="Character"
+                       asp-action="CharacterSheet"
+                       asp-route-id="@character.Id"
+                       asp-route-searchTerm="@ViewBag.SearchTerm">
+                        <div class="scroll-header">
+                            @if(character.ImagePath == null)
+                            {
+                                <!-- Zeigt die Initialen des Benutzers -->
+                                <div class="character-seal">@character.Vorname.FirstOrDefault()@character.Nachname.FirstOrDefault()</div>
+                            }
+                            else
+                            {
+                                <img class="character-avatar-round" src="@character.ImagePath" alt="@character.Vorname @character.Nachname"/>
+                            }
+                        </div>
+                        <div class="scroll-body">
+                            <h4>@character.Vorname @character.Nachname</h4>
+                        </div>
+                    </a>
                 </div>
+            }
         }
-        </section>
+        else
+        {
+            <div class="text-center text-muted p-5">
+                <h5>Keine Characters gefunden</h5>
+                <p>Versuche es mit einem anderen Suchbegriff.</p>
+            </div>
+        }
+    </section>
 </section>
 

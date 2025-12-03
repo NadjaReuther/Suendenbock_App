@@ -1,0 +1,126 @@
+@model Suendenbock_App.Models.Domain.GlossaryEntry
+
+@{
+    ViewData["Title"] = Model.Title;
+    var isLinked = !string.IsNullOrEmpty(Model.EntityType);
+    var dataType = isLinked ? Model.EntityType : "free";
+    var badgeClass = isLinked ? $"badge type-{Model.EntityType}" : "badge type-free";
+}
+
+@section Styles {
+    <link href="/css/wiki.css" rel="stylesheet" />
+    <link href="/css/glossary.css" rel="stylesheet" />
+}
+
+<div class="wiki-container">
+    <div class="wiki-header">
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="@Model.ImagePath" alt="@Model.Title" class="wiki-avatar">
+        }
+        else
+        {
+            <div class="wiki-avatar glossary-show-avatar" data-type="@dataType">
+                📚
+            </div>
+        }
+
+        <div>
+            <h1 class="wiki-title">@Model.Title</h1>
+            @if (isLinked)
+            {
+                <p class="wiki-subtitle">
+                    <span class="@badgeClass">@Model.EntityType</span>
+                </p>
+            }
+            else
+            {
+                <p class="wiki-subtitle">
+                    <span class="badge type-free">Freier Eintrag</span>
+                </p>
+            }
+        </div>
+    </div>
+
+    <div class="wiki-content">
+        <div class="wiki-main">
+            <h3>📖 Beschreibung</h3>
+            <div class="wiki-description">
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    @Html.Raw(Model.Description)
+                }
+                else
+                {
+                    <em class="text-muted">Keine Beschreibung verfügbar.</em>
+                }
+            </div>
+
+            @if (User.IsInRole("Gott"))
+            {
+                <div class="mt-4 p-3" style="background: #f8f9fa; border-radius: 8px;">
+                    <h5>⚙️ Verwaltung (nur für Gott sichtbar)</h5>
+                    <div class="btn-group" role="group">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Bearbeiten
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-list"></i> Zur Übersicht
+                        </a>
+                        <button type="button" class="btn btn-danger" onclick="deleteEntry()">
+                            <i class="bi bi-trash"></i> Löschen
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="wiki-sidebar">
+            <div class="wiki-infobox">
+                <h4>ℹ️ Informationen</h4>
+
+                @if (isLinked)
+                {
+                    <p><strong>Typ:</strong> @Model.EntityType</p>
+                }
+                else
+                {
+                    <p><strong>Typ:</strong> Freier Eintrag</p>
+                }
+
+                <hr />
+
+                <h5>🔗 Schnelllinks</h5>
+                <div class="d-grid gap-2">
+                    <a asp-action="Browse" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-list"></i> Alle Einträge
+                    </a>
+                    @if (isLinked)
+                    {
+                        <a asp-action="Browse" asp-route-entityType="@Model.EntityType" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-filter"></i> Alle @Model.EntityType
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Form (hidden) -->
+@if (User.IsInRole("Gott"))
+{
+    <form id="deleteForm" asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: none;">
+        @Html.AntiForgeryToken()
+    </form>
+}
+
+@section Scripts {
+    <script>
+        function deleteEntry() {
+            if (confirm('Möchtest du den Eintrag "@Model.Title" wirklich löschen?')) {
+                document.getElementById('deleteForm').submit();
+            }
+        }
+    </script>
+}

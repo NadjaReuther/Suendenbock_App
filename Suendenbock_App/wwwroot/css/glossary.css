@@ -1,0 +1,297 @@
+/* Glossary Browse Styles */
+
+.glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.glossary-card {
+    background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 100%);
+    border: 2px solid #8b7355;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 180px;
+}
+
+.glossary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.glossary-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glossary-card:hover::before {
+    transform: scaleX(1);
+}
+
+/* Verschiedene Farben für Entity-Typen */
+.glossary-card[data-type="Rasse"]::before {
+    background: linear-gradient(90deg, #f39c12, #e67e22);
+}
+
+.glossary-card[data-type="MagicClass"]::before {
+    background: linear-gradient(90deg, #9b59b6, #8e44ad);
+}
+
+.glossary-card[data-type="Obermagie"]::before {
+    background: linear-gradient(90deg, #3498db, #2980b9);
+}
+
+.glossary-card[data-type="Blutgruppe"]::before {
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+.glossary-card[data-type="Haus"]::before {
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+}
+
+.glossary-card[data-type="Herkunftsland"]::before {
+    background: linear-gradient(90deg, #16a085, #1abc9c);
+}
+
+.glossary-card[data-type="Religion"]::before {
+    background: linear-gradient(90deg, #f1c40f, #f39c12);
+}
+
+.glossary-card[data-type="Infanterierang"]::before {
+    background: linear-gradient(90deg, #34495e, #2c3e50);
+}
+
+.glossary-card[data-type="Stand"]::before {
+    background: linear-gradient(90deg, #d35400, #e67e22);
+}
+
+.glossary-card[data-type="free"]::before {
+    background: linear-gradient(90deg, #95a5a6, #7f8c8d);
+}
+
+.glossary-card-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 0.5rem;
+    border: 3px solid #8b7355;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.glossary-card-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+.glossary-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+    color: #2c1810;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+}
+
+.glossary-card-type {
+    text-align: center;
+    margin-top: auto;
+}
+
+/* Type Badges mit verschiedenen Farben */
+.type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+.type-free {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+}
+
+.type-Rasse {
+    background: linear-gradient(45deg, #f39c12, #e67e22);
+}
+
+.type-MagicClass {
+    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+}
+
+.type-Obermagie {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+}
+
+.type-Blutgruppe {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+}
+
+.type-Haus {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+}
+
+.type-Herkunftsland {
+    background: linear-gradient(45deg, #16a085, #1abc9c);
+}
+
+.type-Religion {
+    background: linear-gradient(45deg, #f1c40f, #f39c12);
+}
+
+.type-Infanterierang {
+    background: linear-gradient(45deg, #34495e, #2c3e50);
+}
+
+.type-Stand {
+    background: linear-gradient(45deg, #d35400, #e67e22);
+}
+
+/* Filter Section */
+.filter-section {
+    background: linear-gradient(135deg, #f5f1e8 0%, #e8dcc8 100%);
+    border: 2px solid #8b7355;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Antique Header */
+.glossary-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #2c1810 0%, #5a4a3a 100%);
+    color: #f5f1e8;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.glossary-header .main-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.glossary-header .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+/* Show Page Styles */
+
+.glossary-show-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+}
+
+/* Avatar Farben basierend auf Entity-Typ */
+.glossary-show-avatar[data-type="free"] {
+    background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+}
+
+.glossary-show-avatar[data-type="Rasse"] {
+    background: linear-gradient(45deg, #f39c12, #e67e22);
+}
+
+.glossary-show-avatar[data-type="MagicClass"] {
+    background: linear-gradient(45deg, #9b59b6, #8e44ad);
+}
+
+.glossary-show-avatar[data-type="Obermagie"] {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+}
+
+.glossary-show-avatar[data-type="Blutgruppe"] {
+    background: linear-gradient(45deg, #e74c3c, #c0392b);
+}
+
+.glossary-show-avatar[data-type="Haus"] {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+}
+
+.glossary-show-avatar[data-type="Herkunftsland"] {
+    background: linear-gradient(45deg, #16a085, #1abc9c);
+}
+
+.glossary-show-avatar[data-type="Religion"] {
+    background: linear-gradient(45deg, #f1c40f, #f39c12);
+}
+
+.glossary-show-avatar[data-type="Infanterierang"] {
+    background: linear-gradient(45deg, #34495e, #2c3e50);
+}
+
+.glossary-show-avatar[data-type="Stand"] {
+    background: linear-gradient(45deg, #d35400, #e67e22);
+}
+
+/* Entity Mention Links - Styling für Links mit data-entity-type */
+a[data-entity-type] {
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+/* Farben basierend auf Entity-Typ */
+a[data-entity-type="character"] {
+    background: linear-gradient(45deg, #d4af37, #b8941f);
+    color: white;
+}
+
+a[data-entity-type="guild"] {
+    background: linear-gradient(45deg, #198754, #146c43);
+    color: white;
+}
+
+a[data-entity-type="infanterie"] {
+    background: linear-gradient(45deg, #dc3545, #b02a37);
+    color: white;
+}
+
+a[data-entity-type="monster"] {
+    background: linear-gradient(45deg, #6f42c1, #59359a);
+    color: white;
+}
+
+a[data-entity-type="magicclass"] {
+    background: linear-gradient(45deg, #fd7e14, #dc6502);
+    color: white;
+}
+
+/* Hover-Effekt für alle entity-mentions */
+a[data-entity-type]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    filter: brightness(1.1);
+    color: white;
+}

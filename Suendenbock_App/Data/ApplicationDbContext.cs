@@ -68,6 +68,9 @@ namespace Suendenbock_App.Data
         public DbSet<AdventDoor> AdventDoors { get; set; }
         public DbSet<UserAdventChoice> UserAdventChoices { get; set; }
 
+        // Glossar/Wiki-System
+        public DbSet<GlossaryEntry> GlossaryEntries { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {

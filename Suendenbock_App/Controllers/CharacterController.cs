@@ -34,13 +34,29 @@ namespace Suendenbock_App.Controllers
             return View();
         }
         [AllowAnonymous]
-        public IActionResult Overview()
+        public IActionResult Overview(string searchTerm = "")
         {
-            var characters = _context.Characters.ToList();
-            return View(characters);
+            var characters = _context.Characters.AsQueryable();
+
+            // Suchfilter anwenden - nur am Anfang des Namens
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                characters = characters.Where(c =>
+                    c.Vorname.ToLower().StartsWith(searchTerm) ||
+                    c.Nachname.ToLower().StartsWith(searchTerm) ||
+                    c.Rufname.ToLower().StartsWith(searchTerm));
+            }
+
+            var characterList = characters.OrderBy(c => c.Vorname).ToList();
+
+            // Suchterm für View speichern
+            ViewBag.SearchTerm = searchTerm;
+
+            return View(characterList);
         }
         [AllowAnonymous]
-        public IActionResult CharacterSheet(int id)
+        public IActionResult CharacterSheet(int id, string searchTerm = "", string characterIds = "")
         {
             var character = _context.Characters
                 // Basis-Character Daten
@@ -83,6 +99,43 @@ namespace Suendenbock_App.Controllers
             {
                 return NotFound();
             }
+
+            // Navigation: Character-IDs ermitteln (basierend auf Suchfilter oder alle)
+            List<int> charIdsList;
+            if (!string.IsNullOrWhiteSpace(characterIds))
+            {
+                // Verwende übergebene IDs-Liste
+                charIdsList = characterIds.Split(',')
+                    .Where(s => int.TryParse(s, out _))
+                    .Select(int.Parse)
+                    .ToList();
+            }
+            else
+            {
+                // Generiere IDs-Liste basierend auf Suchfilter
+                var charactersQuery = _context.Characters.AsQueryable();
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    var searchLower = searchTerm.ToLower();
+                    charactersQuery = charactersQuery.Where(c =>
+                        c.Vorname.ToLower().StartsWith(searchLower) ||
+                        c.Nachname.ToLower().StartsWith(searchLower) ||
+                        c.Rufname.ToLower().StartsWith(searchLower));
+                }
+                charIdsList = charactersQuery.OrderBy(c => c.Vorname)
+                    .Select(c => c.Id)
+                    .ToList();
+            }
+
+            // Aktuelle Position und Navigation berechnen
+            var currentIndex = charIdsList.IndexOf(id);
+            ViewBag.HasPrevious = currentIndex > 0;
+            ViewBag.HasNext = currentIndex < charIdsList.Count - 1;
+            ViewBag.PreviousId = currentIndex > 0 ? charIdsList[currentIndex - 1] : 0;
+            ViewBag.NextId = currentIndex < charIdsList.Count - 1 ? charIdsList[currentIndex + 1] : 0;
+            ViewBag.CharacterIds = string.Join(",", charIdsList);
+            ViewBag.SearchTerm = searchTerm;
+
             return View(character);
         }
         public IActionResult Form(int id = 0, int step = 1)
@@ -131,11 +184,12 @@ namespace Suendenbock_App.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveStep1(Character character, 
+        public async Task<IActionResult> SaveStep1(Character character,
                                                    int[] selectedMagicClasses,
                                                    int[] selectedObermagien,
-                                                   Dictionary<int, int> selectedSpecializations, 
-                                                   IFormFile? characterImage)
+                                                   Dictionary<int, int> selectedSpecializations,
+                                                   IFormFile? characterImage,
+                                                   string? actionType)
         {
             var userId = _userManager?.GetUserId(User);
             var isGod = User.IsInRole("Gott");
@@ -237,7 +291,14 @@ namespace Suendenbock_App.Controllers
                 //Magieklassen und Spezialisierung speichern
                 await SaveCharacterMagicClasses(character.Id, selectedMagicClasses, selectedSpecializations);
                 TempData["Success"] = "Schritt 1 erfolgreich gespeichert!";
-                return RedirectToAction("Form", new { id = character.Id, step = 2 });                
+
+                // Prüfen ob "Geprüft"-Button geklickt wurde
+                if (actionType == "approved" && isGod)
+                {
+                    return RedirectToAction("CharacterSheet", new { id = character.Id });
+                }
+
+                return RedirectToAction("Form", new { id = character.Id, step = 2 });
             }
             catch (Exception ex)
             {
@@ -247,7 +308,7 @@ namespace Suendenbock_App.Controllers
             }            
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep2(int id, [Bind(Prefix = "Details")] CharacterDetails details)
+        public async Task<IActionResult> SaveStep2(int id, [Bind(Prefix = "Details")] CharacterDetails details, string? actionType)
         {
             var userId = _userManager?.GetUserId(User);
             var isGod = User.IsInRole("Gott");
@@ -292,6 +353,11 @@ namespace Suendenbock_App.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Schritt 2 erfolgreich gespeichert!";
+                // Prüfen ob "Geprüft"-Button geklickt wurde
+                if (actionType == "approved" && isGod)
+                {
+                    return RedirectToAction("CharacterSheet", new { id = character.Id });
+                }
                 return RedirectToAction("Form", new { id = character.Id, step = 3 });
             }
             catch (Exception ex)
@@ -301,7 +367,7 @@ namespace Suendenbock_App.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> SaveStep3(int id, [Bind(Prefix = "Affiliation")] CharacterAffiliation affiliation)
+        public async Task<IActionResult> SaveStep3(int id, [Bind(Prefix = "Affiliation")] CharacterAffiliation affiliation, string? actionType)
         {
             var userId = _userManager?.GetUserId(User);
             var isGod = User.IsInRole("Gott");
@@ -350,6 +416,11 @@ namespace Suendenbock_App.Controllers
                 // Rollen-basiertes Redirect
                 if (isGod)
                 {
+                    // Prüfen ob "Geprüft"-Button geklickt wurde
+                    if (actionType == "approved")
+                    {
+                        return RedirectToAction("CharacterSheet", new { id = character.Id });
+                    }
                     return RedirectToAction("Index", "Admin");
                 }
                 else

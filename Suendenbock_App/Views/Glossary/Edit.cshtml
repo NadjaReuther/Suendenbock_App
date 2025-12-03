@@ -1,0 +1,178 @@
+@model Suendenbock_App.Models.Domain.GlossaryEntry
+
+@{
+    ViewData["Title"] = "Glossar-Eintrag bearbeiten";
+    var isLinked = !string.IsNullOrEmpty(Model.EntityType);
+}
+
+@section Styles {
+    <link href="/css/forms.css" rel="stylesheet" />
+    <link href="/css/wysiwyg-editor.css" rel="stylesheet" />
+}
+
+<div class="steckbrief-background">
+    <div class="steckbrief-container">
+        <div class="steckbrief-title">@ViewData["Title"]</div>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Glossar</a></li>
+                <li class="breadcrumb-item active">Bearbeiten: @Model.Title</li>
+            </ol>
+        </nav>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ImagePath" />
+
+            <div class="row mt-4">
+                <!-- Eintragstyp Info -->
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">📝 Eintragstyp</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (isLinked)
+                            {
+                                <div class="alert alert-info mb-0">
+                                    <strong>Verknüpfter Eintrag</strong> - Dieser Eintrag ist mit <span class="badge bg-info">@Model.EntityType</span> verknüpft
+                                </div>
+                                <input type="hidden" asp-for="EntityType" />
+                                <input type="hidden" asp-for="EntityId" />
+                            }
+                            else
+                            {
+                                <div class="alert alert-secondary mb-0">
+                                    <strong>Freier Eintrag</strong> - Dieser Eintrag ist nicht mit einer Entität verknüpft
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Titel -->
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="title" class="form-label">Titel <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="Title" asp-for="Title" required readonly="@isLinked">
+                        <small class="form-text text-muted">
+                            @if (isLinked)
+                            {
+                                <text>Der Titel wird automatisch von der verknüpften Entität übernommen</text>
+                            }
+                            else
+                            {
+                                <text>Der Name des Begriffs</text>
+                            }
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Bild-Upload -->
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">🖼️ Bild</h5>
+                        </div>
+                        <div class="card-body">
+                            @if (!string.IsNullOrEmpty(Model.ImagePath))
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label">Aktuelles Bild:</label>
+                                    <div>
+                                        <img src="@Model.ImagePath" alt="@Model.Title" style="max-width: 300px; max-height: 300px; border-radius: 8px;">
+                                    </div>
+                                </div>
+                            }
+                            <div class="form-group">
+                                <label for="entryImage" class="form-label">@(string.IsNullOrEmpty(Model.ImagePath) ? "Bild hochladen (optional)" : "Neues Bild hochladen (optional)")</label>
+                                <input type="file" class="form-control" id="entryImage" name="entryImage" accept="image/*">
+                                <small class="form-text text-muted">Erlaubte Formate: JPG, PNG, GIF</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Beschreibung mit WYSIWYG-Editor -->
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">📖 Beschreibung</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="description" class="form-label">Beschreibung <span class="text-danger">*</span></label>
+                                <textarea class="form-control d-none" id="description" name="Description" asp-for="Description" required>@Model.Description</textarea>
+                                <div id="wysiwyg-editor"></div>
+                                <small class="form-text text-muted">
+                                    💡 Tipp: Verwende @@ um auf andere Entitäten zu verlinken (z.B. @@character:5 oder @@guild:3)
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aktionen -->
+                <div class="col-12 text-center">
+                    <a asp-action="Index" class="btn btn-secondary me-3">
+                        <i class="bi bi-arrow-left"></i> Abbrechen
+                    </a>
+                    <a asp-action="Show" asp-route-id="@Model.Id" class="btn btn-info me-3">
+                        <i class="bi bi-eye"></i> Vorschau
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Änderungen speichern
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script src="~/js/entity-mentions.js"></script>
+    <script>
+        let editor;
+
+        // WYSIWYG Editor initialisieren
+        ClassicEditor
+            .create(document.querySelector('#wysiwyg-editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'undo', 'redo']
+            })
+            .then(newEditor => {
+                editor = newEditor;
+                window.currentEditor = newEditor; // Für Entity-Mentions
+
+                // Vorhandene Beschreibung laden
+                const descriptionTextarea = document.getElementById('description');
+                if (descriptionTextarea.value) {
+                    editor.setData(descriptionTextarea.value);
+                }
+
+                // Bei Änderungen im Editor das Textarea aktualisieren
+                editor.model.document.on('change:data', () => {
+                    descriptionTextarea.value = editor.getData();
+                });
+
+                // Entity-Mentions initialisieren
+                setTimeout(() => {
+                    new EntityMentions('#description');
+                }, 800);
+            })
+            .catch(error => {
+                console.error('Editor initialization error:', error);
+                alert('Fehler beim Laden des Editors. Bitte Seite neu laden.');
+            });
+    </script>
+}

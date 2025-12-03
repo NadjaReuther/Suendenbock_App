@@ -1,0 +1,300 @@
+@model Suendenbock_App.Models.Domain.GlossaryEntry
+
+@{
+    ViewData["Title"] = "Neuer Glossar-Eintrag";
+}
+
+@section Styles {
+    <link href="/css/forms.css" rel="stylesheet" />
+    <link href="/css/wysiwyg-editor.css" rel="stylesheet" />
+}
+
+<div class="steckbrief-background">
+    <div class="steckbrief-container">
+        <div class="steckbrief-title">@ViewData["Title"]</div>
+
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-action="Index">Glossar</a></li>
+                <li class="breadcrumb-item active">Neuer Eintrag</li>
+            </ol>
+        </nav>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="row mt-4">
+                <!-- Eintragstyp Auswahl -->
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">📝 Eintragstyp</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="entryType" id="freeEntry" value="free" checked onchange="toggleEntitySelection()">
+                                <label class="form-check-label" for="freeEntry">
+                                    <strong>Freier Eintrag</strong> - Ein Begriff ohne Verknüpfung zu einer bestehenden Entität
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="entryType" id="linkedEntry" value="linked" onchange="toggleEntitySelection()">
+                                <label class="form-check-label" for="linkedEntry">
+                                    <strong>Verknüpfter Eintrag</strong> - Beschreibung für eine bestehende Entität (Rasse, Magieklasse, etc.)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Titel (für freie Einträge) -->
+                <div class="col-md-6" id="titleSection">
+                    <div class="form-group mb-3">
+                        <label for="title" class="form-label">Titel <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="Title" asp-for="Title" required>
+                        <small class="form-text text-muted">Der Name des Begriffs</small>
+                    </div>
+                </div>
+
+                <!-- Entitäts-Auswahl (für verknüpfte Einträge) -->
+                <div class="col-12" id="entitySection" style="display: none;">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">🔗 Entitäts-Verknüpfung</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="entityType" class="form-label">Entitäts-Typ</label>
+                                    <select class="form-select" id="entityType" name="EntityType" onchange="loadEntities()">
+                                        <option value="">-- Typ wählen --</option>
+                                        @foreach (var type in ViewBag.EntityTypes)
+                                        {
+                                            <option value="@type">@type</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label for="entitySearch" class="form-label">Entität suchen</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="entitySearch" placeholder="Suchbegriff eingeben..." onkeyup="searchEntities()">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="loadEntities()">
+                                            <i class="bi bi-arrow-clockwise"></i> Aktualisieren
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div id="entityResults" class="list-group" style="max-height: 300px; overflow-y: auto;">
+                                        <div class="text-muted text-center p-3">
+                                            Bitte wähle einen Entitäts-Typ
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="entityId" name="EntityId" asp-for="EntityId">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bild-Upload -->
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">🖼️ Bild</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="entryImage" class="form-label">Bild hochladen (optional)</label>
+                                <input type="file" class="form-control" id="entryImage" name="entryImage" accept="image/*">
+                                <small class="form-text text-muted">Erlaubte Formate: JPG, PNG, GIF</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Beschreibung mit WYSIWYG-Editor -->
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">📖 Beschreibung</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="description" class="form-label">Beschreibung <span class="text-danger">*</span></label>
+                                <textarea class="form-control d-none" id="description" name="Description" asp-for="Description" required></textarea>
+                                <div id="wysiwyg-editor"></div>
+                                <small class="form-text text-muted">
+                                    💡 Tipp: Verwende @@ um auf andere Entitäten zu verlinken (z.B. @@character:5 oder @@guild:3)
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aktionen -->
+                <div class="col-12 text-center">
+                    <a asp-action="Index" class="btn btn-secondary me-3">
+                        <i class="bi bi-arrow-left"></i> Abbrechen
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Eintrag erstellen
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script src="~/js/entity-mentions.js"></script>
+    <script>
+        let editor;
+
+        // WYSIWYG Editor initialisieren
+        ClassicEditor
+            .create(document.querySelector('#wysiwyg-editor'), {
+                toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'blockQuote', 'undo', 'redo']
+            })
+            .then(newEditor => {
+                editor = newEditor;
+                window.currentEditor = newEditor; // Für Entity-Mentions
+
+                // Initiale Daten setzen
+                const descriptionTextarea = document.getElementById('description');
+                if (descriptionTextarea.value) {
+                    editor.setData(descriptionTextarea.value);
+                }
+
+                // Bei Änderungen im Editor das Textarea aktualisieren
+                editor.model.document.on('change:data', () => {
+                    descriptionTextarea.value = editor.getData();
+                });
+
+                // Entity-Mentions initialisieren
+                setTimeout(() => {
+                    new EntityMentions('#description');
+                }, 800);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        // Toggle zwischen freiem und verknüpftem Eintrag
+        function toggleEntitySelection() {
+            const isFree = document.getElementById('freeEntry').checked;
+            document.getElementById('titleSection').style.display = isFree ? 'block' : 'none';
+            document.getElementById('entitySection').style.display = isFree ? 'none' : 'block';
+
+            if (isFree) {
+                document.getElementById('entityType').value = '';
+                document.getElementById('entityId').value = '';
+                document.getElementById('title').required = true;
+            } else {
+                document.getElementById('title').required = false;
+            }
+        }
+
+        // Lade Entitäten basierend auf Typ
+        function loadEntities() {
+            const entityType = document.getElementById('entityType').value;
+            if (!entityType) {
+                document.getElementById('entityResults').innerHTML = '<div class="text-muted text-center p-3">Bitte wähle einen Entitäts-Typ</div>';
+                return;
+            }
+
+            document.getElementById('entityResults').innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm"></div> Laden...</div>';
+
+            fetch(`@Url.Action("SearchEntities")?entityType=${entityType}`)
+                .then(response => response.json())
+                .then(data => {
+                    displayEntities(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('entityResults').innerHTML = '<div class="text-danger text-center p-3">Fehler beim Laden</div>';
+                });
+        }
+
+        // Suche Entitäten
+        function searchEntities() {
+            const entityType = document.getElementById('entityType').value;
+            const searchTerm = document.getElementById('entitySearch').value;
+
+            if (!entityType) return;
+
+            fetch(`@Url.Action("SearchEntities")?entityType=${entityType}&searchTerm=${encodeURIComponent(searchTerm)}`)
+                .then(response => response.json())
+                .then(data => {
+                    displayEntities(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Zeige Entitäten an
+        function displayEntities(entities) {
+            const resultsDiv = document.getElementById('entityResults');
+
+            if (entities.length === 0) {
+                resultsDiv.innerHTML = '<div class="text-muted text-center p-3">Keine Einträge gefunden</div>';
+                return;
+            }
+
+            let html = '';
+            entities.forEach(entity => {
+                html += `<button type="button" class="list-group-item list-group-item-action" onclick="selectEntity(${entity.id}, '${entity.name}')">
+                    ${entity.name}
+                </button>`;
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Wähle eine Entität aus
+        function selectEntity(id, name) {
+            document.getElementById('entityId').value = id;
+            document.getElementById('title').value = name;
+
+            // Markiere ausgewähltes Element
+            const buttons = document.querySelectorAll('#entityResults .list-group-item');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Zeige Bestätigung
+            const entityType = document.getElementById('entityType').value;
+            alert(`Ausgewählt: ${name} (${entityType})`);
+        }
+
+        // Beim Laden der Seite
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleEntitySelection();
+
+            @if (!string.IsNullOrEmpty(ViewBag.SelectedEntityType))
+            {
+                <text>
+                document.getElementById('linkedEntry').checked = true;
+                document.getElementById('entityType').value = '@ViewBag.SelectedEntityType';
+                toggleEntitySelection();
+                loadEntities();
+
+                @if (ViewBag.SelectedEntityId != null)
+                {
+                    <text>
+                    document.getElementById('entityId').value = '@ViewBag.SelectedEntityId';
+                    </text>
+                }
+                </text>
+            }
+        });
+    </script>
+}
