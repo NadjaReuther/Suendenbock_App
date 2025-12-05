@@ -23,7 +23,7 @@
             <div class="card-corner bottom-right"></div>
 
             <div class="card-number">@Model.Characters.Count</div>
-            <h3 class="card-title">Charaktere</h3>
+            <h5 class="card-title">Charaktere</h5>
             <div class="card-content">
                 Eingetragene Persönlichkeiten<br>
                 aus allen Reichen und Ständen
@@ -39,7 +39,7 @@
             <div class="card-corner bottom-right"></div>
 
             <div class="card-number">@Model.Infanteries.Count</div>
-            <h3 class="card-title">Infanterien</h3>
+            <h4 class="card-title">Infanterien</h4>
             <div class="card-content">
                 Organisierte Bünde<br>
                 des Militärs
@@ -55,7 +55,7 @@
             <div class="card-corner bottom-right"></div>
 
             <div class="card-number">@Model.Guilds.Count</div>
-            <h3 class="card-title">Gilden</h3>
+            <h4 class="card-title">Gilden</h4>
             <div class="card-content">
                 Organisierte Bünde<br>
                 für Abenteurer
@@ -71,65 +71,75 @@
                 <div class="card-corner bottom-right"></div>
 
                 <div class="card-number">@Model.Monstertyps.Count</div>
-                <h3 class="card-title">Monstertypen</h3>
+                <h4 class="card-title">Monstertypen</h4>
                 <div class="card-content">
                     Ungeheuer und andere Wesen<br>
                     des Reiches
                 </div>
             </a>
             </div>
-        
+        <div class="pergament-card" data-tilt>
+            <a class="card-link" asp-controller="Glossary" asp-action="Browse">
+
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+
+                <div class="card-number">@Model.glossaryEntries.Count</div>
+                <h4 class="card-title">Glossar</h4>
+                <div class="card-content">
+                    Alles was man über Sündenbock<br>
+                    noch wissen muss
+                </div>
+            </a>
+        </div>
     </section>
     <!-- Sternzeichen Übersicht -->
-    <section class="zodiac-section">
-                <h2 class="section-title">
-                    <span class="title-decoration left">✨</span>
-                    Sternzeichen
-                    <span class="title-decoration right">✨</span>
-                </h2>
+    <section class="hero-section">
+        <section class="zodiac-section">
+            <h2 class="section-title">
+                <span class="title-decoration left">✨</span>
+                Sternzeichen
+                <span class="title-decoration right">✨</span>
+            </h2>
 
-                <div class="zodiac-chart-container">
-                    <div class="zodiac-wheel-wrapper">
-                        <div class="zodiac-pointer"></div>
-                        <canvas id="zodiacChart"></canvas>
-                        <div class="zodiac-center-button">
-                            <span>Drehen!</span>
-                        </div>
-                    </div>
-                    <div id="zodiac-result" class="zodiac-result" style="display: none;">
-                        <div class="result-content">
-                            <h3 id="result-title"></h3>
-                            <p id="result-info"></p>
-                        </div>
-                    </div>
-                    <div class="text-center mt-3">
-                        <button id="resetButton" class="zodiac-reset-button" style="display: none;">
-                            Zurück zur Startposition
-                        </button>
+            <div class="zodiac-chart-container">
+                <div class="zodiac-wheel-wrapper">
+                    <div class="zodiac-pointer"></div>
+                    <canvas id="zodiacChart"></canvas>
+                    <div class="zodiac-center-button">
+                        <span>Drehen!</span>
                     </div>
                 </div>
-            </section>
-    <section class="zodiac-section">
-                <h2 class="section-title">
-                    <span class="title-decoration left">✨</span>
-                    Magie-System
-                    <span class="title-decoration right">✨</span>
-                </h2>
-
-                <div class="zodiac-chart-container">
-                    <div class="text-center mb-3">
-                        <small style="font-family: 'Cinzel', serif; color: #5d4e37;">
-                            <strong>Navigation:</strong> Klicke auf die Nodes (Kreise) um Zweige zu expandieren oder zu kollabieren
-                        </small>
+                <div id="zodiac-result" class="zodiac-result" style="display: none;">
+                    <div class="result-content">
+                        <h3 id="result-title"></h3>
+                        <p id="result-info"></p>
                     </div>
+                </div>
+                <div class="text-center mt-3">
+                    <button id="resetButton" class="zodiac-reset-button" style="display: none;">
+                        Zurück zur Startposition
+                    </button>
+                </div>
+            </div>
+        </section>
+        <section class="zodiac-section">
+            <h2 class="section-title">
+                <span class="title-decoration left">✨</span>
+                Magien
+                <span class="title-decoration right">✨</span>
+            </h2>
 
-                    <!-- Tree Chart -->
-                    <div id="tree-container" style="overflow-x: auto; overflow-y: auto;">
-                        <svg id="tree-chart"></svg>
-                    </div>
+            <div class="zodiac-chart-container">
+                <!-- Tree Chart -->
+                <div id="tree-container" style="overflow-x: auto; overflow-y: auto;">
+                    <svg id="tree-chart"></svg>
+                </div>
 
-                    <!-- Tooltip -->
-                    <div id="tooltip" style="
+                <!-- Tooltip -->
+                <div id="tooltip" style="
                         position: absolute;
                         display: none;
                         background: rgba(93, 78, 55, 0.95);
@@ -143,8 +153,10 @@
                         border: 2px solid #d4af37;
                         box-shadow: 0 4px 8px rgba(0,0,0,0.3);
                     "></div>
-                </div>
-            </section>
+            </div>
+        </section>
+
+    </section>
     <!-- Spielercharaktere Sektion -->
     <section class="guild-section">
         <h2 class="section-title">

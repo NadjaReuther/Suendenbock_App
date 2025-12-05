@@ -127,8 +127,10 @@ namespace Suendenbock_App.Controllers
         [HttpGet]
         public IActionResult GetHierarchyData()
         {
-            // Lade alle Obermagien
-            var obermagien = _context.Obermagien.ToList();
+            // Lade alle Obermagien (außer "Unbegabt")
+            var obermagien = _context.Obermagien
+                .Where(o => o.Bezeichnung != "Unbegabt")
+                .ToList();
 
             // Lade alle MagicClasses mit ihren Beziehungen
             var magicClasses = _context.MagicClasses
@@ -144,7 +146,7 @@ namespace Suendenbock_App.Controllers
             // Erstelle hierarchische Struktur für D3.js Collapsible Tree
             var hierarchyData = new
             {
-                name = "Magie-System",
+                name = "Magien",
                 children = obermagien.Select(obermagie =>
                 {
                     var magicClassesForObermagie = magicClassesByObermagie.ContainsKey(obermagie.Id)

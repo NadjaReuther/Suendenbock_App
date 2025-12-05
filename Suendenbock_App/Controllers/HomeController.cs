@@ -96,6 +96,7 @@ namespace Suendenbock_App.Controllers
                     .ThenInclude(cmc => cmc.MagicClass)
                 .ToList();
 
+            var glossar = _context.GlossaryEntries.ToList();
 
             // ViewModel erstellen
             var viewModel = new HomeViewModel
@@ -111,7 +112,8 @@ namespace Suendenbock_App.Controllers
                 MagicClassDetails = magicClassDetails,
                 PlayerCharacters = playerCharacters,
                 CompanionCharacters = companionCharacters,
-                Monsters = monsters
+                Monsters = monsters,
+                glossaryEntries = glossar
             };
 
             return View(viewModel);

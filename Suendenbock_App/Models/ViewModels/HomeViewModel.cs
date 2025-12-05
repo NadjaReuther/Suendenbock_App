@@ -16,7 +16,7 @@ namespace Suendenbock_App.Models.ViewModels
         public Dictionary<string, List<string>> ZodiacStats { get; set; } = new Dictionary<string, List<string>>();
         public Dictionary<string, int> Obermagien { get; set; } = new Dictionary<string, int>();
         public Dictionary<string, Dictionary<string, int>> MagicClassDetails { get; set; } = new Dictionary<string, Dictionary<string, int>>();
-
+        public List<GlossaryEntry> glossaryEntries { get; set; } = new List<GlossaryEntry>();
         // Spielercharaktere und Begleiter
         public List<Character> PlayerCharacters { get; set; } = new List<Character>();
         public List<Character> CompanionCharacters { get; set; } = new List<Character>();
