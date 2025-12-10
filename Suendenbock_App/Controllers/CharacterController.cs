@@ -341,11 +341,7 @@ namespace Suendenbock_App.Controllers
                 // CharacterDetails erstellen oder aktualisieren
                 if (character.Details == null)
                 {
-                    if(!isGod)
-                    {
-                        TempData["Error"] = "Nur Gott darf neue Characters erstellen!";
-                        return RedirectToAction("Index", "Player");
-                    }
+                    // Details für bestehenden Character erstellen (kein neuer Character!)
                     character.Details = new CharacterDetails { CharacterId = id };
                     _context.CharacterDetails.Add(character.Details);
                 }
@@ -407,11 +403,7 @@ namespace Suendenbock_App.Controllers
                 // CharacterAffiliation erstellen oder aktualisieren
                 if (character.Affiliation == null)
                 {
-                    if (!isGod)
-                    {
-                        TempData["Error"] = "Nur Gott darf neue Characters erstellen!";
-                        return RedirectToAction("Index", "Player");
-                    }
+                    // Affiliation für bestehenden Character erstellen (kein neuer Character!)
                     character.Affiliation = new CharacterAffiliation { CharacterId = id };
                     _context.CharacterAffiliations.Add(character.Affiliation);
                 }
