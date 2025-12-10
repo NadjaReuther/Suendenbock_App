@@ -71,6 +71,11 @@ namespace Suendenbock_App.Data
         // Glossar/Wiki-System
         public DbSet<GlossaryEntry> GlossaryEntries { get; set; }
 
+        // Achievement-System
+        public DbSet<Achievement> Achievements { get; set; }
+        public DbSet<UserAchievement> UserAchievements { get; set; }
+        public DbSet<GuildAchievement> GuildAchievements { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {

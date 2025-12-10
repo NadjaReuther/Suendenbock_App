@@ -18,16 +18,19 @@ namespace Suendenbock_App.Controllers
         private readonly IImageUploadService _imageUploadService;
         private readonly IWebHostEnvironment _environment;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAchievementService _achievementService;
         public CharacterController(
-            ApplicationDbContext context, 
-            IImageUploadService imageUploadService, 
+            ApplicationDbContext context,
+            IImageUploadService imageUploadService,
             IWebHostEnvironment environment,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IAchievementService achievementService)
         {
             _context = context;
             _imageUploadService = imageUploadService;
             _environment = environment;
             _userManager = userManager;
+            _achievementService = achievementService;
         }
         public IActionResult Index()
         {
@@ -292,6 +295,13 @@ namespace Suendenbock_App.Controllers
                 await SaveCharacterMagicClasses(character.Id, selectedMagicClasses, selectedSpecializations);
                 TempData["Success"] = "Schritt 1 erfolgreich gespeichert!";
 
+                // Achievement-Check durchführen
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _achievementService.CheckCharacterAchievements(userId);
+                    await StoreNewAchievementsInTempData(userId);
+                }
+
                 // Prüfen ob "Geprüft"-Button geklickt wurde
                 if (actionType == "approved" && isGod)
                 {
@@ -353,6 +363,14 @@ namespace Suendenbock_App.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Schritt 2 erfolgreich gespeichert!";
+
+                // Achievement-Check durchführen
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _achievementService.CheckCharacterAchievements(userId);
+                    await StoreNewAchievementsInTempData(userId);
+                }
+
                 // Prüfen ob "Geprüft"-Button geklickt wurde
                 if (actionType == "approved" && isGod)
                 {
@@ -412,6 +430,19 @@ namespace Suendenbock_App.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Charakter erfolgreich erstellt/aktualisiert!";
+
+                // Achievement-Check durchführen
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await _achievementService.CheckCharacterAchievements(userId);
+                    await StoreNewAchievementsInTempData(userId);
+                }
+
+                // Gilden-Achievement-Check durchführen
+                if (character.Affiliation?.GuildId != null)
+                {
+                    await _achievementService.CheckGuildAchievements(character.Affiliation.GuildId.Value);
+                }
 
                 // Rollen-basiertes Redirect
                 if (isGod)
@@ -697,6 +728,26 @@ namespace Suendenbock_App.Controllers
                 }
             }
             await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Speichert neu freigeschaltete Achievements in TempData für Benachrichtigungen
+        /// </summary>
+        private async Task StoreNewAchievementsInTempData(string userId)
+        {
+            var newAchievements = await _achievementService.GetNewlyUnlockedAchievements(userId);
+            if (newAchievements != null && newAchievements.Any())
+            {
+                var achievementsData = newAchievements.Select(a => new
+                {
+                    a.Name,
+                    a.Description,
+                    a.Icon,
+                    a.Points
+                }).ToList();
+
+                TempData["NewAchievements"] = System.Text.Json.JsonSerializer.Serialize(achievementsData);
+            }
         }
     }
 }

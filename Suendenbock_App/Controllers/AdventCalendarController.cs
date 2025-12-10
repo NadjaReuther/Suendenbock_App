@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
+using Suendenbock_App.Services;
 using System.Security.Claims;
 
 namespace Suendenbock_App.Controllers
@@ -14,15 +15,18 @@ namespace Suendenbock_App.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _env;
+        private readonly IAchievementService _achievementService;
 
         public AdventCalendarController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IAchievementService achievementService)
         {
             _context = context;
             _userManager = userManager;
             _env = env;
+            _achievementService = achievementService;
         }
 
         /// <summary>
@@ -108,12 +112,16 @@ namespace Suendenbock_App.Controllers
                 return BadRequest(new { message = "Du hast bereits gewählt!" });
             }
 
+            // Lokale Zeit (Central European Time) ermitteln
+            var centralEuropeTime = TimeZoneInfo.FindSystemTimeZoneById("Central Europe Standard Time");
+            var localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, centralEuropeTime);
+
             // Auswahl speichern oder updaten
             if (existingChoice != null)
             {
                 // Eintrag existiert bereits (von TrackDoorOpening), nur ChoiceIndex setzen
                 existingChoice.ChoiceIndex = request.ChoiceIndex;
-                existingChoice.ChosenAt = DateTime.Now;
+                existingChoice.ChosenAt = localTime;
             }
             else
             {
@@ -123,12 +131,16 @@ namespace Suendenbock_App.Controllers
                     UserId = userId,
                     AdventDoorId = door.Id,
                     ChoiceIndex = request.ChoiceIndex,
-                    ChosenAt = DateTime.Now
+                    ChosenAt = localTime
                 };
                 _context.UserAdventChoices.Add(choice);
             }
 
             await _context.SaveChangesAsync();
+
+            // Achievement-Check durchführen
+            await _achievementService.CheckAdventCalendarAchievements(userId);
+            await StoreNewAchievementsInTempData(userId);
 
             // Audio-Pfad basierend auf Wahl zurückgeben
             var audioPath = request.ChoiceIndex == 0 ? door.EmmaAudioPath : door.KasimirAudioPath;
@@ -349,17 +361,25 @@ namespace Suendenbock_App.Controllers
 
             if (existingEntry == null)
             {
+                // Lokale Zeit (Central European Time) ermitteln
+                var centralEuropeTime = TimeZoneInfo.FindSystemTimeZoneById("Central Europe Standard Time");
+                var localTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, centralEuropeTime);
+
                 // Neuer Eintrag für Türchen-Öffnung (ChoiceIndex = NULL für Simple/DirectAudio)
                 var entry = new UserAdventChoice
                 {
                     UserId = userId,
                     AdventDoorId = door.Id,
                     ChoiceIndex = null, // Wird bei SaveChoice gesetzt falls Choice-Türchen
-                    ChosenAt = DateTime.Now
+                    ChosenAt = localTime
                 };
 
                 _context.UserAdventChoices.Add(entry);
                 await _context.SaveChangesAsync();
+
+                // Achievement-Check durchführen
+                await _achievementService.CheckAdventCalendarAchievements(userId);
+                await StoreNewAchievementsInTempData(userId);
             }
         }
 
@@ -453,6 +473,26 @@ namespace Suendenbock_App.Controllers
             // Tag muss erreicht oder überschritten sein
             return today.Day >= dayNumber;
             */
+        }
+
+        /// <summary>
+        /// Speichert neu freigeschaltete Achievements in TempData für Benachrichtigungen
+        /// </summary>
+        private async Task StoreNewAchievementsInTempData(string userId)
+        {
+            var newAchievements = await _achievementService.GetNewlyUnlockedAchievements(userId);
+            if (newAchievements != null && newAchievements.Any())
+            {
+                var achievementsData = newAchievements.Select(a => new
+                {
+                    a.Name,
+                    a.Description,
+                    a.Icon,
+                    a.Points
+                }).ToList();
+
+                TempData["NewAchievements"] = System.Text.Json.JsonSerializer.Serialize(achievementsData);
+            }
         }
     }
 

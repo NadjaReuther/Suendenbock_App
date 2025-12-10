@@ -47,6 +47,10 @@ namespace Suendenbock_App.Controllers.Api
                 case "%":
                     results.AddRange(await SearchMagicClasses(query));
                     break;
+                case "glossary":
+                case "$":
+                    results.AddRange(await SearchGlossary(query));
+                    break;
                 default:
                     // Suche in allen Entitäten
                     results.AddRange(await SearchAll(query));
@@ -128,18 +132,39 @@ namespace Suendenbock_App.Controllers.Api
 
         private async Task<List<object>> SearchMagicClasses(string query)
         {
-            return await _context.MagicClasses
-                .Include(mc => mc.Obermagie)
-                .Where(mc => mc.Bezeichnung.Contains(query))
+            // Nur Glossar-Einträge mit EntityType = "MagicClass" oder "Obermagie"
+            return await _context.GlossaryEntries
+                .Where(g => g.Title.Contains(query) &&
+                           (g.EntityType == "MagicClass" || g.EntityType == "Obermagie"))
                 .Take(10)
-                .Select(mc => new
+                .Select(g => new
                 {
-                    id = mc.Id,
-                    name = mc.Bezeichnung,
+                    id = g.Id,
+                    name = g.Title,
                     type = "magicclass",
                     icon = "🔮",
-                    url = $"/MagicClass/MagicClassSheet/{mc.Id}",
-                    subtitle = mc.Obermagie.Bezeichnung
+                    url = $"/Glossary/Show/{g.Id}",
+                    subtitle = g.EntityType == "MagicClass" ? "Magieklasse" : "Obermagie"
+                })
+                .ToListAsync<object>();
+        }
+
+        private async Task<List<object>> SearchGlossary(string query)
+        {
+            // Alle anderen Glossar-Einträge (außer MagicClass und Obermagie)
+            return await _context.GlossaryEntries
+                .Where(g => g.Title.Contains(query) &&
+                           g.EntityType != "MagicClass" &&
+                           g.EntityType != "Obermagie")
+                .Take(10)
+                .Select(g => new
+                {
+                    id = g.Id,
+                    name = g.Title,
+                    type = "glossary",
+                    icon = "📖",
+                    url = $"/Glossary/Show/{g.Id}",
+                    subtitle = g.EntityType ?? "Glossar"
                 })
                 .ToListAsync<object>();
         }
@@ -153,6 +178,7 @@ namespace Suendenbock_App.Controllers.Api
             allResults.AddRange(await SearchInfanterie(query));
             allResults.AddRange(await SearchMonster(query));
             allResults.AddRange(await SearchMagicClasses(query));
+            allResults.AddRange(await SearchGlossary(query));
 
             return allResults.Take(15).ToList();
         }

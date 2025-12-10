@@ -20,5 +20,11 @@ namespace Suendenbock_App.Models.ViewModels
         // Spielercharaktere und Begleiter
         public List<Character> PlayerCharacters { get; set; } = new List<Character>();
         public List<Character> CompanionCharacters { get; set; } = new List<Character>();
+        // Achievement-Statistiken
+        public int TotalUserAchievements { get; set; }
+        public int TotalGuildAchievements { get; set; }
+        public int UnlockedUserAchievements { get; set; }
+        public int UnlockedGuildAchievements { get; set; }
+        public int TotalAchievementPoints { get; set; }
     }
 }

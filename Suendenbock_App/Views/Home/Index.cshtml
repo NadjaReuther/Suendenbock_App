@@ -95,6 +95,57 @@
             </a>
         </div>
     </section>
+
+    <!-- Achievement Übersicht -->
+    <section class="achievement-overview-section" style="margin: 40px 0;">
+        <div class="container">
+            <h2 class="section-title" style="text-align: center; margin-bottom: 30px;">
+                <span class="title-decoration left">🏆</span>
+                Achievement-Übersicht
+                <span class="title-decoration right">🏆</span>
+            </h2>
+
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-10">
+                    <div class="card shadow-lg" style="border: 2px solid #d4af37; background: linear-gradient(145deg, #f9f6f0, #e8dcc0);">
+                        <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: 2px solid #d4af37;">
+                            <h5 class="mb-0">Fortschritt der Gemeinschaft</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="stat-icon" style="font-size: 2.5rem;">👤</div>
+                                    <h4 class="text-primary">@Model.UnlockedUserAchievements / @Model.TotalUserAchievements</h4>
+                                    <small class="text-muted">Spieler-Achievements freigeschaltet</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-icon" style="font-size: 2.5rem;">🏰</div>
+                                    <h4 class="text-success">@Model.UnlockedGuildAchievements / @Model.TotalGuildAchievements</h4>
+                                    <small class="text-muted">Gilden-Achievements freigeschaltet</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-icon" style="font-size: 2.5rem;">⭐</div>
+                                    <h4 class="text-warning">@Model.TotalAchievementPoints</h4>
+                                    <small class="text-muted">Gesamtpunkte verdient</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="stat-icon" style="font-size: 2.5rem;">📊</div>
+                                    <h4 class="text-info">@((Model.TotalUserAchievements + Model.TotalGuildAchievements) > 0 ? Math.Round(((Model.UnlockedUserAchievements + Model.UnlockedGuildAchievements) * 100.0) / (Model.TotalUserAchievements + Model.TotalGuildAchievements), 1) : 0)%</h4>
+                                    <small class="text-muted">Gesamt-Fortschritt</small>
+                                </div>
+                            </div>
+                            <div class="text-center mt-4">
+                                <a asp-controller="Home" asp-action="AchievementOverview" class="btn btn-lg shadow" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    🏆 Vollständige Achievement-Übersicht
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Sternzeichen Übersicht -->
     <section class="hero-section">
         <section class="zodiac-section">

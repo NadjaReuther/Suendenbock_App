@@ -1,0 +1,61 @@
+@{
+    // Neue Achievements aus TempData holen
+    var newAchievementsJson = TempData["NewAchievements"] as string;
+
+    if (!string.IsNullOrEmpty(newAchievementsJson))
+    {
+        var newAchievements = System.Text.Json.JsonSerializer.Deserialize<List<dynamic>>(newAchievementsJson);
+
+        if (newAchievements != null && newAchievements.Any())
+        {
+            <!-- Achievement Notification Container -->
+            <div class="achievement-notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+                @foreach (var achievement in newAchievements)
+                {
+                    <div class="achievement-toast alert alert-success shadow-lg mb-3" role="alert" style="min-width: 350px; animation: slideInRight 0.5s;">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0" style="font-size: 3rem; margin-right: 15px;">
+                                @achievement.GetProperty("Icon").GetString()
+                            </div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">🏆 Neues Achievement!</h5>
+                                <h6 class="mb-1"><strong>@achievement.GetProperty("Name").GetString()</strong></h6>
+                                <p class="mb-1" style="font-size: 0.9rem;">@achievement.GetProperty("Description").GetString()</p>
+                                <span class="badge bg-warning text-dark">+@achievement.GetProperty("Points").GetInt32() Punkte</span>
+                            </div>
+                            <button type="button" class="btn-close ms-3" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <style>
+                @@keyframes slideInRight {
+                    from {
+                        transform: translateX(400px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+
+                .achievement-toast {
+                    border-left: 5px solid #d4af37;
+                    background: linear-gradient(145deg, #f9f6f0, #e8dcc0);
+                }
+            </style>
+
+            <script>
+                // Auto-dismiss nach 8 Sekunden
+                setTimeout(function() {
+                    document.querySelectorAll('.achievement-toast').forEach(function(toast) {
+                        var bsAlert = new bootstrap.Alert(toast);
+                        bsAlert.close();
+                    });
+                }, 8000);
+            </script>
+        }
+    }
+}

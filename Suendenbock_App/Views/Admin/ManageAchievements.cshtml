@@ -1,0 +1,158 @@
+@model IEnumerable<Suendenbock_App.Models.Domain.Achievement>
+@using Suendenbock_App.Models.Domain
+@{
+    ViewData["Title"] = "Achievement-Verwaltung";
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Achievement-Verwaltung
+    </h3>
+</header>
+
+<div class="container-fluid mt-4">
+    <!-- TempData Benachrichtigungen -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>✓ Erfolg!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>✗ Fehler!</strong> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Aktionen -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <a asp-action="CreateAchievement" class="btn btn-success btn-lg">
+                ➕ Neues Achievement erstellen
+            </a>
+            <a asp-controller="Home" asp-action="AchievementOverview" class="btn btn-info btn-lg">
+                📊 Öffentliche Übersicht anzeigen
+            </a>
+        </div>
+    </div>
+
+    <!-- Achievements gruppiert nach Scope -->
+    @if (Model != null && Model.Any())
+    {
+        var groupedByScope = Model.GroupBy(a => a.Scope);
+
+        foreach (var scopeGroup in groupedByScope)
+        {
+            <div class="card shadow mb-4">
+                <div class="card-header text-white" style="background: @(scopeGroup.Key == AchievementScope.User ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" : "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)");">
+                    <h5 class="mb-0">
+                        @(scopeGroup.Key == AchievementScope.User ? "👤 Spieler-Achievements" : "🏰 Gilden-Achievements")
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">Icon</th>
+                                    <th>Name</th>
+                                    <th>Beschreibung</th>
+                                    <th>Kategorie</th>
+                                    <th style="width: 80px;">Punkte</th>
+                                    <th style="width: 100px;">Ziel</th>
+                                    <th style="width: 100px;">Geheim</th>
+                                    <th style="width: 150px;">Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var achievement in scopeGroup.OrderBy(a => a.Category).ThenBy(a => a.Points))
+                                {
+                                    <tr>
+                                        <td style="font-size: 2rem;">@achievement.Icon</td>
+                                        <td><strong>@achievement.Name</strong></td>
+                                        <td>@achievement.Description</td>
+                                        <td>
+                                            <span class="badge bg-info">@GetCategoryName(achievement.Category)</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">@achievement.Points</span>
+                                        </td>
+                                        <td>
+                                            @if (achievement.RequiredCount.HasValue)
+                                            {
+                                                <span class="badge bg-secondary">@achievement.RequiredCount</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (achievement.IsSecret)
+                                            {
+                                                <span class="badge bg-dark">🔒 Ja</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Nein</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="EditAchievement" asp-route-id="@achievement.Id" class="btn btn-sm btn-primary" title="Bearbeiten">
+                                                    ✏️
+                                                </a>
+                                                <form asp-action="DeleteAchievement" asp-route-id="@achievement.Id" method="post" class="d-inline"
+                                                      onsubmit="return confirm('Bist du sicher, dass du das Achievement \'@achievement.Name\' löschen möchtest?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-danger" title="Löschen">
+                                                        🗑️
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            Keine Achievements gefunden. Erstelle dein erstes Achievement!
+        </div>
+    }
+
+    <!-- Zurück-Button -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <a asp-action="Index" class="btn btn-secondary btn-lg shadow">
+                Zurück zur Admin-Übersicht
+            </a>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetCategoryName(AchievementCategory category)
+    {
+        return category switch
+        {
+            AchievementCategory.CharacterCompletion => "Charakterbogen",
+            AchievementCategory.CharacterRelations => "Beziehungen",
+            AchievementCategory.GuildSize => "Gilden-Größe",
+            AchievementCategory.Bestiary => "Bestiarium",
+            AchievementCategory.BestiaryType => "Bestiarium-Typen",
+            AchievementCategory.AdventCalendar => "Adventskalender",
+            AchievementCategory.Knowledge => "Wissen",
+            _ => category.ToString()
+        };
+    }
+}

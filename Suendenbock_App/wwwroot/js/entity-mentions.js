@@ -11,7 +11,8 @@
             '#': { type: 'guild', name: 'Gilden', color: '#198754' },
             '§': { type: 'infanterie', name: 'Infanterien', color: '#dc3545' },
             '&': { type: 'monster', name: 'Monster', color: '#6f42c1' },
-            '%': { type: 'magicclass', name: 'Magieklassen', color: '#fd7e14' }
+            '%': { type: 'magicclass', name: 'Magieklassen', color: '#fd7e14' },
+            '$': { type: 'glossary', name: 'Glossar', color: '#0dcaf0' }
         };
 
         if (this.textarea) {
@@ -88,7 +89,7 @@
         }
         // Suche nach Mention-Pattern in den letzten 50 Zeichen
         const searchText = textBeforeCursor.substring(Math.max(0, textBeforeCursor.length - 50));
-        const mentionPattern = /([@#§&%])(\w*)$/;
+        const mentionPattern = /([@#§&%$])(\w*)$/;
         const match = searchText.match(mentionPattern);
 
         if (match) {
@@ -129,7 +130,8 @@
             'guild': '🏰',
             'infanterie': '⚔️',
             'monster': '👹',
-            'magicclass': '🔮'
+            'magicclass': '🔮',
+            'glossary': '📖'
         };
 
         const emoji = emojiMap[entity.type] || '🔗';
@@ -192,9 +194,10 @@
             💡 <strong>Verlinkungen:</strong> 
             <span style="color: #d4af37;">@Charakter</span> • 
             <span style="color: #198754;">#Gilde</span> • 
-            <span style="color: #dc3545;">§Infanterie</span> • 
-            <span style="color: #6f42c1;">&Monster</span> • 
-            <span style="color: #fd7e14;">%Magie</span>
+            <span style="color: #dc3545;">§Infanterie</span> •
+            <span style="color: #6f42c1;">&Monster</span> •
+            <span style="color: #fd7e14;">%Magie</span> •
+            <span style="color: #0dcaf0;">$Glossar</span>
         </small>
     `;
         this.textarea.parentNode.appendChild(helpDiv);
@@ -224,7 +227,7 @@
         const beforeCursor = text.substring(0, cursorPos);
 
         // Erweiterte Regex für alle Mention-Typen
-        const mentionPattern = /([@#§&%])(\w*)$/;
+        const mentionPattern = /([@#§&%$])(\w*)$/;
         const match = beforeCursor.match(mentionPattern);
 
         if (match) {
@@ -384,7 +387,8 @@
             'guild': '#198754',
             'infanterie': '#dc3545',
             'monster': '#6f42c1',
-            'magicclass': '#fd7e14'
+            'magicclass': '#fd7e14',
+            'glossary': '#0dcaf0'
         };
         return colors[type] || '#6c757d';
     }
@@ -395,7 +399,8 @@
             'guild': 'Gilde',
             'infanterie': 'Infanterie',
             'monster': 'Monster',
-            'magicclass': 'Magie'
+            'magicclass': 'Magie',
+            'glossary': 'Glossar'
         };
         return labels[type] || '';
     }

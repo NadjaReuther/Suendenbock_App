@@ -98,6 +98,18 @@ namespace Suendenbock_App.Controllers
 
             var glossar = _context.GlossaryEntries.ToList();
 
+            // Achievement-Statistiken
+            var totalUserAchievements = _context.Achievements.Count(a => a.Scope == AchievementScope.User);
+            var totalGuildAchievements = _context.Achievements.Count(a => a.Scope == AchievementScope.Guild);
+            var unlockedUserAchievements = _context.UserAchievements.Select(ua => ua.AchievementId).Distinct().Count();
+            var unlockedGuildAchievements = _context.GuildAchievements.Select(ga => ga.AchievementId).Distinct().Count();
+            var totalAchievementPoints = _context.UserAchievements
+                .Include(ua => ua.Achievement)
+                .Sum(ua => ua.Achievement.Points) +
+                _context.GuildAchievements
+                .Include(ga => ga.Achievement)
+                .Sum(ga => ga.Achievement.Points);
+
             // ViewModel erstellen
             var viewModel = new HomeViewModel
             {
@@ -113,7 +125,12 @@ namespace Suendenbock_App.Controllers
                 PlayerCharacters = playerCharacters,
                 CompanionCharacters = companionCharacters,
                 Monsters = monsters,
-                glossaryEntries = glossar
+                glossaryEntries = glossar,
+                TotalUserAchievements = totalUserAchievements,
+                TotalGuildAchievements = totalGuildAchievements,
+                UnlockedUserAchievements = unlockedUserAchievements,
+                UnlockedGuildAchievements = unlockedGuildAchievements,
+                TotalAchievementPoints = totalAchievementPoints
             };
 
             return View(viewModel);
@@ -187,6 +204,82 @@ namespace Suendenbock_App.Controllers
                 };
 
                 return View(viewModel);
+        }
+
+        /// <summary>
+        /// Öffentliche Achievement-Übersicht für alle Spieler und Gilden
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> AchievementOverview()
+        {
+            // Alle Achievements laden
+            var allAchievements = await _context.Achievements
+                .OrderBy(a => a.Scope)
+                .ThenBy(a => a.Category)
+                .ThenBy(a => a.Points)
+                .ToListAsync();
+
+            // User-Achievements
+            var userAchievements = await _context.UserAchievements
+                .Include(ua => ua.Achievement)
+                .Include(ua => ua.User)
+                .ToListAsync();
+
+            // Gilden-Achievements
+            var guildAchievements = await _context.GuildAchievements
+                .Include(ga => ga.Achievement)
+                .Include(ga => ga.Guild)
+                .ToListAsync();
+
+            // Spieler mit ihren Characters laden
+            var spielerUserIds = await _context.UserRoles
+                .Where(ur => _context.Roles.Any(r => r.Id == ur.RoleId && r.Name == "Spieler"))
+                .Select(ur => ur.UserId)
+                .ToListAsync();
+
+            var users = await _context.Users
+                .Where(u => spielerUserIds.Contains(u.Id))
+                .ToListAsync();
+
+            var characters = await _context.Characters
+                .Where(c => spielerUserIds.Contains(c.UserId))
+                .ToDictionaryAsync(c => c.UserId, c => c);
+
+            var players = users.Select(u => new
+            {
+                User = u,
+                Character = characters.ContainsKey(u.Id) ? characters[u.Id] : null,
+                AchievementCount = userAchievements.Count(ua => ua.UserId == u.Id),
+                TotalPoints = userAchievements.Where(ua => ua.UserId == u.Id).Sum(ua => ua.Achievement.Points)
+            }).ToList();
+
+            // Gilden mit Achievements
+            var allGuilds = await _context.Guilds.ToListAsync();
+
+            var guilds = allGuilds.Select(g => new
+            {
+                Guild = g,
+                AchievementCount = guildAchievements.Count(ga => ga.GuildId == g.Id),
+                TotalPoints = guildAchievements.Where(ga => ga.GuildId == g.Id).Sum(ga => ga.Achievement.Points)
+            }).ToList();
+
+            // Statistiken
+            var totalUserAchievements = allAchievements.Count(a => a.Scope == AchievementScope.User);
+            var totalGuildAchievements = allAchievements.Count(a => a.Scope == AchievementScope.Guild);
+            var unlockedUserAchievements = userAchievements.Select(ua => ua.AchievementId).Distinct().Count();
+            var unlockedGuildAchievements = guildAchievements.Select(ga => ga.AchievementId).Distinct().Count();
+
+            ViewBag.AllAchievements = allAchievements;
+            ViewBag.UserAchievements = userAchievements;
+            ViewBag.GuildAchievements = guildAchievements;
+            ViewBag.Players = players;
+            ViewBag.Guilds = guilds;
+            ViewBag.TotalUserAchievements = totalUserAchievements;
+            ViewBag.TotalGuildAchievements = totalGuildAchievements;
+            ViewBag.UnlockedUserAchievements = unlockedUserAchievements;
+            ViewBag.UnlockedGuildAchievements = unlockedGuildAchievements;
+
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

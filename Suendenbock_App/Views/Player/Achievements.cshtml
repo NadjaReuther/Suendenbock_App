@@ -1,0 +1,217 @@
+@model Suendenbock_App.Models.ViewModels.PlayerAchievementsViewModel
+@using Suendenbock_App.Models.Domain
+@{
+    ViewData["Title"] = "Meine Achievements";
+    var progress = Model.TotalCount > 0 ? (int)((Model.UnlockedCount * 100.0) / Model.TotalCount) : 0;
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Meine Achievements
+    </h3>
+</header>
+
+<div class="container mt-4">
+    <!-- Statistik-Übersicht -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10">
+            <div class="card shadow-lg" style="border: 2px solid #d4af37; background: linear-gradient(145deg, #f9f6f0, #e8dcc0);">
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: 2px solid #d4af37;">
+                    <h5 class="mb-0">🏆 Dein Fortschritt</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-md-3">
+                            <h4 class="text-primary">@Model.UnlockedCount / @Model.TotalCount</h4>
+                            <small class="text-muted">Achievements freigeschaltet</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">@progress%</h4>
+                            <small class="text-muted">Fortschritt</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">@Model.TotalPoints</h4>
+                            <small class="text-muted">Gesamtpunkte</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">@Model.MaxPoints</h4>
+                            <small class="text-muted">Max. Punkte</small>
+                        </div>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                             role="progressbar"
+                             style="width: @progress%;"
+                             aria-valuenow="@progress"
+                             aria-valuemin="0"
+                             aria-valuemax="100">
+                            @progress%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alle Achievements -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10">
+                    @if (Model.AchievementsByCategory != null)
+                    {
+                        @foreach (var categoryGroup in Model.AchievementsByCategory)
+                        {
+                            var category = categoryGroup.Key;
+                            var achievements = categoryGroup.Value;
+                            var categoryName = GetCategoryName(category);
+                            var categoryIcon = GetCategoryIcon(category);
+                            var unlockedInCategory = achievements.Count(a => a.IsUnlocked);
+                            var totalInCategory = achievements.Count(a => !a.Achievement.IsSecret);
+
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0">@categoryIcon @categoryName</h5>
+                                    <span class="badge bg-secondary">@unlockedInCategory / @totalInCategory</span>
+                                </div>
+                                <div class="row">
+                                    @foreach (var item in achievements.Where(a => !a.Achievement.IsSecret))
+                                    {
+                                        var achievement = item.Achievement;
+                                        var isUnlocked = item.IsUnlocked;
+                                        var unlockedAt = item.UnlockedAt;
+                                        var howToUnlock = GetHowToUnlock(achievement);
+
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card h-100 shadow-sm" style="border: @(isUnlocked ? "2px solid #d4af37" : "2px solid #dee2e6"); background: @(isUnlocked ? "linear-gradient(145deg, #fff9e6, #fffef5)" : "#f8f9fa");">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="flex-shrink-0" style="font-size: 2.5rem; margin-right: 15px; @(isUnlocked ? "" : "filter: grayscale(100%);")">
+                                                            @achievement.Icon
+                                                        </div>
+                                                        <div class="flex-grow-1">
+                                                            <h6 class="card-title mb-1">
+                                                                @achievement.Name
+                                                                @if (isUnlocked)
+                                                                {
+                                                                    <span class="badge bg-success ms-2">✓ Freigeschaltet</span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="badge bg-secondary ms-2">🔒 Gesperrt</span>
+                                                                }
+                                                            </h6>
+                                                            <p class="card-text text-muted mb-2" style="font-size: 0.9rem;">
+                                                                @achievement.Description
+                                                            </p>
+                                                            @if (!isUnlocked)
+                                                            {
+                                                                <div class="alert alert-info mb-2 py-2" style="font-size: 0.85rem;">
+                                                                    <strong>💡 Wie freischalten:</strong><br />
+                                                                    @howToUnlock
+                                                                </div>
+                                                            }
+                                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                                <span class="badge bg-warning text-dark">⭐ @achievement.Points Punkte</span>
+                                                                @if (isUnlocked && unlockedAt != null)
+                                                                {
+                                                                    <small class="text-muted">
+                                                                        📅 @((DateTime)unlockedAt).ToString("dd.MM.yyyy HH:mm")
+                                                                    </small>
+                                                                }
+                                                                @if (!isUnlocked && achievement.RequiredCount.HasValue)
+                                                                {
+                                                                    <small class="badge bg-info">Ziel: @achievement.RequiredCount</small>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zurück-Button -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10 text-center">
+            <a asp-action="Index" class="btn btn-secondary btn-lg shadow">
+                Zurück zur Übersicht
+            </a>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetCategoryName(AchievementCategory category)
+    {
+        return category switch
+        {
+            AchievementCategory.CharacterCompletion => "Charakterbogen-Vervollständigung",
+            AchievementCategory.CharacterRelations => "Familie & Beziehungen",
+            AchievementCategory.GuildSize => "Gilden-Größe",
+            AchievementCategory.Bestiary => "Bestiarium",
+            AchievementCategory.BestiaryType => "Bestiarium - Typen",
+            AchievementCategory.AdventCalendar => "Weihnachtsabenteuer",
+            AchievementCategory.Knowledge => "Wissen & Erkundung",
+            _ => category.ToString()
+        };
+    }
+
+    string GetCategoryIcon(AchievementCategory category)
+    {
+        return category switch
+        {
+            AchievementCategory.CharacterCompletion => "📝",
+            AchievementCategory.CharacterRelations => "👨‍👩‍👧",
+            AchievementCategory.GuildSize => "👥",
+            AchievementCategory.Bestiary => "👹",
+            AchievementCategory.BestiaryType => "🗡️",
+            AchievementCategory.AdventCalendar => "🎄",
+            AchievementCategory.Knowledge => "📚",
+            _ => "🏆"
+        };
+    }
+
+    string GetHowToUnlock(Achievement achievement)
+    {
+        return achievement.Key switch
+        {
+            // Charakterbogen
+            "character_basics_filled" => "Fülle die Basis-Felder deines Charakterbogens aus (Vorname, Nachname, Geschlecht, etc.)",
+            "character_50_percent" => "Fülle mindestens 50% deines Charakterbogens aus, inklusive Details und Hintergrund",
+            "character_80_percent" => "Fülle mindestens 80% deines Charakterbogens aus - ein fast vollständiger Charakter!",
+
+            // Familie & Beziehungen
+            "family_one_relation" => "Trage mindestens eine familiäre Beziehung ein (Vater, Mutter oder Partner)",
+            "family_complete" => "Vervollständige alle drei familiären Beziehungen: Vater, Mutter und Partner",
+
+            // Gilden
+            "guild_10_members" => "Deine Gilde muss 10 Mitglieder erreichen",
+            "guild_25_members" => "Deine Gilde muss 25 Mitglieder erreichen",
+            "guild_50_members" => "Deine Gilde muss 50 Mitglieder erreichen - eine große Gemeinschaft!",
+
+            // Bestiarium
+            "bestiary_first_encounter" => "Schalte dein erstes Monster im Bestiarium frei",
+            "bestiary_10_monsters" => "Schalte 10 verschiedene Monster im Bestiarium frei",
+            "bestiary_25_monsters" => "Schalte 25 verschiedene Monster im Bestiarium frei",
+            "bestiary_all_monsters" => "Schalte alle verfügbaren Monster im Bestiarium frei!",
+
+            // Adventskalender
+            "advent_first_door" => "Öffne dein erstes Türchen im Weihnachtsabenteuer",
+            "advent_12_doors" => "Öffne 12 Türchen im Adventskalender - die Hälfte ist geschafft!",
+            "advent_all_doors" => "Öffne alle 24 Türchen des Adventskalenders",
+
+            // Wissen
+            "knowledge_5_entries" => "Sieh dir 5 verschiedene Glossar-Einträge an",
+            "knowledge_25_entries" => "Sieh dir 25 verschiedene Glossar-Einträge an",
+
+            _ => "Erfülle die Bedingung: " + achievement.Description
+        };
+    }
+}

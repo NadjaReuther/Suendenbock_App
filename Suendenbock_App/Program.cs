@@ -23,14 +23,16 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddControllers(); // Für API-Controller hinzufügen
+builder.Services.AddControllers(); // Fï¿½r API-Controller hinzufï¿½gen
 
 
-// addImageUpload 
+// addImageUpload
 builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
 // add Cache Service
 builder.Services.AddScoped<ICachedDataService, CachedDataService>();
 builder.Services.AddMemoryCache();
+// Achievement Service
+builder.Services.AddScoped<IAchievementService, AchievementService>();
 
 var app = builder.Build();
 
@@ -72,6 +74,13 @@ using (var scope = app.Services.CreateScope())
     TriggerSeeder.Seed(context);
 }
 
+// Achievement-System seeden
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    AchievementSeeder.SeedAchievements(context);
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -94,7 +103,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapControllers(); // Für API-Controller hinzufügen
+app.MapControllers(); // Fï¿½r API-Controller hinzufï¿½gen
 app.MapRazorPages();
 
 app.Run();

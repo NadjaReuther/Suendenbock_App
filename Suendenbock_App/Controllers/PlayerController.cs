@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
+using Suendenbock_App.Models.ViewModels;
+using Suendenbock_App.Services;
 
 namespace Suendenbock_App.Controllers
 {
@@ -12,16 +14,19 @@ namespace Suendenbock_App.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IAchievementService _achievementService;
 
         /// <summary>
         /// Konstruktor ruft die DbContext- und UserManager-Instanzen ab
         /// </summary>
         /// <param name="context"></param>
         /// <param name="userManager"></param>
-        public PlayerController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        /// <param name="achievementService"></param>
+        public PlayerController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IAchievementService achievementService)
         {
             _context = context;
             _userManager = userManager;
+            _achievementService = achievementService;
         }
 
         /// <summary>
@@ -199,6 +204,55 @@ namespace Suendenbock_App.Controllers
         public IActionResult Anleitung()
         {
             return View();
+        }
+
+        /// <summary>
+        /// Zeigt die Achievements-Übersicht des Spielers an
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Achievements()
+        {
+            var userId = _userManager.GetUserId(User);
+
+            // Hole alle User-Achievements des Spielers
+            var userAchievements = await _achievementService.GetUserAchievements(userId);
+
+            // Hole alle verfügbaren Achievements
+            var allAchievements = await _context.Achievements
+                .Where(a => a.Scope == AchievementScope.User)
+                .OrderBy(a => a.Category)
+                .ThenBy(a => a.Points)
+                .ToListAsync();
+
+            // Berechne Statistiken
+            var unlockedCount = userAchievements.Count;
+            var totalCount = allAchievements.Count(a => !a.IsSecret);
+            var totalPoints = userAchievements.Sum(ua => ua.Achievement.Points);
+            var maxPoints = allAchievements.Where(a => !a.IsSecret).Sum(a => a.Points);
+
+            // Gruppiere nach Kategorien
+            var achievementsByCategory = allAchievements
+                .GroupBy(a => a.Category)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(a => new AchievementItem
+                    {
+                        Achievement = a,
+                        IsUnlocked = userAchievements.Any(ua => ua.AchievementId == a.Id),
+                        UnlockedAt = userAchievements.FirstOrDefault(ua => ua.AchievementId == a.Id)?.UnlockedAt
+                    }).ToList()
+                );
+
+            var viewModel = new PlayerAchievementsViewModel
+            {
+                UnlockedCount = unlockedCount,
+                TotalCount = totalCount,
+                TotalPoints = totalPoints,
+                MaxPoints = maxPoints,
+                AchievementsByCategory = achievementsByCategory
+            };
+
+            return View(viewModel);
         }
 
         [AllowAnonymous]

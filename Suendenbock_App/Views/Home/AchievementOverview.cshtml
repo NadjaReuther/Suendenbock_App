@@ -1,0 +1,292 @@
+@using Suendenbock_App.Models.Domain
+@{
+    ViewData["Title"] = "Achievement-Übersicht";
+    var allAchievements = ViewBag.AllAchievements as List<Achievement>;
+    var userAchievements = ViewBag.UserAchievements as List<UserAchievement>;
+    var guildAchievements = ViewBag.GuildAchievements as List<GuildAchievement>;
+    var players = ViewBag.Players as List<dynamic>;
+    var guilds = ViewBag.Guilds as List<dynamic>;
+    var totalUserAchievements = (int)ViewBag.TotalUserAchievements;
+    var totalGuildAchievements = (int)ViewBag.TotalGuildAchievements;
+    var unlockedUserAchievements = (int)ViewBag.UnlockedUserAchievements;
+    var unlockedGuildAchievements = (int)ViewBag.UnlockedGuildAchievements;
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Achievement-Übersicht
+    </h3>
+</header>
+
+<div class="container-fluid mt-4">
+    <!-- Gesamt-Statistiken -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-lg" style="border: 2px solid #d4af37; background: linear-gradient(145deg, #f9f6f0, #e8dcc0);">
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: 2px solid #d4af37;">
+                    <h5 class="mb-0">👤 Spieler-Achievements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h3 class="text-primary">@totalUserAchievements</h3>
+                            <small class="text-muted">Verfügbare Achievements</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success">@unlockedUserAchievements</h3>
+                            <small class="text-muted">Mindestens einmal freigeschaltet</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-lg" style="border: 2px solid #d4af37; background: linear-gradient(145deg, #f9f6f0, #e8dcc0);">
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); border-bottom: 2px solid #d4af37;">
+                    <h5 class="mb-0">🏰 Gilden-Achievements</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h3 class="text-primary">@totalGuildAchievements</h3>
+                            <small class="text-muted">Verfügbare Achievements</small>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-success">@unlockedGuildAchievements</h3>
+                            <small class="text-muted">Mindestens einmal freigeschaltet</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs für verschiedene Ansichten -->
+    <ul class="nav nav-tabs" id="achievementTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab">
+                👤 Spieler-Übersicht
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="guilds-tab" data-bs-toggle="tab" data-bs-target="#guilds" type="button" role="tab">
+                🏰 Gilden-Übersicht
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="all-achievements-tab" data-bs-toggle="tab" data-bs-target="#all-achievements" type="button" role="tab">
+                🏆 Alle Achievements
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3" id="achievementTabsContent">
+        <!-- Spieler-Übersicht -->
+        <div class="tab-pane fade show active" id="players" role="tabpanel">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Spieler und ihre Achievements</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Spieler</th>
+                                    <th>Charakter</th>
+                                    <th>Achievements</th>
+                                    <th>Punkte</th>
+                                    <th>Fortschritt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (players != null && players.Any())
+                                {
+                                    foreach (var player in players)
+                                    {
+                                        var progress = totalUserAchievements > 0 ? (int)((player.AchievementCount * 100.0) / totalUserAchievements) : 0;
+                                        <tr>
+                                            <td>@player.User.Email</td>
+                                            <td>
+                                                @if (player.Character != null)
+                                                {
+                                                    <text>@player.Character.Vorname @player.Character.Nachname</text>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Kein Charakter</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">@player.AchievementCount / @totalUserAchievements</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">@player.TotalPoints Punkte</span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="min-width: 100px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: @progress%;">
+                                                        @progress%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">Keine Spieler gefunden</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gilden-Übersicht -->
+        <div class="tab-pane fade" id="guilds" role="tabpanel">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Gilden und ihre Achievements</h5>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Gilde</th>
+                                    <th>Achievements</th>
+                                    <th>Punkte</th>
+                                    <th>Fortschritt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (guilds != null && guilds.Any())
+                                {
+                                    foreach (var guild in guilds)
+                                    {
+                                        var progress = totalGuildAchievements > 0 ? (int)((guild.AchievementCount * 100.0) / totalGuildAchievements) : 0;
+                                        <tr>
+                                            <td><strong>@guild.Guild.Name</strong></td>
+                                            <td>
+                                                <span class="badge bg-primary">@guild.AchievementCount / @totalGuildAchievements</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-warning text-dark">@guild.TotalPoints Punkte</span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="min-width: 100px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: @progress%;">
+                                                        @progress%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted">Keine Gilden gefunden</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alle Achievements -->
+        <div class="tab-pane fade" id="all-achievements" role="tabpanel">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Alle verfügbaren Achievements</h5>
+                    <div class="row">
+                        @if (allAchievements != null && allAchievements.Any())
+                        {
+                            var groupedByScope = allAchievements.GroupBy(a => a.Scope);
+                            foreach (var scopeGroup in groupedByScope)
+                            {
+                                <div class="col-12 mb-4">
+                                    <h6 class="text-primary">
+                                        @(scopeGroup.Key == AchievementScope.User ? "👤 Spieler-Achievements" : "🏰 Gilden-Achievements")
+                                    </h6>
+                                    <div class="row">
+                                        @foreach (var achievement in scopeGroup)
+                                        {
+                                            var timesUnlocked = scopeGroup.Key == AchievementScope.User
+                                                ? userAchievements?.Count(ua => ua.AchievementId == achievement.Id) ?? 0
+                                                : guildAchievements?.Count(ga => ga.AchievementId == achievement.Id) ?? 0;
+
+                                            <div class="col-md-6 col-lg-4 mb-3">
+                                                <div class="card h-100" style="border: 2px solid #dee2e6;">
+                                                    <div class="card-body">
+                                                        <div class="d-flex align-items-start">
+                                                            <div class="flex-shrink-0" style="font-size: 2rem; margin-right: 15px;">
+                                                                @achievement.Icon
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <h6 class="card-title mb-1">@achievement.Name</h6>
+                                                                <p class="card-text text-muted mb-2" style="font-size: 0.85rem;">
+                                                                    @achievement.Description
+                                                                </p>
+                                                                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                                                    <span class="badge bg-warning text-dark">@achievement.Points Punkte</span>
+                                                                    <span class="badge bg-info">@GetCategoryName(achievement.Category)</span>
+                                                                    @if (timesUnlocked > 0)
+                                                                    {
+                                                                        <span class="badge bg-success">@timesUnlocked x freigeschaltet</span>
+                                                                    }
+                                                                </div>
+                                                                @if (achievement.IsSecret)
+                                                                {
+                                                                    <span class="badge bg-dark mt-2">🔒 Geheim</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <p class="text-center text-muted">Keine Achievements gefunden</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zurück-Button -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-lg shadow">
+                Zurück zur Startseite
+            </a>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetCategoryName(AchievementCategory category)
+    {
+        return category switch
+        {
+            AchievementCategory.CharacterCompletion => "Charakterbogen",
+            AchievementCategory.CharacterRelations => "Beziehungen",
+            AchievementCategory.GuildSize => "Gilden-Größe",
+            AchievementCategory.Bestiary => "Bestiarium",
+            AchievementCategory.BestiaryType => "Bestiarium-Typen",
+            AchievementCategory.AdventCalendar => "Adventskalender",
+            AchievementCategory.Knowledge => "Wissen",
+            _ => category.ToString()
+        };
+    }
+}

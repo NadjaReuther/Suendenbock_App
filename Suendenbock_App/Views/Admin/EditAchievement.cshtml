@@ -1,0 +1,181 @@
+@model Suendenbock_App.Models.Domain.Achievement
+@using Suendenbock_App.Models.Domain
+@{
+    ViewData["Title"] = "Achievement bearbeiten";
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Achievement bearbeiten
+    </h3>
+</header>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg" style="border: 2px solid #d4af37;">
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0">✏️ Achievement bearbeiten</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditAchievement" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <!-- Key -->
+                        <div class="mb-3">
+                            <label asp-for="Key" class="form-label">
+                                Eindeutiger Schlüssel <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Key" class="form-control" required />
+                            <div class="form-text">
+                                Eindeutiger Bezeichner für das Achievement (nur Kleinbuchstaben und Unterstriche)
+                            </div>
+                            <span asp-validation-for="Key" class="text-danger"></span>
+                        </div>
+
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">
+                                Name <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Name" class="form-control" required />
+                            <div class="form-text">
+                                Anzeigename des Achievements
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">
+                                Beschreibung <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="3" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- Icon -->
+                        <div class="mb-3">
+                            <label asp-for="Icon" class="form-label">
+                                Icon (Emoji) <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Icon" class="form-control" required style="font-size: 1.5rem;" />
+                            <div class="form-text">
+                                Emoji, das das Achievement repräsentiert (z.B. 🏆, 📝, ⭐, 👥, 👹, 🎄, 📚)
+                            </div>
+                            <span asp-validation-for="Icon" class="text-danger"></span>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-3">
+                            <label asp-for="Category" class="form-label">
+                                Kategorie <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Category" class="form-select" required>
+                                <option value="">-- Kategorie wählen --</option>
+                                <option value="@((int)AchievementCategory.CharacterCompletion)">📝 Charakterbogen-Vervollständigung</option>
+                                <option value="@((int)AchievementCategory.CharacterRelations)">👨‍👩‍👧 Familie & Beziehungen</option>
+                                <option value="@((int)AchievementCategory.GuildSize)">👥 Gilden-Größe</option>
+                                <option value="@((int)AchievementCategory.Bestiary)">👹 Bestiarium</option>
+                                <option value="@((int)AchievementCategory.BestiaryType)">🗡️ Bestiarium - Typen</option>
+                                <option value="@((int)AchievementCategory.AdventCalendar)">🎄 Weihnachtsabenteuer</option>
+                                <option value="@((int)AchievementCategory.Knowledge)">📚 Wissen & Erkundung</option>
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+
+                        <!-- Scope -->
+                        <div class="mb-3">
+                            <label asp-for="Scope" class="form-label">
+                                Geltungsbereich <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Scope" class="form-select" required>
+                                <option value="">-- Geltungsbereich wählen --</option>
+                                <option value="@((int)AchievementScope.User)">👤 Spieler-Achievement</option>
+                                <option value="@((int)AchievementScope.Guild)">🏰 Gilden-Achievement</option>
+                            </select>
+                            <div class="form-text">
+                                Wird das Achievement für einzelne Spieler oder für Gilden vergeben?
+                            </div>
+                            <span asp-validation-for="Scope" class="text-danger"></span>
+                        </div>
+
+                        <!-- Points -->
+                        <div class="mb-3">
+                            <label asp-for="Points" class="form-label">
+                                Punkte <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Points" type="number" class="form-control" min="1" required />
+                            <div class="form-text">
+                                Wie viele Punkte ist dieses Achievement wert?
+                            </div>
+                            <span asp-validation-for="Points" class="text-danger"></span>
+                        </div>
+
+                        <!-- RequiredCount -->
+                        <div class="mb-3">
+                            <label asp-for="RequiredCount" class="form-label">
+                                Erforderliche Anzahl (optional)
+                            </label>
+                            <input asp-for="RequiredCount" type="number" class="form-control" min="1" />
+                            <div class="form-text">
+                                Für gestaffelte Achievements (z.B. 10 Monster, 25 Monster, etc.)
+                            </div>
+                            <span asp-validation-for="RequiredCount" class="text-danger"></span>
+                        </div>
+
+                        <!-- IsSecret -->
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsSecret" type="checkbox" class="form-check-input" />
+                            <label asp-for="IsSecret" class="form-check-label">
+                                🔒 Geheimes Achievement
+                            </label>
+                            <div class="form-text">
+                                Geheime Achievements werden nicht in der Übersicht angezeigt, bis sie freigeschaltet wurden
+                            </div>
+                        </div>
+
+                        <!-- EntityType (Advanced) -->
+                        <div class="mb-3">
+                            <label asp-for="EntityType" class="form-label">
+                                Entitätstyp (optional, fortgeschritten)
+                            </label>
+                            <input asp-for="EntityType" class="form-control" />
+                            <div class="form-text">
+                                Für typ-spezifische Achievements (z.B. "Drachen-Kenner")
+                            </div>
+                            <span asp-validation-for="EntityType" class="text-danger"></span>
+                        </div>
+
+                        <!-- EntityId (Advanced) -->
+                        <div class="mb-3">
+                            <label asp-for="EntityId" class="form-label">
+                                Entitäts-ID (optional, fortgeschritten)
+                            </label>
+                            <input asp-for="EntityId" type="number" class="form-control" min="1" />
+                            <div class="form-text">
+                                ID der spezifischen Entität (z.B. ID des Monstertyps)
+                            </div>
+                            <span asp-validation-for="EntityId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="ManageAchievements" class="btn btn-secondary btn-lg">
+                                ← Abbrechen
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                💾 Änderungen speichern
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Models.ViewModels;
 
 namespace Suendenbock_App.Controllers
@@ -110,6 +111,118 @@ namespace Suendenbock_App.Controllers
             {
                 return Json(new { success = false, message = $"Fehler: {ex.Message}" });
             }
+        }
+
+        /// <summary>
+        /// Achievement-Verwaltung nur für Gott - Übersicht aller Achievements
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ManageAchievements()
+        {
+            var achievements = await _context.Achievements
+                .OrderBy(a => a.Category)
+                .ThenBy(a => a.Scope)
+                .ThenBy(a => a.Points)
+                .ToListAsync();
+
+            return View(achievements);
+        }
+
+        /// <summary>
+        /// Formular zum Erstellen eines neuen Achievements
+        /// </summary>
+        [HttpGet]
+        public IActionResult CreateAchievement()
+        {
+            return View(new Achievement());
+        }
+
+        /// <summary>
+        /// Speichert ein neues Achievement
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAchievement(Achievement achievement)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Achievements.Add(achievement);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Achievement '{achievement.Name}' wurde erfolgreich erstellt!";
+                return RedirectToAction(nameof(ManageAchievements));
+            }
+
+            return View(achievement);
+        }
+
+        /// <summary>
+        /// Formular zum Bearbeiten eines Achievements
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> EditAchievement(int id)
+        {
+            var achievement = await _context.Achievements.FindAsync(id);
+            if (achievement == null)
+            {
+                TempData["Error"] = "Achievement nicht gefunden.";
+                return RedirectToAction(nameof(ManageAchievements));
+            }
+
+            return View(achievement);
+        }
+
+        /// <summary>
+        /// Speichert ein bearbeitetes Achievement
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAchievement(Achievement achievement)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Achievements.Update(achievement);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Achievement '{achievement.Name}' wurde erfolgreich aktualisiert!";
+                return RedirectToAction(nameof(ManageAchievements));
+            }
+
+            return View(achievement);
+        }
+
+        /// <summary>
+        /// Löscht ein Achievement
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAchievement(int id)
+        {
+            var achievement = await _context.Achievements.FindAsync(id);
+            if (achievement != null)
+            {
+                // Prüfe ob Achievement bereits vergeben wurde
+                var hasUserAchievements = await _context.UserAchievements.AnyAsync(ua => ua.AchievementId == id);
+                var hasGuildAchievements = await _context.GuildAchievements.AnyAsync(ga => ga.AchievementId == id);
+
+                if (hasUserAchievements || hasGuildAchievements)
+                {
+                    TempData["Error"] = $"Achievement '{achievement.Name}' kann nicht gelöscht werden, da es bereits an Spieler oder Gilden vergeben wurde.";
+                }
+                else
+                {
+                    _context.Achievements.Remove(achievement);
+                    await _context.SaveChangesAsync();
+
+                    TempData["Success"] = $"Achievement '{achievement.Name}' wurde erfolgreich gelöscht!";
+                }
+            }
+            else
+            {
+                TempData["Error"] = "Achievement nicht gefunden.";
+            }
+
+            return RedirectToAction(nameof(ManageAchievements));
         }
     }
 }
