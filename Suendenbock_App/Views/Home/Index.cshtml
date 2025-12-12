@@ -626,26 +626,33 @@
 
         // Tooltip Funktionen
         function showTooltip(event, d) {
-            const tooltip = document.getElementById('tooltip');
-            const childCount = d.children ? d.children.length : (d._children ? d._children.length : 0);
-            const depthLabel = d.depth === 0 ? 'System-Root' :
-                              d.depth === 1 ? 'Obermagie' :
-                              d.depth === 2 ? 'Magieklasse' :
-                              d.depth === 3 ? 'Spezialisierung' : '';
+            // Nur für Spezialisierungen (depth === 3) Tooltip anzeigen
+            if (d.depth !== 3) {
+                return;
+            }
 
-            tooltip.innerHTML = `
-                <strong>${d.data.name}</strong><br/>
-                ${depthLabel}<br/>
-                ${childCount > 0 ? `${childCount} ${childCount === 1 ? 'Unterelement' : 'Unterelemente'}` : 'Keine Unterelemente'}
-            `;
+            const tooltip = document.getElementById('tooltip');
+            let tooltipContent = `<strong>${d.data.name}</strong>`;
+
+            // Zeige Characters, die diese Spezialisierung haben
+            if (d.data.characters && d.data.characters.length > 0) {
+                tooltipContent += '<br/><br/><strong>Characters:</strong><br/>';
+                d.data.characters.forEach(char => {
+                    tooltipContent += `• ${char.fullName}<br/>`;
+                });
+            } else {
+                tooltipContent += '<br/><br/><em>Kein Character hat diese Spezialisierung</em>';
+            }
+
+            tooltip.innerHTML = tooltipContent;
             tooltip.style.display = 'block';
             moveTooltip(event);
         }
 
         function moveTooltip(event) {
             const tooltip = document.getElementById('tooltip');
-            tooltip.style.left = (event.pageX + 15) + 'px';
-            tooltip.style.top = (event.pageY + 15) + 'px';
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY - 60) + 'px';
         }
 
         function hideTooltip() {

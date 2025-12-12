@@ -119,11 +119,6 @@ namespace Suendenbock_App.Controllers
             return RedirectToAction("Index", "Admin");
         }
 
-        public IActionResult Hierarchy()
-        {
-            return View();
-        }
-
         [HttpGet]
         public IActionResult GetHierarchyData()
         {
@@ -136,6 +131,13 @@ namespace Suendenbock_App.Controllers
             var magicClasses = _context.MagicClasses
                 .Include(mc => mc.Obermagie)
                 .Include(mc => mc.MagicClassSpecializations)
+                .ToList();
+
+            // Lade alle CharacterMagicClass Beziehungen mit Characters
+            var characterMagicClasses = _context.CharacterMagicClasses
+                .Include(cmc => cmc.Character)
+                .Include(cmc => cmc.MagicClassSpecialization)
+                .Where(cmc => cmc.MagicClassSpecializationId != null)
                 .ToList();
 
             // Gruppiere MagicClasses nach Obermagie
@@ -159,9 +161,24 @@ namespace Suendenbock_App.Controllers
                         children = magicClassesForObermagie.Select(magicClass => new
                         {
                             name = magicClass.Bezeichnung,
-                            children = magicClass.MagicClassSpecializations.Select(spec => new
+                            children = magicClass.MagicClassSpecializations.Select(spec =>
                             {
-                                name = spec.Name
+                                // Finde alle Characters mit dieser Spezialisierung
+                                var charactersWithSpec = characterMagicClasses
+                                    .Where(cmc => cmc.MagicClassSpecializationId == spec.Id)
+                                    .Select(cmc => cmc.Character)
+                                    .Where(c => c != null)
+                                    .Select(c => new
+                                    {
+                                        fullName = $"{c.Vorname} {c.Nachname}"
+                                    })
+                                    .ToList();
+
+                                return new
+                                {
+                                    name = spec.Name,
+                                    characters = charactersWithSpec
+                                };
                             }).ToList()
                         }).ToList()
                     };
