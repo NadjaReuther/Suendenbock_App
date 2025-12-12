@@ -3,6 +3,7 @@
 @{
     var selectedMonsterId = ViewBag.SelectedMonsterId as int?;
     var selectedMonstertypId = ViewBag.SelectedMonstertypId as int?;
+    var isGod = ViewBag.IsGod as bool? ?? false;
 }
 
 @section Styles {
@@ -13,6 +14,12 @@
     <header class="antique-header mb-4">
         <h1 class="main-title">👹 Bestiarium</h1>
         <p class="subtitle">Begegnete Kreaturen und ihre Geheimnisse</p>
+        @if (isGod)
+        {
+            <div class="alert alert-info mt-3" style="font-family: 'Cinzel', serif; font-size: 0.9rem;">
+                <strong>Gott-Ansicht:</strong> Du siehst alle Monster. Das Icon 👁️‍🗨️ markiert Monster, die für Spieler noch nicht sichtbar sind.
+            </div>
+        }
     </header>
 
     @if (Model != null && Model.Any(mt => mt.Monster.Any()))
@@ -32,7 +39,14 @@
                                 aria-expanded="@(isTypeOpen ? "true" : "false")" aria-controls="collapse@(typeId)">
                             <h3>@monsterType.Name</h3>
                             <span class="ms-auto me-3" style="font-size: 0.9rem;">
-                                (@meetCount/@totalCount entdeckt)
+                                @if (isGod)
+                                {
+                                    <text>(@meetCount/@totalCount für Spieler sichtbar)</text>
+                                }
+                                else
+                                {
+                                    <text>(@meetCount/@totalCount entdeckt)</text>
+                                }
                             </span>
                         </button>
                     </h2>
@@ -41,7 +55,8 @@
                         <div class="accordion-body">
                             @foreach (var monster in monsterType.Monster)
                             {
-                                var isLocked = !monster.meet;
+                                var isLocked = !monster.meet && !isGod;
+                                var isHiddenFromPlayers = !monster.meet;
                                 var monsterId = $"monster{monster.Id}";
                                 var isMonsterOpen = selectedMonsterId == monster.Id;
 
@@ -68,13 +83,19 @@
                                                 <span style="@(isLocked ? "filter: blur(3px);" : "")">
                                                     @(isLocked ? "???" : monster.Name)
                                                 </span>
-                                                @if(!isLocked && monster.encounter && !monster.perfected)
+                                                @if (isGod && isHiddenFromPlayers)
+                                                {
+                                                    <span class="ms-2" style="font-size: 0.9rem; color: #ff6b6b;" title="Für Spieler nicht sichtbar">
+                                                        👁️‍🗨️
+                                                    </span>
+                                                }
+                                                @if((isGod || !isLocked) && monster.encounter && !monster.perfected)
                                                 {
                                                     <span class="ms-auto me-3" style="font-size: 0.8rem; color: #C0C0C0;">
                                                         ✨ teil erforscht
                                                     </span>
                                                 }
-                                                @if (!isLocked && monster.perfected)
+                                                @if ((isGod || !isLocked) && monster.perfected)
                                                 {
                                                     <span class="ms-auto me-3" style="font-size: 0.8rem; color: #d4af37;">
                                                         ✨ komplett erforscht
@@ -113,26 +134,59 @@
                                                         <div class="monster-inner-card">
                                                             <h5 style="font-family: 'Cinzel', serif; color: #5d4e37; margin-bottom: 1rem;">
                                                                 📜 Basics
+                                                                @if (isGod)
+                                                                {
+                                                                    @if (monster.meet)
+                                                                    {
+                                                                        <span style="font-size: 0.8rem; color: #28a745; margin-left: 1rem;">✓ Für Spieler sichtbar</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span style="font-size: 0.8rem; color: #ff6b6b; margin-left: 1rem;">👁️‍🗨️ Für Spieler nicht sichtbar</span>
+                                                                    }
+                                                                }
                                                             </h5>
                                                             @Html.Raw(monster.Basics)
                                                         </div>
                                                     }
 
-                                                    @if (monster.encounter && !string.IsNullOrEmpty(monster.Description))
+                                                    @if ((isGod || monster.encounter) && !string.IsNullOrEmpty(monster.Description))
                                                     {
                                                         <div class="monster-inner-card">
                                                             <h5 style="font-family: 'Cinzel', serif; color: #5d4e37; margin-bottom: 1rem;">
                                                                 📜 Beschreibung
+                                                                @if (isGod)
+                                                                {
+                                                                    @if (monster.encounter)
+                                                                    {
+                                                                        <span style="font-size: 0.8rem; color: #28a745; margin-left: 1rem;">✓ Für Spieler sichtbar</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span style="font-size: 0.8rem; color: #ff6b6b; margin-left: 1rem;">👁️‍🗨️ Für Spieler nicht sichtbar</span>
+                                                                    }
+                                                                }
                                                             </h5>
                                                             @Html.Raw(monster.Description)
                                                         </div>
                                                     }
 
-                                                    @if (monster.perfected && !string.IsNullOrEmpty(monster.ProcessedDescription))
+                                                    @if ((isGod || monster.perfected) && !string.IsNullOrEmpty(monster.ProcessedDescription))
                                                     {
                                                         <div class="monster-inner-card">
                                                             <h5 style="font-family: 'Cinzel', serif; color: #d4af37; margin-bottom: 1rem;">
                                                                 ✨ Zusätzliche Erkenntnisse
+                                                                @if (isGod)
+                                                                {
+                                                                    @if (monster.perfected)
+                                                                    {
+                                                                        <span style="font-size: 0.8rem; color: #28a745; margin-left: 1rem;">✓ Für Spieler sichtbar</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span style="font-size: 0.8rem; color: #ff6b6b; margin-left: 1rem;">👁️‍🗨️ Für Spieler nicht sichtbar</span>
+                                                                    }
+                                                                }
                                                             </h5>
                                                             @Html.Raw(monster.ProcessedDescription)
                                                         </div>

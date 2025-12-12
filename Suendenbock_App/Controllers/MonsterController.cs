@@ -39,6 +39,7 @@ namespace Suendenbock_App.Controllers
 
             ViewBag.SelectedMonsterId = monsterId;
             ViewBag.SelectedMonstertypId = monstertypId;
+            ViewBag.IsGod = User.IsInRole("Gott");
 
             return View(monsterTypes);
         }
