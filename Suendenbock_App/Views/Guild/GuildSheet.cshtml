@@ -19,9 +19,6 @@
 
         <div>
             <h1 class="wiki-title">@Model.Name</h1>
-            <p class="wiki-subtitle">
-                @Model.AbenteuerrangNavigation
-            </p>
         </div>
     </div>
 
@@ -153,34 +150,6 @@
                 @if (Model.AbenteuerrangNavigation != null)
                 {
                     <p><strong>Rang:</strong> @Model.AbenteuerrangNavigation.Name</p>
-                }
-
-                @if (Model.LeaderCharacter != null)
-                {
-                    <p>
-                        <strong>Anführer:</strong>
-                        <a href="@Url.Action("CharacterSheet", "Character", new { id = Model.LeaderCharacter.Id })" class="wiki-link">
-                            @Model.LeaderCharacter.Vorname @Model.LeaderCharacter.Nachname
-                        </a>
-                    </p>
-                }
-                else
-                {
-                    <p><strong>Anführer:</strong> <em class="text-muted">Nicht ernannt</em></p>
-                }
-
-                @if (Model.VertreterCharacter != null)
-                {
-                    <p>
-                        <strong>Stellvertreter:</strong>
-                        <a href="@Url.Action("CharacterSheet", "Character", new { id = Model.VertreterCharacter.Id })" class="wiki-link">
-                            @Model.VertreterCharacter.Vorname @Model.VertreterCharacter.Nachname
-                        </a>
-                    </p>
-                }
-                else
-                {
-                    <p><strong>Stellvertreter:</strong> <em class="text-muted">Nicht ernannt</em></p>
                 }
 
                 @if (Model.AnmeldungsstatusNavigation != null)
