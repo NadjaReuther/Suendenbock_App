@@ -1,0 +1,189 @@
+﻿@model Suendenbock_App.Controllers.SpielmodusDashboardViewModel
+@{
+    ViewData["Title"] = "Spielmodus Dashboard";
+}
+
+<!-- Link zum Spielmodus-CSS im Head -->
+@section Styles {
+    <link rel="stylesheet" href="~/css/spielmodus.css" />
+}
+
+<div class="main-container fade-in">
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <header class="page-header">
+            <h1>Spielmodus</h1>
+            <p class="subtitle" id="lastMessage">Willkommen in der Welt von 1618.</p>
+        </header>
+
+        <div class="content-wrapper">
+
+            <!-- Action Cards mit Corner Brackets! -->
+            <div class="action-grid">
+
+                <!-- Karte -->
+                <button class="action-card" onclick="navigateTo('map')">
+                    <div class="corner-tl"></div>
+                    <div class="corner-tr"></div>
+                    <div class="corner-bl"></div>
+                    <div class="corner-br"></div>
+
+                    <div class="icon">
+                        <span class="material-symbols-outlined">map</span>
+                    </div>
+                    <h2 class="title">Karte</h2>
+                    <p class="subtitle">Erkunde das Reich</p>
+                </button>
+
+                <!-- Quests -->
+                <button class="action-card" onclick="navigateTo('quests')">
+                    <div class="corner-tl"></div>
+                    <div class="corner-tr"></div>
+                    <div class="corner-bl"></div>
+                    <div class="corner-br"></div>
+
+                    <div class="icon">
+                        <span class="material-symbols-outlined">history_edu</span>
+                    </div>
+                    <h2 class="title">Quests</h2>
+                    <p class="subtitle">Deine Aufgaben</p>
+                </button>
+
+                <!-- Trophäen -->
+                <button class="action-card" onclick="navigateTo('trophies')">
+                    <div class="corner-tl"></div>
+                    <div class="corner-tr"></div>
+                    <div class="corner-bl"></div>
+                    <div class="corner-br"></div>
+
+                    <div class="icon">
+                        <span class="material-symbols-outlined">skull</span>
+                    </div>
+                    <h2 class="title">Trophäen</h2>
+                    <p class="subtitle">Deine Erfolge</p>
+                </button>
+
+            </div>
+
+            <!-- Combat Button -->
+            <div style="width: 100%; display: flex; justify-content: center;">
+                <button id="combatBtn" class="combat-button" onclick="toggleCombatReady()">
+                    <span class="material-symbols-outlined icon" id="combatIcon">swords</span>
+                    <span class="text" id="combatText">Kampfbereit Machen</span>
+                    <div class="shine"></div>
+                </button>
+            </div>
+
+            <!-- Status Display -->
+            <section class="status-display">
+                <h3>Aktueller Stand</h3>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="status-value" id="groupQuests">3</span>
+                        <span class="status-label">Offene Gruppenquests</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-value" id="individualQuests">0</span>
+                        <span class="status-label">Offene Individualquests</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-value" id="fights">4</span>
+                        <span class="status-label">bestrittene Kämpfe</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-value" id="breakFights">2</span>
+                        <span class="status-label">abgebrochene Kämpfe</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rest Buttons -->
+            <div class="rest-buttons">
+                <button class="rest-button" onclick="shortRest()">
+                    <span class="material-symbols-outlined">restaurant</span>
+                    <span>Kurze Rast</span>
+                </button>
+
+                <button id="campBtn" class="rest-button camp" onclick="toggleCamp()">
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span class="material-symbols-outlined" id="campIcon">fireplace</span>
+                            <span id="campText">Nachtlager</span>
+                        </div>
+                        <span class="confirm-text" id="confirmText" style="display: none;">Bestätigen</span>
+                    </div>
+                </button>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- Camp Summary Modal -->
+<div id="campModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-texture"></div>
+
+        <div class="modal-header">
+            <span class="material-symbols-outlined icon">fireplace</span>
+            <h2>Das Nachtlager</h2>
+            <p class="subtitle">Resümee der magischen Taten</p>
+        </div>
+
+        <div class="modal-body">
+            <!-- Pokus Summary -->
+            <div class="pokus-summary">
+                <h3>Gesammelter Pokus</h3>
+                <div class="pokus-grid" id="pokusGrid">
+                    <!-- Wird via JavaScript gefüllt -->
+                </div>
+                <div class="pokus-total">
+                    <span class="label">Gruppen-Gesamt</span>
+                    <span class="value" id="totalPokus">0</span>
+                </div>
+            </div>
+
+            <!-- Food Options -->
+            <div class="food-section">
+                <h3>Wähle dein Mahl:</h3>
+                <div class="food-options" id="foodOptions">
+                    <!-- Wird via JavaScript gefüllt -->
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="modal-buttons">
+                <button class="modal-button-primary" onclick="startRest()">
+                    Rast beginnen & Kräfte sammeln
+                </button>
+                <button class="modal-button-secondary" onclick="closeCampModal()">
+                    Zurück zum Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <span class="material-symbols-outlined spinner">hourglass_empty</span>
+    <p class="text">Die Zeit vergeht...</p>
+</div>
+
+<!-- JavaScript -->
+@section Scripts {
+    <script src="~/js/spielmodus-dashboard.js"></script>
+    <script>
+        // Initial Daten vom Server
+        const initialCharacters = @Html.Raw(Json.Serialize(Model.ActiveCharacters));
+        const initialRestFoods = @Html.Raw(Json.Serialize(Model.RestFoods));
+
+        // Dashboard initialisieren
+        window.addEventListener('DOMContentLoaded', () => {
+            initDashboard(initialCharacters, initialRestFoods);
+        });
+    </script>
+}

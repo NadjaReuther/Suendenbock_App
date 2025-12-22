@@ -43,6 +43,42 @@ namespace Suendenbock_App.Models.Domain
 
         [Display(Name = "Eindruck")]
         public int EindruckId { get; set; }
+        //für Spielmodus-System
+        // ===== STAMMDATEN =====
+
+        /// <summary>
+        /// Basis-Maximalwert für Lebenspunkte (aus Charakterbogen)
+        /// </summary>
+        public int BaseMaxHealth { get; set; } = 150;
+
+        /// <summary>
+        /// Basis-Maximalwert für Pokuspunkte (aus Charakterbogen)
+        /// </summary>
+        public int BaseMaxPokus { get; set; } = 30;
+
+        // ===== AKTUELLER SPIELZUSTAND (wird während des Spiels geändert) =====
+
+        /// <summary>
+        /// Aktuelle Lebenspunkte - wird im Spiel angepasst
+        /// </summary>
+        public int CurrentHealth { get; set; } = 50;
+
+        /// <summary>
+        /// Aktuelle Pokuspunkte - wird im Spiel angepasst
+        /// </summary>
+        public int CurrentPokus { get; set; } = 0;
+
+        /// <summary>
+        /// Wann wurde zuletzt gerastet? (für Nachtlager-Tracking)
+        /// </summary>
+        public DateTime? LastRestAt { get; set; }
+
+        // ===== BEZIEHUNGEN =====
+
+        /// <summary>
+        /// Individual-Quests, die diesem Charakter zugewiesen sind
+        /// </summary>
+        public List<Quest> IndividualQuests { get; set; } = new();
 
         //Optionale Basis-Informationen
         [Display(Name = "Geburtsdatum")]

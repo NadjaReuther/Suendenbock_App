@@ -33,6 +33,8 @@ builder.Services.AddScoped<ICachedDataService, CachedDataService>();
 builder.Services.AddMemoryCache();
 // Achievement Service
 builder.Services.AddScoped<IAchievementService, AchievementService>();
+// Game Service
+builder.Services.AddScoped<GameService>();
 
 var app = builder.Build();
 
@@ -72,13 +74,8 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     TriggerSeeder.Seed(context);
-}
-
-// Achievement-System seeden
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     AchievementSeeder.SeedAchievements(context);
+    await GameDataSeeder.SeedGameDataAsync(context);
 }
 
 // Configure the HTTP request pipeline.

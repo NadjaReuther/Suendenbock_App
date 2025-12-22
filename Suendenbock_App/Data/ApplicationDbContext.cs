@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Suendenbock_App.Models;
 using Suendenbock_App.Models.Domain;
+using System.Reflection.Emit;
 
 namespace Suendenbock_App.Data
 {
@@ -75,6 +77,13 @@ namespace Suendenbock_App.Data
         public DbSet<Achievement> Achievements { get; set; }
         public DbSet<UserAchievement> UserAchievements { get; set; }
         public DbSet<GuildAchievement> GuildAchievements { get; set; }
+
+        // GameSession-System
+        public DbSet<Quest> Quests { get; set; }
+        public DbSet<Act> Acts { get; set; }
+        public DbSet<Map> Maps { get; set; }
+        public DbSet<MapMarker> MapMarkers { get; set; }
+        public DbSet<RestFood> RestFoods { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -470,6 +479,58 @@ namespace Suendenbock_App.Data
             builder.Entity<UserTriggerPreference>()
                 .HasIndex(utp => new { utp.UserId, utp.TopicId })
                 .IsUnique();
+
+            // ===== NEUE BEZIEHUNGEN KONFIGURIEREN =====
+
+            // Character -> Quest (One-to-Many, optional)
+            // Individual-Quests haben einen Character, Group-Quests nicht
+            builder.Entity<Quest>()
+                .HasOne(q => q.Character)
+                .WithMany(c => c.IndividualQuests)
+                .HasForeignKey(q => q.CharacterId)
+                .OnDelete(DeleteBehavior.SetNull); // Wenn Character gelöscht, Quest bleibt
+
+            // Quest -> MapMarker (Optional)
+            builder.Entity<Quest>()
+                .HasOne(q => q.MapMarker)
+                .WithMany(m => m.Quests)
+                .HasForeignKey(q => q.MapMarkerId)
+                .OnDelete(DeleteBehavior.SetNull); // Wenn Marker gelöscht, Quest bleibt
+
+            // Act -> Map (One-to-One)
+            builder.Entity<Map>()
+                .HasOne(m => m.Act)
+                .WithOne(a => a.Map)
+                .HasForeignKey<Map>(m => m.ActId)
+                .OnDelete(DeleteBehavior.Cascade); // Wenn Act gelöscht, Map auch
+
+            // Map -> MapMarker (One-to-Many)
+            builder.Entity<MapMarker>()
+                .HasOne(mm => mm.Map)
+                .WithMany(m => m.Markers)
+                .HasForeignKey(mm => mm.MapId)
+                .OnDelete(DeleteBehavior.Cascade); // Wenn Map gelöscht, Marker auch
+
+            // ===== INDICES FÜR PERFORMANCE =====
+
+            // Quest-Status und Type werden oft gesucht
+            builder.Entity<Quest>()
+                .HasIndex(q => q.Status);
+
+            builder.Entity<Quest>()
+                .HasIndex(q => q.Type);
+
+            // Monster-Status für Filterung
+            builder.Entity<Monster>()
+                .HasIndex(m => m.Status);
+
+            // IsEquipped für schnelle Abfrage der ausgerüsteten Trophäen
+            builder.Entity<Monster>()
+                .HasIndex(m => m.IsEquipped);
+
+            // Nur ein aktiver Akt gleichzeitig
+            builder.Entity<Act>()
+                .HasIndex(a => a.IsActive);
         }
     }
 }
