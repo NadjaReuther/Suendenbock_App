@@ -1,0 +1,240 @@
+﻿@model Suendenbock_App.Controllers.QuestsViewModel
+@{
+    ViewData["Title"] = "Quest-Chronik";
+}
+
+@section Styles {
+    <!-- Material Symbols Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <!-- Dein CSS -->
+    <link rel="stylesheet" href="~/css/spielmodus.css" />
+    <link rel="stylesheet" href="~/css/spielmodus-quests.css" />
+}
+
+<div class="spielmodus-quests-container">
+
+    <!-- Header -->
+    <div class="quests-header">
+        <h1>Quest-Chronik</h1>
+
+        <!-- Add Button -->
+        <button id="addQuestBtn" class="add-quest-btn" title="Neue Quest anlegen">
+            <span class="material-symbols-outlined">add</span>
+        </button>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="quest-tabs">
+        <button class="quest-tab active" data-status="all">
+            <span class="material-symbols-outlined">auto_stories</span>
+            <span>Alle</span>
+        </button>
+        <button class="quest-tab" data-status="active">
+            <span class="material-symbols-outlined">history_edu</span>
+            <span>Aktuell</span>
+        </button>
+        <button class="quest-tab" data-status="completed">
+            <span class="material-symbols-outlined">verified</span>
+            <span>Abgeschlossen</span>
+        </button>
+        <button class="quest-tab" data-status="failed">
+            <span class="material-symbols-outlined">heart_broken</span>
+            <span>Gescheitert</span>
+        </button>
+    </div>
+
+    <!-- Character Filter -->
+    <div class="character-filter">
+        <h3>Nach Held filtern:</h3>
+        <div class="character-buttons">
+            @foreach (var character in Model.Characters)
+            {
+                <button class="character-filter-btn" data-character="@character">
+                    @character
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Quest List -->
+    <div id="questList" class="quest-list">
+        @foreach (var quest in Model.Quests)
+        {
+            <div class="quest-card @quest.Type @quest.Status"
+                 data-quest-id="@quest.Id"
+                 data-type="@quest.Type"
+                 data-status="@quest.Status"
+                 data-character="@(quest.CharacterName ?? "")">
+
+                <!-- Quest Header (clickable) -->
+                <div class="quest-card-header">
+                    <div class="quest-card-left">
+                        <!-- Chevron/Expand Arrow -->
+                        <span class="quest-chevron material-symbols-outlined">
+                            chevron_right
+                        </span>
+
+                        <!-- Status Icon -->
+                        <span class="quest-status-icon material-symbols-outlined">
+                            @if (quest.Status == "active")
+                            {
+                                @:history_edu
+                            }
+                            else if (quest.Status == "completed")
+                            {
+                                @:verified
+                            }
+                            else
+                            {
+                                @:heart_broken
+                            }
+                        </span>
+
+                        <!-- Title (durchgestrichen wenn failed) -->
+                        <h2 class="quest-title @(quest.Status == "failed" ? "strikethrough" : "")">
+                            @quest.Title
+                        </h2>
+                    </div>
+
+                    <div class="quest-card-right">
+                        <span class="quest-type-badge">
+                            @(quest.Type == "group" ? "Gruppenquest" : "Personal")
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Quest Body (collapsible) -->
+                <div class="quest-card-body">
+                    <p class="quest-description">
+                        @(string.IsNullOrEmpty(quest.Description) ? "Keine Beschreibung hinterlegt." : quest.Description)
+                    </p>
+
+                    <!-- Assigned Characters -->
+                    <div class="quest-assigned">
+                        <span class="assigned-label">Zugeordnete Helden:</span>
+                        @if (!string.IsNullOrEmpty(quest.CharacterName))
+                        {
+                            <span class="assigned-character">@quest.CharacterName</span>
+                        }
+                        else
+                        {
+                            <span class="assigned-all">Alle Gefährten der Gruppe</span>
+                        }
+                    </div>
+
+                    <!-- Status Change Buttons -->
+                    <div class="quest-actions">
+                        <span class="actions-label">Admin: Quest Status ändern</span>
+                        <div class="status-buttons">
+                            <button class="status-btn status-active @(quest.Status == "active" ? "current" : "")"
+                                    data-quest-id="@quest.Id"
+                                    data-new-status="active">
+                                <span class="material-symbols-outlined">history_edu</span>
+                                <span>Aktiv</span>
+                            </button>
+                            <button class="status-btn status-completed @(quest.Status == "completed" ? "current" : "")"
+                                    data-quest-id="@quest.Id"
+                                    data-new-status="completed">
+                                <span class="material-symbols-outlined">verified</span>
+                                <span>Erfolg</span>
+                            </button>
+                            <button class="status-btn status-failed @(quest.Status == "failed" ? "current" : "")"
+                                    data-quest-id="@quest.Id"
+                                    data-new-status="failed">
+                                <span class="material-symbols-outlined">heart_broken</span>
+                                <span>Gescheitert</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Empty State -->
+        <div id="emptyState" class="quest-empty" style="display: none;">
+            <span class="material-symbols-outlined">history_edu</span>
+            <p>Keine Quests in dieser Kategorie gefunden.</p>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="quests-back">
+        <a href="/Spielmodus/Dashboard" class="back-btn">
+            <span class="material-symbols-outlined">fireplace</span>
+            <div>
+                <span class="back-text">Zurück zum Lager</span>
+                <span class="back-subtext">Die Chronik wird fortgesetzt</span>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Add Quest Modal -->
+<div id="questModal" class="quest-modal" style="display: none;">
+    <div class="modal-content-quest">
+        <div class="modal-header-quest">
+            <h3>Neue Quest anlegen</h3>
+            <button id="closeModalBtn" class="close-modal-btn">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="questForm" class="quest-form">
+            <!-- Title -->
+            <div class="form-group">
+                <label>Titel der Quest</label>
+                <input type="text" id="questTitle" name="title" required autofocus />
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea id="questDescription" name="description" rows="3"></textarea>
+            </div>
+
+            <!-- Type & Status -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Quest-Typ</label>
+                    <select id="questType" name="type">
+                        <option value="individual">Personengebunden</option>
+                        <option value="group">Gruppenquest</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="questStatus" name="status">
+                        <option value="active">Aktuell</option>
+                        <option value="completed">Abgeschlossen</option>
+                        <option value="failed">Gescheitert</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Character Assignment (only for individual quests) -->
+            <div class="form-group" id="characterAssignmentGroup">
+                <label>Charakter zuweisen</label>
+                <select id="questCharacter" name="characterId">
+                    <option value="">Bitte wählen...</option>
+                    @foreach (var kvp in Model.CharactersForDropdown)
+                    {
+                        <option value="@kvp.Key">@kvp.Value</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="submit-btn">
+                In die Chronik aufnehmen
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/quests.js"></script>
+    <script>
+        const initialFocusQuestId = @Html.Raw(Model.FocusQuestId != null ? $"\"{Model.FocusQuestId}\"" : "null");
+    </script>
+}

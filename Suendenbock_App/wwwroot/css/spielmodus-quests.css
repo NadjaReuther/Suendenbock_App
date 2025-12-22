@@ -1,0 +1,699 @@
+﻿/* ===== MATERIAL SYMBOLS (falls nicht im Layout geladen) ===== */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Lato:wght@300;400;700&family=MedievalSharp&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+/* ===== QUEST PAGE CONTAINER ===== */
+.spielmodus-quests-container {
+    min-height: 100vh;
+    padding: 2rem;
+    max-width: 64rem;
+    margin: 0 auto;
+}
+
+/* ===== HEADER ===== */
+.quests-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid rgba(139, 94, 60, 0.2);
+}
+
+    .quests-header h1 {
+        font-family: 'Uncial Antiqua', serif;
+        font-size: 3rem;
+        color: #5d4e37;
+        text-align: center;
+        margin: 0;
+    }
+
+.add-quest-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: #d4af37;
+    color: black;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+    .add-quest-btn:hover {
+        transform: translateY(-50%) scale(1.1);
+    }
+
+/* ===== TAB NAVIGATION ===== */
+.quest-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid rgba(139, 94, 60, 0.1);
+    overflow-x: auto;
+}
+
+.quest-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(93, 78, 55, 0.6);
+}
+
+    .quest-tab .material-symbols-outlined {
+        font-size: 1.5rem;
+    }
+
+    .quest-tab:hover {
+        color: #5d4e37;
+    }
+
+    .quest-tab.active {
+        color: #d4af37;
+        border-bottom-color: #d4af37;
+    }
+
+/* ===== CHARACTER FILTER ===== */
+.character-filter {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border: 2px solid #d4c4a8;
+    border-radius: 0.5rem;
+}
+
+    .character-filter h3 {
+        font-family: 'Cinzel', serif;
+        font-size: 0.625rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: rgba(93, 78, 55, 0.6);
+        margin-bottom: 1rem;
+    }
+
+.character-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.character-filter-btn {
+    padding: 0.5rem 1rem;
+    background: #f0e6d2;
+    border: 2px solid #d4c4a8;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(93, 78, 55, 0.7);
+    transition: all 0.2s ease;
+}
+
+    .character-filter-btn:hover {
+        background: #e8dcc0;
+        border-color: #d4af37;
+    }
+
+    .character-filter-btn.active {
+        background: #d4af37;
+        border-color: #d4af37;
+        color: black;
+        font-weight: bold;
+    }
+
+/* ===== QUEST LIST ===== */
+.quest-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+/* ===== QUEST CARD ===== */
+.quest-card {
+    background: linear-gradient(145deg, #f9f6f0, #f0e6d2);
+    border: 2px solid #d4c4a8;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+    /* Group Quest Styling */
+    .quest-card.group.active {
+        background: rgba(173, 216, 230, 0.2);
+        border-left: 4px solid #8B5E3C;
+    }
+
+    .quest-card.group.completed {
+        background: rgba(212, 175, 55, 0.15);
+        border-left: 4px solid #d4af37;
+    }
+
+    .quest-card.group.failed {
+        background: rgba(128, 0, 32, 0.1); /* Rötlich */
+        border-left: 4px solid #800020; /* Crimson */
+    }
+
+    /* Individual Quest Styling */
+    .quest-card.individual.active {
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    .quest-card.individual.completed {
+        background: rgba(212, 175, 55, 0.1);
+    }
+
+    .quest-card.individual.failed {
+        background: rgba(128, 0, 32, 0.05); /* Leicht rötlich */
+    }
+
+    /* Expanded State */
+    .quest-card.expanded {
+        border-color: #d4af37;
+    }
+
+        .quest-card.expanded.active {
+            border-color: #d4af37;
+        }
+
+        .quest-card.expanded.completed {
+            border-color: #d4af37;
+        }
+
+        .quest-card.expanded.failed {
+            border-color: #800020;
+        }
+
+/* ===== QUEST CARD HEADER ===== */
+.quest-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+    .quest-card-header:hover {
+        background: rgba(212, 175, 55, 0.05);
+    }
+
+.quest-card-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Chevron/Arrow Icon */
+.quest-chevron {
+    font-size: 1.25rem;
+    color: rgba(139, 94, 60, 0.4);
+    transition: all 0.3s ease;
+}
+
+.quest-card.expanded .quest-chevron {
+    color: #d4af37; /* Gold wenn expanded */
+}
+
+.quest-chevron.rotated {
+    transform: rotate(90deg);
+}
+
+/* Status Icon */
+.quest-status-icon {
+    font-size: 2rem;
+    color: #8B5E3C;
+}
+
+.quest-card.completed .quest-status-icon {
+    color: #d4af37;
+}
+
+.quest-card.failed .quest-status-icon {
+    color: #800020;
+}
+
+/* Quest Title */
+.quest-title {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1.25rem;
+    color: #5d4e37;
+    margin: 0;
+    transition: opacity 0.2s ease;
+}
+
+    /* Durchgestrichener Titel bei gescheiterten Quests */
+    .quest-title.strikethrough {
+        text-decoration: line-through;
+        opacity: 0.6;
+    }
+
+.quest-card-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.quest-type-badge {
+    padding: 0.25rem 0.75rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border-radius: 1rem;
+    border: 1px solid;
+}
+
+.quest-card.group .quest-type-badge {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: #d4af37;
+    color: #d4af37;
+    font-weight: bold;
+}
+
+.quest-card.individual .quest-type-badge {
+    background: rgba(139, 94, 60, 0.1);
+    border-color: rgba(139, 94, 60, 0.4);
+    color: #8B5E3C;
+}
+
+/* ===== QUEST CARD BODY ===== */
+.quest-card-body {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.5s ease;
+}
+
+.quest-card.expanded .quest-card-body {
+    max-height: 600px;
+    opacity: 1;
+    padding: 1.5rem;
+    padding-top: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.quest-description {
+    font-size: 0.875rem;
+    color: rgba(93, 78, 55, 0.8);
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* ===== ASSIGNED CHARACTERS ===== */
+.quest-assigned {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.assigned-label {
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: rgba(93, 78, 55, 0.4);
+    letter-spacing: 0.15em;
+    width: 100%;
+}
+
+.assigned-character {
+    background: #8B5E3C;
+    color: white;
+    font-size: 0.5625rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.assigned-all {
+    background: #d4af37;
+    color: black;
+    font-size: 0.5625rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-style: italic;
+    letter-spacing: 0.15em;
+}
+
+/* ===== STATUS CHANGE ACTIONS ===== */
+.quest-actions {
+    border-top: 1px solid rgba(139, 94, 60, 0.1);
+    padding-top: 1rem;
+}
+
+.actions-label {
+    display: block;
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: rgba(93, 78, 55, 0.4);
+    letter-spacing: 0.15em;
+    text-align: center;
+    margin-bottom: 0.75rem;
+}
+
+.status-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.status-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    border-radius: 0.25rem;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .status-btn .material-symbols-outlined {
+        font-size: 0.875rem;
+    }
+
+    /* Active Button */
+    .status-btn.status-active {
+        background: rgba(255, 255, 255, 0.5);
+        border-color: rgba(93, 78, 55, 0.2);
+        color: rgba(93, 78, 55, 0.6);
+    }
+
+        .status-btn.status-active:hover {
+            background: #5d4e37;
+            border-color: #5d4e37;
+            color: white;
+        }
+
+        .status-btn.status-active.current {
+            background: #5d4e37;
+            border-color: #5d4e37;
+            color: white;
+        }
+
+    /* Completed Button */
+    .status-btn.status-completed {
+        background: rgba(255, 255, 255, 0.5);
+        border-color: rgba(212, 175, 55, 0.2);
+        color: #d4af37;
+    }
+
+        .status-btn.status-completed:hover {
+            background: #d4af37;
+            border-color: #d4af37;
+            color: black;
+        }
+
+        .status-btn.status-completed.current {
+            background: #d4af37;
+            border-color: #d4af37;
+            color: black;
+        }
+
+    /* Failed Button */
+    .status-btn.status-failed {
+        background: rgba(255, 255, 255, 0.5);
+        border-color: rgba(128, 0, 32, 0.2);
+        color: #800020;
+    }
+
+        .status-btn.status-failed:hover {
+            background: #800020;
+            border-color: #800020;
+            color: white;
+        }
+
+        .status-btn.status-failed.current {
+            background: #800020;
+            border-color: #800020;
+            color: white;
+        }
+
+/* ===== EMPTY STATE ===== */
+.quest-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    border: 2px dashed rgba(139, 94, 60, 0.1);
+    border-radius: 0.5rem;
+}
+
+    .quest-empty .material-symbols-outlined {
+        font-size: 3rem;
+        color: rgba(139, 94, 60, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    .quest-empty p {
+        font-family: 'MedievalSharp', cursive;
+        font-size: 1.25rem;
+        color: rgba(93, 78, 55, 0.3);
+    }
+
+/* ===== BACK BUTTON ===== */
+.quests-back {
+    display: flex;
+    justify-content: center;
+    padding-top: 4rem;
+    border-top: 1px solid rgba(139, 94, 60, 0.1);
+    margin-top: 3rem;
+}
+
+.back-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 3rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(139, 94, 60, 0.2);
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+    .back-btn:hover {
+        background: white;
+        border-color: rgba(212, 175, 55, 0.4);
+    }
+
+    .back-btn .material-symbols-outlined {
+        font-size: 2.5rem;
+        color: #8B5E3C;
+        transition: transform 0.2s ease;
+    }
+
+    .back-btn:hover .material-symbols-outlined {
+        transform: translateY(-4px);
+    }
+
+.back-text {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4em;
+    color: #5d4e37;
+}
+
+.back-btn:hover .back-text {
+    color: #d4af37;
+}
+
+.back-subtext {
+    display: block;
+    font-size: 0.625rem;
+    font-family: 'MedievalSharp', cursive;
+    color: rgba(93, 78, 55, 0.4);
+    font-style: italic;
+}
+
+/* ===== MODAL ===== */
+.quest-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content-quest {
+    background: #f4f1e8;
+    background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+    width: 100%;
+    max-width: 32rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    border: 2px solid #d4af37;
+    overflow: hidden;
+}
+
+.modal-header-quest {
+    background: #d4af37;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .modal-header-quest h3 {
+        font-family: 'Cinzel', serif;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-weight: bold;
+        margin: 0;
+    }
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    color: black;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+    .close-modal-btn:hover {
+        transform: scale(1.25);
+    }
+
+/* ===== QUEST FORM ===== */
+.quest-form {
+    padding: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+    .form-group label {
+        display: block;
+        font-family: 'Cinzel', serif;
+        font-size: 0.625rem;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: #5d4e37;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        background: white;
+        border: 1px solid #d4c4a8;
+        border-radius: 0.25rem;
+        font-family: 'MedievalSharp', cursive;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+    }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #d4af37;
+        }
+
+    .form-group textarea {
+        font-family: 'Lato', sans-serif;
+        font-size: 0.875rem;
+        resize: vertical;
+    }
+
+    .form-group select {
+        font-family: 'Lato', sans-serif;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #800020;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+}
+
+    .submit-btn:hover {
+        transform: scale(1.02);
+    }
+
+    .submit-btn:active {
+        transform: scale(0.95);
+    }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .quests-header h1 {
+        font-size: 2rem;
+    }
+
+    .quest-tabs {
+        flex-wrap: wrap;
+    }
+
+    .quest-tab {
+        flex: 1 1 45%;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}

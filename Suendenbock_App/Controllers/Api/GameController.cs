@@ -261,7 +261,7 @@ namespace Suendenbock_App.Controllers.Api
         // ===== QUESTS (später mehr) =====
 
         /// <summary>
-        /// Alle aktiven Quests abrufen
+        /// Alle Quests abrufen
         /// GET /api/game/quests
         /// </summary>
         [HttpGet("quests")]
@@ -272,7 +272,6 @@ namespace Suendenbock_App.Controllers.Api
                 var quests = await _context.Quests
                     .Include(q => q.Character)
                     .Include(q => q.MapMarker)
-                    .Where(q => q.Status == "active")
                     .Select(q => new
                     {
                         q.Id,
@@ -280,12 +279,157 @@ namespace Suendenbock_App.Controllers.Api
                         q.Description,
                         q.Type,
                         q.Status,
-                        Character = q.Character != null ? q.Character.Nachname : null,
-                        q.CreatedAt
+                        q.Character,
+                        q.CharacterId,
+                        q.CreatedAt,
+                        q.CompletedAt
                     })
                     .ToListAsync();
 
                 return Ok(quests);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Neue Quest erstellen
+        /// POST /api/game/quests
+        /// Body: { "title": "...", "description": "...", "type": "individual", "characterId": 1 }
+        /// </summary>
+        [HttpPost("quests")]
+        public async Task<IActionResult> CreateQuest([FromBody] CreateQuestRequest request)
+        {
+            try
+            {
+                // Validierung
+                if (string.IsNullOrWhiteSpace(request.Title))
+                {
+                    return BadRequest(new { error = "Titel ist erforderlich!" });
+                }
+
+                // Wenn Type = "individual", muss CharacterId vorhanden sein
+                if (request.Type == "individual" && request.CharacterId == null)
+                {
+                    return BadRequest(new { error = "Bei individuellen Quests muss ein Character zugewiesen sein!" });
+                }
+
+                var quest = new Quest
+                {
+                    Title = request.Title,
+                    Description = request.Description ?? string.Empty,
+                    Type = request.Type,
+                    Status = request.Status ?? "active",
+                    CharacterId = request.Type == "individual" ? request.CharacterId : null,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.Quests.Add(quest);
+                await _context.SaveChangesAsync();
+
+                // Quest mit Character-Namen zurückgeben
+                var character = quest.CharacterId.HasValue
+                    ? await _context.Characters.FindAsync(quest.CharacterId.Value)
+                    : null;
+
+                return Ok(new
+                {
+                    message = "Quest erfolgreich erstellt!",
+                    quest = new
+                    {
+                        quest.Id,
+                        quest.Title,
+                        quest.Description,
+                        quest.Type,
+                        quest.Status,
+                        CharacterName = character != null ? $"{character.Vorname}" : null,
+                        quest.CharacterId,
+                        quest.CreatedAt
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Quest-Status ändern
+        /// PUT /api/game/quests/1/status
+        /// Body: "active" / "completed" / "failed" (als raw string)
+        /// </summary>
+        [HttpPut("quests/{id}/status")]
+        public async Task<IActionResult> UpdateQuestStatus(int id, [FromBody] string status)
+        {
+            try
+            {
+                var quest = await _context.Quests.FindAsync(id);
+                if (quest == null)
+                {
+                    return NotFound(new { error = "Quest nicht gefunden!" });
+                }
+
+                // Validierung
+                if (status != "active" && status != "completed" && status != "failed")
+                {
+                    return BadRequest(new { error = "Ungültiger Status! Erlaubt: active, completed, failed" });
+                }
+
+                quest.Status = status;
+
+                // Wenn completed, CompletedAt setzen
+                if (status == "completed" && quest.CompletedAt == null)
+                {
+                    quest.CompletedAt = DateTime.Now;
+                }
+                // Wenn wieder active, CompletedAt zurücksetzen
+                else if (status == "active")
+                {
+                    quest.CompletedAt = null;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = $"Quest-Status auf '{status}' gesetzt!",
+                    questId = id,
+                    status = quest.Status,
+                    completedAt = quest.CompletedAt
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Quest löschen
+        /// DELETE /api/game/quests/1
+        /// </summary>
+        [HttpDelete("quests/{id}")]
+        public async Task<IActionResult> DeleteQuest(int id)
+        {
+            try
+            {
+                var quest = await _context.Quests.FindAsync(id);
+                if (quest == null)
+                {
+                    return NotFound(new { error = "Quest nicht gefunden!" });
+                }
+
+                _context.Quests.Remove(quest);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Quest erfolgreich gelöscht!",
+                    questId = id
+                });
             }
             catch (Exception ex)
             {
@@ -335,5 +479,14 @@ namespace Suendenbock_App.Controllers.Api
     {
         public List<int> CharacterIds { get; set; } = new();
         public int FoodId { get; set; }
+    }
+
+    public class CreateQuestRequest
+    {
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string Type { get; set; } = "individual"; // "individual" oder "group"
+        public string? Status { get; set; } = "active"; // "active", "completed", "failed"
+        public int? CharacterId { get; set; } // Nur für Type = "individual"
     }
 }

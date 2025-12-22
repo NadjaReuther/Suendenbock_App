@@ -30,7 +30,7 @@ namespace Suendenbock_App.Controllers
                 .Select(c => new CharacterViewModel
                 {
                     Id = c.Id,
-                    Name = c.Nachname,
+                    Name = c.Vorname,
                     CurrentHealth = c.CurrentHealth,
                     BaseMaxHealth = c.BaseMaxHealth,
                     CurrentPokus = c.CurrentPokus,
@@ -71,14 +71,49 @@ namespace Suendenbock_App.Controllers
             return View();
         }
 
+
+        // ===== QUESTS =====
+
         /// <summary>
-        /// Quest-Übersicht
+        /// Quest-Übersicht Seite
         /// Route: /Spielmodus/Quests
         /// </summary>
-        public async Task<IActionResult> Quests()
+        public async Task<IActionResult> Quests(string? focusQuestId = null)
         {
-            // TODO: Implementieren
-            return View();
+            // Alle Quests laden (mit Character + MapMarker)
+            var quests = await _context.Quests
+                .Include(q => q.Character)
+                .Include(q => q.MapMarker)
+                .OrderByDescending(q => q.CreatedAt)
+                .Select(q => new QuestViewModel
+                {
+                    Id = q.Id,
+                    Title = q.Title,
+                    Description = q.Description,
+                    Type = q.Type,
+                    Status = q.Status,
+                    CharacterName = q.Character != null ? $"{q.Character.Vorname}" : null,
+                    CharacterId = q.CharacterId,
+                    CreatedAt = q.CreatedAt,
+                    CompletedAt = q.CompletedAt
+                })
+                .ToListAsync();
+
+            // Alle aktiven Spieler-Characters für Filter + Dropdown
+            var characters = await _context.Characters
+                 .Where(c => c.UserId != null || c.IsCompanion)
+                .Select(c => new { c.Id, FullName = $"{c.Vorname}" })
+                .ToListAsync();
+
+            var viewModel = new QuestsViewModel
+            {
+                Quests = quests,
+                Characters = characters.Select(c => c.FullName).ToList(),
+                CharactersForDropdown = characters.ToDictionary(c => c.Id, c => c.FullName),
+                FocusQuestId = focusQuestId
+            };
+
+            return View(viewModel);
         }
 
         /// <summary>
@@ -127,5 +162,27 @@ namespace Suendenbock_App.Controllers
         public string Description { get; set; } = string.Empty;
         public string Quality { get; set; } = string.Empty;
         public int HealthBonus { get; set; }
+    }
+    // ===== VIEW MODELS =====
+
+    public class QuestsViewModel
+    {
+        public List<QuestViewModel> Quests { get; set; } = new();
+        public List<string> Characters { get; set; } = new();
+        public Dictionary<int, string> CharactersForDropdown { get; set; } = new();
+        public string? FocusQuestId { get; set; }
+    }
+
+    public class QuestViewModel
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty; // "individual" oder "group"
+        public string Status { get; set; } = string.Empty; // "active", "completed", "failed"
+        public string? CharacterName { get; set; }
+        public int? CharacterId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
     }
 }
