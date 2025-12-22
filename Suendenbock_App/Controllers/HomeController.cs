@@ -206,6 +206,274 @@ namespace Suendenbock_App.Controllers
                 return View(viewModel);
         }
 
+        [HttpGet]
+        public IActionResult GetFamilyTreeData(int characterId = 0)
+        {
+            if (characterId == 0)
+            {
+                var randomCharacter = _context.Characters.FirstOrDefault();
+                if (randomCharacter != null)
+                {
+                    characterId = randomCharacter.Id;
+                }
+                else
+                {
+                    return NotFound(new { error = "Keine Charaktere in der Datenbank gefunden." });
+                }
+            }
+
+            var character = _context.Characters.FirstOrDefault(c => c.Id == characterId);
+            if (character == null)
+            {
+                return NotFound(new { error = "Character nicht gefunden." });
+            }
+
+            // Erstelle hierarchische Datenstruktur für D3.js
+            var treeData = BuildFamilyTreeNode(character);
+
+            return Json(treeData);
+        }
+
+        [HttpGet]
+        public IActionResult GetBidirectionalFamilyTreeData(int characterId = 0)
+        {
+            try
+            {
+                if (characterId == 0)
+                {
+                    var randomCharacter = _context.Characters.FirstOrDefault();
+                    if (randomCharacter != null)
+                    {
+                        characterId = randomCharacter.Id;
+                    }
+                    else
+                    {
+                        return NotFound(new { error = "Keine Charaktere in der Datenbank gefunden." });
+                    }
+                }
+
+                var character = _context.Characters.FirstOrDefault(c => c.Id == characterId);
+                if (character == null)
+                {
+                    return NotFound(new { error = "Character nicht gefunden." });
+                }
+
+                // Lade Geschwister
+                var siblings = new List<Character>();
+                if (character.VaterId.HasValue || character.MutterId.HasValue)
+                {
+                    siblings = _context.Characters
+                        .Where(c =>
+                            (character.VaterId.HasValue && c.VaterId == character.VaterId) ||
+                            (character.MutterId.HasValue && c.MutterId == character.MutterId))
+                        .Where(c => c.Id != characterId)
+                        .ToList();
+                }
+
+                // HashSets zum Tracking bereits besuchter IDs (Schutz gegen Endlosschleifen)
+                var visitedAncestors = new HashSet<int>();
+                var visitedDescendants = new HashSet<int>();
+
+                // Erstelle bidirektionale Datenstruktur
+                var treeData = new
+                {
+                    root = new
+                    {
+                        id = character.Id,
+                        name = $"{character.Vorname} {character.Nachname}",
+                        geschlecht = character.Geschlecht,
+                        geburtsdatum = character.Geburtsdatum,
+                        imagePath = character.ImagePath,
+                        isRoot = true
+                    },
+                    ancestors = BuildAncestorTree(character, visitedAncestors),
+                    descendants = BuildDescendantTree(character, visitedDescendants),
+                    siblings = siblings.Select(s => new
+                    {
+                        id = s.Id,
+                        name = $"{s.Vorname} {s.Nachname}",
+                        geschlecht = s.Geschlecht,
+                        geburtsdatum = s.Geburtsdatum,
+                        imagePath = s.ImagePath,
+                        isSibling = true
+                    }).ToList(),
+                    partner = character.PartnerId.HasValue ? GetPartnerData(character.PartnerId.Value) : null
+                };
+
+                return Json(treeData);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Laden der Familiendaten für Character {CharacterId}", characterId);
+                return StatusCode(500, new { error = $"Fehler beim Laden der Daten: {ex.Message}" });
+            }
+        }
+
+        private object? BuildAncestorTree(Character character, HashSet<int> visitedIds)
+        {
+            if (character == null || visitedIds.Contains(character.Id))
+            {
+                return null; // Schutz gegen zirkuläre Referenzen
+            }
+
+            visitedIds.Add(character.Id);
+            var parents = new List<object>();
+
+            try
+            {
+                if (character.VaterId.HasValue && character.VaterId.Value > 0)
+                {
+                    var father = _context.Characters.Find(character.VaterId.Value);
+                    if (father != null && !visitedIds.Contains(father.Id))
+                    {
+                        parents.Add(new
+                        {
+                            id = father.Id,
+                            name = $"{father.Vorname} {father.Nachname}",
+                            geschlecht = father.Geschlecht,
+                            geburtsdatum = father.Geburtsdatum,
+                            imagePath = father.ImagePath,
+                            type = "Vater",
+                            parents = BuildAncestorTree(father, visitedIds)
+                        });
+                    }
+                }
+
+                if (character.MutterId.HasValue && character.MutterId.Value > 0)
+                {
+                    var mother = _context.Characters.Find(character.MutterId.Value);
+                    if (mother != null && !visitedIds.Contains(mother.Id))
+                    {
+                        parents.Add(new
+                        {
+                            id = mother.Id,
+                            name = $"{mother.Vorname} {mother.Nachname}",
+                            geschlecht = mother.Geschlecht,
+                            geburtsdatum = mother.Geburtsdatum,
+                            imagePath = mother.ImagePath,
+                            type = "Mutter",
+                            parents = BuildAncestorTree(mother, visitedIds)
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Laden der Vorfahren für Character {CharacterId}", character.Id);
+            }
+
+            return parents.Any() ? parents : null;
+        }
+
+        private object? BuildDescendantTree(Character character, HashSet<int> visitedIds)
+        {
+            if (character == null || visitedIds.Contains(character.Id))
+            {
+                return null; // Schutz gegen zirkuläre Referenzen
+            }
+
+            visitedIds.Add(character.Id);
+            var descendants = new List<object>();
+
+            try
+            {
+                var children = _context.Characters
+                    .Where(c => (c.VaterId == character.Id || c.MutterId == character.Id) && c.Id != character.Id)
+                    .ToList();
+
+                foreach (var child in children)
+                {
+                    if (child != null && !visitedIds.Contains(child.Id))
+                    {
+                        descendants.Add(new
+                        {
+                            id = child.Id,
+                            name = $"{child.Vorname} {child.Nachname}",
+                            geschlecht = child.Geschlecht,
+                            geburtsdatum = child.Geburtsdatum,
+                            imagePath = child.ImagePath,
+                            children = BuildDescendantTree(child, visitedIds)
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fehler beim Laden der Nachkommen für Character {CharacterId}", character.Id);
+            }
+
+            return descendants.Any() ? descendants : null;
+        }
+
+        private object? GetPartnerData(int partnerId)
+        {
+            var partner = _context.Characters.Find(partnerId);
+            if (partner == null)
+                return null;
+
+            return new
+            {
+                id = partner.Id,
+                name = $"{partner.Vorname} {partner.Nachname}",
+                geschlecht = partner.Geschlecht,
+                geburtsdatum = partner.Geburtsdatum,
+                imagePath = partner.ImagePath,
+                isPartner = true
+            };
+        }
+
+        private object BuildFamilyTreeNode(Character character)
+        {
+            var allChildren = new List<object>();
+
+            // Lade Partner
+            if (character.PartnerId.HasValue)
+            {
+                var partner = _context.Characters.Find(character.PartnerId.Value);
+                if (partner != null)
+                {
+                    // Lade Kinder des Partners aus anderen Beziehungen
+                    var partnerChildren = _context.Characters
+                        .Where(c => (c.VaterId == partner.Id || c.MutterId == partner.Id) &&
+                                    c.VaterId != character.Id && c.MutterId != character.Id)
+                        .ToList();
+
+                    var partnerChildNodes = partnerChildren.Select(child => BuildFamilyTreeNode(child)).ToList();
+
+                    // Partner als spezieller Knoten
+                    allChildren.Add(new
+                    {
+                        id = partner.Id,
+                        name = $"{partner.Vorname} {partner.Nachname}",
+                        geschlecht = partner.Geschlecht,
+                        geburtsdatum = partner.Geburtsdatum,
+                        imagePath = partner.ImagePath,
+                        isPartner = true,
+                        children = partnerChildNodes.Any() ? partnerChildNodes : (object?)null
+                    });
+                }
+            }
+
+            // Lade gemeinsame Kinder
+            var children = _context.Characters
+                .Where(c => c.VaterId == character.Id || c.MutterId == character.Id)
+                .ToList();
+
+            var childNodes = children.Select(child => BuildFamilyTreeNode(child)).ToList();
+            allChildren.AddRange(childNodes);
+
+            return new
+            {
+                id = character.Id,
+                name = $"{character.Vorname} {character.Nachname}",
+                geschlecht = character.Geschlecht,
+                geburtsdatum = character.Geburtsdatum,
+                imagePath = character.ImagePath,
+                isPartner = false,
+                children = allChildren.Any() ? allChildren : null
+            };
+        }
+
         /// <summary>
         /// Öffentliche Achievement-Übersicht für alle Spieler und Gilden
         /// </summary>

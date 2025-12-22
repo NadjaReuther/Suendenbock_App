@@ -1,0 +1,468 @@
+@{
+    ViewData["Title"] = "Stammbaum (Fächerdiagramm)";
+}
+
+@section Styles {
+    <style>
+        .family-tree-radial-container {
+            background: linear-gradient(135deg, #f5e6d3 0%, #d4c5b0 100%);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        .antique-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(139, 115, 85, 0.1);
+            border-radius: 10px;
+            border: 2px solid #8b7355;
+        }
+
+        .main-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.5rem;
+            color: #5d4e37;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: #8b7355;
+            margin-top: 0.5rem;
+        }
+
+        #radial-tree-container {
+            background: #faf8f3;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .node circle {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node circle:hover {
+            stroke-width: 4px !important;
+            filter: brightness(1.1);
+        }
+
+        .node text {
+            font-family: 'Cinzel', serif;
+            font-size: 11px;
+            pointer-events: none;
+        }
+
+        .link {
+            fill: none;
+            stroke: #8b7355;
+            stroke-opacity: 0.4;
+            stroke-width: 1.5px;
+        }
+
+        .generation-circle {
+            fill: none;
+            stroke: #d4af37;
+            stroke-opacity: 0.2;
+            stroke-width: 1px;
+            stroke-dasharray: 5,5;
+        }
+
+        #tooltip {
+            position: absolute;
+            background: rgba(93, 78, 55, 0.95);
+            color: #f5e6d3;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            pointer-events: none;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 2px solid #d4af37;
+            max-width: 250px;
+        }
+
+        .character-selector {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .character-selector label {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: #5d4e37;
+            margin-right: 1rem;
+        }
+
+        .character-selector select {
+            font-family: 'Cinzel', serif;
+            padding: 0.5rem 1rem;
+            border: 2px solid #8b7355;
+            border-radius: 5px;
+            background: #faf8f3;
+            color: #5d4e37;
+            font-size: 1rem;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid;
+        }
+    </style>
+}
+
+<div class="family-tree-radial-container">
+    <header class="antique-header">
+        <h1 class="main-title">🌳 Stammbaum - Fächerdiagramm</h1>
+        <p class="subtitle">Ahnentafel im Kreis</p>
+    </header>
+
+    <div class="character-selector">
+        <label for="characterSelect">Wähle einen Character:</label>
+        <select id="characterSelect" onchange="loadRadialTree()">
+            <option value="0">-- Bitte wählen --</option>
+        </select>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #f0e5d8; border-color: #6b9bd1;"></div>
+            <span>Männlich</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #f0e5d8; border-color: #d77fa1;"></div>
+            <span>Weiblich</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #f0e5d8; border-color: #c4a57b;"></div>
+            <span>Unbekannt</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #f0e5d8; border-color: #d4af37; border-width: 3px;"></div>
+            <span>Ausgewählter Character</span>
+        </div>
+    </div>
+
+    <div id="radial-tree-container">
+        <svg id="radial-tree-chart"></svg>
+    </div>
+
+    <div id="tooltip"></div>
+</div>
+
+@section Scripts {
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+    // Farben
+    const medievalColors = {
+        male: '#6b9bd1',
+        female: '#d77fa1',
+        tan: '#c4a57b',
+        gold: '#d4af37',
+        parchment: '#f0e5d8',
+        darkBrown: '#5d4e37',
+        mediumBrown: '#8b7355'
+    };
+
+    // Character-Liste laden
+    fetch('/api/characters/all')
+        .then(response => response.json())
+        .then(characters => {
+            const select = document.getElementById('characterSelect');
+            characters.forEach(char => {
+                const option = document.createElement('option');
+                option.value = char.id;
+                option.textContent = `${char.vorname} ${char.nachname}`;
+                select.appendChild(option);
+            });
+
+            // URL-Parameter auslesen
+            const urlParams = new URLSearchParams(window.location.search);
+            const characterId = urlParams.get('characterId');
+            if (characterId) {
+                select.value = characterId;
+                loadRadialTree();
+            }
+        })
+        .catch(error => {
+            console.error('Fehler beim Laden der Character:', error);
+        });
+
+    function loadRadialTree() {
+        const characterId = document.getElementById('characterSelect').value;
+        if (characterId === '0') {
+            document.getElementById('radial-tree-chart').innerHTML = '';
+            return;
+        }
+
+        // URL aktualisieren
+        const url = new URL(window.location);
+        url.searchParams.set('characterId', characterId);
+        window.history.pushState({}, '', url);
+
+        // Daten laden
+        fetch(`/Home/GetBidirectionalFamilyTreeData?characterId=${characterId}`)
+            .then(response => response.json())
+            .then(data => {
+                createRadialFamilyTree(data);
+            })
+            .catch(error => {
+                console.error('Fehler beim Laden der Stammbaum-Daten:', error);
+            });
+    }
+
+    function createRadialFamilyTree(data) {
+        // SVG leeren
+        d3.select("#radial-tree-chart").selectAll("*").remove();
+
+        // Dimensionen
+        const width = 1000;
+        const height = 1000;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const maxRadius = Math.min(width, height) / 2 - 100;
+
+        // SVG erstellen
+        const svg = d3.select("#radial-tree-chart")
+            .attr("width", width)
+            .attr("height", height);
+
+        const g = svg.append("g")
+            .attr("transform", `translate(${centerX},${centerY})`);
+
+        // Generationskreise zeichnen (Hilfslinien)
+        const maxGenerations = 5;
+        for (let i = 1; i <= maxGenerations; i++) {
+            const radius = (maxRadius / maxGenerations) * i;
+            g.append("circle")
+                .attr("class", "generation-circle")
+                .attr("r", radius);
+        }
+
+        // Ahnenbaum aus den Daten erstellen
+        const ancestorTree = buildRadialAncestorTree(data.ancestors);
+
+        // Links-Gruppe (muss zuerst gezeichnet werden)
+        const linkGroup = g.append("g").attr("class", "links");
+
+        // Nodes-Gruppe
+        const nodeGroup = g.append("g").attr("class", "nodes");
+
+        // Root-Character in der Mitte
+        const rootNode = nodeGroup.append("g")
+            .attr("class", "node root")
+            .attr("transform", "translate(0,0)");
+
+        rootNode.append("circle")
+            .attr("r", 15)
+            .style("fill", medievalColors.parchment)
+            .style("stroke", medievalColors.gold)
+            .style("stroke-width", 4)
+            .on("mouseover", function(event) {
+                showTooltip(event, data.root);
+            })
+            .on("mouseout", hideTooltip);
+
+        rootNode.append("text")
+            .attr("dy", 5)
+            .attr("text-anchor", "middle")
+            .text(data.root.name)
+            .style("font-weight", "bold")
+            .style("font-size", "14px")
+            .style("fill", medievalColors.darkBrown);
+
+        // Partner anzeigen (falls vorhanden)
+        if (data.partner) {
+            const partnerNode = nodeGroup.append("g")
+                .attr("class", "node partner")
+                .attr("transform", "translate(40,0)");
+
+            partnerNode.append("circle")
+                .attr("r", 12)
+                .style("fill", medievalColors.parchment)
+                .style("stroke", getColorForGender(data.partner.geschlecht))
+                .style("stroke-width", 3)
+                .on("mouseover", function(event) {
+                    showTooltip(event, data.partner);
+                })
+                .on("mouseout", hideTooltip);
+
+            partnerNode.append("text")
+                .attr("dy", -18)
+                .attr("text-anchor", "middle")
+                .text(`💍 ${data.partner.name}`)
+                .style("font-size", "11px")
+                .style("fill", medievalColors.darkBrown);
+
+            // Verbindungslinie
+            linkGroup.append("line")
+                .attr("x1", 15)
+                .attr("y1", 0)
+                .attr("x2", 28)
+                .attr("y2", 0)
+                .style("stroke", medievalColors.gold)
+                .style("stroke-width", 2);
+        }
+
+        // Vorfahren rendern
+        renderRadialAncestors(ancestorTree, linkGroup, nodeGroup, maxRadius, maxGenerations);
+    }
+
+    function buildRadialAncestorTree(ancestors) {
+        if (!ancestors || ancestors.length === 0) return [];
+
+        const tree = [];
+        ancestors.forEach(ancestor => {
+            tree.push({
+                ...ancestor,
+                parents: buildRadialAncestorTree(ancestor.parents)
+            });
+        });
+        return tree;
+    }
+
+    function renderRadialAncestors(ancestors, linkGroup, nodeGroup, maxRadius, maxGenerations) {
+        const generationLevels = [];
+
+        // Sammle alle Vorfahren nach Generation
+        function collectByGeneration(nodes, generation) {
+            if (!nodes || nodes.length === 0) return;
+
+            if (!generationLevels[generation]) {
+                generationLevels[generation] = [];
+            }
+
+            nodes.forEach(node => {
+                generationLevels[generation].push(node);
+                if (node.parents && node.parents.length > 0) {
+                    collectByGeneration(node.parents, generation + 1);
+                }
+            });
+        }
+
+        collectByGeneration(ancestors, 1);
+
+        // Zeichne jede Generation
+        generationLevels.forEach((generation, genIndex) => {
+            if (genIndex === 0 || !generation) return;
+
+            const radius = (maxRadius / maxGenerations) * genIndex;
+            const angleStep = (2 * Math.PI) / generation.length;
+
+            generation.forEach((person, i) => {
+                const angle = i * angleStep - Math.PI / 2; // Start oben
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+
+                // Speichere Position für Linien
+                person._x = x;
+                person._y = y;
+
+                // Node zeichnen
+                const node = nodeGroup.append("g")
+                    .attr("class", "node ancestor")
+                    .attr("transform", `translate(${x},${y})`);
+
+                node.append("circle")
+                    .attr("r", Math.max(8, 12 - genIndex * 1.5))
+                    .style("fill", medievalColors.parchment)
+                    .style("stroke", getColorForGender(person.geschlecht))
+                    .style("stroke-width", 2)
+                    .on("mouseover", function(event) {
+                        showTooltip(event, person);
+                    })
+                    .on("mouseout", hideTooltip);
+
+                // Text
+                const textRadius = radius + 20;
+                const textX = Math.cos(angle) * textRadius;
+                const textY = Math.sin(angle) * textRadius;
+
+                node.append("text")
+                    .attr("x", textX - x)
+                    .attr("y", textY - y)
+                    .attr("text-anchor", "middle")
+                    .text(person.name)
+                    .style("font-size", `${Math.max(9, 12 - genIndex)}px`)
+                    .style("fill", medievalColors.darkBrown);
+            });
+        });
+
+        // Verbindungslinien zeichnen
+        generationLevels.forEach((generation, genIndex) => {
+            if (genIndex === 0 || !generation) return;
+
+            generation.forEach(person => {
+                if (person.parents && person.parents.length > 0) {
+                    person.parents.forEach(parent => {
+                        if (parent._x !== undefined && parent._y !== undefined) {
+                            linkGroup.append("path")
+                                .attr("class", "link")
+                                .attr("d", `M ${person._x},${person._y} L ${parent._x},${parent._y}`);
+                        }
+                    });
+                } else if (genIndex === 1) {
+                    // Verbindung zur Mitte (Root)
+                    linkGroup.append("path")
+                        .attr("class", "link")
+                        .attr("d", `M 0,0 L ${person._x},${person._y}`);
+                }
+            });
+        });
+    }
+
+    function getColorForGender(geschlecht) {
+        if (geschlecht === 'männlich' || geschlecht === 'Männlich') {
+            return medievalColors.male;
+        } else if (geschlecht === 'weiblich' || geschlecht === 'Weiblich') {
+            return medievalColors.female;
+        }
+        return medievalColors.tan;
+    }
+
+    function showTooltip(event, person) {
+        const tooltip = document.getElementById('tooltip');
+        let content = `<strong>${person.name}</strong><br/>`;
+        content += `Geschlecht: ${person.geschlecht || 'Unbekannt'}<br/>`;
+        if (person.geburtsdatum) {
+            content += `Geboren: ${person.geburtsdatum}`;
+        }
+        tooltip.innerHTML = content;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.pageX + 10) + 'px';
+        tooltip.style.top = (event.pageY - 60) + 'px';
+    }
+
+    function hideTooltip() {
+        document.getElementById('tooltip').style.display = 'none';
+    }
+    </script>
+}
