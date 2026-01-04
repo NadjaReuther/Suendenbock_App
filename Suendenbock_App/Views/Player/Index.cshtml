@@ -3,7 +3,7 @@
 @{
     ViewData["Title"] = "Meine Character";
 }
-
+<div class="p-5 m-5 pergament-card" style="background: @Model.UserColor;">
 <header class="antique-header">
     <h1 style="text-align:center; color: #d4af37; font-family: 'MedievalSharp', cursive">
         Herzlich Willkommen zurück, @Model.Rufname
@@ -11,7 +11,7 @@
 </header>
 
 <div class="main-container mt-5">
-    <section class="hero-section">
+    <section class="player-section">
     <div class="pergament-card" data-tilt>
         <a class="card-link" asp-action="MeineDaten">
             <div class="card-corner top-left"></div>
@@ -103,6 +103,22 @@
                 </div>
             </a>
         </div>
+        <!-- Aktiver Kampf Card (nur sichtbar wenn Kampf läuft) -->
+        <div id="activeCombatCard" class="pergament-card" data-tilt style="display: none;">
+            <a class="card-link" href="#" onclick="joinActiveCombat(); return false;">
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+
+                <div class="card-number" style="color: #ff6b6b;">⚔️ Kampf</div>
+                <div class="card-content">
+                   <strong style="color: #ff6b6b;">Aktiver Kampf!</strong><br>
+                   Zum Gefecht beitreten
+                </div>
+            </a>
+        </div>
+
         <div class="pergament-card" data-tilt>
             <a class="card-link" asp-controller="Spielmodus" asp-action="Dashboard">
                 <div class="card-corner top-left"></div>
@@ -119,3 +135,62 @@
         </div>
     </section>
 </div>
+</div>
+@section Scripts {
+    <script>
+        // Aktiven Kampf prüfen und Card anzeigen/verstecken
+        async function checkActiveCombat() {
+            try {
+                // Aktuellen Act ID holen (angenommen Act 1, könnte dynamisch sein)
+                const actId = 1; // TODO: Dynamisch vom Backend holen
+
+                const response = await fetch(`/api/battle/active/${actId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    // Kampf ist aktiv - Card anzeigen
+                    document.getElementById('activeCombatCard').style.display = 'block';
+                    // SessionId für später speichern
+                    window.activeCombatSessionId = data.sessionId;
+                    window.activeCombatData = data;
+                } else {
+                    // Kein aktiver Kampf
+                    document.getElementById('activeCombatCard').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Fehler beim Prüfen des aktiven Kampfes:', error);
+            }
+        }
+
+        async function joinActiveCombat() {
+            if (!window.activeCombatData) {
+                alert('Keine aktiven Kampfdaten gefunden!');
+                return;
+            }
+
+            try {
+                // Battle Setup aus DB-State rekonstruieren
+                const battleStateJson = window.activeCombatData.battleStateJson;
+                const battleSetup = JSON.parse(battleStateJson);
+                battleSetup.sessionId = window.activeCombatSessionId;
+                battleSetup.actId = window.activeCombatData.actId;
+
+                // In localStorage speichern
+                localStorage.setItem('battleSetup', JSON.stringify(battleSetup));
+
+                // Zur Battle-Seite weiterleiten
+                window.location.href = '/Spielmodus/Battle';
+            } catch (error) {
+                console.error('Fehler beim Beitreten:', error);
+                alert('Fehler beim Beitreten zum Kampf. Bitte versuche es erneut.');
+            }
+        }
+
+        // Beim Laden der Seite prüfen
+        document.addEventListener('DOMContentLoaded', () => {
+            checkActiveCombat();
+
+            // Alle 10 Sekunden prüfen (optional)
+            setInterval(checkActiveCombat, 10000);
+        });
+    </script>
+}

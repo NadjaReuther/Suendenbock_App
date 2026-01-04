@@ -112,7 +112,7 @@
                                         </option>
                                     }
                                 </select>
-                                <select class="form-control" id="userColor" name="userColor">
+                                <select class="form-control" id="userColor" name="userColor" asp-for="UserColor">
                                     <option value="">-- kein Farbcode --</option>
                                     @foreach (var color in ViewBag.Lightcards)
                                     {
@@ -192,7 +192,31 @@
                             <option value="">Eindruck auswählen...</option>                            
                         </select>
                     </div>
-                </div>              
+                </div>
+
+                <!-- HP und Pokus -->
+                @if (User.IsInRole("Gott"))
+                {
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="CurrentHealth" class="form-label">Aktuelle LP</label>
+                            <input asp-for="CurrentHealth" type="number" class="form-control" min="0" placeholder="z.B. 150" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="BaseMaxHealth" class="form-label">Max LP</label>
+                            <input asp-for="BaseMaxHealth" type="number" class="form-control" min="1" placeholder="z.B. 150" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="CurrentPokus" class="form-label">Aktuelle Pokuspunkte</label>
+                            <input asp-for="CurrentPokus" type="number" class="form-control" min="0" placeholder="z.B. 0" />
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label asp-for="BaseMaxPokus" class="form-label">Max Pokuspunkte</label>
+                            <input asp-for="BaseMaxPokus" type="number" class="form-control" min="0" placeholder="z.B. 30" />
+                        </div>
+                    </div>
+                }
+
                 <!-- NACHHER: Profan/Beschraenkt Checkboxen + 2 Magie-Dropdowns -->
                 <div class="mb-3">
                     <label class="form-label">Magie-Status</label>

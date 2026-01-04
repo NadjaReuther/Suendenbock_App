@@ -215,7 +215,7 @@ namespace Suendenbock_App.Controllers
 
             // Alle aktiven Spieler-Characters für Filter + Dropdown
             var characters = await _context.Characters
-                 .Where(c => c.UserId != null || c.IsCompanion)
+                .Where(c => c.UserId != null)
                 .Select(c => new { c.Id, FullName = $"{c.Vorname}" })
                 .ToListAsync();
 
@@ -288,15 +288,19 @@ namespace Suendenbock_App.Controllers
         /// </summary>
         public async Task<IActionResult> Battle()
         {
-            // Alle Characters (für Auswahl)
+            // Alle Characters laden (Spieler + Begleiter)
             var characters = await _context.Characters
+                .Where(c => c.UserId != null || c.IsCompanion)
                 .OrderBy(c => c.Nachname)
                 .Select(c => new BattleCharacterOption
                 {
                     Id = c.Id,
-                    Name = c.Nachname,
+                    Name = $"{c.Vorname} {c.Nachname}",
                     CurrentHealth = c.CurrentHealth,
                     MaxHealth = c.BaseMaxHealth,
+                    CurrentPokus = c.CurrentPokus,
+                    MaxPokus = c.BaseMaxPokus,
+                    IsBegleiter = c.IsCompanion,
                     HealthPercent = c.BaseMaxHealth > 0
                         ? (int)((double)c.CurrentHealth / c.BaseMaxHealth * 100)
                         : 0
@@ -312,8 +316,12 @@ namespace Suendenbock_App.Controllers
                 {
                     Id = m.Id,
                     Name = m.Name,
-                    MonstertypName = m.Monstertyp.Name,
-                    ImageUrl = m.ImagePath ?? "/images/monsters/default.png"
+                    MonstertypName = m.Monstertyp != null ? m.Monstertyp.Name : "Unbekannt",
+                    ImageUrl = m.ImagePath ?? "/images/monsters/default.png",
+                    Health = 150,
+                    Attack = 10,
+                    Defense = 10,
+                    IsBoss = false
                 })
                 .ToListAsync();
 
@@ -328,39 +336,37 @@ namespace Suendenbock_App.Controllers
         /// <summary>
         /// Combat-Setup Seite
         /// Route: /Spielmodus/CombatSetup
-        /// 
+        ///
         /// Gott wählt:
-        /// 1. Monster pro Monstertyp (mehrere möglich via Dropdown)
+        /// 1. Monster (alle mit meet == true, mehrere möglich via Dropdown)
         /// 2. Für jedes Monster: Health + Pokus eingeben
-        /// 3. Characters (Spieler + Begleiter)
+        /// 3. Characters (Spieler + Begleiter des aktuellen Akts)
         /// 4. Setup speichern
         /// </summary>
         [Authorize(Roles = "Gott")]
         public async Task<IActionResult> CombatSetup()
         {
-            // Alle Monstertypen mit ihren Monstern
-            var monstertypen = await _context.MonsterTypes
-                .Include(mt => mt.Monster)
-                .OrderBy(mt => mt.Name)
-                .Select(mt => new MonstertypViewModel
+            // Aktuellen Act laden
+            var currentAct = await _context.Acts
+                .FirstOrDefaultAsync(a => a.IsActive);
+
+            // Alle Monster mit meet == true (keine Gruppierung nach Typ)
+            var monsters = await _context.Monsters
+                .Include(m => m.Monstertyp)
+                .Where(m => m.meet == true)
+                .OrderBy(m => m.Name)
+                .Select(m => new MonsterOptionViewModel
                 {
-                    Id = mt.Id,
-                    Name = mt.Name,
-                    Monsters = mt.Monster
-                        .OrderBy(m => m.Name)
-                        .Select(m => new MonsterOptionViewModel
-                        {
-                            Id = m.Id,
-                            Name = m.Name,
-                            ImagePath = m.ImagePath
-                        })
-                        .ToList()
+                    Id = m.Id,
+                    Name = m.Name,
+                    ImagePath = m.ImagePath,
+                    MonstertypName = m.Monstertyp != null ? m.Monstertyp.Name : "Unbekannt"
                 })
                 .ToListAsync();
 
-            // Alle Spieler-Characters + Begleiter (UserId != null ODER IsCompanion = true)
-            var characters = await _context.Characters
-                .Where(c => c.UserId != null || c.IsCompanion) // Spieler ODER Begleiter
+            // Alle Spieler-Characters (UserId != null)
+            var playerCharacters = await _context.Characters
+                .Where(c => c.UserId != null)
                 .OrderBy(c => c.Nachname)
                 .Select(c => new CharacterOptionViewModel
                 {
@@ -369,14 +375,55 @@ namespace Suendenbock_App.Controllers
                     Nachname = c.Nachname,
                     CurrentHealth = c.CurrentHealth,
                     MaxHealth = c.BaseMaxHealth,
-                    IsBegleiter = c.IsCompanion
+                    IsBegleiter = false
                 })
                 .ToListAsync();
 
+            // Begleiter des aktuellen Akts laden
+            var companions = new List<CharacterOptionViewModel>();
+            if (currentAct != null)
+            {
+                var companionNames = new List<string>();
+                if (!string.IsNullOrEmpty(currentAct.Companion1))
+                {
+                    companionNames.Add(currentAct.Companion1.Trim());
+                }
+                if (!string.IsNullOrEmpty(currentAct.Companion2))
+                {
+                    companionNames.Add(currentAct.Companion2.Trim());
+                }
+
+                if (companionNames.Any())
+                {
+
+                    //// Begleiter laden - voller Name-Vergleich (Companion1/2 speichern "Vorname Nachname")
+                    var allCompanions = await _context.Characters
+                        .ToListAsync();
+
+                    companions = allCompanions
+                        .Where(c => companionNames.Contains($"{c.Vorname} {c.Nachname}"))
+                        .OrderBy(c => c.Nachname)
+                        .Select(c => new CharacterOptionViewModel
+                        {
+                            Id = c.Id,
+                            Name = $"{c.Vorname} {c.Nachname}",
+                            Nachname = c.Nachname,
+                            CurrentHealth = c.CurrentHealth,
+                            MaxHealth = c.BaseMaxHealth,
+                            IsBegleiter = true
+                        })
+                        .ToList();
+                }
+            }
+
+            // Zusammenführen: Spieler + Begleiter des Akts
+            var allCharacters = playerCharacters.Concat(companions).ToList();
+
             var viewModel = new CombatSetupViewModel
             {
-                Monstertypen = monstertypen,
-                Characters = characters
+                ActId = currentAct?.Id ?? 0,
+                Monsters = monsters,
+                Characters = allCharacters
             };
 
             return View(viewModel);
@@ -518,6 +565,9 @@ namespace Suendenbock_App.Controllers
         public string Name { get; set; } = string.Empty;
         public int CurrentHealth { get; set; }
         public int MaxHealth { get; set; }
+        public int CurrentPokus { get; set; }
+        public int MaxPokus { get; set; }
+        public bool IsBegleiter { get; set; }
         public int HealthPercent { get; set; }
     }
 
@@ -534,7 +584,8 @@ namespace Suendenbock_App.Controllers
     }
     public class CombatSetupViewModel
     {
-        public List<MonstertypViewModel> Monstertypen { get; set; } = new();
+        public int ActId { get; set; }
+        public List<MonsterOptionViewModel> Monsters { get; set; } = new();
         public List<CharacterOptionViewModel> Characters { get; set; } = new();
     }
 
@@ -550,6 +601,7 @@ namespace Suendenbock_App.Controllers
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string ImagePath { get; set; } = string.Empty;
+        public string MonstertypName { get; set; } = string.Empty;
     }
 
     public class CharacterOptionViewModel

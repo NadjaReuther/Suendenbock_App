@@ -70,29 +70,18 @@
 
                     <!-- LEFT COLUMN: Monster Selection -->
                     <div class="space-y-6">
-                        <h3 class="text-lg font-cinzel tracking-wider text-text-main/80 border-b border-primary/30 pb-2">Monster auswählen</h3>
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-cinzel tracking-wider text-text-main/80 border-b border-primary/30 pb-2 flex-1">Monster auswählen</h3>
+                            <button type="button"
+                                    onclick="addMonsterDropdown()"
+                                    class="flex items-center gap-1 px-3 py-1 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded text-xs font-cinzel transition-colors">
+                                <span class="material-icons text-sm">add</span>
+                                <span>Monster hinzufügen</span>
+                            </button>
+                        </div>
 
-                        <div id="monstertypeContainer" class="space-y-6">
-                            @foreach (var monstertyp in Model.Monstertypen)
-                            {
-                                <div class="monstertype-section" data-monstertype-id="@monstertyp.Id">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <label class="block text-sm font-cinzel tracking-wider text-text-main/80">
-                                            @monstertyp.Name
-                                        </label>
-                                        <button type="button"
-                                                onclick="addMonsterDropdown(@monstertyp.Id)"
-                                                class="flex items-center gap-1 px-3 py-1 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded text-xs font-cinzel transition-colors">
-                                            <span class="material-icons text-sm">add</span>
-                                            <span>Hinzufügen</span>
-                                        </button>
-                                    </div>
-
-                                    <div class="monster-dropdowns space-y-4" data-monstertype-id="@monstertyp.Id">
-                                        <!-- Dropdowns werden hier via JS eingefügt -->
-                                    </div>
-                                </div>
-                            }
+                        <div id="monsterContainer" class="space-y-4">
+                            <!-- Dropdowns werden hier via JS eingefügt -->
                         </div>
                     </div>
 
@@ -143,15 +132,60 @@
                         Zurück zum Lager
                     </a>
                     <button type="button"
-                            id="startCombatBtn"
-                            onclick="startCombat()"
+                            id="continueToInitiativeBtn"
+                            onclick="proceedToInitiative()"
                             disabled
                             class="group relative py-3 px-8 bg-primary text-white border border-amber-600 transition-all duration-300 rounded shadow-md flex items-center justify-center gap-3 overflow-hidden disabled:bg-gray-400/70 disabled:border-gray-500 disabled:text-white/70 disabled:cursor-not-allowed">
-                        <span class="material-icons text-xl">swords</span>
-                        <span class="font-cinzel font-bold tracking-wide">Setup starten</span>
+                        <span class="material-icons text-xl">arrow_forward</span>
+                        <span class="font-cinzel font-bold tracking-wide">Weiter zur Initiative</span>
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ===== SCREEN 2: INITIATIVE EINGABE ===== -->
+    <div class="relative w-full max-w-5xl bg-panel-light border-2 border-primary rounded-xl shadow-2xl overflow-hidden transform transition-all hidden" id="initiativeScreen">
+        <!-- Ornamental Corners -->
+        <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg pointer-events-none"></div>
+        <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg pointer-events-none"></div>
+        <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg pointer-events-none"></div>
+
+        <!-- Header -->
+        <div class="bg-gradient-to-b from-primary/20 to-transparent p-6 text-center border-b border-primary/20">
+            <span class="material-icons text-primary text-6xl mb-4">military_tech</span>
+            <h2 class="text-3xl font-display text-text-main tracking-wide drop-shadow-sm uppercase">
+                Initiative festlegen
+            </h2>
+            <p class="text-text-main/60 font-cinzel italic mt-2">Bestimme die Reihenfolge der Einheiten (0-99)</p>
+            <div class="flex justify-center mt-2">
+                <div class="h-1 w-24 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-8 max-h-[75vh] overflow-y-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="initiativeInputsContainer">
+                <!-- Wird via JavaScript gefüllt -->
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="flex items-center justify-between pt-6 mt-6 border-t border-primary/20">
+                <button type="button"
+                        onclick="backToSetup()"
+                        class="text-text-main/70 hover:text-primary font-cinzel text-sm tracking-widest uppercase transition-colors flex items-center gap-2 py-2">
+                    <span class="material-icons text-base">arrow_back</span>
+                    Zurück zur Auswahl
+                </button>
+                <button type="button"
+                        id="startBattleBtn"
+                        onclick="startBattle()"
+                        class="group relative py-3 px-8 bg-primary text-white border border-amber-600 transition-all duration-300 rounded shadow-md flex items-center justify-center gap-3 overflow-hidden hover:bg-primary/90">
+                    <span class="material-icons text-xl">swords</span>
+                    <span class="font-cinzel font-bold tracking-wide">Gefecht starten!</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -160,7 +194,7 @@
     <script>
         // Model-Daten für JavaScript
         const COMBAT_DATA = {
-            monstertypen: @Html.Raw(Json.Serialize(Model.Monstertypen)),
+            monsters: @Html.Raw(Json.Serialize(Model.Monsters)),
             characters: @Html.Raw(Json.Serialize(Model.Characters))
         };
 
@@ -169,11 +203,9 @@
 
         // ===== MONSTER DROPDOWN HINZUFÜGEN =====
 
-        function addMonsterDropdown(monstertypId) {
-            const container = document.querySelector(`.monster-dropdowns[data-monstertype-id="${monstertypId}"]`);
-            const monstertyp = COMBAT_DATA.monstertypen.find(mt => mt.id === monstertypId);
-
-            if (!monstertyp || !container) return;
+        function addMonsterDropdown() {
+            const container = document.getElementById('monsterContainer');
+            if (!container) return;
 
             const dropdownId = `monster-${monsterCounter++}`;
 
@@ -183,7 +215,7 @@
                         <select class="monster-select flex-1 bg-[#E8DCC0] border border-primary/50 rounded px-3 py-2 text-text-main focus:ring-primary focus:border-primary focus:outline-none transition-shadow shadow-inner bg-pattern"
                                 onchange="monsterSelected(this, '${dropdownId}')">
                             <option value="">-- Monster wählen --</option>
-                            ${monstertyp.monsters.map(m => `<option value="${m.id}">${m.name}</option>`).join('')}
+                            ${COMBAT_DATA.monsters.map(m => `<option value="${m.id}">${m.name} (${m.monstertypName})</option>`).join('')}
                         </select>
                         <button type="button"
                                 onclick="removeMonsterDropdown('${dropdownId}')"
@@ -274,35 +306,168 @@
             const hasMonsters = Object.keys(selectedMonsters).length > 0;
             const hasCharacters = document.querySelectorAll('.character-checkbox:checked').length > 0;
 
-            const startBtn = document.getElementById('startCombatBtn');
-            startBtn.disabled = !(hasMonsters && hasCharacters);
+            const continueBtn = document.getElementById('continueToInitiativeBtn');
+            if (continueBtn) {
+                continueBtn.disabled = !(hasMonsters && hasCharacters);
+            }
         }
 
-        // ===== COMBAT STARTEN =====
+        // ===== ZUR INITIATIVE-PHASE WECHSELN =====
 
-        function startCombat() {
+        let initiatives = {};
+
+        function proceedToInitiative() {
+            // Setup-Screen verstecken
+            document.getElementById('combatSetupForm').parentElement.parentElement.classList.add('hidden');
+
+            // Initiative-Screen zeigen
+            document.getElementById('initiativeScreen').classList.remove('hidden');
+
+            // Initiative-Inputs erstellen
+            buildInitiativeInputs();
+        }
+
+        function buildInitiativeInputs() {
+            const container = document.getElementById('initiativeInputsContainer');
+            if (!container) return;
+
+            const selectedCharacterIds = Array.from(document.querySelectorAll('.character-checkbox:checked'))
+                .map(cb => parseInt(cb.value));
+
+            const participants = [];
+
+            // Characters hinzufügen
+            selectedCharacterIds.forEach(id => {
+                const char = COMBAT_DATA.characters.find(c => c.id === id);
+                if (char) {
+                    participants.push({
+                        id: `char-${id}`,
+                        name: char.name,
+                        type: 'character',
+                        isBegleiter: char.isBegleiter
+                    });
+                }
+            });
+
+            // Monster hinzufügen
+            Object.values(selectedMonsters).forEach((monster, index) => {
+                const monsterData = COMBAT_DATA.monsters.find(m => m.id === monster.monsterId);
+                if (monsterData) {
+                    participants.push({
+                        id: `monster-${index}`,
+                        name: monsterData.name,
+                        type: 'monster',
+                        monsterId: monster.monsterId,
+                        health: monster.health,
+                        pokus: monster.pokus
+                    });
+                }
+            });
+
+            // Inputs generieren
+            container.innerHTML = participants.map(p => `
+                <div class="bg-[#E8DCC0]/70 border border-primary/30 p-4 rounded hover:border-primary/40 transition-colors">
+                    <div class="flex items-center gap-2 mb-2">
+                        <label class="text-[10px] uppercase tracking-widest font-bold flex-1 ${
+                            p.type === 'monster' ? 'text-red-600' : p.isBegleiter ? 'text-primary' : 'text-secondary'
+                        }">
+                            ${p.name}
+                        </label>
+                        ${p.type === 'character' ?
+                            (p.isBegleiter ?
+                                '<span class="px-2 py-0.5 bg-primary/20 border border-primary/40 rounded text-[8px] font-cinzel">Begleiter</span>' :
+                                '<span class="px-2 py-0.5 bg-secondary/20 border border-secondary/40 rounded text-[8px] font-cinzel">Spieler</span>'
+                            ) :
+                            '<span class="px-2 py-0.5 bg-red-600/20 border border-red-600/40 rounded text-[8px] font-cinzel">Monster</span>'
+                        }
+                    </div>
+                    <input
+                        type="number"
+                        min="0"
+                        max="99"
+                        placeholder="0-99"
+                        data-participant-id="${p.id}"
+                        oninput="updateInitiative('${p.id}', this.value)"
+                        class="w-full bg-black/60 border border-white/10 rounded p-2 text-2xl text-center font-bold text-text-main outline-none focus:border-primary transition-all"
+                    />
+                </div>
+            `).join('');
+
+            // Initiatives-Objekt initialisieren
+            participants.forEach(p => {
+                initiatives[p.id] = null;
+            });
+        }
+
+        function updateInitiative(participantId, value) {
+            initiatives[participantId] = value ? parseInt(value) : null;
+            console.log('Initiatives:', initiatives);
+        }
+
+        function backToSetup() {
+            document.getElementById('initiativeScreen').classList.add('hidden');
+            document.getElementById('combatSetupForm').parentElement.parentElement.classList.remove('hidden');
+        }
+
+        // ===== BATTLE STARTEN =====
+
+        async function startBattle() {
             const selectedCharacterIds = Array.from(document.querySelectorAll('.character-checkbox:checked'))
                 .map(cb => parseInt(cb.value));
 
             const setup = {
                 monsters: Object.values(selectedMonsters),
-                characterIds: selectedCharacterIds
+                characterIds: selectedCharacterIds,
+                initiatives: initiatives
             };
 
-            console.log('Combat Setup:', setup);
+            console.log('Combat Setup mit Initiatives:', setup);
 
-            // TODO: API-Call oder LocalStorage speichern
-            // Dann weiterleiten zu Combat-Screen
+            // Battle State JSON erstellen (für DB)
+            const battleStateJson = JSON.stringify(setup);
 
-            alert('Combat Setup gespeichert! (TODO: Combat-Screen implementieren)');
+            try {
+                // Combat Session via API erstellen
+                const response = await fetch('/api/battle/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        actId: @Model.ActId,
+                        battleStateJson: battleStateJson
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Fehler beim Erstellen der Combat Session');
+                }
+
+                const result = await response.json();
+                console.log('Combat Session erstellt:', result);
+
+                // Setup + SessionId in LocalStorage speichern
+                const battleData = {
+                    ...setup,
+                    sessionId: result.sessionId,
+                    actId: result.actId
+                };
+                localStorage.setItem('battleSetup', JSON.stringify(battleData));
+
+                // Weiterleitung zu Battle
+                window.location.href = '/Spielmodus/Battle';
+            } catch (error) {
+                console.error('Fehler:', error);
+                alert('Fehler beim Starten des Kampfes. Bitte versuche es erneut.');
+            }
         }
 
-        // ===== INIT: Ersten Dropdown für jeden Monstertyp hinzufügen =====
+        // ===== INIT: Seite startet ohne Dropdowns =====
+        // User muss auf "Monster hinzufügen" klicken
 
         document.addEventListener('DOMContentLoaded', () => {
-            COMBAT_DATA.monstertypen.forEach(mt => {
-                addMonsterDropdown(mt.id);
-            });
+            // Initial validation
+            validateForm();
         });
     </script>
 }

@@ -89,6 +89,9 @@ namespace Suendenbock_App.Data
         public DbSet<WeatherOption> WeatherOptions { get; set; }
         public DbSet<WeatherForecastDay> WeatherForecastDays { get; set; }
 
+        // Combat-System
+        public DbSet<CombatSession> CombatSessions { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -555,6 +558,23 @@ namespace Suendenbock_App.Data
             // Index für schnelle Monat-Suche
             builder.Entity<WeatherOption>()
                 .HasIndex(wo => wo.Month);
+
+            // ===== COMBAT-SYSTEM BEZIEHUNGEN =====
+
+            // CombatSession -> Act (Required)
+            builder.Entity<CombatSession>()
+                .HasOne(cs => cs.Act)
+                .WithMany()
+                .HasForeignKey(cs => cs.ActId)
+                .OnDelete(DeleteBehavior.Restrict); // Act kann nicht gelöscht werden, wenn aktive Kämpfe existieren
+
+            // Index für schnelle Suche nach aktiven Kämpfen
+            builder.Entity<CombatSession>()
+                .HasIndex(cs => cs.IsActive);
+
+            // Nur ein aktiver Kampf pro Akt
+            builder.Entity<CombatSession>()
+                .HasIndex(cs => new { cs.ActId, cs.IsActive });
         }
     }
 }

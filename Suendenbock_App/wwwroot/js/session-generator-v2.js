@@ -162,14 +162,15 @@ class SessionGenerator {
 
         container.innerHTML = this.acts.map(act => {
             const mapImage = act.mapImageUrl || '/images/placeholder-map.png';
+            const isActive = act.isActive;
 
             if (mode === 'load') {
                 return `
-                    <div class="act-card">
+                    <div class="act-card ${isActive ? 'active-act' : ''}">
                         <div class="act-card-content">
                             <img src="${mapImage}" alt="Karte" class="act-card-image">
                             <div class="act-card-info">
-                                <h3>Akt ${act.actNumber}</h3>
+                                <h3>Akt ${act.actNumber} ${isActive ? '<span style="color: #10b981; font-size: 0.9rem;">✓ Aktiv</span>' : ''}</h3>
                                 <p>${act.country || ''} - ${act.month || ''}</p>
                                 <p style="font-size:0.8rem; color:#999;">
                                     Begleiter: ${act.companion1 || ''}${act.companion2 ? ' & ' + act.companion2 : ''}
@@ -182,16 +183,22 @@ class SessionGenerator {
                     </div>
                 `;
             } else if (mode === 'manage') {
+                const isActive = act.isActive;
                 return `
-                    <div class="act-card">
+                    <div class="act-card ${isActive ? 'active-act' : ''}">
                         <div class="act-card-content">
                             <img src="${mapImage}" alt="Karte" class="act-card-image">
                             <div class="act-card-info">
-                                <h3>Akt ${act.actNumber}</h3>
+                                <h3>Akt ${act.actNumber} ${isActive ? '<span style="color: #10b981;">✓ Aktiv</span>' : ''}</h3>
                                 <p>${act.country || ''} - ${act.month || ''}</p>
                             </div>
                         </div>
                         <div class="act-card-actions">
+                            ${!isActive ? `
+                                <button class="btn-icon activate" onclick="sessionGen.activateAct(${act.id})" title="Act aktivieren">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                            ` : ''}
                             <button class="btn-icon edit" onclick="sessionGen.editAct(${act.id})">
                                 <i class="bi bi-pencil"></i>
                             </button>
@@ -274,6 +281,30 @@ class SessionGenerator {
         } catch (error) {
             console.error('Error deleting act:', error);
             alert('Fehler beim Löschen des Akts');
+        }
+    }
+
+    async activateAct(actId) {
+        if (!confirm('Diesen Akt aktivieren? Alle anderen Acts werden deaktiviert.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/game/acts/${actId}/activate`, {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert(result.message || 'Act erfolgreich aktiviert!');
+                this.showManageActsView(); // Liste neu laden
+            } else {
+                const error = await response.json();
+                alert('Fehler: ' + (error.error || 'Unbekannter Fehler'));
+            }
+        } catch (error) {
+            console.error('Error activating act:', error);
+            alert('Fehler beim Aktivieren des Akts');
         }
     }
 

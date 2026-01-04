@@ -685,6 +685,12 @@ namespace Suendenbock_App.Controllers
             existingCharacter.PartnerId = newCharacter.PartnerId;
             existingCharacter.Profan = newCharacter.Profan;
             existingCharacter.Beschraenkt = newCharacter.Beschraenkt;
+
+            // HP und Pokus (nur für Gott)
+            existingCharacter.CurrentHealth = newCharacter.CurrentHealth;
+            existingCharacter.BaseMaxHealth = newCharacter.BaseMaxHealth;
+            existingCharacter.CurrentPokus = newCharacter.CurrentPokus;
+            existingCharacter.BaseMaxPokus = newCharacter.BaseMaxPokus;
         }
         /// <summary>
         /// Speichert die Magieklassen und Spezialisierungen eines Characters

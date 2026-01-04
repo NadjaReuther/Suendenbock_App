@@ -46,6 +46,13 @@ body {
     gap: 2rem;
     margin-bottom: 4rem;
 }
+.player-section {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
 
 .card-number {
     font-family: 'Uncial Antiqua', serif;

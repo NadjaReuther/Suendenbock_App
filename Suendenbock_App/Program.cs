@@ -36,6 +36,9 @@ builder.Services.AddScoped<IAchievementService, AchievementService>();
 // Game Service
 builder.Services.AddScoped<GameService>();
 
+// SignalR für Real-time Combat
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 using(var scope = app.Services.CreateScope())
@@ -103,5 +106,8 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapControllers(); // F�r API-Controller hinzuf�gen
 app.MapRazorPages();
+
+// SignalR Hub Endpoint
+app.MapHub<Suendenbock_App.Hubs.BattleHub>("/battlehub");
 
 app.Run();
