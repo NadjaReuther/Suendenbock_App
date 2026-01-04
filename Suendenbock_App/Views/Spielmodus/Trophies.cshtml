@@ -1,0 +1,245 @@
+﻿@model Suendenbock_App.Controllers.TrophiesViewModel
+@{
+    ViewData["Title"] = "Trophäen-Wand";
+}
+
+@section Styles {
+    <!-- Material Symbols Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <!-- Dein CSS -->
+    <link rel="stylesheet" href="~/css/spielmodus.css" />
+    <link rel="stylesheet" href="~/css/spielmodus-trophies.css" />
+}
+
+<div class="spielmodus-trophies-container">
+
+    <!-- Header -->
+    <header class="trophies-header">
+        <h1>Trophäen-Wand</h1>
+        <p class="subtitle">Relikte eurer ruhmreichen Siege</p>
+    </header>
+
+    <main class="trophies-main">
+
+        <!-- SECTION 1: Ausgerüstete Trophäen (3 Slots) -->
+        <section class="equipped-section">
+            <div class="section-divider">
+                <div class="divider-line"></div>
+                <h2>Aktuelle Zierde</h2>
+                <div class="divider-line"></div>
+            </div>
+
+            <div class="equipped-grid">
+                @for (int i = 0; i < 3; i++)
+                {
+                    var trophy = i < Model.EquippedTrophies.Count ? Model.EquippedTrophies[i] : null;
+
+                    <div class="trophy-slot" data-slot="@i">
+                        <!-- Kette -->
+                        <div class="trophy-chain"></div>
+                        <div class="trophy-chain-mount"></div>
+
+                        @if (trophy != null)
+                        {
+                            var displayStatus = trophy.BoughtTrophyAvailable && trophy.SlainTrophyAvailable
+                                ? trophy.Status
+                                : trophy.SlainTrophyAvailable ? "slain" : "bought";
+
+                            <!-- Ausgerüstete Trophäe -->
+                            <div class="trophy-shield" data-trophy-id="@trophy.Id">
+                                <!-- Schild-Hintergrund -->
+                                <div class="shield-background">
+                                    <div class="shield-texture"></div>
+                                </div>
+
+                                <!-- Bild im Kreis -->
+                                <div class="shield-image-container">
+                                    <img src="@trophy.ImagePath"
+                                         alt="@trophy.Name"
+                                         class="shield-image @(displayStatus == "slain" ? "slain" : "bought")" />
+
+                                    <!-- Hover: Entfernen-Icon -->
+                                    <div class="shield-remove-overlay">
+                                        <span class="material-symbols-outlined">close</span>
+                                    </div>
+                                </div>
+
+                                <!-- Status Badge (klickbar wenn beide Varianten verfügbar) -->
+                                @if (trophy.BoughtTrophyAvailable && trophy.SlainTrophyAvailable)
+                                {
+                                    <button class="trophy-status-badge @trophy.Status clickable"
+                                            data-trophy-id="@trophy.Id"
+                                            data-current-status="@trophy.Status"
+                                            title="Zwischen gekauft und erlegt wechseln"
+                                            onclick="event.stopPropagation(); toggleTrophyType(@trophy.Id, '@trophy.Status')">
+                                        <span class="material-symbols-outlined">
+                                            @(trophy.Status == "slain" ? "skull" : "toll")
+                                        </span>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <div class="trophy-status-badge @displayStatus">
+                                        <span class="material-symbols-outlined">
+                                            @(trophy.SlainTrophyAvailable ? "skull" : "toll")
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Namens-Plakette (Gold/Messing) -->
+                            <div class="trophy-nameplate">
+                                <div class="nameplate-inner">
+                                    <h3 class="trophy-name">@trophy.Name</h3>
+                                    <div class="nameplate-divider"></div>
+                                    <p class="trophy-effect">
+                                        @(displayStatus == "slain" ? trophy.SlainEffect : trophy.BaseEffect)
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Leerer Slot -->
+                            <div class="trophy-slot-empty">
+                                <span class="material-symbols-outlined">add_circle</span>
+                                <span class="empty-text">Platz frei</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+
+        <!-- Trenner -->
+        <div class="content-divider">
+            <div class="divider-line"></div>
+            <span class="material-symbols-outlined">swords</span>
+            <div class="divider-line"></div>
+        </div>
+
+        <!-- SECTION 2: Inventory/Truhe -->
+        <section class="inventory-section">
+            <h2>In der Trophäen-Truhe</h2>
+
+            @if (Model.InventoryTrophies.Any())
+            {
+                <div class="inventory-grid">
+                    @foreach (var trophy in Model.InventoryTrophies)
+                    {
+                        var invDisplayStatus = trophy.BoughtTrophyAvailable && trophy.SlainTrophyAvailable
+                            ? trophy.Status
+                            : trophy.SlainTrophyAvailable ? "slain" : "bought";
+
+                        <div class="inventory-card" data-trophy-id="@trophy.Id">
+                            <!-- Schild (kleiner) -->
+                            <div class="inventory-shield">
+                                <div class="shield-background-small"></div>
+                                <div class="shield-image-container-small">
+                                    <img src="@trophy.ImagePath"
+                                         alt="@trophy.Name"
+                                         class="shield-image-small @(invDisplayStatus == "slain" ? "slain" : "bought")" />
+                                </div>
+
+                                <!-- Status Badge (immer sichtbar) -->
+                                <div class="status-badge-static @invDisplayStatus">
+                                    <span class="material-symbols-outlined">
+                                        @(trophy.SlainTrophyAvailable && !trophy.BoughtTrophyAvailable ? "skull" :
+                                          trophy.BoughtTrophyAvailable && !trophy.SlainTrophyAvailable ? "toll" :
+                                          invDisplayStatus == "slain" ? "skull" : "toll")
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Info -->
+                            <h3 class="inventory-trophy-name">@trophy.Name</h3>
+                            <div class="inventory-meta">
+                                <p class="monster-type">@trophy.MonsterType</p>
+                                <p class="status-label">
+                                    @(invDisplayStatus == "slain" ? "Erlegt" : invDisplayStatus == "bought" ? "Gekauft" : "Nicht erworben")
+                                </p>
+                            </div>
+
+                            <!-- Verfügbare Varianten -->
+                            <div class="trophy-variants">
+                                <span class="variants-label">Verfügbare Varianten:</span>
+                                <div class="variant-badges">
+                                    @if (trophy.BoughtTrophyAvailable)
+                                    {
+                                        <span class="variant-badge bought">
+                                            <span class="material-symbols-outlined">toll</span>
+                                            Gekauft
+                                        </span>
+                                    }
+                                    @if (trophy.SlainTrophyAvailable)
+                                    {
+                                        <span class="variant-badge slain">
+                                            <span class="material-symbols-outlined">skull</span>
+                                            Erlegt
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="inventory-divider"></div>
+
+                            <!-- Effekt-Anzeige -->
+                            <div class="trophy-effects">
+                                @if (trophy.BoughtTrophyAvailable && !string.IsNullOrEmpty(trophy.BaseEffect))
+                                {
+                                    <p class="effect-label">💰 Gekauft:</p>
+                                    <p class="effect-text">@trophy.BaseEffect</p>
+                                }
+                                @if (trophy.SlainTrophyAvailable && !string.IsNullOrEmpty(trophy.SlainEffect))
+                                {
+                                    <p class="effect-label">🏆 Erlegt:</p>
+                                    <p class="effect-text">@trophy.SlainEffect</p>
+                                }
+                            </div>
+
+                            <p class="inventory-description">@trophy.Description</p>
+
+                            <!-- Equip Button (alle angezeigten Trophäen sind erwerbbar) -->
+                            <button class="equip-btn"
+                                    data-trophy-id="@trophy.Id"
+                                    data-bought-available="@trophy.BoughtTrophyAvailable.ToString().ToLower()"
+                                    data-slain-available="@trophy.SlainTrophyAvailable.ToString().ToLower()"
+                                    @(Model.EquippedTrophies.Count >= 3 ? "disabled" : "")>
+                                An die Wand hängen
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <!-- Empty State -->
+                <div class="inventory-empty">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    <p>Die Truhe ist leer.</p>
+                </div>
+            }
+        </section>
+
+        <!-- Zurück Button -->
+        <section class="trophies-back">
+            <a href="/Spielmodus/Dashboard" class="back-btn">
+                <span class="material-symbols-outlined">fireplace</span>
+                <div>
+                    <span class="back-text">Zurück zum Lager</span>
+                    <span class="back-subtext">Legt die Ausrüstung ab</span>
+                </div>
+            </a>
+        </section>
+
+    </main>
+
+    <footer class="trophies-footer">
+        <p>Unvergänglicher Ruhm im Jahre 1618</p>
+    </footer>
+</div>
+
+@section Scripts {
+    <script src="~/js/trophies.js"></script>
+}

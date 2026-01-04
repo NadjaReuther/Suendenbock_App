@@ -6,12 +6,12 @@
 <!-- Link zum Spielmodus-CSS im Head -->
 @section Styles {
     <link rel="stylesheet" href="~/css/spielmodus.css" />
+    <!-- Material Symbols Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 }
 
-<div class="main-container fade-in">
-
-    <!-- Main Content -->
-    <main class="main-content">
+<!-- Main Content -->
+<main class="main-content">
 
         <!-- Page Header -->
         <header class="page-header">
@@ -25,102 +25,156 @@
             <div class="action-grid">
 
                 <!-- Karte -->
-                <button class="action-card" onclick="navigateTo('map')">
-                    <div class="corner-tl"></div>
-                    <div class="corner-tr"></div>
-                    <div class="corner-bl"></div>
-                    <div class="corner-br"></div>
+                <div class="pergament-card" data-tilt>
+                    <a class="card-link" asp-controller="Spielmodus" asp-action="Map">
+                    <div class="card-corner top-left"></div>
+                    <div class="card-corner top-right"></div>
+                    <div class="card-corner bottom-left"></div>
+                    <div class="card-corner bottom-right"></div>
 
-                    <div class="icon">
+                    <div class="card-number">
                         <span class="material-symbols-outlined">map</span>
                     </div>
-                    <h2 class="title">Karte</h2>
-                    <p class="subtitle">Erkunde das Reich</p>
-                </button>
+                    <h4 class="card-title">Karte</h4>
+                    <div class="card-content">Erkunde das Reich</div>
+                    </a>
+                </div>
 
                 <!-- Quests -->
-                <button class="action-card" onclick="navigateTo('quests')">
-                    <div class="corner-tl"></div>
-                    <div class="corner-tr"></div>
-                    <div class="corner-bl"></div>
-                    <div class="corner-br"></div>
+                <div class="pergament-card" data-tilt>
+                <a class="card-link" asp-controller="Spielmodus" asp-action="Quests">
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
 
-                    <div class="icon">
+                    <div class="card-number">
                         <span class="material-symbols-outlined">history_edu</span>
                     </div>
-                    <h2 class="title">Quests</h2>
-                    <p class="subtitle">Deine Aufgaben</p>
-                </button>
+                    <h4 class="card-title">Quests</h4>
+                    <div class="card-content">Deine Aufgaben</div>
+                    </a>
+                </div>
 
                 <!-- Trophäen -->
-                <button class="action-card" onclick="navigateTo('trophies')">
-                    <div class="corner-tl"></div>
-                    <div class="corner-tr"></div>
-                    <div class="corner-bl"></div>
-                    <div class="corner-br"></div>
+                <div class="pergament-card" data-tilt>
+                <a class="card-link" asp-controller="Spielmodus" asp-action="Trophies">
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
 
-                    <div class="icon">
+                    <div class="card-number">
                         <span class="material-symbols-outlined">skull</span>
                     </div>
-                    <h2 class="title">Trophäen</h2>
-                    <p class="subtitle">Deine Erfolge</p>
-                </button>
+                    <h4 class="card-title">Trophäen</h4>
+                    <div class="card-content">Deine Erfolge</div>
+                </a>
+                </div>
 
             </div>
 
-            <!-- Combat Button -->
-            <div style="width: 100%; display: flex; justify-content: center;">
-                <button id="combatBtn" class="combat-button" onclick="toggleCombatReady()">
+            <!-- Combat Button (nur für Gott) -->
+            @if (Model.IsGod)
+            {
+                <div style="width: 100%; display: flex; justify-content: center;">
+                    <button id="combatBtn" class="combat-button" onclick="goToCombatSetup()">
                     <span class="material-symbols-outlined icon" id="combatIcon">swords</span>
                     <span class="text" id="combatText">Kampfbereit Machen</span>
-                    <div class="shine"></div>
-                </button>
-            </div>
-
-            <!-- Status Display -->
-            <section class="status-display">
-                <h3>Aktueller Stand</h3>
-                <div class="status-grid">
-                    <div class="status-item">
-                        <span class="status-value" id="groupQuests">3</span>
-                        <span class="status-label">Offene Gruppenquests</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-value" id="individualQuests">0</span>
-                        <span class="status-label">Offene Individualquests</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-value" id="fights">4</span>
-                        <span class="status-label">bestrittene Kämpfe</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="status-value" id="breakFights">2</span>
-                        <span class="status-label">abgebrochene Kämpfe</span>
-                    </div>
+                    </button>
                 </div>
-            </section>
+            }
 
-            <!-- Rest Buttons -->
-            <div class="rest-buttons">
-                <button class="rest-button" onclick="shortRest()">
-                    <span class="material-symbols-outlined">restaurant</span>
-                    <span>Kurze Rast</span>
-                </button>
+        <!-- Rest Buttons -->
+        <div class="rest-buttons">
+            <button class="rest-button" onclick="shortRest()">
+                <span class="material-symbols-outlined">restaurant</span>
+                <span>Kurze Rast</span>
+            </button>
 
-                <button id="campBtn" class="rest-button camp" onclick="toggleCamp()">
-                    <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <span class="material-symbols-outlined" id="campIcon">fireplace</span>
-                            <span id="campText">Nachtlager</span>
-                        </div>
-                        <span class="confirm-text" id="confirmText" style="display: none;">Bestätigen</span>
+            <button id="campBtn" class="rest-button camp" onclick="toggleCamp()">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="material-symbols-outlined" id="campIcon">fireplace</span>
+                        <span id="campText">Nachtlager</span>
                     </div>
-                </button>
-            </div>
+                    <span class="confirm-text" id="confirmText" style="display: none;">Bestätigen</span>
+                </div>
+            </button>
+        </div>
+
+            <!-- Wetter-Widget -->
+            @if (Model.WeatherForecast != null && Model.WeatherForecast.Count >= 5)
+            {
+                <section class="weather-widget">
+                    <div class="weather-container pergament-card" data-tilt>
+                        <!-- Corner Brackets -->
+                        <div class="card-corner top-left"></div>
+                        <div class="card-corner top-right"></div>
+                        <div class="card-corner bottom-left"></div>
+                        <div class="card-corner bottom-right"></div>
+
+                        <!-- Links: Vorgestern & Gestern -->
+                        <div class="weather-past">
+                            @for (int i = 0; i < 2; i++)
+                            {
+                                <div class="forecast-day">
+                                    <span class="forecast-day-name">@Model.WeatherForecast[i].Day</span>
+                                    <span class="material-symbols-outlined forecast-icon">@Model.WeatherForecast[i].Icon</span>
+                                    <span class="forecast-temp">@Model.WeatherForecast[i].Temperature</span>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Mitte: Heute (groß) -->
+                        <div class="weather-today">
+                            <p class="weather-today-label">@Model.WeatherForecast[2].Day</p>
+                            <div class="weather-today-main">
+                                <span class="material-symbols-outlined weather-today-icon">@Model.WeatherForecast[2].Icon</span>
+                                <div class="weather-today-temp">
+                                    <p class="temp-high">@Model.WeatherForecast[2].Temperature.Split('/')[0]</p>
+                                    <p class="temp-low">@Model.WeatherForecast[2].Temperature.Split('/')[1]</p>
+                                </div>
+                            </div>
+                            @if (Model.CurrentAct != null && !string.IsNullOrEmpty(Model.CurrentAct.Weather))
+                            {
+                                <p class="weather-description">@Model.CurrentAct.Weather</p>
+                            }
+                        </div>
+
+                        <!-- Rechts: Morgen & Übermorgen -->
+                        <div class="weather-future">
+                            @for (int i = 3; i < 5; i++)
+                            {
+                                <div class="forecast-day">
+                                    <span class="forecast-day-name">@Model.WeatherForecast[i].Day</span>
+                                    <span class="material-symbols-outlined forecast-icon">@Model.WeatherForecast[i].Icon</span>
+                                    <span class="forecast-temp">@Model.WeatherForecast[i].Temperature</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </section>
+            }
+            else
+            {
+                <section class="weather-widget">
+                    <div class="weather-container pergament-card" data-tilt>
+                        <!-- Corner Brackets -->
+                        <div class="card-corner top-left"></div>
+                        <div class="card-corner top-right"></div>
+                        <div class="card-corner bottom-left"></div>
+                        <div class="card-corner bottom-right"></div>
+
+                        <p style="text-align: center; color: var(--ink); font-family: 'Cinzel', serif;">Wetterdaten nicht verfügbar.</p>
+                    </div>
+                </section>
+            }
+
+            
 
         </div>
     </main>
-</div>
 
 <!-- Camp Summary Modal -->
 <div id="campModal" class="modal-overlay" style="display: none;">
@@ -184,6 +238,27 @@
         // Dashboard initialisieren
         window.addEventListener('DOMContentLoaded', () => {
             initDashboard(initialCharacters, initialRestFoods);
+
+            // Tilt-Effekt für Pergament-Karten
+            document.querySelectorAll('[data-tilt]').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+
+                    const rotateX = (y - centerY) / 10;
+                    const rotateY = (centerX - x) / 10;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+                });
+            });
         });
     </script>
 }

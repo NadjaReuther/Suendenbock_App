@@ -1,10 +1,12 @@
 ﻿// Controllers/Api/GameController.cs
 // ALLE Spielmodus-API-Endpoints in einem Controller
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models;
+using Suendenbock_App.Services;
 
 namespace Suendenbock_App.Controllers.Api
 {
@@ -13,10 +15,12 @@ namespace Suendenbock_App.Controllers.Api
     public class GameController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IImageUploadService _imageUploadService;
 
-        public GameController(ApplicationDbContext context)
+        public GameController(ApplicationDbContext context, IImageUploadService imageUploadService)
         {
             _context = context;
+            _imageUploadService = imageUploadService;
         }
 
         // ===== CHARACTER STATUS =====
@@ -316,6 +320,13 @@ namespace Suendenbock_App.Controllers.Api
                     return BadRequest(new { error = "Bei individuellen Quests muss ein Character zugewiesen sein!" });
                 }
 
+                // Aktuellen/aktiven Act laden
+                var currentAct = await _context.Acts.FirstOrDefaultAsync(a => a.IsActive);
+                if (currentAct == null)
+                {
+                    return BadRequest(new { error = "Kein aktiver Act gefunden! Bitte aktiviere zuerst einen Act." });
+                }
+
                 var quest = new Quest
                 {
                     Title = request.Title,
@@ -323,6 +334,7 @@ namespace Suendenbock_App.Controllers.Api
                     Type = request.Type,
                     Status = request.Status ?? "active",
                     CharacterId = request.Type == "individual" ? request.CharacterId : null,
+                    ActId = currentAct.Id, // Quest dem aktiven Act zuweisen
                     CreatedAt = DateTime.Now
                 };
 
@@ -437,40 +449,855 @@ namespace Suendenbock_App.Controllers.Api
             }
         }
 
-        // ===== MONSTER/TROPHÄEN (später mehr) =====
+        // ===== TROPHY-ENDPOINTS =====
 
         /// <summary>
-        /// Alle Monster/Trophäen der Guild abrufen
-        /// GET /api/game/monsters
+        /// Alle Trophäen abrufen
+        /// GET /api/game/trophies
         /// </summary>
-        [HttpGet("monsters")]
-        public async Task<IActionResult> GetMonsters()
+        [HttpGet("trophies")]
+        public async Task<IActionResult> GetTrophies()
         {
             try
             {
-                var monsters = await _context.Monsters
-                    .OrderBy(m => m.Name)
+                var trophies = await _context.Monsters
+                    .Include(m => m.Monstertyp)
+                    .Where(m => m.meet == true) // Nur freigespielte
                     .Select(m => new
                     {
                         m.Id,
                         m.Name,
-                        m.Monstertyp,
+                        m.ImagePath,
+                        MonsterType = m.Monstertyp != null ? m.Monstertyp.Name : "Unbekannt",
                         m.Description,
                         m.BaseEffect,
                         m.SlainEffect,
                         m.Status,
-                        m.IsEquipped,
-                        m.ImagePath
+                        m.IsEquipped
                     })
                     .ToListAsync();
 
-                return Ok(monsters);
+                return Ok(trophies);
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Trophy Status wechseln (bought ↔ slain)
+        /// POST /api/game/trophies/1/toggle-status
+        /// Nur möglich wenn beide Varianten verfügbar sind
+        /// </summary>
+        [HttpPost("trophies/{id}/toggle-status")]
+        public async Task<IActionResult> ToggleTrophyStatus(int id)
+        {
+            try
+            {
+                var trophy = await _context.Monsters.FindAsync(id);
+                if (trophy == null)
+                {
+                    return NotFound(new { error = "Trophäe nicht gefunden!" });
+                }
+
+                // Validierung: Toggle nur möglich wenn beide Varianten verfügbar sind
+                if (!trophy.BoughtTrophyAvailable || !trophy.SlainTrophyAvailable)
+                {
+                    return BadRequest(new { error = "Toggle nur möglich wenn beide Trophäen-Varianten verfügbar sind!" });
+                }
+
+                // Status wechseln: bought ↔ slain
+                if (trophy.Status == "bought")
+                {
+                    trophy.Status = "slain";
+                }
+                else if (trophy.Status == "slain")
+                {
+                    trophy.Status = "bought";
+                }
+                else if (trophy.Status == "none" || string.IsNullOrEmpty(trophy.Status))
+                {
+                    // Wenn noch "none", setze auf "bought" als Default
+                    trophy.Status = "bought";
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Status gewechselt!",
+                    trophyId = id,
+                    newStatus = trophy.Status
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Trophy ausrüsten/entfernen
+        /// POST /api/game/trophies/1/toggle-equip
+        /// </summary>
+        [HttpPost("trophies/{id}/toggle-equip")]
+        public async Task<IActionResult> ToggleTrophyEquip(int id)
+        {
+            try
+            {
+                var trophy = await _context.Monsters.FindAsync(id);
+                if (trophy == null)
+                {
+                    return NotFound(new { error = "Trophäe nicht gefunden!" });
+                }
+
+                // Wenn bereits ausgerüstet → entfernen
+                if (trophy.IsEquipped)
+                {
+                    trophy.IsEquipped = false;
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        message = "Trophäe von der Wand genommen!",
+                        trophyId = id,
+                        isEquipped = false
+                    });
+                }
+
+                // Wenn noch nicht ausgerüstet → prüfe Max-Limit (3)
+                var equippedCount = await _context.Monsters
+                    .Where(m => m.IsEquipped)
+                    .CountAsync();
+
+                if (equippedCount >= 3)
+                {
+                    return BadRequest(new { error = "Maximal 3 Trophäen können ausgerüstet sein!" });
+                }
+
+                // Ausrüsten - setze korrekten Status basierend auf verfügbaren Varianten
+                trophy.IsEquipped = true;
+
+                // Status setzen wenn noch "none" oder anpassen an verfügbare Varianten
+                if (trophy.Status == "none" || trophy.Status == null)
+                {
+                    // Wenn nur SlainTrophyAvailable → Status = "slain"
+                    // Wenn nur BoughtTrophyAvailable → Status = "bought"
+                    // Wenn beide verfügbar → Default "bought"
+                    if (trophy.SlainTrophyAvailable && !trophy.BoughtTrophyAvailable)
+                    {
+                        trophy.Status = "slain";
+                    }
+                    else
+                    {
+                        trophy.Status = "bought";
+                    }
+                }
+                else
+                {
+                    // Korrigiere Status falls nicht passend zu verfügbaren Varianten
+                    if (trophy.Status == "bought" && !trophy.BoughtTrophyAvailable && trophy.SlainTrophyAvailable)
+                    {
+                        trophy.Status = "slain";
+                    }
+                    else if (trophy.Status == "slain" && !trophy.SlainTrophyAvailable && trophy.BoughtTrophyAvailable)
+                    {
+                        trophy.Status = "bought";
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Trophäe an die Wand gehängt!",
+                    trophyId = id,
+                    isEquipped = true
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Trophy Status auf "bought" oder "slain" setzen
+        /// PUT /api/game/trophies/1/status
+        /// Body: { "status": "bought" } oder { "status": "slain" }
+        /// </summary>
+        [HttpPut("trophies/{id}/status")]
+        public async Task<IActionResult> SetTrophyStatus(int id, [FromBody] SetTrophyStatusRequest request)
+        {
+            try
+            {
+                var trophy = await _context.Monsters.FindAsync(id);
+                if (trophy == null)
+                {
+                    return NotFound(new { error = "Trophäe nicht gefunden!" });
+                }
+
+                // Validierung
+                if (request.Status != "bought" && request.Status != "slain" && request.Status != "none")
+                {
+                    return BadRequest(new { error = "Ungültiger Status! Erlaubt: bought, slain, none" });
+                }
+
+                trophy.Status = request.Status;
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = $"Status auf '{request.Status}' gesetzt!",
+                    trophyId = id,
+                    status = trophy.Status
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // ===== MAP-ENDPOINTS =====
+
+        /// <summary>
+        /// Alle Acts abrufen (nur für Gott)
+        /// GET /api/game/acts
+        /// </summary>
+        [HttpGet("acts")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> GetActs()
+        {
+            try
+            {
+                var acts = await _context.Acts
+                    .Include(a => a.Map)
+                    .OrderBy(a => a.ActNumber)
+                    .Select(a => new
+                    {
+                        a.Id,
+                        a.Name,
+                        a.ActNumber,
+                        a.Description,
+                        a.IsActive,
+                        a.Country,
+                        a.Companion1,
+                        a.Companion2,
+                        a.Month,
+                        a.Weather,
+                        a.CreatedAt,
+                        MapImageUrl = a.Map != null ? a.Map.ImageUrl : null
+                    })
+                    .ToListAsync();
+
+                return Ok(acts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Einzelnen Act abrufen (nur für Gott)
+        /// GET /api/game/acts/1
+        /// </summary>
+        [HttpGet("acts/{id}")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> GetAct(int id)
+        {
+            try
+            {
+                var act = await _context.Acts
+                    .Include(a => a.Map)
+                    .Where(a => a.Id == id)
+                    .Select(a => new
+                    {
+                        a.Id,
+                        a.Name,
+                        a.ActNumber,
+                        a.Description,
+                        a.IsActive,
+                        a.Country,
+                        a.Companion1,
+                        a.Companion2,
+                        a.Month,
+                        a.Weather,
+                        a.CreatedAt,
+                        MapImageUrl = a.Map != null ? a.Map.ImageUrl : null
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (act == null)
+                {
+                    return NotFound(new { error = "Act nicht gefunden!" });
+                }
+
+                return Ok(act);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Neuen Act erstellen (nur für Gott)
+        /// POST /api/game/acts
+        /// FormData: actNumber, name, description, country, companion1, companion2, month, weather, mapImage (IFormFile)
+        /// </summary>
+        [HttpPost("acts")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> CreateAct([FromForm] CreateActFormRequest request)
+        {
+            try
+            {
+                // Validierung
+                if (request.ActNumber <= 0)
+                {
+                    return BadRequest(new { error = "ActNumber muss größer als 0 sein!" });
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Companion1))
+                {
+                    return BadRequest(new { error = "Mindestens ein Begleiter muss ausgewählt sein!" });
+                }
+
+                // Erstelle Act
+                var act = new Act
+                {
+                    ActNumber = request.ActNumber,
+                    Name = request.Name ?? $"Akt {request.ActNumber}",
+                    Description = request.Description ?? string.Empty,
+                    Country = request.Country,
+                    Companion1 = request.Companion1,
+                    Companion2 = request.Companion2,
+                    Month = request.Month,
+                    Weather = request.Weather,
+                    IsActive = false,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.Acts.Add(act);
+                await _context.SaveChangesAsync();
+
+                // Erstelle Map falls Bild hochgeladen wurde
+                if (request.MapImage != null && request.MapImage.Length > 0)
+                {
+                    try
+                    {
+                        // Validierung der Bilddatei
+                        if (!_imageUploadService.ValidateImageFile(request.MapImage))
+                        {
+                            return BadRequest(new { error = "Ungültige Bilddatei! Erlaubt: JPG, PNG (max. 5MB)" });
+                        }
+
+                        // Bild hochladen und Pfad erhalten
+                        var fileName = $"act-{act.ActNumber}-map";
+                        var imagePath = await _imageUploadService.UploadImageAsync(request.MapImage, "maps", fileName);
+
+                        // Map-Eintrag erstellen
+                        var map = new Map
+                        {
+                            ActId = act.Id,
+                            Name = $"Karte {act.Name}",
+                            ImageUrl = imagePath,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _context.Maps.Add(map);
+                        await _context.SaveChangesAsync();
+
+                        return Ok(new
+                        {
+                            message = "Act und Karte erfolgreich erstellt!",
+                            actId = act.Id,
+                            mapImageUrl = imagePath,
+                            act = new
+                            {
+                                act.Id,
+                                act.ActNumber,
+                                act.Name,
+                                act.Description,
+                                act.Country,
+                                act.Companion1,
+                                act.Companion2,
+                                act.Month,
+                                act.Weather,
+                                act.IsActive,
+                                MapImageUrl = imagePath
+                            }
+                        });
+                    }
+                    catch (Exception mapEx)
+                    {
+                        // Log inner exception details
+                        var innerMessage = mapEx.InnerException != null ? mapEx.InnerException.Message : mapEx.Message;
+                        return StatusCode(500, new {
+                            error = "Fehler beim Speichern der Karte",
+                            details = innerMessage,
+                            actCreated = true,
+                            actId = act.Id
+                        });
+                    }
+                }
+
+                return Ok(new
+                {
+                    message = "Act erfolgreich erstellt!",
+                    actId = act.Id,
+                    act = new
+                    {
+                        act.Id,
+                        act.ActNumber,
+                        act.Name,
+                        act.Description,
+                        act.Country,
+                        act.Companion1,
+                        act.Companion2,
+                        act.Month,
+                        act.Weather,
+                        act.IsActive,
+                        MapImageUrl = (string?)null
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return StatusCode(500, new { error = "Fehler beim Erstellen des Akts", details = innerMessage });
+            }
+        }
+
+        /// <summary>
+        /// Act aktualisieren (nur für Gott)
+        /// PUT /api/game/acts/1
+        /// FormData: name, description, country, companion1, companion2, month, weather, mapImage (IFormFile)
+        /// </summary>
+        [HttpPut("acts/{id}")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> UpdateAct(int id, [FromForm] UpdateActFormRequest request)
+        {
+            try
+            {
+                var act = await _context.Acts
+                    .Include(a => a.Map)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+
+                if (act == null)
+                {
+                    return NotFound(new { error = "Act nicht gefunden!" });
+                }
+
+                // Update Act
+                if (!string.IsNullOrWhiteSpace(request.Name))
+                {
+                    act.Name = request.Name;
+                }
+
+                if (request.Description != null)
+                {
+                    act.Description = request.Description;
+                }
+
+                if (request.Country != null)
+                {
+                    act.Country = request.Country;
+                }
+
+                if (request.Companion1 != null)
+                {
+                    act.Companion1 = request.Companion1;
+                }
+
+                if (request.Companion2 != null)
+                {
+                    act.Companion2 = request.Companion2;
+                }
+
+                if (request.Month != null)
+                {
+                    act.Month = request.Month;
+                }
+
+                if (request.Weather != null)
+                {
+                    act.Weather = request.Weather;
+                }
+
+                // Update Map falls neues Bild hochgeladen wurde
+                if (request.MapImage != null && request.MapImage.Length > 0)
+                {
+                    // Validierung der Bilddatei
+                    if (!_imageUploadService.ValidateImageFile(request.MapImage))
+                    {
+                        return BadRequest(new { error = "Ungültige Bilddatei! Erlaubt: JPG, PNG (max. 5MB)" });
+                    }
+
+                    // Bild hochladen und Pfad erhalten
+                    var fileName = $"act-{act.ActNumber}-map";
+                    var imagePath = await _imageUploadService.UploadImageAsync(request.MapImage, "maps", fileName);
+
+                    if (act.Map != null)
+                    {
+                        // Altes Bild überschreiben
+                        act.Map.ImageUrl = imagePath;
+                    }
+                    else
+                    {
+                        // Map erstellen falls noch nicht vorhanden
+                        var map = new Map
+                        {
+                            ActId = act.Id,
+                            Name = $"Karte {act.Name}",
+                            ImageUrl = imagePath,
+                            CreatedAt = DateTime.Now
+                        };
+                        _context.Maps.Add(map);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Act erfolgreich aktualisiert!",
+                    actId = id,
+                    act = new
+                    {
+                        act.Id,
+                        act.ActNumber,
+                        act.Name,
+                        act.Description,
+                        act.Country,
+                        act.Companion1,
+                        act.Companion2,
+                        act.Month,
+                        act.Weather,
+                        act.IsActive,
+                        MapImageUrl = act.Map?.ImageUrl
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                var innerMessage = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return StatusCode(500, new { error = "Fehler beim Aktualisieren des Akts", details = innerMessage });
+            }
+        }
+
+        /// <summary>
+        /// Act löschen (nur für Gott)
+        /// DELETE /api/game/acts/1
+        /// </summary>
+        [HttpDelete("acts/{id}")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> DeleteAct(int id)
+        {
+            try
+            {
+                var act = await _context.Acts
+                    .Include(a => a.Map)
+                    .FirstOrDefaultAsync(a => a.Id == id);
+
+                if (act == null)
+                {
+                    return NotFound(new { error = "Act nicht gefunden!" });
+                }
+
+                _context.Acts.Remove(act);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Act erfolgreich gelöscht!",
+                    actId = id
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Act aktivieren (nur für Gott)
+        /// POST /api/game/acts/1/activate
+        /// Deaktiviert alle anderen Acts und aktiviert diesen
+        /// </summary>
+        [HttpPost("acts/{id}/activate")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> ActivateAct(int id)
+        {
+            try
+            {
+                var act = await _context.Acts.FindAsync(id);
+                if (act == null)
+                {
+                    return NotFound(new { error = "Act nicht gefunden!" });
+                }
+
+                // Alle Acts deaktivieren
+                var allActs = await _context.Acts.ToListAsync();
+                foreach (var a in allActs)
+                {
+                    a.IsActive = false;
+                }
+
+                // Diesen Act aktivieren
+                act.IsActive = true;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = $"Act '{act.Name}' wurde aktiviert!",
+                    actId = id,
+                    actName = act.Name
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Alle Marker für eine Karte abrufen
+        /// GET /api/game/markers?mapId=1
+        /// </summary>
+        [HttpGet("markers")]
+        public async Task<IActionResult> GetMarkers([FromQuery] int mapId)
+        {
+            try
+            {
+                var markers = await _context.MapMarkers
+                    .Where(m => m.MapId == mapId)
+                    .Select(m => new
+                    {
+                        m.Id,
+                        m.Label,
+                        m.Type,
+                        m.XPercent,
+                        m.YPercent,
+                        m.Description
+                    })
+                    .ToListAsync();
+
+                return Ok(markers);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Marker erstellen (nur für Gott)
+        /// POST /api/game/markers
+        /// Body: { "mapId": 1, "label": "...", "type": "quest", "xPercent": 50, "yPercent": 50, "description": "..." }
+        /// </summary>
+        [HttpPost("markers")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> CreateMarker([FromBody] CreateMarkerRequest request)
+        {
+            try
+            {
+                // Validierung
+                if (string.IsNullOrWhiteSpace(request.Label))
+                {
+                    return BadRequest(new { error = "Label ist erforderlich!" });
+                }
+
+                if (request.XPercent < 0 || request.XPercent > 100 || request.YPercent < 0 || request.YPercent > 100)
+                {
+                    return BadRequest(new { error = "Koordinaten müssen zwischen 0 und 100 liegen!" });
+                }
+
+                var validTypes = new[] { "quest", "info", "danger", "settlement" };
+                if (!validTypes.Contains(request.Type))
+                {
+                    return BadRequest(new { error = "Ungültiger Marker-Typ!" });
+                }
+
+                // Map existiert?
+                var map = await _context.Maps.FindAsync(request.MapId);
+                if (map == null)
+                {
+                    return NotFound(new { error = "Karte nicht gefunden!" });
+                }
+
+                var marker = new MapMarker
+                {
+                    MapId = request.MapId,
+                    Label = request.Label,
+                    Type = request.Type,
+                    XPercent = request.XPercent,
+                    YPercent = request.YPercent,
+                    Description = request.Description,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.MapMarkers.Add(marker);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Marker erfolgreich erstellt!",
+                    marker = new
+                    {
+                        marker.Id,
+                        marker.Label,
+                        marker.Type,
+                        marker.XPercent,
+                        marker.YPercent,
+                        marker.Description
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Marker löschen (nur für Gott)
+        /// DELETE /api/game/markers/1
+        /// </summary>
+        [HttpDelete("markers/{id}")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> DeleteMarker(int id)
+        {
+            try
+            {
+                var marker = await _context.MapMarkers.FindAsync(id);
+                if (marker == null)
+                {
+                    return NotFound(new { error = "Marker nicht gefunden!" });
+                }
+
+                _context.MapMarkers.Remove(marker);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Marker erfolgreich gelöscht!",
+                    markerId = id
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // ===== WEATHER-ENDPOINTS =====
+
+        /// <summary>
+        /// Wetteroptionen für einen Monat abrufen
+        /// GET /api/game/weather?month=Januar
+        /// </summary>
+        [HttpGet("weather")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> GetWeatherOptions([FromQuery] string month)
+        {
+            try
+            {
+                var weatherOptions = await _context.WeatherOptions
+                    .Include(wo => wo.ForecastDays.OrderBy(fd => fd.DayOrder))
+                    .Where(wo => wo.Month == month)
+                    .Select(wo => new
+                    {
+                        wo.Id,
+                        wo.WeatherName,
+                        Forecast = wo.ForecastDays.Select(fd => new
+                        {
+                            fd.Day,
+                            fd.Icon,
+                            fd.Temperature
+                        }).ToList()
+                    })
+                    .ToListAsync();
+
+                return Ok(weatherOptions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Marker aktualisieren (nur für Gott)
+        /// PUT /api/game/markers/1
+        /// Body: { "label": "...", "description": "...", "xPercent": 50, "yPercent": 50 }
+        /// </summary>
+        [HttpPut("markers/{id}")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> UpdateMarker(int id, [FromBody] UpdateMarkerRequest request)
+        {
+            try
+            {
+                var marker = await _context.MapMarkers.FindAsync(id);
+                if (marker == null)
+                {
+                    return NotFound(new { error = "Marker nicht gefunden!" });
+                }
+
+                // Update
+                if (!string.IsNullOrWhiteSpace(request.Label))
+                {
+                    marker.Label = request.Label;
+                }
+
+                if (request.Description != null)
+                {
+                    marker.Description = request.Description;
+                }
+
+                if (request.XPercent.HasValue)
+                {
+                    if (request.XPercent.Value < 0 || request.XPercent.Value > 100)
+                    {
+                        return BadRequest(new { error = "XPercent muss zwischen 0 und 100 liegen!" });
+                    }
+                    marker.XPercent = request.XPercent.Value;
+                }
+
+                if (request.YPercent.HasValue)
+                {
+                    if (request.YPercent.Value < 0 || request.YPercent.Value > 100)
+                    {
+                        return BadRequest(new { error = "YPercent muss zwischen 0 und 100 liegen!" });
+                    }
+                    marker.YPercent = request.YPercent.Value;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Marker aktualisiert!",
+                    marker = new
+                    {
+                        marker.Id,
+                        marker.Label,
+                        marker.Type,
+                        marker.XPercent,
+                        marker.YPercent,
+                        marker.Description
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
     }
 
     // ===== REQUEST MODELS =====
@@ -488,5 +1315,52 @@ namespace Suendenbock_App.Controllers.Api
         public string Type { get; set; } = "individual"; // "individual" oder "group"
         public string? Status { get; set; } = "active"; // "active", "completed", "failed"
         public int? CharacterId { get; set; } // Nur für Type = "individual"
+    }
+    public class SetTrophyStatusRequest
+    {
+        public string Status { get; set; } = string.Empty;
+    }
+    public class CreateMarkerRequest
+    {
+        public int MapId { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public string Type { get; set; } = "info"; // "quest", "info", "danger", "settlement"
+        public double XPercent { get; set; }
+        public double YPercent { get; set; }
+        public string? Description { get; set; }
+    }
+
+    public class UpdateMarkerRequest
+    {
+        public string? Label { get; set; }
+        public string? Description { get; set; }
+        public double? XPercent { get; set; }
+        public double? YPercent { get; set; }
+    }
+
+    // FormData Request Models für Act-Verwaltung
+    public class CreateActFormRequest
+    {
+        public int ActNumber { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? Country { get; set; }
+        public string? Companion1 { get; set; }
+        public string? Companion2 { get; set; }
+        public string? Month { get; set; }
+        public string? Weather { get; set; }
+        public IFormFile? MapImage { get; set; } // Bilddatei statt Base64-String
+    }
+
+    public class UpdateActFormRequest
+    {
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+        public string? Country { get; set; }
+        public string? Companion1 { get; set; }
+        public string? Companion2 { get; set; }
+        public string? Month { get; set; }
+        public string? Weather { get; set; }
+        public IFormFile? MapImage { get; set; } // Bilddatei statt Base64-String
     }
 }

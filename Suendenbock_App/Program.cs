@@ -76,6 +76,7 @@ using (var scope = app.Services.CreateScope())
     TriggerSeeder.Seed(context);
     AchievementSeeder.SeedAchievements(context);
     await GameDataSeeder.SeedGameDataAsync(context);
+    await WeatherDataSeeder.SeedWeatherData(context);
 }
 
 // Configure the HTTP request pipeline.

@@ -154,6 +154,61 @@
                 </div>
             </div>
         </div>
+
+        <!-- Gekaufte Trophäe Sektion -->
+        <div class="monster-section mb-4">
+            <div class="row align-items-start">
+                <div class="col-lg-2">
+                    <div class="toggle-container">
+                        <div class="medieval-switch">
+                            <input class="form-check-input" type="checkbox" id="boughtTrophySwitch" asp-for="BoughtTrophyAvailable" value="true">
+                            <div class="switch-label">
+                                <span class="switch-icon">💰</span>
+                                <span class="switch-text">Kaufbare<br/>Trophäe<br/><small class="text-muted">Aktivieren</small></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-10">
+                    <label for="baseEffect" class="form-label monster-label">
+                        <span class="label-icon">✨</span> Effekt der gekauften Trophäe
+                    </label>
+                    <small class="form-text text-muted d-block mb-2">
+                        Dieser Effekt wird angewendet, wenn die Trophäe gekauft wurde. Nur sichtbar wenn "Begegnung" aktiviert ist.
+                    </small>
+                    <textarea class="form-control" id="baseEffect" name="baseEffect" rows="3" maxlength="500" placeholder="z.B. +1 auf Verteidigung gegen diesen Monstertyp">@Model?.BaseEffect</textarea>
+                    <small class="form-text text-muted">Maximal 500 Zeichen</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Erlegte Trophäe Sektion -->
+        <div class="monster-section mb-4">
+            <div class="row align-items-start">
+                <div class="col-lg-2">
+                    <div class="toggle-container">
+                        <div class="medieval-switch">
+                            <input class="form-check-input" type="checkbox" id="slainTrophySwitch" asp-for="SlainTrophyAvailable" value="true">
+                            <div class="switch-label">
+                                <span class="switch-icon">🏆</span>
+                                <span class="switch-text">Erlegte<br/>Trophäe<br/><small class="text-muted">Aktivieren</small></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-10">
+                    <label for="slainEffect" class="form-label monster-label">
+                        <span class="label-icon">⚔️</span> Effekt der erlegten Trophäe
+                    </label>
+                    <small class="form-text text-muted d-block mb-2">
+                        Dieser Effekt wird angewendet, wenn das Monster besiegt wurde. Nur sichtbar wenn "Begegnung" aktiviert ist. (Stärker als der Kauf-Effekt!)
+                    </small>
+                    <textarea class="form-control" id="slainEffect" name="slainEffect" rows="3" maxlength="500" placeholder="z.B. +2 auf Angriff und Verteidigung gegen diesen Monstertyp">@Model?.SlainEffect</textarea>
+                    <small class="form-text text-muted">Maximal 500 Zeichen</small>
+                </div>
+            </div>
+        </div>
+
         <div class="text-center">
             <button type="submit" class="btn-wachs">Gebilligt</button>
         </div>
@@ -202,7 +257,9 @@
             const toggleValidator = new MonsterToggleValidator(
                 '#meetSwitch',
                 '#encounterSwitch',
-                '#perfectedSwitch'
+                '#perfectedSwitch',
+                '#boughtTrophySwitch',
+                '#slainTrophySwitch'
             );
 
             // Form-Validierung vor dem Absenden

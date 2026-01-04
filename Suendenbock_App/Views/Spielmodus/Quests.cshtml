@@ -18,10 +18,13 @@
     <div class="quests-header">
         <h1>Quest-Chronik</h1>
 
-        <!-- Add Button -->
-        <button id="addQuestBtn" class="add-quest-btn" title="Neue Quest anlegen">
-            <span class="material-symbols-outlined">add</span>
-        </button>
+        <!-- Add Button (nur für Gott) -->
+        @if (Model.IsGod)
+        {
+            <button id="addQuestBtn" class="add-quest-btn" title="Neue Quest anlegen">
+                <span class="material-symbols-outlined">add</span>
+            </button>
+        }
     </div>
 
     <!-- Tab Navigation -->
@@ -123,30 +126,33 @@
                         }
                     </div>
 
-                    <!-- Status Change Buttons -->
-                    <div class="quest-actions">
-                        <span class="actions-label">Admin: Quest Status ändern</span>
-                        <div class="status-buttons">
-                            <button class="status-btn status-active @(quest.Status == "active" ? "current" : "")"
-                                    data-quest-id="@quest.Id"
-                                    data-new-status="active">
-                                <span class="material-symbols-outlined">history_edu</span>
-                                <span>Aktiv</span>
-                            </button>
-                            <button class="status-btn status-completed @(quest.Status == "completed" ? "current" : "")"
-                                    data-quest-id="@quest.Id"
-                                    data-new-status="completed">
-                                <span class="material-symbols-outlined">verified</span>
-                                <span>Erfolg</span>
-                            </button>
-                            <button class="status-btn status-failed @(quest.Status == "failed" ? "current" : "")"
-                                    data-quest-id="@quest.Id"
-                                    data-new-status="failed">
-                                <span class="material-symbols-outlined">heart_broken</span>
-                                <span>Gescheitert</span>
-                            </button>
+                    <!-- Status Change Buttons (nur für Gott) -->
+                    @if (Model.IsGod)
+                    {
+                        <div class="quest-actions">
+                            <span class="actions-label">Admin: Quest Status ändern</span>
+                            <div class="status-buttons">
+                                <button class="status-btn status-active @(quest.Status == "active" ? "current" : "")"
+                                        data-quest-id="@quest.Id"
+                                        data-new-status="active">
+                                    <span class="material-symbols-outlined">history_edu</span>
+                                    <span>Aktiv</span>
+                                </button>
+                                <button class="status-btn status-completed @(quest.Status == "completed" ? "current" : "")"
+                                        data-quest-id="@quest.Id"
+                                        data-new-status="completed">
+                                    <span class="material-symbols-outlined">verified</span>
+                                    <span>Erfolg</span>
+                                </button>
+                                <button class="status-btn status-failed @(quest.Status == "failed" ? "current" : "")"
+                                        data-quest-id="@quest.Id"
+                                        data-new-status="failed">
+                                    <span class="material-symbols-outlined">heart_broken</span>
+                                    <span>Gescheitert</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
         }
@@ -170,67 +176,70 @@
     </div>
 </div>
 
-<!-- Add Quest Modal -->
-<div id="questModal" class="quest-modal" style="display: none;">
-    <div class="modal-content-quest">
-        <div class="modal-header-quest">
-            <h3>Neue Quest anlegen</h3>
-            <button id="closeModalBtn" class="close-modal-btn">
-                <span class="material-symbols-outlined">close</span>
-            </button>
+<!-- Add Quest Modal (nur für Gott) -->
+@if (Model.IsGod)
+{
+    <div id="questModal" class="quest-modal" style="display: none;">
+        <div class="modal-content-quest">
+            <div class="modal-header-quest">
+                <h3>Neue Quest anlegen</h3>
+                <button id="closeModalBtn" class="close-modal-btn">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <form id="questForm" class="quest-form">
+                <!-- Title -->
+                <div class="form-group">
+                    <label>Titel der Quest</label>
+                    <input type="text" id="questTitle" name="title" required autofocus />
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label>Beschreibung</label>
+                    <textarea id="questDescription" name="description" rows="3"></textarea>
+                </div>
+
+                <!-- Type & Status -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Quest-Typ</label>
+                        <select id="questType" name="type">
+                            <option value="individual">Personengebunden</option>
+                            <option value="group">Gruppenquest</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="questStatus" name="status">
+                            <option value="active">Aktuell</option>
+                            <option value="completed">Abgeschlossen</option>
+                            <option value="failed">Gescheitert</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Character Assignment (only for individual quests) -->
+                <div class="form-group" id="characterAssignmentGroup">
+                    <label>Charakter zuweisen</label>
+                    <select id="questCharacter" name="characterId">
+                        <option value="">Bitte wählen...</option>
+                        @foreach (var kvp in Model.CharactersForDropdown)
+                        {
+                            <option value="@kvp.Key">@kvp.Value</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="submit-btn">
+                    In die Chronik aufnehmen
+                </button>
+            </form>
         </div>
-
-        <form id="questForm" class="quest-form">
-            <!-- Title -->
-            <div class="form-group">
-                <label>Titel der Quest</label>
-                <input type="text" id="questTitle" name="title" required autofocus />
-            </div>
-
-            <!-- Description -->
-            <div class="form-group">
-                <label>Beschreibung</label>
-                <textarea id="questDescription" name="description" rows="3"></textarea>
-            </div>
-
-            <!-- Type & Status -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Quest-Typ</label>
-                    <select id="questType" name="type">
-                        <option value="individual">Personengebunden</option>
-                        <option value="group">Gruppenquest</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Status</label>
-                    <select id="questStatus" name="status">
-                        <option value="active">Aktuell</option>
-                        <option value="completed">Abgeschlossen</option>
-                        <option value="failed">Gescheitert</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Character Assignment (only for individual quests) -->
-            <div class="form-group" id="characterAssignmentGroup">
-                <label>Charakter zuweisen</label>
-                <select id="questCharacter" name="characterId">
-                    <option value="">Bitte wählen...</option>
-                    @foreach (var kvp in Model.CharactersForDropdown)
-                    {
-                        <option value="@kvp.Key">@kvp.Value</option>
-                    }
-                </select>
-            </div>
-
-            <!-- Submit -->
-            <button type="submit" class="submit-btn">
-                In die Chronik aufnehmen
-            </button>
-        </form>
     </div>
-</div>
+}
 
 @section Scripts {
     <script src="~/js/quests.js"></script>

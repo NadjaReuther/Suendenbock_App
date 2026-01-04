@@ -189,6 +189,14 @@ namespace Suendenbock_App.Controllers
                 {
                     monster.perfected = request.Value;
                 }
+                else if (request.Field.ToLower() == "boughttrophy")
+                {
+                    monster.BoughtTrophyAvailable = request.Value;
+                }
+                else if (request.Field.ToLower() == "slaintrophy")
+                {
+                    monster.SlainTrophyAvailable = request.Value;
+                }
                 else
                 {
                     return BadRequest(new { message = "Ungültiges Feld" });

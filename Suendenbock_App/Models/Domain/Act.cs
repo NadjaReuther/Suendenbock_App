@@ -28,6 +28,38 @@ namespace Suendenbock_App.Models
         /// </summary>
         public bool IsActive { get; set; } = false;
 
+        // ===== SESSION-DATEN (für GenerateSession) =====
+
+        /// <summary>
+        /// Land des Akts (z.B. "Böhmen", "Bayern", etc.)
+        /// </summary>
+        [StringLength(100)]
+        public string? Country { get; set; }
+
+        /// <summary>
+        /// Erster Begleiter (Pflicht)
+        /// </summary>
+        [StringLength(100)]
+        public string? Companion1 { get; set; }
+
+        /// <summary>
+        /// Zweiter Begleiter (Optional)
+        /// </summary>
+        [StringLength(100)]
+        public string? Companion2 { get; set; }
+
+        /// <summary>
+        /// Monat des Akts (z.B. "Januar", "Februar", etc.)
+        /// </summary>
+        [StringLength(50)]
+        public string? Month { get; set; }
+
+        /// <summary>
+        /// Aktuelles Wetter (z.B. "Kalter, klarer Himmel")
+        /// </summary>
+        [StringLength(200)]
+        public string? Weather { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // ===== BEZIEHUNGEN =====
@@ -36,6 +68,11 @@ namespace Suendenbock_App.Models
         /// Die Karte für diesen Akt (One-to-One)
         /// </summary>
         public Map? Map { get; set; }
+
+        /// <summary>
+        /// Alle Quests, die zu diesem Akt gehören
+        /// </summary>
+        public List<Quest> Quests { get; set; } = new();
     }
 
     /// <summary>
@@ -50,7 +87,7 @@ namespace Suendenbock_App.Models
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// URL zum Kartenbild
+        /// Pfad zum Kartenbild (z.B. /images/maps/act-1-map.png)
         /// </summary>
         [Required]
         [StringLength(500)]

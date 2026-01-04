@@ -2,124 +2,120 @@
 @using Suendenbock_App.Models.Domain
 @{
     ViewData["Title"] = "Meine Character";
-    var adventStats = ViewBag.AdventStats;
 }
 
 <header class="antique-header">
-    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
-        Worum soll es heute gehen?
-    </h3>
+    <h1 style="text-align:center; color: #d4af37; font-family: 'MedievalSharp', cursive">
+        Herzlich Willkommen zurück, @Model.Rufname
+    </h1>
 </header>
 
-<div class="container mt-5">
-    <!-- Adventskalender-Statistik -->
-    @if (adventStats != null && adventStats.TotalOpened > 0)
-    {
-        <div class="row justify-content-center mb-4">
-            <div class="col-lg-8">
-                <div class="card shadow-lg" style="border: 2px solid #d4af37; background: linear-gradient(145deg, #f9f6f0, #e8dcc0);">
-                    <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: 2px solid #d4af37;">
-                        <h5 class="mb-0">🎄 Dein Weihnachtsabenteuer</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center mb-3">
-                            <div class="col-md-4">
-                                <h4 class="text-primary">@adventStats.TotalOpened</h4>
-                                <small class="text-muted">Türchen geöffnet</small>
-                            </div>
-                            <div class="col-md-4">
-                                <h4 class="text-success">@adventStats.EmmaChoices</h4>
-                                <small class="text-muted">Emma gewählt</small>
-                            </div>
-                            <div class="col-md-4">
-                                <h4 class="text-info">@adventStats.KasimirChoices</h4>
-                                <small class="text-muted">Kasimir gewählt</small>
-                            </div>
-                        </div>
-                        <hr />
-                        <h6 class="mb-3">Deine geöffneten Türchen:</h6>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Tag</th>
-                                        <th>Geöffnet am</th>
-                                        <th>Typ</th>
-                                        <th>Auswahl</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var door in adventStats.Doors)
-                                    {
-                                        <tr>
-                                            <td><strong>@door.DayNumber</strong></td>
-                                            <td><small>@door.OpenedAt.ToString("dd.MM. HH:mm")</small></td>
-                                            <td>
-                                                @if (door.DoorType == DoorType.Simple)
-                                                {
-                                                    <span class="badge bg-secondary">Text</span>
-                                                }
-                                                else if (door.DoorType == DoorType.Choice)
-                                                {
-                                                    <span class="badge bg-info">Auswahl</span>
-                                                }
-                                                else if (door.DoorType == DoorType.DirectAudio)
-                                                {
-                                                    <span class="badge bg-success">Audio</span>
-                                                }
-                                            </td>
-                                            <td>
-                                                @if (door.Choice != null)
-                                                {
-                                                    if (door.Choice == "Emma")
-                                                    {
-                                                        <span class="badge bg-success">Emma</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-primary">Kasimir</span>
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">-</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+<div class="main-container mt-5">
+    <section class="hero-section">
+    <div class="pergament-card" data-tilt>
+        <a class="card-link" asp-action="MeineDaten">
+            <div class="card-corner top-left"></div>
+            <div class="card-corner top-right"></div>
+            <div class="card-corner bottom-left"></div>
+            <div class="card-corner bottom-right"></div>
+
+            <div class="card-number">Profil</div>
+            <!--<h5 class="card-title">Charaktere</h5>-->
+            <div class="card-content">
+                deine persönlichen<br />Daten ändern
             </div>
-        </div>
-    }
-
-    <div class="row justify-content-center">
-        <div class="d-grid gap-5 col-6">
-            <a asp-action="MeineDaten" class="btn shadow-lg p-3 hover-card w-100">
-                Meine Daten bearbeiten
-            </a>
-            @if (Model != null)
-            {
-                <a asp-controller="Character" asp-action="Form" asp-route-id="@Model.Id" class="btn shadow-lg p-3 hover-card w-100" style="background-color: @Model.UserColor">
-                    Meinen Charakter bearbeiten
-                </a>
-
-            }
-            else
-            {
-                <a class="btn btn-outline-danger shadow-lg p-3 hover-card w-100">
-                    kein Charakter zugewiesen, Gott informieren
-                </a>
-            }
-            <a asp-action="Achievements" class="btn shadow-lg p-3 hover-card w-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                🏆 Meine Achievements
-            </a>
-            <a asp-controller="Player" asp-action="Weihnachtenuebersicht" class="btn shadow-lg p-3 hover-card text-white w-100" style="background-image: url(/assets/spieler/Weihnachten/Background.svg);">
-                Das Weihnachtsabenteuer
-            </a>
-        </div>
+        </a>
     </div>
+     @if (Model != null)
+       {
+            <div class="pergament-card" data-tilt>
+                <a class="card-link" asp-controller="Character" asp-action="Form" asp-route-id="@Model.Id">
+                    <div class="card-corner top-left"></div>
+                    <div class="card-corner top-right"></div>
+                    <div class="card-corner bottom-left"></div>
+                    <div class="card-corner bottom-right"></div>
+                    
+                    <div class="card-number">Character</div>
+                    <div class="card-content">
+                        eigenen Charakter<br />bearbeiten
+                    </div>
+                </a>
+            </div>                        
+       }
+      else
+       {
+            <div class="pergament-card" data-tilt>
+                <a class="card-link">
+                    <div class="card-corner top-left"></div>
+                    <div class="card-corner top-right"></div>
+                    <div class="card-corner bottom-left"></div>
+                    <div class="card-corner bottom-right"></div>
+                    
+                    <div class="card-number">Character</div>
+                    <div class="card-content">
+                        eigenen Charakter<br />bearbeiten
+                    </div>
+                </a>
+            </div>                        
+        }
+               
+    <div class="pergament-card" data-tilt>
+        <a class="card-link" asp-action="Achievements">
+            <div class="card-corner top-left"></div>
+            <div class="card-corner top-right"></div>
+            <div class="card-corner bottom-left"></div>
+            <div class="card-corner bottom-right"></div>
+
+            <div class="card-number">Erfolge</div>
+            <!--<h5 class="card-title">Charaktere</h5>-->
+            <div class="card-content">
+                alle Achievements<br>
+                die du freigespielt hast
+            </div>
+        </a>
+    </div>
+    <div class="pergament-card" data-tilt>
+        <a class="card-link" asp-controller="Player" asp-action="Weihnachtenuebersicht">
+            <div class="card-corner top-left"></div>
+            <div class="card-corner top-right"></div>
+            <div class="card-corner bottom-left"></div>
+            <div class="card-corner bottom-right"></div>
+
+            <div class="card-number">Weihnachten</div>
+            <!--<h5 class="card-title">Charaktere</h5>-->
+            <div class="card-content">
+                hier kommt alles<br>
+                zum Weihnachtsabenteuer und Adventskalender
+            </div>
+        </a>
+    </div>
+        <div class="pergament-card" data-tilt>
+            <a class="card-link" asp-controller="Player" asp-action="Adventskalender">
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+
+                <div class="card-number">Advents-Statistik</div>
+                <!--<h5 class="card-title">Charaktere</h5>-->
+                <div class="card-content">
+                   Statistik zum Adventskalender
+                </div>
+            </a>
+        </div>
+        <div class="pergament-card" data-tilt>
+            <a class="card-link" asp-controller="Spielmodus" asp-action="Dashboard">
+                <div class="card-corner top-left"></div>
+                <div class="card-corner top-right"></div>
+                <div class="card-corner bottom-left"></div>
+                <div class="card-corner bottom-right"></div>
+
+                <div class="card-number">Spielmodus</div>
+                <div class="card-content">
+                   Zum aktuellen Act<br>
+                   Dashboard
+                </div>
+            </a>
+        </div>
+    </section>
 </div>

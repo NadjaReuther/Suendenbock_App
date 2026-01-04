@@ -99,9 +99,9 @@ function isDayAvailable(dayNumber) {
     const currentMonth = today.getMonth() + 1;  // Monate starten bei 0
 
     // Nur im Dezember erlauben
-    if (currentMonth !== 12) {
+    /*if (currentMonth !== 12) {
         return false;
-    }
+    }*/
 
     // Nur wenn der Tag erreicht oder überschritten ist
     return currentDay >= dayNumber;

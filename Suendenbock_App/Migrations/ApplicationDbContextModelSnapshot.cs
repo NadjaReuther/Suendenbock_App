@@ -170,6 +170,18 @@ namespace Suendenbock_App.Migrations
                     b.Property<int>("ActNumber")
                         .HasColumnType("int");
 
+                    b.Property<string>("Companion1")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Companion2")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -180,8 +192,16 @@ namespace Suendenbock_App.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Month")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Weather")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -1080,12 +1100,14 @@ namespace Suendenbock_App.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BaseEffect")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Basics")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("BoughtTrophyAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -1108,9 +1130,11 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SlainEffect")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("SlainTrophyAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -1638,6 +1662,70 @@ namespace Suendenbock_App.Migrations
                     b.ToTable("UserTriggerPreferences");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.WeatherForecastDay", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Day")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("DayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Temperature")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("WeatherOptionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WeatherOptionId");
+
+                    b.ToTable("WeatherForecastDays");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.WeatherOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Month")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("WeatherName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Month");
+
+                    b.ToTable("WeatherOptions");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Zaubertyp", b =>
                 {
                     b.Property<int>("Id")
@@ -1739,6 +1827,9 @@ namespace Suendenbock_App.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ActId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("CharacterId")
                         .HasColumnType("int");
 
@@ -1771,6 +1862,8 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ActId");
 
                     b.HasIndex("CharacterId");
 
@@ -2406,6 +2499,17 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.WeatherForecastDay", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.WeatherOption", "WeatherOption")
+                        .WithMany("ForecastDays")
+                        .HasForeignKey("WeatherOptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WeatherOption");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Map", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Act", "Act")
@@ -2430,6 +2534,12 @@ namespace Suendenbock_App.Migrations
 
             modelBuilder.Entity("Suendenbock_App.Models.Quest", b =>
                 {
+                    b.HasOne("Suendenbock_App.Models.Act", "Act")
+                        .WithMany("Quests")
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
                         .WithMany("IndividualQuests")
                         .HasForeignKey("CharacterId")
@@ -2440,6 +2550,8 @@ namespace Suendenbock_App.Migrations
                         .HasForeignKey("MapMarkerId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("Act");
+
                     b.Navigation("Character");
 
                     b.Navigation("MapMarker");
@@ -2448,6 +2560,8 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Act", b =>
                 {
                     b.Navigation("Map");
+
+                    b.Navigation("Quests");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Abenteuerrang", b =>
@@ -2579,6 +2693,11 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Domain.TriggerTopic", b =>
                 {
                     b.Navigation("UserPreferences");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.WeatherOption", b =>
+                {
+                    b.Navigation("ForecastDays");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Zaubertyp", b =>

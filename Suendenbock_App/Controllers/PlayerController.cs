@@ -47,6 +47,11 @@ namespace Suendenbock_App.Controllers
                     .ThenInclude(l => l.LightCard)
                 .FirstOrDefaultAsync();
 
+            return View(character);
+        }
+        public async Task<IActionResult> Adventskalender()
+        {
+            var userId =  _userManager.GetUserId(User);
             // Adventskalender-Statistik laden
             var userChoices = await _context.UserAdventChoices
                 .Where(c => c.UserId == userId)
@@ -70,9 +75,8 @@ namespace Suendenbock_App.Controllers
 
             ViewBag.AdventStats = adventStats;
 
-            return View(character);
+            return View();
         }
-
         /// <summary>
         /// Übersichtsseite "Meine Daten bearbeiten"
         /// </summary>

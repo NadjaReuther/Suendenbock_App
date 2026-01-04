@@ -1,0 +1,184 @@
+@{
+    ViewData["Title"] = "Session vorbereiten";
+}
+
+<link rel="stylesheet" href="~/css/session-generator.css" />
+
+<div class="session-generator-container">
+    <!-- Initial Modal -->
+    <div id="initialModal" class="generator-modal active">
+        <div class="modal-header-custom">
+            <h2>Spielsession vorbereiten</h2>
+            <p class="subtitle">Wähle, wie du dein Abenteuer beginnen möchtest</p>
+        </div>
+        <div class="modal-actions">
+            <button onclick="sessionGen.showNewActForm()" class="action-btn primary">
+                <i class="bi bi-plus-circle"></i>
+                Neuen Akt anlegen
+            </button>
+            <button onclick="sessionGen.showLoadActView()" class="action-btn secondary">
+                <i class="bi bi-folder-open"></i>
+                Vorhandenen Akt laden
+            </button>
+            <button onclick="sessionGen.showManageActsView()" class="action-btn tertiary">
+                <i class="bi bi-gear"></i>
+                Akte verwalten
+            </button>
+        </div>
+    </div>
+
+    <!-- New/Edit Act Form -->
+    <div id="actFormModal" class="generator-modal">
+        <div class="modal-header-custom">
+            <h2 id="formTitle">Neuen Akt anlegen</h2>
+        </div>
+        <div class="modal-body-custom">
+            <form id="actForm" class="act-form">
+                <input type="hidden" id="actId" value="">
+
+                <div class="form-row">
+                    <!-- Left Column -->
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="actNumber">Nummer des Aktes</label>
+                            <input type="number" id="actNumber" name="actNumber" min="1" required placeholder="z.B. 2">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Karte hochladen</label>
+                            <div class="map-upload-area" id="mapUploadArea">
+                                <img id="mapPreview" src="" alt="Karten-Vorschau" style="display:none;">
+                                <div id="uploadPlaceholder" class="upload-placeholder">
+                                    <i class="bi bi-image"></i>
+                                    <p>Bild hierher ziehen oder klicken</p>
+                                </div>
+                                <input type="file" id="mapFile" accept="image/*" style="display:none;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="country">Land</label>
+                            <select id="country" name="country" required>
+                                <option value="">-- Wähle ein Land --</option>
+                                @foreach (var country in ViewBag.Countries)
+                                {
+                                    <option value="@country">@country</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label>Begleiter</label>
+                            <select id="companion1" name="companion1" required>
+                                <option value="">-- Erster Begleiter --</option>
+                                @foreach (var companion in ViewBag.Companions)
+                                {
+                                    <option value="@companion">@companion</option>
+                                }
+                            </select>
+                            <select id="companion2" name="companion2">
+                                <option value="">-- Zweiter Begleiter (optional) --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="month">Monat</label>
+                            <select id="month" name="month" required>
+                                <option value="">-- Wähle einen Monat --</option>
+                                <option value="Januar">Januar</option>
+                                <option value="Februar">Februar</option>
+                                <option value="März">März</option>
+                                <option value="April">April</option>
+                                <option value="Mai">Mai</option>
+                                <option value="Juni">Juni</option>
+                                <option value="Juli">Juli</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="Oktober">Oktober</option>
+                                <option value="November">November</option>
+                                <option value="Dezember">Dezember</option>
+                            </select>
+                        </div>
+
+                        <div id="weatherSelection" class="form-group" style="display:none;">
+                            <label>Wetterverlauf für <span id="selectedMonthLabel"></span></label>
+                            <div id="weatherOptions" class="weather-options"></div>
+                        </div>
+
+                        <div id="weatherForecast" class="weather-forecast" style="display:none;">
+                            <label class="forecast-label">VORSCHAU FÜR 5 TAGE</label>
+                            <div id="forecastDays" class="forecast-days"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="sessionGen.backToInitial()" class="btn-back">
+                        <i class="bi bi-arrow-left"></i> Zurück
+                    </button>
+                    <button type="submit" id="saveActBtn" class="btn-save">
+                        <i class="bi bi-save"></i> <span id="saveBtnText">Akt erstellen</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Load Act View -->
+    <div id="loadActModal" class="generator-modal">
+        <div class="modal-header-custom">
+            <h2>Vorhandenen Akt laden</h2>
+        </div>
+        <div class="modal-body-custom">
+            <div id="actsList" class="acts-list">
+                <!-- Acts werden hier dynamisch eingefügt -->
+            </div>
+        </div>
+        <div class="modal-footer-custom">
+            <button onclick="sessionGen.backToInitial()" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Zurück zur Auswahl
+            </button>
+        </div>
+    </div>
+
+    <!-- Manage Acts View -->
+    <div id="manageActsModal" class="generator-modal">
+        <div class="modal-header-custom">
+            <h2>Akte verwalten</h2>
+        </div>
+        <div class="modal-body-custom">
+            <div id="manageActsList" class="acts-list">
+                <!-- Acts werden hier dynamisch eingefügt -->
+            </div>
+        </div>
+        <div class="modal-footer-custom">
+            <button onclick="sessionGen.backToInitial()" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Zurück zur Auswahl
+            </button>
+        </div>
+    </div>
+
+    <!-- Reselect Weather View -->
+    <div id="reselectWeatherModal" class="generator-modal">
+        <div class="modal-header-custom">
+            <h2>Wetter für den Tag wählen</h2>
+        </div>
+        <div class="modal-body-custom">
+            <div id="actInfoDisplay" class="act-info-display"></div>
+            <div id="weatherSelectionReselect" class="weather-options"></div>
+        </div>
+        <div class="modal-footer-custom">
+            <button onclick="sessionGen.backToLoadView()" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Zurück
+            </button>
+            <button onclick="sessionGen.startGame()" id="startGameBtn" class="btn-save" disabled>
+                <i class="bi bi-play-fill"></i> Spiel starten
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/session-generator-v2.js"></script>

@@ -34,11 +34,11 @@
         <div class="row mb-4">
             <div class="col-12">
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a asp-action="ManageAchievements" class="btn btn-lg shadow" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        🏆 Achievement-Verwaltung
+                    <a asp-action="GenerateSession" class="btn btn-lg shadow" style="background: linear-gradient(135deg, #ffbe4f 0%, #e8702a 100%); color: #111111;">
+                        Session vorbereiten
                     </a>
-                    <a asp-action="QRGenerator" class="btn btn-lg btn-secondary shadow">
-                        📱 QR-Generator
+                    <a asp-action="StartSession" class="btn btn-lg shadow" style="background: linear-gradient(135deg, #c9df8a 0%, #234d20 100%); color: white;">
+                        Session starten
                     </a>
                 </div>
             </div>
@@ -242,8 +242,8 @@
         </div>
 
         <div class="row">
-            <!-- Monster Pergament -->
-            <div class="col-md-6">
+            <!-- Monster Pergament (volle Breite) -->
+            <div class="col-md-12">
                 <div class="pergament-table-card">
                     <h3 class="pergament-header">Monster</h3>
                     <table id="monsterTable" class="medieval-table w-100">
@@ -254,6 +254,8 @@
                                 <th>Begegnung</th>
                                 <th>⚔️ Encounter</th>
                                 <th>✨ Perfected</th>
+                                <th>💰 Kaufbare Trophäe</th>
+                                <th>🏆 Erlegte Trophäe</th>
                                 <th>🗡️ Aktionen</th>
                             </tr>
                         </thead>
@@ -301,6 +303,26 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input monster-toggle"
+                                                   type="checkbox"
+                                                   data-monster-id="@monster.Id"
+                                                   data-toggle-type="boughtTrophy"
+                                                   @(monster.BoughtTrophyAvailable ? "checked" : "")
+                                                   title="Kaufbare Trophäe aktivieren/deaktivieren">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input monster-toggle"
+                                                   type="checkbox"
+                                                   data-monster-id="@monster.Id"
+                                                   data-toggle-type="slainTrophy"
+                                                   @(monster.SlainTrophyAvailable ? "checked" : "")
+                                                   title="Erlegte Trophäe aktivieren/deaktivieren">
+                                        </div>
+                                    </td>
+                                    <td>
                                         <div class="medieval-actions">
                                             <a asp-controller="Monster" asp-action="Form" asp-route-id="@monster.Id"
                                                class="medieval-btn edit-btn" title="Monster bearbeiten">
@@ -319,9 +341,11 @@
                     </table>
                 </div>
             </div>
+        </div>
 
-            <!-- Monstertypen Pergament -->
-            <div class="col-md-6">
+        <div class="row">
+            <!-- Monstertypen Pergament (volle Breite) -->
+            <div class="col-md-12">
                 <div class="pergament-table-card">
                     <h3 class="pergament-header">Monstertypen</h3>
                     <table id="monstertypTable" class="medieval-table w-100">
@@ -728,6 +752,43 @@ $(document).on('change', '.companion-toggle', function() {
         }
     });
 });
+
+// Beim Laden: Trophäen-Toggle deaktivieren, wenn "Begegnung" nicht aktiviert ist
+$(document).ready(function() {
+    // Für jedes Monster die Toggle-Zustände aktualisieren
+    $('[data-monster-id]').each(function() {
+        const row = $(this);
+        const monsterId = row.data('monster-id');
+
+        if (!monsterId) return; // Überspringen wenn keine ID
+
+        const meetToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="meet"]`);
+        const encounterToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="encounter"]`);
+        const perfectedToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="perfected"]`);
+        const boughtTrophyToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="boughtTrophy"]`);
+        const slainTrophyToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="slainTrophy"]`);
+
+        const isMeetChecked = meetToggle.is(':checked');
+        const isEncounterChecked = encounterToggle.is(':checked');
+
+        // Encounter deaktivieren wenn Meet nicht aktiviert
+        if (!isMeetChecked) {
+            encounterToggle.prop('disabled', true).parent().css('opacity', '0.5');
+        }
+
+        // Perfected deaktivieren wenn Meet oder Encounter nicht aktiviert
+        if (!isMeetChecked || !isEncounterChecked) {
+            perfectedToggle.prop('disabled', true).parent().css('opacity', '0.5');
+        }
+
+        // Trophäen-Toggle deaktivieren wenn Meet nicht aktiviert
+        if (!isMeetChecked) {
+            boughtTrophyToggle.prop('disabled', true).parent().css('opacity', '0.5');
+            slainTrophyToggle.prop('disabled', true).parent().css('opacity', '0.5');
+        }
+    });
+});
+
 </script>
 }
 

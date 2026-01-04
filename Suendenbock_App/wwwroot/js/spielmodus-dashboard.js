@@ -27,17 +27,11 @@ function updateStatusDisplay() {
     document.getElementById('generatedPokus').textContent = totalPokus;
 }
 
-function navigateTo(page) {
-    const routes = {
-        'map': '/Spielmodus/Map',
-        'quests': '/Spielmodus/Quests',
-        'trophies': '/Spielmodus/Trophies'
-    };
-    if (routes[page]) window.location.href = routes[page];
-}
-
 // ===== COMBAT BUTTON =====
 
+function goToCombatSetup() {
+    window.location.href = '/Spielmodus/CombatSetup';
+}
 function toggleCombatReady() {
     const btn = document.getElementById('combatBtn');
     if (!isCombatPrimed) {

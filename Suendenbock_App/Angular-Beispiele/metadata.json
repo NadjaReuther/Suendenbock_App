@@ -1,0 +1,5 @@
+{
+  "name": "Sündenbock 1618 Einleitung",
+  "description": "A web application recreating the UI for 'Sündenbock 1618', focusing on the 'Start Game Session' modal. The interface has a medieval, parchment-like aesthetic.",
+  "requestFramePermissions": []
+}

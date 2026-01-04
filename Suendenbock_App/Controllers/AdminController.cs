@@ -224,5 +224,40 @@ namespace Suendenbock_App.Controllers
 
             return RedirectToAction(nameof(ManageAchievements));
         }
+
+        // ===== SESSION VORBEREITEN (GenerateSession) =====
+
+        /// <summary>
+        /// Session vorbereiten - Akte verwalten und neue Sessions anlegen
+        /// Route: /Admin/GenerateSession
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> GenerateSession()
+        {
+            // Lade alle vorhandenen Acts für die Verwaltung
+            var acts = await _context.Acts
+                .Include(a => a.Map)
+                .OrderBy(a => a.ActNumber)
+                .ToListAsync();
+
+            // Lade verfügbare Begleiter alle aus der Gilde "Wolkenbruch"
+            var companions = await _context.Characters
+                .Include(c => c.Affiliation)
+                .Where(c => c.Affiliation.Guild.Name == "Wolkenbruch")
+                .Select(c => $"{c.Vorname} {c.Nachname}")
+                .ToListAsync();
+
+            // Lade alle Länder aus der Datenbank
+            var countries = await _context.Herkunftslaender
+                .OrderBy(h => h.Name)
+                .Select(h => h.Name)
+                .ToListAsync();
+
+            ViewBag.Acts = acts;
+            ViewBag.Companions = companions;
+            ViewBag.Countries = countries;
+
+            return View();
+        }
     }
 }

@@ -6,10 +6,12 @@
  */
 
 class MonsterToggleValidator {
-    constructor(meetSelector, encounterSelector, perfectedSelector) {
+    constructor(meetSelector, encounterSelector, perfectedSelector, boughtTrophySelector = null, slainTrophySelector = null) {
         this.meetToggle = $(meetSelector);
         this.encounterToggle = $(encounterSelector);
         this.perfectedToggle = $(perfectedSelector);
+        this.boughtTrophyToggle = boughtTrophySelector ? $(boughtTrophySelector) : null;
+        this.slainTrophyToggle = slainTrophySelector ? $(slainTrophySelector) : null;
 
         this.init();
     }
@@ -43,6 +45,27 @@ class MonsterToggleValidator {
         } else {
             this.perfectedToggle.prop('disabled', false);
             this.perfectedToggle.parent().css('opacity', '1');
+        }
+
+        // Trophäen können nur aktiviert werden, wenn Meet aktiviert ist
+        if (this.boughtTrophyToggle && this.boughtTrophyToggle.length) {
+            if (!isMeetChecked) {
+                this.boughtTrophyToggle.prop('checked', false).prop('disabled', true);
+                this.boughtTrophyToggle.parent().css('opacity', '0.5');
+            } else {
+                this.boughtTrophyToggle.prop('disabled', false);
+                this.boughtTrophyToggle.parent().css('opacity', '1');
+            }
+        }
+
+        if (this.slainTrophyToggle && this.slainTrophyToggle.length) {
+            if (!isMeetChecked) {
+                this.slainTrophyToggle.prop('checked', false).prop('disabled', true);
+                this.slainTrophyToggle.parent().css('opacity', '0.5');
+            } else {
+                this.slainTrophyToggle.prop('disabled', false);
+                this.slainTrophyToggle.parent().css('opacity', '1');
+            }
         }
     }
 
@@ -116,11 +139,15 @@ function validateMonsterToggle(monsterId, toggleType, isChecked) {
     const meetToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="meet"]`);
     const encounterToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="encounter"]`);
     const perfectedToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="perfected"]`);
+    const boughtTrophyToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="boughtTrophy"]`);
+    const slainTrophyToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="slainTrophy"]`);
 
     console.log('Found toggles:', {
         meet: meetToggle.length,
         encounter: encounterToggle.length,
-        perfected: perfectedToggle.length
+        perfected: perfectedToggle.length,
+        boughtTrophy: boughtTrophyToggle.length,
+        slainTrophy: slainTrophyToggle.length
     });
 
     const isMeetChecked = meetToggle.is(':checked');
@@ -148,6 +175,30 @@ function validateMonsterToggle(monsterId, toggleType, isChecked) {
             Swal.fire({
                 title: 'Ungültige Auswahl',
                 text: 'Perfected kann nur aktiviert werden, wenn sowohl Begegnung als auch Encounter aktiviert sind.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+
+        // Wenn Kaufbare Trophäe aktiviert werden soll, muss Meet aktiviert sein
+        if (toggleType === 'boughtTrophy' && !isMeetChecked) {
+            console.log('Validation failed: BoughtTrophy ohne Meet');
+            Swal.fire({
+                title: 'Ungültige Auswahl',
+                text: 'Kaufbare Trophäe kann nur aktiviert werden, wenn Begegnung aktiviert ist.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return false;
+        }
+
+        // Wenn Erlegte Trophäe aktiviert werden soll, muss Meet aktiviert sein
+        if (toggleType === 'slainTrophy' && !isMeetChecked) {
+            console.log('Validation failed: SlainTrophy ohne Meet');
+            Swal.fire({
+                title: 'Ungültige Auswahl',
+                text: 'Erlegte Trophäe kann nur aktiviert werden, wenn Begegnung aktiviert ist.',
                 icon: 'error',
                 confirmButtonText: 'OK'
             });

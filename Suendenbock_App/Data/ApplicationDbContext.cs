@@ -85,6 +85,10 @@ namespace Suendenbock_App.Data
         public DbSet<MapMarker> MapMarkers { get; set; }
         public DbSet<RestFood> RestFoods { get; set; }
 
+        // Weather-System
+        public DbSet<WeatherOption> WeatherOptions { get; set; }
+        public DbSet<WeatherForecastDay> WeatherForecastDays { get; set; }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -497,6 +501,13 @@ namespace Suendenbock_App.Data
                 .HasForeignKey(q => q.MapMarkerId)
                 .OnDelete(DeleteBehavior.SetNull); // Wenn Marker gelöscht, Quest bleibt
 
+            // Quest -> Act (Required)
+            builder.Entity<Quest>()
+                .HasOne(q => q.Act)
+                .WithMany(a => a.Quests)
+                .HasForeignKey(q => q.ActId)
+                .OnDelete(DeleteBehavior.Restrict); // Act kann nicht gelöscht werden, wenn Quests existieren
+
             // Act -> Map (One-to-One)
             builder.Entity<Map>()
                 .HasOne(m => m.Act)
@@ -531,6 +542,19 @@ namespace Suendenbock_App.Data
             // Nur ein aktiver Akt gleichzeitig
             builder.Entity<Act>()
                 .HasIndex(a => a.IsActive);
+
+            // ===== WEATHER-SYSTEM BEZIEHUNGEN =====
+
+            // WeatherOption -> WeatherForecastDay (One-to-Many)
+            builder.Entity<WeatherForecastDay>()
+                .HasOne(wfd => wfd.WeatherOption)
+                .WithMany(wo => wo.ForecastDays)
+                .HasForeignKey(wfd => wfd.WeatherOptionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Index für schnelle Monat-Suche
+            builder.Entity<WeatherOption>()
+                .HasIndex(wo => wo.Month);
         }
     }
 }

@@ -1,0 +1,308 @@
+﻿@model Suendenbock_App.Controllers.CombatSetupViewModel
+@{
+    ViewData["Title"] = "Combat Setup";
+}
+
+@section Styles {
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&family=MedievalSharp&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#C5A059",
+                        secondary: "#6B5B95",
+                        accent: "#8B4513",
+                        "background-light": "#F9F5EB",
+                        "panel-light": "#F2E8D5",
+                        "text-main": "#4A3B2A",
+                    },
+                    fontFamily: {
+                        display: ["MedievalSharp", "serif"],
+                        body: ["Lato", "sans-serif"],
+                        cinzel: ["Cinzel", "serif"],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            background-color: #F9F5EB;
+        }
+
+        .bg-pattern {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%234A3B2A%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 0.7rem center;
+            background-size: 0.65em auto;
+            appearance: none;
+        }
+    </style>
+}
+
+<div class="bg-background-light text-text-main font-body min-h-screen relative overflow-hidden transition-colors duration-300 flex items-center justify-center p-4">
+    <div class="absolute inset-0 pointer-events-none opacity-[0.03]" style="background-image: url('https://www.transparenttextures.com/patterns/aged-paper.png');"></div>
+
+    <div class="relative w-full max-w-5xl bg-panel-light border-2 border-primary rounded-xl shadow-2xl overflow-hidden transform transition-all animate-fade-in">
+        <!-- Ornamental Corners -->
+        <div class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg pointer-events-none"></div>
+        <div class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg pointer-events-none"></div>
+        <div class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg pointer-events-none"></div>
+
+        <!-- Header -->
+        <div class="bg-gradient-to-b from-primary/20 to-transparent p-6 text-center border-b border-primary/20">
+            <h2 class="text-3xl font-display text-text-main tracking-wide drop-shadow-sm">
+                Combat Setup
+            </h2>
+            <div class="flex justify-center mt-2">
+                <div class="h-1 w-24 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-8 max-h-[85vh] overflow-y-auto">
+            <form id="combatSetupForm" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                    <!-- LEFT COLUMN: Monster Selection -->
+                    <div class="space-y-6">
+                        <h3 class="text-lg font-cinzel tracking-wider text-text-main/80 border-b border-primary/30 pb-2">Monster auswählen</h3>
+
+                        <div id="monstertypeContainer" class="space-y-6">
+                            @foreach (var monstertyp in Model.Monstertypen)
+                            {
+                                <div class="monstertype-section" data-monstertype-id="@monstertyp.Id">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="block text-sm font-cinzel tracking-wider text-text-main/80">
+                                            @monstertyp.Name
+                                        </label>
+                                        <button type="button"
+                                                onclick="addMonsterDropdown(@monstertyp.Id)"
+                                                class="flex items-center gap-1 px-3 py-1 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded text-xs font-cinzel transition-colors">
+                                            <span class="material-icons text-sm">add</span>
+                                            <span>Hinzufügen</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="monster-dropdowns space-y-4" data-monstertype-id="@monstertyp.Id">
+                                        <!-- Dropdowns werden hier via JS eingefügt -->
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Character Selection -->
+                    <div class="space-y-6">
+                        <h3 class="text-lg font-cinzel tracking-wider text-text-main/80 border-b border-primary/30 pb-2">Charaktere auswählen</h3>
+
+                        <div class="space-y-3">
+                            @foreach (var character in Model.Characters)
+                            {
+                                <label class="flex items-center p-3 bg-[#E8DCC0]/70 border border-primary/30 rounded cursor-pointer hover:bg-primary/10 transition-colors">
+                                    <input type="checkbox"
+                                           name="selectedCharacters"
+                                           value="@character.Id"
+                                           class="character-checkbox w-5 h-5 text-primary border-2 border-text-main/50 rounded focus:ring-primary focus:ring-offset-0"
+                                           onchange="validateForm()" />
+                                    <div class="ml-3 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-body font-semibold text-base text-text-main">@character.Name</span>
+                                            @if (character.IsBegleiter)
+                                            {
+                                                <span class="px-2 py-0.5 bg-primary/20 border border-primary/40 rounded text-xs font-cinzel">Begleiter</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="px-2 py-0.5 bg-secondary/20 border border-secondary/40 rounded text-xs font-cinzel">Spieler</span>
+                                            }
+                                        </div>
+                                        <div class="flex items-center gap-3 mt-1 text-xs text-text-main/70">
+                                            <span>@character.CurrentHealth / @character.MaxHealth HP</span>
+                                            <div class="flex-1 h-1.5 bg-text-main/10 rounded-full overflow-hidden">
+                                                <div class="h-full bg-primary transition-all"
+                                                     style="width: @(character.MaxHealth > 0 ? (character.CurrentHealth * 100.0 / character.MaxHealth).ToString("F2", System.Globalization.CultureInfo.InvariantCulture) : "0")%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="flex items-center justify-between pt-6 border-t border-primary/20">
+                    <a href="/Spielmodus/Dashboard"
+                       class="text-text-main/70 hover:text-primary font-cinzel text-sm tracking-widest uppercase transition-colors flex items-center gap-2 py-2">
+                        <span class="material-icons text-base">arrow_back</span>
+                        Zurück zum Lager
+                    </a>
+                    <button type="button"
+                            id="startCombatBtn"
+                            onclick="startCombat()"
+                            disabled
+                            class="group relative py-3 px-8 bg-primary text-white border border-amber-600 transition-all duration-300 rounded shadow-md flex items-center justify-center gap-3 overflow-hidden disabled:bg-gray-400/70 disabled:border-gray-500 disabled:text-white/70 disabled:cursor-not-allowed">
+                        <span class="material-icons text-xl">swords</span>
+                        <span class="font-cinzel font-bold tracking-wide">Setup starten</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Model-Daten für JavaScript
+        const COMBAT_DATA = {
+            monstertypen: @Html.Raw(Json.Serialize(Model.Monstertypen)),
+            characters: @Html.Raw(Json.Serialize(Model.Characters))
+        };
+
+        let monsterCounter = 0;
+        let selectedMonsters = {}; // { monsterId: { health: X, pokus: Y } }
+
+        // ===== MONSTER DROPDOWN HINZUFÜGEN =====
+
+        function addMonsterDropdown(monstertypId) {
+            const container = document.querySelector(`.monster-dropdowns[data-monstertype-id="${monstertypId}"]`);
+            const monstertyp = COMBAT_DATA.monstertypen.find(mt => mt.id === monstertypId);
+
+            if (!monstertyp || !container) return;
+
+            const dropdownId = `monster-${monsterCounter++}`;
+
+            const dropdownHTML = `
+                <div class="monster-dropdown-item animate-fade-in" data-dropdown-id="${dropdownId}">
+                    <div class="flex items-center gap-2 mb-2">
+                        <select class="monster-select flex-1 bg-[#E8DCC0] border border-primary/50 rounded px-3 py-2 text-text-main focus:ring-primary focus:border-primary focus:outline-none transition-shadow shadow-inner bg-pattern"
+                                onchange="monsterSelected(this, '${dropdownId}')">
+                            <option value="">-- Monster wählen --</option>
+                            ${monstertyp.monsters.map(m => `<option value="${m.id}">${m.name}</option>`).join('')}
+                        </select>
+                        <button type="button"
+                                onclick="removeMonsterDropdown('${dropdownId}')"
+                                class="flex items-center justify-center w-9 h-9 bg-red-100 hover:bg-red-200 border border-red-300 rounded text-red-600 transition-colors">
+                            <span class="material-icons text-sm">close</span>
+                        </button>
+                    </div>
+                    <div class="monster-stats hidden pl-4 space-y-2 border-l-2 border-primary/30">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-cinzel tracking-wider text-text-main/70 mb-1">Health</label>
+                                <input type="number"
+                                       min="1"
+                                       class="monster-health w-full bg-[#E8DCC0] border border-primary/50 rounded px-2 py-1 text-sm text-text-main focus:ring-primary focus:border-primary focus:outline-none"
+                                       placeholder="z.B. 100"
+                                       oninput="updateMonsterStats('${dropdownId}')" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-cinzel tracking-wider text-text-main/70 mb-1">Pokus</label>
+                                <input type="number"
+                                       min="0"
+                                       class="monster-pokus w-full bg-[#E8DCC0] border border-primary/50 rounded px-2 py-1 text-sm text-text-main focus:ring-primary focus:border-primary focus:outline-none"
+                                       placeholder="z.B. 10"
+                                       oninput="updateMonsterStats('${dropdownId}')" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', dropdownHTML);
+            validateForm();
+        }
+
+        // ===== MONSTER AUSGEWÄHLT =====
+
+        function monsterSelected(selectElement, dropdownId) {
+            const monsterId = selectElement.value;
+            const statsDiv = selectElement.closest('.monster-dropdown-item').querySelector('.monster-stats');
+
+            if (monsterId) {
+                statsDiv.classList.remove('hidden');
+            } else {
+                statsDiv.classList.add('hidden');
+                delete selectedMonsters[dropdownId];
+            }
+
+            validateForm();
+        }
+
+        // ===== MONSTER STATS AKTUALISIEREN =====
+
+        function updateMonsterStats(dropdownId) {
+            const item = document.querySelector(`[data-dropdown-id="${dropdownId}"]`);
+            const select = item.querySelector('.monster-select');
+            const health = item.querySelector('.monster-health').value;
+            const pokus = item.querySelector('.monster-pokus').value;
+
+            const monsterId = select.value;
+
+            if (monsterId && health && pokus) {
+                selectedMonsters[dropdownId] = {
+                    monsterId: parseInt(monsterId),
+                    health: parseInt(health),
+                    pokus: parseInt(pokus)
+                };
+            } else {
+                delete selectedMonsters[dropdownId];
+            }
+
+            validateForm();
+        }
+
+        // ===== MONSTER ENTFERNEN =====
+
+        function removeMonsterDropdown(dropdownId) {
+            const item = document.querySelector(`[data-dropdown-id="${dropdownId}"]`);
+            if (item) {
+                item.remove();
+                delete selectedMonsters[dropdownId];
+                validateForm();
+            }
+        }
+
+        // ===== VALIDATION =====
+
+        function validateForm() {
+            const hasMonsters = Object.keys(selectedMonsters).length > 0;
+            const hasCharacters = document.querySelectorAll('.character-checkbox:checked').length > 0;
+
+            const startBtn = document.getElementById('startCombatBtn');
+            startBtn.disabled = !(hasMonsters && hasCharacters);
+        }
+
+        // ===== COMBAT STARTEN =====
+
+        function startCombat() {
+            const selectedCharacterIds = Array.from(document.querySelectorAll('.character-checkbox:checked'))
+                .map(cb => parseInt(cb.value));
+
+            const setup = {
+                monsters: Object.values(selectedMonsters),
+                characterIds: selectedCharacterIds
+            };
+
+            console.log('Combat Setup:', setup);
+
+            // TODO: API-Call oder LocalStorage speichern
+            // Dann weiterleiten zu Combat-Screen
+
+            alert('Combat Setup gespeichert! (TODO: Combat-Screen implementieren)');
+        }
+
+        // ===== INIT: Ersten Dropdown für jeden Monstertyp hinzufügen =====
+
+        document.addEventListener('DOMContentLoaded', () => {
+            COMBAT_DATA.monstertypen.forEach(mt => {
+                addMonsterDropdown(mt.id);
+            });
+        });
+    </script>
+}

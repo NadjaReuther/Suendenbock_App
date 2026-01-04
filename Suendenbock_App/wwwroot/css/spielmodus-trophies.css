@@ -1,0 +1,856 @@
+﻿/* wwwroot/css/spielmodus-trophies.css */
+
+/* ===== MATERIAL SYMBOLS ===== */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+
+/* ===== CONTAINER ===== */
+.spielmodus-trophies-container {
+    min-height: 100vh;
+    padding: 2rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ===== HEADER ===== */
+.trophies-header {
+    position: relative;
+    z-index: 10;
+    max-width: 96rem;
+    margin: 0 auto 4rem;
+    border-bottom: 2px solid rgba(139, 94, 60, 0.2);
+    padding-bottom: 2.5rem;
+    text-align: center;
+}
+
+    .trophies-header h1 {
+        font-family: 'Uncial Antiqua', serif;
+        font-size: 4.5rem;
+        color: #5d4e37;
+        text-shadow: 0 1px 2px rgba(93, 78, 55, 0.3);
+        margin-bottom: 0.5rem;
+    }
+
+    .trophies-header .subtitle {
+        font-family: 'MedievalSharp', cursive;
+        font-size: 0.75rem;
+        color: rgba(139, 94, 60, 0.6);
+        font-style: italic;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+    }
+
+/* ===== MAIN CONTENT ===== */
+.trophies-main {
+    position: relative;
+    z-index: 10;
+    max-width: 80rem;
+    margin: 0 auto;
+}
+
+/* ===== SECTION DIVIDER ===== */
+.section-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 4rem;
+}
+
+    .section-divider .divider-line {
+        height: 1px;
+        background: rgba(139, 94, 60, 0.2);
+        flex-grow: 1;
+        max-width: 150px;
+    }
+
+    .section-divider h2 {
+        font-family: 'Cinzel', serif;
+        font-size: 1.125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4em;
+        color: rgba(139, 94, 60, 0.7);
+    }
+
+/* ===== CONTENT DIVIDER (mit Icon) ===== */
+.content-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    opacity: 0.3;
+    padding: 2rem 0;
+    margin: 6rem 0;
+}
+
+    .content-divider .divider-line {
+        height: 1px;
+        background: #8B5E3C;
+        flex-grow: 1;
+        max-width: 200px;
+    }
+
+    .content-divider .material-symbols-outlined {
+        font-size: 1.5rem;
+        color: #8B5E3C;
+    }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .trophies-header h1 {
+        font-size: 3rem;
+    }
+
+    .corner-decoration {
+        display: none;
+    }
+}
+/* Teil 2: Equipped Section (3 Slots mit Ketten) */
+
+/* ===== EQUIPPED SECTION ===== */
+.equipped-section {
+    margin-bottom: 6rem;
+}
+
+.equipped-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    justify-items: center;
+}
+
+/* ===== TROPHY SLOT ===== */
+.trophy-slot {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 13rem;
+}
+
+/* Kette (oben) */
+.trophy-chain {
+    position: absolute;
+    top: -4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 5rem;
+    background: rgba(139, 94, 60, 0.3);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    z-index: 0;
+}
+
+/* Ketten-Aufhängung */
+.trophy-chain-mount {
+    position: absolute;
+    top: -0.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #f0e6d2;
+    border: 2px solid #8B5E3C;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+/* ===== TROPHY SHIELD ===== */
+.trophy-shield {
+    position: relative;
+    width: 12rem;
+    height: 12rem;
+    cursor: pointer;
+    transition: transform 0.5s ease;
+}
+
+    .trophy-shield:hover {
+        transform: scale(1.05);
+    }
+
+/* Schild-Hintergrund (Wappenschild-Form) */
+.shield-background {
+    position: absolute;
+    inset: 0;
+    background: #f0e6d2;
+    border-radius: 20% 20% 50% 50%; /* Wappenschild */
+    border: 4px solid rgba(139, 94, 60, 0.3);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+.trophy-shield:hover .shield-background {
+    border-color: #d4af37;
+}
+
+/* Paper Texture Overlay */
+.shield-texture {
+    position: absolute;
+    inset: 0;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="0.5" fill="%23d4c4a8" opacity="0.3"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+/* Bild-Container (Kreis in der Mitte) */
+.shield-image-container {
+    position: absolute;
+    inset: 0.875rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(139, 94, 60, 0.2);
+    background: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Bild selbst */
+.shield-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.7s ease;
+}
+
+    /* Bought: Grayscale + weniger Deckkraft */
+    .shield-image.bought {
+        filter: grayscale(100%);
+        opacity: 0.6;
+    }
+
+    /* Slain: Farbig + normal */
+    .shield-image.slain {
+        filter: saturate(1.1);
+        opacity: 1;
+    }
+
+.trophy-shield:hover .shield-image {
+    transform: scale(1.1);
+}
+
+/* Remove Overlay (beim Hover) */
+.shield-remove-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(93, 78, 55, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 20;
+}
+
+.trophy-shield:hover .shield-remove-overlay {
+    opacity: 1;
+}
+
+.shield-remove-overlay .material-symbols-outlined {
+    font-size: 3rem;
+    color: white;
+}
+
+/* ===== STATUS BADGE ===== */
+.trophy-status-badge {
+    position: absolute;
+    bottom: -0.25rem;
+    right: -0.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 30;
+    transition: transform 0.3s ease;
+}
+
+.trophy-shield:hover .trophy-status-badge {
+    transform: scale(1.1);
+}
+
+/* Slain & Bought: Antique Braun */
+.trophy-status-badge.slain,
+.trophy-status-badge.bought {
+    background: rgba(139, 115, 85, 0.9);
+    color: white;
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+.trophy-status-badge .material-symbols-outlined {
+    font-size: 1.25rem;
+}
+
+/* ===== NAMEPLATE (Gold/Messing-Plakette) ===== */
+.trophy-nameplate {
+    margin-top: 1.25rem;
+    position: relative;
+    width: 100%;
+    background: #d4af37;
+    padding: 1.5px;
+    border-radius: 0.125rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transform: rotate(-1deg);
+    transition: transform 0.3s ease;
+}
+
+.trophy-shield:hover + .trophy-nameplate {
+    transform: rotate(0deg);
+}
+
+.nameplate-inner {
+    background: #d4af37;
+    padding: 0.75rem;
+    border-radius: 0.125rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.trophy-name {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.75rem;
+    color: #5d4e37;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.25rem 0;
+    line-height: 1;
+}
+
+.nameplate-divider {
+    height: 1px;
+    background: rgba(93, 78, 55, 0.1);
+    width: 66%;
+    margin-bottom: 0.375rem;
+}
+
+.trophy-effect {
+    font-size: 0.5625rem;
+    color: #5d4e37;
+    font-weight: bold;
+    font-style: italic;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* ===== EMPTY SLOT ===== */
+.trophy-slot-empty {
+    width: 12rem;
+    height: 12rem;
+    border-radius: 20% 20% 50% 50%;
+    border: 2px dashed rgba(139, 94, 60, 0.75);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(139, 94, 60, 0.75);
+    background: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+    .trophy-slot-empty:hover {
+        color: #d4af37;
+        border-color: #d4af37;
+    }
+
+    .trophy-slot-empty .material-symbols-outlined {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+.empty-text {
+    font-size: 0.5625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: bold;
+    font-family: 'Cinzel', serif;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    .equipped-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .trophy-slot {
+        width: 10rem;
+    }
+
+    .trophy-shield {
+        width: 10rem;
+        height: 10rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .equipped-grid {
+        grid-template-columns: 1fr;
+        gap: 4rem;
+    }
+}
+/* Teil 3: Inventory Section + Footer */
+
+/* ===== INVENTORY SECTION ===== */
+.inventory-section {
+    padding-bottom: 5rem;
+}
+
+    .inventory-section h2 {
+        font-family: 'Cinzel', serif;
+        font-size: 1.125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4em;
+        text-align: center;
+        margin-bottom: 3rem;
+        color: rgba(139, 94, 60, 0.4);
+    }
+
+/* ===== INVENTORY GRID ===== */
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+/* ===== INVENTORY CARD ===== */
+.inventory-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(239, 230, 213, 0.3);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d4c4a8;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+    .inventory-card:hover {
+        background: rgba(255, 255, 255, 0.4);
+        border-color: #d4af37;
+    }
+
+/* ===== INVENTORY SHIELD (kleiner) ===== */
+.inventory-shield {
+    position: relative;
+    width: 10rem;
+    height: 10rem;
+    margin-bottom: 1.5rem;
+}
+
+.shield-background-small {
+    position: absolute;
+    inset: 0;
+    background: rgba(212, 175, 55, 0.4);
+    border-radius: 20% 20% 50% 50%;
+    border: 2px solid rgba(139, 94, 60, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.shield-image-container-small {
+    position: absolute;
+    inset: 0.625rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(139, 94, 60, 0.1);
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shield-image-small {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s ease;
+}
+
+    .shield-image-small.bought {
+        filter: grayscale(100%);
+        opacity: 0.5;
+    }
+
+    .shield-image-small.slain {
+        filter: saturate(1.1);
+        opacity: 1;
+    }
+
+.inventory-card:hover .shield-image-small {
+    transform: scale(1.1);
+}
+
+/* ===== STATUS TOGGLE BUTTON ===== */
+.status-toggle-btn {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 30;
+    transition: transform 0.3s ease;
+}
+
+    .status-toggle-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .status-toggle-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Slain: Grün */
+    .status-toggle-btn.slain {
+        background: #16a34a;
+        color: white;
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Bought: Gold */
+    .status-toggle-btn.bought {
+        background: #d4af37;
+        color: #5d4e37;
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .status-toggle-btn .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+
+/* ===== INVENTORY INFO ===== */
+.inventory-trophy-name {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1.125rem;
+    color: #5d4e37;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 0 0 0.25rem 0;
+}
+
+.inventory-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.monster-type {
+    font-family: 'Cinzel', serif;
+    font-size: 0.625rem;
+    color: rgba(139, 94, 60, 0.6);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 0;
+}
+
+.status-label {
+    font-size: 0.5rem;
+    color: rgba(93, 78, 55, 0.4);
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    margin: 0.25rem 0 0 0;
+}
+
+.inventory-divider {
+    width: 100%;
+    height: 1px;
+    background: rgba(139, 94, 60, 0.1);
+    margin: 1rem 0;
+}
+
+.inventory-description {
+    font-size: 0.6875rem;
+    color: rgba(93, 78, 55, 0.7);
+    font-style: italic;
+    line-height: 1.4;
+    text-align: center;
+    height: 3rem;
+    overflow: hidden;
+    margin: 0 0 1.5rem 0;
+}
+
+/* ===== EQUIP BUTTON ===== */
+.equip-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(139, 94, 60, 0.1);
+    color: #8B5E3C;
+    border: 1px solid rgba(139, 94, 60, 0.2);
+    border-radius: 0.25rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.625rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .equip-btn:hover {
+        background: #d4af37;
+        color: #5d4e37;
+        border-color: #d4af37;
+    }
+
+    .equip-btn:disabled {
+        opacity: 0.2;
+        cursor: not-allowed;
+    }
+
+/* ===== EMPTY STATE ===== */
+.inventory-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    border: 2px dashed rgba(139, 94, 60, 0.1);
+    border-radius: 0.5rem;
+}
+
+    .inventory-empty .material-symbols-outlined {
+        font-size: 3rem;
+        color: rgba(139, 94, 60, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    .inventory-empty p {
+        font-family: 'MedievalSharp', cursive;
+        font-size: 1.25rem;
+        color: rgba(93, 78, 55, 0.3);
+        font-style: italic;
+    }
+
+/* ===== BACK BUTTON ===== */
+.trophies-back {
+    display: flex;
+    justify-content: center;
+    padding-top: 4rem;
+    margin-top: 3rem;
+}
+
+.back-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 3rem;
+    background: #f0e6d2;
+    border: 1px solid #d4c4a8;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.5s ease;
+}
+
+    .back-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .back-btn:active {
+        transform: scale(0.95);
+    }
+
+    .back-btn .material-symbols-outlined {
+        font-size: 3rem;
+        color: #8B5E3C;
+        transition: transform 0.2s ease;
+    }
+
+    .back-btn:hover .material-symbols-outlined {
+        transform: translateY(-4px);
+    }
+
+.back-text {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5em;
+    color: #5d4e37;
+}
+
+.back-btn:hover .back-text {
+    color: #d4af37;
+}
+
+.back-subtext {
+    display: block;
+    font-size: 0.625rem;
+    font-family: 'MedievalSharp', cursive;
+    color: rgba(93, 78, 55, 0.4);
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+/* ===== FOOTER ===== */
+.trophies-footer {
+    margin-top: 5rem;
+    text-align: center;
+    color: rgba(93, 78, 55, 0.2);
+    padding-bottom: 3rem;
+    border-top: 1px solid rgba(139, 94, 60, 0.05);
+    padding-top: 2.5rem;
+}
+
+    .trophies-footer p {
+        font-family: 'Cinzel', serif;
+        font-size: 0.625rem;
+        letter-spacing: 0.6em;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+/* ===== TROPHY EFFECTS ===== */
+.trophy-effects {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background: rgba(212, 175, 55, 0.05);
+    border-radius: 0.375rem;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.effect-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #8b7355;
+    margin: 0.5rem 0 0.25rem;
+}
+
+.effect-text {
+    font-family: 'Cinzel', serif;
+    font-size: 0.875rem;
+    color: #5d4e37;
+    margin: 0 0 0.5rem;
+    line-height: 1.4;
+}
+
+/* ===== TROPHY VARIANTS (Verfügbare Varianten) ===== */
+.trophy-variants {
+    margin: 0.75rem 0;
+    padding: 0.5rem;
+    background: rgba(139, 115, 85, 0.05);
+    border-radius: 0.375rem;
+    border: 1px dashed rgba(139, 115, 85, 0.3);
+}
+
+.variants-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #8b7355;
+    display: block;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.variant-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.variant-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 1rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 2px solid;
+    transition: all 0.2s ease;
+    background: rgba(139, 115, 85, 0.1);
+    border-color: rgba(139, 115, 85, 0.4);
+    color: #8b7355;
+}
+
+.variant-badge .material-symbols-outlined {
+    font-size: 1rem;
+}
+
+.variant-badge.bought,
+.variant-badge.slain {
+    background: rgba(139, 115, 85, 0.1);
+    border-color: rgba(139, 115, 85, 0.4);
+    color: #8b7355;
+}
+
+/* ===== STATUS BADGE STATIC (kein Toggle) ===== */
+.status-badge-static {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(139, 115, 85, 0.9);
+    border: 2px solid rgba(212, 175, 55, 0.5);
+    pointer-events: none;
+}
+
+.status-badge-static.bought,
+.status-badge-static.slain {
+    background: rgba(139, 115, 85, 0.9);
+}
+
+/* Badge klickbar machen */
+.trophy-status-badge.clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.trophy-status-badge.clickable:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.8);
+}
+
+.status-badge-static .material-symbols-outlined {
+    font-size: 1.25rem;
+    color: white;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    .inventory-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .inventory-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .inventory-card {
+        padding: 1.5rem;
+    }
+}

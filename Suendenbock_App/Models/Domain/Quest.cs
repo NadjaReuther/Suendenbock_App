@@ -35,6 +35,13 @@ namespace Suendenbock_App.Models
         // ===== BEZIEHUNGEN =====
 
         /// <summary>
+        /// Zu welchem Act gehört diese Quest? (Required)
+        /// </summary>
+        [Required]
+        public int ActId { get; set; }
+        public Act Act { get; set; } = null!;
+
+        /// <summary>
         /// Nur gefüllt wenn Type = "individual"
         /// NULL wenn Type = "group" (gilt dann für alle Spieler)
         /// </summary>

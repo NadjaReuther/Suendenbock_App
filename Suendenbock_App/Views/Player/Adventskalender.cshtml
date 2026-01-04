@@ -1,0 +1,97 @@
+﻿@using Suendenbock_App.Models.Domain
+@{
+    ViewData["Title"] = "Adventsabenteuer";
+    var adventStats = ViewBag.AdventStats;
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Worum soll es heute gehen?
+    </h3>
+</header>
+
+<div class="container mt-5">
+<!-- Adventskalender-Statistik -->
+@if (adventStats != null && adventStats.TotalOpened > 0)
+{
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-lg" style="border: 2px solid #d4af37; background: linear-gradient(145deg, #f9f6f0, #e8dcc0);">
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-bottom: 2px solid #d4af37;">
+                    <h5 class="mb-0">🎄 Dein Weihnachtsabenteuer</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-3">
+                        <div class="col-md-4">
+                            <h4 class="text-primary">@adventStats.TotalOpened</h4>
+                            <small class="text-muted">Türchen geöffnet</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h4 class="text-success">@adventStats.EmmaChoices</h4>
+                            <small class="text-muted">Emma gewählt</small>
+                        </div>
+                        <div class="col-md-4">
+                            <h4 class="text-info">@adventStats.KasimirChoices</h4>
+                            <small class="text-muted">Kasimir gewählt</small>
+                        </div>
+                    </div>
+                    <hr />
+                    <h6 class="mb-3">Deine geöffneten Türchen:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tag</th>
+                                    <th>Geöffnet am</th>
+                                    <th>Typ</th>
+                                    <th>Auswahl</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var door in adventStats.Doors)
+                                {
+                                    <tr>
+                                        <td><strong>@door.DayNumber</strong></td>
+                                        <td><small>@door.OpenedAt.ToString("dd.MM. HH:mm")</small></td>
+                                        <td>
+                                            @if (door.DoorType == DoorType.Simple)
+                                            {
+                                                <span class="badge bg-secondary">Text</span>
+                                            }
+                                            else if (door.DoorType == DoorType.Choice)
+                                            {
+                                                <span class="badge bg-info">Auswahl</span>
+                                            }
+                                            else if (door.DoorType == DoorType.DirectAudio)
+                                            {
+                                                <span class="badge bg-success">Audio</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (door.Choice != null)
+                                            {
+                                                if (door.Choice == "Emma")
+                                                {
+                                                    <span class="badge bg-success">Emma</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-primary">Kasimir</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+</div>

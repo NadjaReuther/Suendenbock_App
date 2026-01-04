@@ -1,0 +1,182 @@
+﻿@model Suendenbock_App.Controllers.MapViewModel
+@{
+    ViewData["Title"] = "Weltkarte";
+}
+
+@section Styles {
+    <!-- Material Symbols Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <!-- Dein CSS -->
+    <link rel="stylesheet" href="~/css/spielmodus.css" />
+    <link rel="stylesheet" href="~/css/spielmodus-map.css" />
+}
+
+<div class="spielmodus-map-container">
+
+    <!-- Header -->
+    <header class="map-header">
+        <div class="map-header-content">
+            <div>
+                <h1>Weltkarte</h1>
+                <p class="subtitle">Die Pfade des Schicksals</p>
+            </div>
+        </div>
+
+        @if (Model.CurrentAct != null)
+        {
+            <!-- Act-Info für alle -->
+            <div class="act-info">
+                <span class="act-info-label">Aktueller Act:</span>
+                <span class="act-info-name">Act @Model.CurrentAct.ActNumber - @Model.CurrentAct.Name</span>
+            </div>
+        }
+    </header>
+
+    @if (Model.CurrentMap == null)
+    {
+        <!-- Keine Karte vorhanden -->
+        <div class="no-map">
+            <span class="material-symbols-outlined">map</span>
+            <p>Für diesen Act existiert noch keine Karte.</p>
+            @if (Model.IsGod)
+            {
+                <small>Bitte erstelle eine Karte über die Admin-Oberfläche.</small>
+            }
+        </div>
+    }
+    else
+    {
+        <main class="map-main @(Model.IsGod ? "has-sidebar" : "")">
+
+            @if (Model.IsGod)
+            {
+                <!-- Gott: Marker-Tools Sidebar -->
+                <aside class="marker-tools">
+                    <div class="tools-card">
+                        <h3>Kartentasche</h3>
+                        <p class="tools-label">Marker Typ wählen</p>
+
+                        <div class="marker-types">
+                            <button class="marker-type-btn active" data-type="quest" data-icon="priority_high">
+                                <span class="material-symbols-outlined">priority_high</span>
+                                <span>Quest</span>
+                            </button>
+                            <button class="marker-type-btn" data-type="info" data-icon="info">
+                                <span class="material-symbols-outlined">info</span>
+                                <span>Info</span>
+                            </button>
+                            <button class="marker-type-btn" data-type="danger" data-icon="skull">
+                                <span class="material-symbols-outlined">skull</span>
+                                <span>Gefahr</span>
+                            </button>
+                            <button class="marker-type-btn" data-type="settlement" data-icon="fort">
+                                <span class="material-symbols-outlined">fort</span>
+                                <span>Ort</span>
+                            </button>
+                        </div>
+
+                        <div class="tools-hint">
+                            <span class="material-symbols-outlined">touch_app</span>
+                            <p>Auf die Karte klicken, um einen Marker zu setzen</p>
+                        </div>
+                    </div>
+                </aside>
+            }
+
+            <!-- Karten-Container -->
+            <div class="map-canvas-wrapper">
+                <!-- Bild bestimmt Größe -->
+                <img src="@Model.CurrentMap.ImageUrl"
+                     alt="@Model.CurrentMap.Name"
+                     class="map-background-image"
+                     id="mapImage"
+                     data-no-zoom="true" />
+
+                <!-- Marker-Layer ÜBER dem Bild -->
+                <div class="map-marker-layer"
+                     id="mapCanvas"
+                     data-map-id="@Model.CurrentMap.Id"
+                     data-is-god="@Model.IsGod.ToString().ToLower()">
+
+                    <!-- Marker -->
+                    @foreach (var marker in Model.CurrentMap.Markers)
+                    {
+                        <div class="map-marker marker-@marker.Type"
+                             data-marker-id="@marker.Id"
+                             data-marker-type="@marker.Type"
+                             style="left: @(marker.XPercent.ToString(System.Globalization.CultureInfo.InvariantCulture))%; top: @(marker.YPercent.ToString(System.Globalization.CultureInfo.InvariantCulture))%;">
+                            <div class="marker-pin">
+                                <span class="material-symbols-outlined">
+                                    @switch (marker.Type)
+                                    {
+                                        case "quest":
+                                            @:priority_high
+                                            break;
+                                        case "info":
+                                            @:info
+                                            break;
+                                        case "danger":
+                                            @:skull
+                                            break;
+                                        case "settlement":
+                                            @:fort
+                                            break;
+                                        default:
+                                            @:location_on
+                                            break;
+                                    }
+                                </span>
+                            </div>
+                            <div class="marker-label">@marker.Label</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </main>
+    }
+
+    <!-- Zurück Button -->
+    <section class="map-back">
+        <a href="/Spielmodus/Dashboard" class="back-btn">
+            <span class="material-symbols-outlined">fireplace</span>
+            <div>
+                <span class="back-text">Zurück zum Lager</span>
+                <span class="back-subtext">Die Schatten werden länger</span>
+            </div>
+        </a>
+    </section>
+
+    <footer class="map-footer">
+        <p>Sündenbock 1618 - Kartografie der Vergessenen</p>
+    </footer>
+</div>
+
+<!-- Marker Popup (für Details/Erstellen) -->
+<div id="markerPopup" class="marker-popup" style="display: none;">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h4 id="popupTitle">Marker Details</h4>
+            <button id="closePopup" class="popup-close">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="popup-body" id="popupBody">
+            <!-- Dynamisch befüllt via JavaScript -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Model-Daten für JavaScript
+        const MAP_DATA = {
+            mapId: @(Model.CurrentMap?.Id ?? 0),
+            isGod: @Model.IsGod.ToString().ToLower(),
+            markers: @Html.Raw(Json.Serialize(Model.CurrentMap?.Markers ?? new List<Suendenbock_App.Controllers.MarkerViewModel>())),
+            activeQuests: @Html.Raw(Json.Serialize(Model.ActiveQuests))
+        };
+    </script>
+    <script src="~/js/map.js"></script>
+}

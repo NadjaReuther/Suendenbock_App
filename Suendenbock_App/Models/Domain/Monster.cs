@@ -15,18 +15,30 @@ namespace Suendenbock_App.Models.Domain
         public bool perfected { get; set; } = false;
 
         /// <summary>
-        /// Effekt wenn die Trophäe gekauft wurde (schwächerer Effekt)
+        /// Kann man von diesem Monster eine gekaufte Trophäe erhalten?
+        /// Kann nur aktiviert werden, wenn meet = true
         /// </summary>
-        [Required]
-        [StringLength(200)]
-        public string BaseEffect { get; set; } = string.Empty;
+        public bool BoughtTrophyAvailable { get; set; } = false;
+
+        /// <summary>
+        /// Kann man von diesem Monster eine erlegte Trophäe erhalten?
+        /// Kann nur aktiviert werden, wenn meet = true
+        /// </summary>
+        public bool SlainTrophyAvailable { get; set; } = false;
+
+        /// <summary>
+        /// Effekt wenn die Trophäe gekauft wurde (schwächerer Effekt)
+        /// Nur erforderlich wenn BoughtTrophyAvailable = true
+        /// </summary>
+        [StringLength(500)]
+        public string? BaseEffect { get; set; }
 
         /// <summary>
         /// Effekt wenn das Monster besiegt wurde (stärkerer Effekt)
+        /// Nur erforderlich wenn SlainTrophyAvailable = true
         /// </summary>
-        [Required]
-        [StringLength(200)]
-        public string SlainEffect { get; set; } = string.Empty;
+        [StringLength(500)]
+        public string? SlainEffect { get; set; }
 
         // ===== STATUS & AUSRÜSTUNG (für die Guild) =====
 
