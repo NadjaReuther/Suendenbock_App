@@ -75,6 +75,22 @@ function initQuests() {
             e.stopPropagation(); // Verhindert Expand/Collapse
             const questId = btn.dataset.questId;
             const newStatus = btn.dataset.newStatus;
+
+            // Check if this is an edit or delete button (no data-new-status)
+            if (!newStatus) {
+                const buttonText = btn.textContent.trim();
+                if (buttonText.includes('bearbeiten')) {
+                    handleEditQuest(questId);
+                    return;
+                }
+                if (buttonText.includes('löschen')) {
+                    handleDeleteQuest(questId);
+                    return;
+                }
+                return; // Unknown button type, do nothing
+            }
+
+            // Otherwise, it's a status change
             await updateQuestStatus(questId, newStatus);
         });
     });
@@ -171,6 +187,10 @@ async function updateQuestStatus(questId, newStatus) {
 async function handleQuestSubmit(e) {
     e.preventDefault();
 
+    const form = e.target;
+    const isEditMode = form.dataset.editMode === 'true';
+    const editQuestId = form.dataset.editQuestId;
+
     const formData = {
         title: document.getElementById('questTitle').value,
         description: document.getElementById('questDescription').value,
@@ -190,22 +210,40 @@ async function handleQuestSubmit(e) {
     }
 
     try {
-        const response = await fetch('/api/game/quests', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
+        let response;
+        if (isEditMode) {
+            // Edit mode: POST to EditQuest
+            response = await fetch(`/Spielmodus/EditQuest?id=${editQuestId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+        } else {
+            // Create mode: POST to API
+            response = await fetch('/api/game/quests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+        }
 
         if (response.ok) {
             closeModal();
             location.reload(); // Seite neu laden
         } else {
-            const error = await response.json();
-            alert(`Fehler: ${error.error || 'Quest konnte nicht erstellt werden'}`);
+            const errorText = await response.text();
+            let errorMsg;
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorMsg = errorJson.error || errorText;
+            } catch {
+                errorMsg = errorText;
+            }
+            alert(`Fehler: ${errorMsg || (isEditMode ? 'Quest konnte nicht aktualisiert werden' : 'Quest konnte nicht erstellt werden')}`);
         }
     } catch (error) {
         console.error('Fehler:', error);
-        alert('Fehler beim Erstellen der Quest!');
+        alert(`Fehler beim ${isEditMode ? 'Aktualisieren' : 'Erstellen'} der Quest!`);
     }
 }
 
@@ -219,4 +257,93 @@ function openModal() {
 function closeModal() {
     document.getElementById('questModal').style.display = 'none';
     document.getElementById('questForm').reset();
+    // Remove edit mode
+    delete document.getElementById('questForm').dataset.editMode;
+    delete document.getElementById('questForm').dataset.editQuestId;
+    document.querySelector('.modal-header-quest h3').textContent = 'Neue Quest anlegen';
+    document.querySelector('.submit-btn').textContent = 'In die Chronik aufnehmen';
+}
+
+// ===== EDIT & DELETE =====
+
+function handleEditQuest(questId) {
+    // Find the quest card
+    const questCard = document.querySelector(`[data-quest-id="${questId}"]`);
+    if (!questCard) return;
+
+    // Extract current data from the card
+    const title = questCard.querySelector('.quest-title').textContent.trim();
+    const description = questCard.querySelector('.quest-description').textContent.trim();
+    const typeBadge = questCard.querySelector('.quest-type-badge').textContent.trim();
+    const type = typeBadge.includes('Gruppenquest') ? 'group' : 'individual';
+    const status = questCard.dataset.status;
+
+    // Get character if individual quest
+    const assignedCharacter = questCard.querySelector('.assigned-character');
+    let characterName = assignedCharacter ? assignedCharacter.textContent.trim() : null;
+
+    // Populate modal
+    document.getElementById('questTitle').value = title;
+    document.getElementById('questDescription').value = description === 'Keine Beschreibung hinterlegt.' ? '' : description;
+    document.getElementById('questType').value = type;
+    document.getElementById('questStatus').value = status;
+
+    // Handle character assignment
+    const characterGroup = document.getElementById('characterAssignmentGroup');
+    const characterSelect = document.getElementById('questCharacter');
+    if (type === 'group') {
+        characterGroup.style.display = 'none';
+        characterSelect.required = false;
+        characterSelect.value = '';
+    } else {
+        characterGroup.style.display = 'block';
+        characterSelect.required = true;
+        // Find matching character in dropdown
+        if (characterName) {
+            const options = characterSelect.querySelectorAll('option');
+            for (let option of options) {
+                if (option.textContent.trim() === characterName) {
+                    characterSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Mark as edit mode
+    const form = document.getElementById('questForm');
+    form.dataset.editMode = 'true';
+    form.dataset.editQuestId = questId;
+
+    // Update modal title
+    document.querySelector('.modal-header-quest h3').textContent = 'Quest bearbeiten';
+    document.querySelector('.submit-btn').textContent = 'Änderungen speichern';
+
+    // Open modal
+    openModal();
+}
+
+async function handleDeleteQuest(questId) {
+    const questCard = document.querySelector(`[data-quest-id="${questId}"]`);
+    const questTitle = questCard ? questCard.querySelector('.quest-title').textContent.trim() : 'diese Quest';
+
+    if (!confirm(`Quest "${questTitle}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/Spielmodus/DeleteQuest?id=${questId}`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            location.reload();
+        } else {
+            const text = await response.text();
+            alert(`Fehler beim Löschen: ${text || 'Unbekannter Fehler'}`);
+        }
+    } catch (error) {
+        console.error('Fehler:', error);
+        alert('Fehler beim Löschen der Quest!');
+    }
 }

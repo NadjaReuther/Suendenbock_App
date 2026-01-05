@@ -798,6 +798,69 @@
     margin: 0;
 }
 
+/* ===== QUEST INFO ===== */
+.quest-info {
+    padding: 1rem;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 0.25rem;
+}
+
+.quest-info-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: bold;
+    color: #92400e;
+    border-left: 2px solid #f59e0b;
+    padding-left: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.quest-info-value {
+    font-size: 1rem;
+    color: #78350f;
+    font-weight: 600;
+    margin: 0;
+    padding-left: 0.5rem;
+}
+
+/* Quest Link Button */
+.quest-link {
+    margin-top: 1rem;
+}
+
+.btn-quest-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}
+
+    .btn-quest-link:hover {
+        background: linear-gradient(135deg, #d97706, #b45309);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-quest-link .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+
 .marker-actions {
     padding-top: 1rem;
     border-top: 1px solid rgba(139, 94, 60, 0.1);

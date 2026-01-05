@@ -420,6 +420,60 @@ namespace Suendenbock_App.Controllers.Api
         }
 
         /// <summary>
+        /// Quest bearbeiten (Titel, Beschreibung, Character)
+        /// PUT /api/game/quests/1
+        /// Body: { "title": "...", "description": "...", "characterId": 1 }
+        /// </summary>
+        [HttpPut("quests/{id}")]
+        public async Task<IActionResult> UpdateQuest(int id, [FromBody] UpdateQuestRequest request)
+        {
+            try
+            {
+                var quest = await _context.Quests.FindAsync(id);
+                if (quest == null)
+                {
+                    return NotFound(new { error = "Quest nicht gefunden!" });
+                }
+
+                // Update fields
+                if (!string.IsNullOrWhiteSpace(request.Title))
+                {
+                    quest.Title = request.Title;
+                }
+
+                if (request.Description != null)
+                {
+                    quest.Description = request.Description;
+                }
+
+                if (request.CharacterId.HasValue)
+                {
+                    quest.CharacterId = request.CharacterId.Value;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Quest erfolgreich aktualisiert!",
+                    quest = new
+                    {
+                        quest.Id,
+                        quest.Title,
+                        quest.Description,
+                        quest.Type,
+                        quest.Status,
+                        quest.CharacterId
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Quest löschen
         /// DELETE /api/game/quests/1
         /// </summary>
@@ -1143,6 +1197,17 @@ namespace Suendenbock_App.Controllers.Api
                 _context.MapMarkers.Add(marker);
                 await _context.SaveChangesAsync();
 
+                // Wenn QuestId angegeben: Quest mit Marker verknüpfen
+                if (request.QuestId.HasValue && request.Type == "quest")
+                {
+                    var quest = await _context.Quests.FindAsync(request.QuestId.Value);
+                    if (quest != null)
+                    {
+                        quest.MapMarkerId = marker.Id;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
                 return Ok(new
                 {
                     message = "Marker erfolgreich erstellt!",
@@ -1316,6 +1381,14 @@ namespace Suendenbock_App.Controllers.Api
         public string? Status { get; set; } = "active"; // "active", "completed", "failed"
         public int? CharacterId { get; set; } // Nur für Type = "individual"
     }
+
+    public class UpdateQuestRequest
+    {
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public int? CharacterId { get; set; }
+    }
+
     public class SetTrophyStatusRequest
     {
         public string Status { get; set; } = string.Empty;
@@ -1328,6 +1401,7 @@ namespace Suendenbock_App.Controllers.Api
         public double XPercent { get; set; }
         public double YPercent { get; set; }
         public string? Description { get; set; }
+        public int? QuestId { get; set; } // Für Quest-Marker: ID der zugeordneten Quest
     }
 
     public class UpdateMarkerRequest

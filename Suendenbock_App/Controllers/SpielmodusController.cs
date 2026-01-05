@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models;
+using Suendenbock_App.Controllers.Api;
 
 namespace Suendenbock_App.Controllers
 {
@@ -120,6 +121,8 @@ namespace Suendenbock_App.Controllers
             var currentAct = await _context.Acts
                 .Include(a => a.Map)
                     .ThenInclude(m => m.Markers)
+                        .ThenInclude(marker => marker.Quests)
+                            .ThenInclude(q => q.Character)
                 .FirstOrDefaultAsync(a => a.IsActive);
 
             // Alle aktiven Quests DES AKTUELLEN ACTS für Marker-Zuordnung (nur für Gott relevant)
@@ -150,14 +153,24 @@ namespace Suendenbock_App.Controllers
                     Id = currentAct.Map.Id,
                     Name = currentAct.Map.Name,
                     ImageUrl = currentAct.Map.ImageUrl,
-                    Markers = currentAct.Map.Markers.Select(m => new MarkerViewModel
+                    Markers = currentAct.Map.Markers.Select(m =>
                     {
-                        Id = m.Id,
-                        Label = m.Label,
-                        Type = m.Type,
-                        XPercent = m.XPercent,
-                        YPercent = m.YPercent,
-                        Description = m.Description
+                        var quest = m.Quests.FirstOrDefault();
+                        return new MarkerViewModel
+                        {
+                            Id = m.Id,
+                            Label = m.Label,
+                            Type = m.Type,
+                            XPercent = m.XPercent,
+                            YPercent = m.YPercent,
+                            Description = m.Description,
+                            QuestId = quest?.Id,
+                            QuestTitle = quest?.Title,
+                            QuestCharacterName = quest?.Character != null
+                                ? $"{quest.Character.Vorname} {quest.Character.Nachname}"
+                                : null,
+                            QuestType = quest?.Type
+                        };
                     }).ToList()
                 } : null,
                 ActiveQuests = activeQuests,
@@ -229,6 +242,81 @@ namespace Suendenbock_App.Controllers
             };
 
             return View(viewModel);
+        }
+
+        // ===== QUEST EDIT & DELETE =====
+
+        /// <summary>
+        /// Quest bearbeiten (nur für Gott)
+        /// Route: POST /Spielmodus/EditQuest?id={id}
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> EditQuest(int id, [FromBody] CreateQuestRequest request)
+        {
+            try
+            {
+                var quest = await _context.Quests.FindAsync(id);
+                if (quest == null)
+                {
+                    return NotFound("Quest nicht gefunden!");
+                }
+
+                // Update quest properties
+                if (!string.IsNullOrWhiteSpace(request.Title))
+                {
+                    quest.Title = request.Title;
+                }
+
+                quest.Description = request.Description ?? string.Empty;
+                quest.Type = request.Type;
+                quest.Status = request.Status;
+
+                // Update character assignment
+                if (request.Type == "individual" && request.CharacterId.HasValue)
+                {
+                    quest.CharacterId = request.CharacterId.Value;
+                }
+                else if (request.Type == "group")
+                {
+                    quest.CharacterId = null; // Gruppenquests haben keinen einzelnen Character
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Quest erfolgreich aktualisiert!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Fehler beim Aktualisieren: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Quest löschen (nur für Gott)
+        /// Route: POST /Spielmodus/DeleteQuest?id={id}
+        /// </summary>
+        [HttpPost]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> DeleteQuest(int id)
+        {
+            try
+            {
+                var quest = await _context.Quests.FindAsync(id);
+                if (quest == null)
+                {
+                    return NotFound("Quest nicht gefunden!");
+                }
+
+                _context.Quests.Remove(quest);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Quest erfolgreich gelöscht!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Fehler beim Löschen: {ex.Message}");
+            }
         }
 
         // ===== TROPHIES =====
@@ -546,6 +634,12 @@ namespace Suendenbock_App.Controllers
         public double XPercent { get; set; }
         public double YPercent { get; set; }
         public string? Description { get; set; }
+
+        // Quest-spezifische Felder
+        public int? QuestId { get; set; }
+        public string? QuestTitle { get; set; }
+        public string? QuestCharacterName { get; set; }
+        public string? QuestType { get; set; } // "individual" oder "group"
     }
 
     public class QuestOption

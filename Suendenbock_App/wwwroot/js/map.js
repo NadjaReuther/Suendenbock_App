@@ -174,7 +174,8 @@ async function handleCreateMarker(e) {
         type: selectedMarkerType,
         xPercent: pendingPosition.x,
         yPercent: pendingPosition.y,
-        description: description
+        description: description,
+        questId: questId ? parseInt(questId) : null
     };
 
     try {
@@ -207,7 +208,10 @@ function showMarkerDetails(markerId) {
     const title = document.getElementById('popupTitle');
     const body = document.getElementById('popupBody');
 
-    title.textContent = marker.label;
+    // Für Quest-Marker: Zeige Quest-Titel als Überschrift
+    title.textContent = marker.type === 'quest' && marker.questTitle
+        ? marker.questTitle
+        : marker.label;
 
     let detailsHtml = `
         <div class="marker-details">
@@ -216,6 +220,32 @@ function showMarkerDetails(markerId) {
                 <span>${getMarkerTypeLabel(marker.type)}</span>
             </div>
     `;
+
+    // Quest-spezifische Informationen
+    if (marker.type === 'quest' && marker.questTitle) {
+        detailsHtml += `
+            <div class="quest-info">
+                <p class="quest-info-label">Quest für:</p>
+                <p class="quest-info-value">${
+                    marker.questType === 'group'
+                        ? '<strong>Alle Gefährten der Gruppe</strong>'
+                        : marker.questCharacterName || 'Unbekannt'
+                }</p>
+            </div>
+        `;
+
+        // Link zur Quest-Seite
+        if (marker.questId) {
+            detailsHtml += `
+                <div class="quest-link">
+                    <a href="/Spielmodus/Quests?focusQuestId=${marker.questId}" class="btn-quest-link">
+                        <span class="material-symbols-outlined">menu_book</span>
+                        <span>Quest in Chronik öffnen</span>
+                    </a>
+                </div>
+            `;
+        }
+    }
 
     if (marker.description) {
         detailsHtml += `
