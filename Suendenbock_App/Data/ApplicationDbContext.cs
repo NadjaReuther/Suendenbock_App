@@ -511,6 +511,14 @@ namespace Suendenbock_App.Data
                 .HasForeignKey(q => q.ActId)
                 .OnDelete(DeleteBehavior.Restrict); // Act kann nicht gelöscht werden, wenn Quests existieren
 
+            // Quest -> PreviousQuest (Self-referencing, Optional)
+            // Für Questfolgen: Eine Quest kann eine Vorgänger-Quest haben
+            builder.Entity<Quest>()
+                .HasOne(q => q.PreviousQuest)
+                .WithMany(q => q.FollowingQuests)
+                .HasForeignKey(q => q.PreviousQuestId)
+                .OnDelete(DeleteBehavior.Restrict); // Vorgänger-Quest kann nicht gelöscht werden, wenn Folge-Quests existieren
+
             // Act -> Map (One-to-One)
             builder.Entity<Map>()
                 .HasOne(m => m.Act)

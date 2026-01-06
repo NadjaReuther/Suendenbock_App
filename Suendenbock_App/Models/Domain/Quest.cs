@@ -54,6 +54,27 @@ namespace Suendenbock_App.Models
         public int? MapMarkerId { get; set; }
         public MapMarker? MapMarker { get; set; }
 
+        /// <summary>
+        /// Optional: Vorgänger-Quest für Questfolgen
+        /// Wenn gesetzt, wird diese Quest nur angezeigt, wenn die Vorgänger-Quest die Bedingung erfüllt
+        /// </summary>
+        public int? PreviousQuestId { get; set; }
+        public Quest? PreviousQuest { get; set; }
+
+        /// <summary>
+        /// Bedingung, unter der diese Folgequest erscheint
+        /// "completed" = nur bei erfolgreichem Abschluss
+        /// "failed" = nur bei Abbruch/Fehlschlag
+        /// "both" = bei beidem (Standard)
+        /// </summary>
+        [StringLength(50)]
+        public string? PreviousQuestRequirement { get; set; } = "both"; // "completed", "failed", "both"
+
+        /// <summary>
+        /// Nachfolgende Quests (umgekehrte Navigation)
+        /// </summary>
+        public List<Quest> FollowingQuests { get; set; } = new();
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? CompletedAt { get; set; }
     }

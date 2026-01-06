@@ -64,11 +64,12 @@
     <div id="questList" class="quest-list">
         @foreach (var quest in Model.Quests)
         {
-            <div class="quest-card @quest.Type @quest.Status"
+            <div class="quest-card @quest.Type @quest.Status @(!quest.IsAvailable ? "quest-unavailable" : "")"
                  data-quest-id="@quest.Id"
                  data-type="@quest.Type"
                  data-status="@quest.Status"
-                 data-character="@(quest.CharacterName ?? "")">
+                 data-character="@(quest.CharacterName ?? "")"
+                 data-available="@quest.IsAvailable.ToString().ToLower()">
 
                 <!-- Quest Header (clickable) -->
                 <div class="quest-card-header">
@@ -109,9 +110,26 @@
 
                 <!-- Quest Body (collapsible) -->
                 <div class="quest-card-body">
+                    @if (!quest.IsAvailable && Model.IsGod)
+                    {
+                        <div class="quest-unavailable-notice">
+                            <span class="material-symbols-outlined">lock</span>
+                            <span>Quest noch nicht verfügbar: Vorgänger-Quest muss erst abgeschlossen/abgebrochen werden</span>
+                        </div>
+                    }
+
                     <p class="quest-description">
                         @(string.IsNullOrEmpty(quest.Description) ? "Keine Beschreibung hinterlegt." : quest.Description)
                     </p>
+
+                    <!-- Previous Quest Info -->
+                    @if (quest.PreviousQuestId.HasValue && !string.IsNullOrEmpty(quest.PreviousQuestTitle))
+                    {
+                        <div class="quest-assigned" style="margin-bottom: 0.75rem;">
+                            <span class="assigned-label">📜 Folgequest von:</span>
+                            <span class="assigned-character" style="font-style: italic;">@quest.PreviousQuestTitle</span>
+                        </div>
+                    }
 
                     <!-- Assigned Characters -->
                     <div class="quest-assigned">
@@ -125,6 +143,32 @@
                             <span class="assigned-all">Alle Gefährten der Gruppe</span>
                         }
                     </div>
+
+                    <!-- Map Marker Link -->
+                    @if (quest.MapMarkerId.HasValue)
+                    {
+                        <div class="quest-map-link" style="margin-top: 0.75rem;">
+                            <a href="/Spielmodus/Map?focusMarkerId=@quest.MapMarkerId" class="map-link-btn" style="
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                                padding: 0.5rem 1rem;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                text-decoration: none;
+                                border-radius: 6px;
+                                font-size: 0.9rem;
+                                font-weight: 500;
+                                transition: transform 0.2s, box-shadow 0.2s;
+                                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.4)'"
+                               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(102, 126, 234, 0.3)'">
+                                <span class="material-symbols-outlined" style="font-size: 1.2rem;">map</span>
+                                <span>Auf Karte anzeigen</span>
+                            </a>
+                        </div>
+                    }
+
 
                     <!-- Status Change Buttons (nur für Gott) -->
                     @if (Model.IsGod)
@@ -245,6 +289,55 @@
                             <option value="@kvp.Key">@kvp.Value</option>
                         }
                     </select>
+                </div>
+
+                <!-- Previous Quest (for quest chains) -->
+                <div class="form-group">
+                    <label>Vorgänger-Quest (optional)</label>
+                    <select id="questPreviousQuest" name="previousQuestId">
+                        <option value="">Keine (Erstquest)</option>
+                        @foreach (var kvp in Model.AllQuestsForDropdown)
+                        {
+                            <option value="@kvp.Key">@kvp.Value</option>
+                        }
+                    </select>
+                    <small style="display: block; margin-top: 0.25rem; color: #666;">
+                        Wähle eine Vorgänger-Quest, um eine Questkette zu erstellen.
+                    </small>
+                </div>
+
+                <!-- Previous Quest Requirement (shown when previous quest is selected) -->
+                <div class="form-group" id="questRequirementGroup" style="display: none;">
+                    <label>Wann soll diese Folgequest erscheinen?</label>
+                    <select id="questPreviousQuestRequirement" name="previousQuestRequirement">
+                        <option value="both">Bei Erfolg oder Abbruch der Vorgänger-Quest</option>
+                        <option value="completed">Nur bei erfolgreichem Abschluss</option>
+                        <option value="failed">Nur bei Abbruch/Fehlschlag</option>
+                    </select>
+                    <small style="display: block; margin-top: 0.25rem; color: #666;">
+                        Die Quest und ihr Marker werden erst sichtbar, wenn die Bedingung erfüllt ist.
+                    </small>
+                </div>
+
+                <!-- Quest Marker -->
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="questCreateMarker" name="createMarker" />
+                        Questmarker auf der Karte setzen
+                    </label>
+                </div>
+
+                <!-- Marker Set Button (shown when checkbox is checked) -->
+                <div id="markerSetButtonGroup" style="display: none;">
+                    <button type="button" id="setMarkerOnMapBtn" class="status-btn status-active" style="width: 100%; margin-bottom: 1rem;">
+                        <span class="material-symbols-outlined">map</span>
+                        <span id="markerBtnText">Zur Karte → Marker setzen</span>
+                    </button>
+                    <input type="hidden" id="questMarkerX" name="markerXPercent" />
+                    <input type="hidden" id="questMarkerY" name="markerYPercent" />
+                    <small style="display: block; margin-top: -0.5rem; margin-bottom: 1rem; color: #666;">
+                        Klicke auf den Button, um zur Karte zu gelangen und dort den Marker zu setzen.
+                    </small>
                 </div>
 
                 <!-- Submit -->

@@ -175,7 +175,8 @@
             mapId: @(Model.CurrentMap?.Id ?? 0),
             isGod: @Model.IsGod.ToString().ToLower(),
             markers: @Html.Raw(Json.Serialize(Model.CurrentMap?.Markers ?? new List<Suendenbock_App.Controllers.MarkerViewModel>())),
-            activeQuests: @Html.Raw(Json.Serialize(Model.ActiveQuests))
+            activeQuests: @Html.Raw(Json.Serialize(Model.ActiveQuests)),
+            focusMarkerId: @(Model.FocusMarkerId?.ToString() ?? "null")
         };
     </script>
     <script src="~/js/map.js"></script>

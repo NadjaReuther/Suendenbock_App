@@ -118,6 +118,140 @@ function initQuests() {
             document.getElementById('questCharacter').required = true;
         }
     });
+
+    // Vorgänger-Quest: Requirement-Gruppe ein/ausblenden
+    document.getElementById('questPreviousQuest').addEventListener('change', (e) => {
+        const requirementGroup = document.getElementById('questRequirementGroup');
+        if (e.target.value) {
+            // Vorgänger-Quest ausgewählt → zeige Requirement-Dropdown
+            requirementGroup.style.display = 'block';
+        } else {
+            // Keine Vorgänger-Quest → verstecke Requirement
+            requirementGroup.style.display = 'none';
+        }
+    });
+
+    // Marker-Checkbox: Button-Gruppe ein/ausblenden
+    document.getElementById('questCreateMarker').addEventListener('change', (e) => {
+        const buttonGroup = document.getElementById('markerSetButtonGroup');
+        if (e.target.checked) {
+            buttonGroup.style.display = 'block';
+        } else {
+            buttonGroup.style.display = 'none';
+            // Koordinaten zurücksetzen
+            document.getElementById('questMarkerX').value = '';
+            document.getElementById('questMarkerY').value = '';
+        }
+    });
+
+    // "Zur Karte" Button: Quest-Daten speichern und zur Map weiterleiten
+    document.getElementById('setMarkerOnMapBtn').addEventListener('click', () => {
+        // Sammle aktuelle Formular-Daten
+        const form = document.getElementById('questForm');
+        const isEditMode = form.dataset.editMode === 'true';
+        const editQuestId = form.dataset.editQuestId;
+
+        const questData = {
+            title: document.getElementById('questTitle').value,
+            description: document.getElementById('questDescription').value,
+            type: document.getElementById('questType').value,
+            status: document.getElementById('questStatus').value,
+            characterId: document.getElementById('questCharacter').value,
+            previousQuestId: document.getElementById('questPreviousQuest').value,
+            previousQuestRequirement: document.getElementById('questPreviousQuestRequirement').value,
+            isEditMode: isEditMode,
+            editQuestId: editQuestId
+        };
+
+        // Validierung
+        if (!questData.title) {
+            alert('Bitte gib einen Quest-Titel ein!');
+            return;
+        }
+        if (questData.type === 'individual' && !questData.characterId) {
+            alert('Bitte wähle einen Charakter aus!');
+            return;
+        }
+
+        // In SessionStorage speichern
+        sessionStorage.setItem('pendingQuestData', JSON.stringify(questData));
+        sessionStorage.setItem('questMarkerMode', 'true');
+
+        // Zur Map weiterleiten
+        window.location.href = '/Spielmodus/Map';
+    });
+
+    // Beim Laden: Prüfe ob Marker-Koordinaten von Map zurückkommen
+    checkForMarkerCoordinates();
+}
+
+// ===== MARKER COORDINATES FROM MAP =====
+
+function checkForMarkerCoordinates() {
+    // Prüfe ob wir von der Map zurückkommen mit Marker-Koordinaten
+    const markerCoords = sessionStorage.getItem('questMarkerCoordinates');
+    const questData = sessionStorage.getItem('pendingQuestData');
+
+    if (markerCoords && questData) {
+        const coords = JSON.parse(markerCoords);
+        const data = JSON.parse(questData);
+
+        // Modal öffnen
+        openModal();
+
+        // Formular mit gespeicherten Daten füllen
+        document.getElementById('questTitle').value = data.title;
+        document.getElementById('questDescription').value = data.description;
+        document.getElementById('questType').value = data.type;
+        document.getElementById('questStatus').value = data.status;
+
+        if (data.characterId) {
+            document.getElementById('questCharacter').value = data.characterId;
+        }
+        if (data.previousQuestId) {
+            document.getElementById('questPreviousQuest').value = data.previousQuestId;
+            // Requirement-Gruppe anzeigen wenn Vorgänger-Quest gesetzt
+            document.getElementById('questRequirementGroup').style.display = 'block';
+            if (data.previousQuestRequirement) {
+                document.getElementById('questPreviousQuestRequirement').value = data.previousQuestRequirement;
+            }
+        }
+
+        // Marker-Checkbox aktivieren
+        document.getElementById('questCreateMarker').checked = true;
+        document.getElementById('markerSetButtonGroup').style.display = 'block';
+
+        // Marker-Koordinaten setzen
+        document.getElementById('questMarkerX').value = coords.x;
+        document.getElementById('questMarkerY').value = coords.y;
+
+        // Button-Text aktualisieren
+        document.getElementById('markerBtnText').textContent = `✓ Marker gesetzt (${coords.x.toFixed(1)}%, ${coords.y.toFixed(1)}%)`;
+
+        // Character-Gruppe anzeigen falls individual
+        const characterGroup = document.getElementById('characterAssignmentGroup');
+        if (data.type === 'individual') {
+            characterGroup.style.display = 'block';
+            document.getElementById('questCharacter').required = true;
+        } else {
+            characterGroup.style.display = 'none';
+            document.getElementById('questCharacter').required = false;
+        }
+
+        // Edit-Modus setzen falls vorhanden
+        if (data.isEditMode && data.editQuestId) {
+            const form = document.getElementById('questForm');
+            form.dataset.editMode = 'true';
+            form.dataset.editQuestId = data.editQuestId;
+            document.querySelector('.modal-header-quest h3').textContent = 'Quest bearbeiten';
+            document.querySelector('.submit-btn').textContent = 'Änderungen speichern';
+        }
+
+        // SessionStorage aufräumen
+        sessionStorage.removeItem('questMarkerCoordinates');
+        sessionStorage.removeItem('pendingQuestData');
+        sessionStorage.removeItem('questMarkerMode');
+    }
 }
 
 // ===== FILTER LOGIC =====
@@ -196,7 +330,12 @@ async function handleQuestSubmit(e) {
         description: document.getElementById('questDescription').value,
         type: document.getElementById('questType').value,
         status: document.getElementById('questStatus').value,
-        characterId: null
+        characterId: null,
+        previousQuestId: null,
+        previousQuestRequirement: null,
+        createMarker: false,
+        markerXPercent: null,
+        markerYPercent: null
     };
 
     // CharacterId nur bei individual-Quests
@@ -207,6 +346,31 @@ async function handleQuestSubmit(e) {
             return;
         }
         formData.characterId = parseInt(characterId);
+    }
+
+    // PreviousQuestId (optional)
+    const previousQuestId = document.getElementById('questPreviousQuest').value;
+    if (previousQuestId) {
+        formData.previousQuestId = parseInt(previousQuestId);
+        // PreviousQuestRequirement (nur wenn PreviousQuestId gesetzt)
+        const previousQuestRequirement = document.getElementById('questPreviousQuestRequirement').value;
+        formData.previousQuestRequirement = previousQuestRequirement || 'both';
+    }
+
+    // Questmarker-Daten (optional)
+    const createMarker = document.getElementById('questCreateMarker').checked;
+    if (createMarker) {
+        const markerX = document.getElementById('questMarkerX').value;
+        const markerY = document.getElementById('questMarkerY').value;
+
+        if (!markerX || !markerY) {
+            alert('Bitte gib X- und Y-Koordinaten für den Marker an!');
+            return;
+        }
+
+        formData.createMarker = true;
+        formData.markerXPercent = parseFloat(markerX);
+        formData.markerYPercent = parseFloat(markerY);
     }
 
     try {
@@ -257,6 +421,13 @@ function openModal() {
 function closeModal() {
     document.getElementById('questModal').style.display = 'none';
     document.getElementById('questForm').reset();
+
+    // Reset marker button group
+    document.getElementById('markerSetButtonGroup').style.display = 'none';
+    document.getElementById('markerBtnText').textContent = 'Zur Karte → Marker setzen';
+    document.getElementById('questMarkerX').value = '';
+    document.getElementById('questMarkerY').value = '';
+
     // Remove edit mode
     delete document.getElementById('questForm').dataset.editMode;
     delete document.getElementById('questForm').dataset.editQuestId;
@@ -279,7 +450,7 @@ function handleEditQuest(questId) {
     const status = questCard.dataset.status;
 
     // Get character if individual quest
-    const assignedCharacter = questCard.querySelector('.assigned-character');
+    const assignedCharacter = questCard.querySelector('.assigned-character:not([style*="italic"])');
     let characterName = assignedCharacter ? assignedCharacter.textContent.trim() : null;
 
     // Populate modal
@@ -309,6 +480,16 @@ function handleEditQuest(questId) {
             }
         }
     }
+
+    // Reset previous quest (kann nicht automatisch gesetzt werden, da nicht im dataset)
+    document.getElementById('questPreviousQuest').value = '';
+
+    // Reset marker fields
+    document.getElementById('questCreateMarker').checked = false;
+    document.getElementById('markerSetButtonGroup').style.display = 'none';
+    document.getElementById('markerBtnText').textContent = 'Zur Karte → Marker setzen';
+    document.getElementById('questMarkerX').value = '';
+    document.getElementById('questMarkerY').value = '';
 
     // Mark as edit mode
     const form = document.getElementById('questForm');

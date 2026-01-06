@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260105121423_AddQuestChainsAndMarkerSupport")]
+    partial class AddQuestChainsAndMarkerSupport
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1891,10 +1894,6 @@ namespace Suendenbock_App.Migrations
 
                     b.Property<int?>("PreviousQuestId")
                         .HasColumnType("int");
-
-                    b.Property<string>("PreviousQuestRequirement")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Status")
                         .IsRequired()

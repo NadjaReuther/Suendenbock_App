@@ -327,6 +327,21 @@ namespace Suendenbock_App.Controllers.Api
                     return BadRequest(new { error = "Kein aktiver Act gefunden! Bitte aktiviere zuerst einen Act." });
                 }
 
+                // Validiere PreviousQuestId falls angegeben
+                if (request.PreviousQuestId.HasValue)
+                {
+                    var previousQuest = await _context.Quests.FindAsync(request.PreviousQuestId.Value);
+                    if (previousQuest == null)
+                    {
+                        return BadRequest(new { error = "Vorgänger-Quest nicht gefunden!" });
+                    }
+                    // Stelle sicher, dass die Vorgänger-Quest zum gleichen Act gehört
+                    if (previousQuest.ActId != currentAct.Id)
+                    {
+                        return BadRequest(new { error = "Vorgänger-Quest muss zum gleichen Act gehören!" });
+                    }
+                }
+
                 var quest = new Quest
                 {
                     Title = request.Title,
@@ -335,11 +350,47 @@ namespace Suendenbock_App.Controllers.Api
                     Status = request.Status ?? "active",
                     CharacterId = request.Type == "individual" ? request.CharacterId : null,
                     ActId = currentAct.Id, // Quest dem aktiven Act zuweisen
+                    PreviousQuestId = request.PreviousQuestId,
+                    PreviousQuestRequirement = request.PreviousQuestRequirement ?? "both",
                     CreatedAt = DateTime.Now
                 };
 
                 _context.Quests.Add(quest);
                 await _context.SaveChangesAsync();
+
+                // Optional: Questmarker erstellen
+                if (request.CreateMarker && request.MarkerXPercent.HasValue && request.MarkerYPercent.HasValue)
+                {
+                    // Validiere Koordinaten
+                    if (request.MarkerXPercent.Value < 0 || request.MarkerXPercent.Value > 100 ||
+                        request.MarkerYPercent.Value < 0 || request.MarkerYPercent.Value > 100)
+                    {
+                        return BadRequest(new { error = "Marker-Koordinaten müssen zwischen 0 und 100 liegen!" });
+                    }
+
+                    // Map des aktuellen Acts laden
+                    var map = await _context.Maps.FirstOrDefaultAsync(m => m.ActId == currentAct.Id);
+                    if (map != null)
+                    {
+                        var marker = new MapMarker
+                        {
+                            MapId = map.Id,
+                            Label = quest.Title,
+                            Type = "quest",
+                            XPercent = request.MarkerXPercent.Value,
+                            YPercent = request.MarkerYPercent.Value,
+                            Description = quest.Description,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _context.MapMarkers.Add(marker);
+                        await _context.SaveChangesAsync();
+
+                        // Quest mit Marker verknüpfen
+                        quest.MapMarkerId = marker.Id;
+                        await _context.SaveChangesAsync();
+                    }
+                }
 
                 // Quest mit Character-Namen zurückgeben
                 var character = quest.CharacterId.HasValue
@@ -429,7 +480,10 @@ namespace Suendenbock_App.Controllers.Api
         {
             try
             {
-                var quest = await _context.Quests.FindAsync(id);
+                var quest = await _context.Quests
+                    .Include(q => q.MapMarker)
+                    .FirstOrDefaultAsync(q => q.Id == id);
+
                 if (quest == null)
                 {
                     return NotFound(new { error = "Quest nicht gefunden!" });
@@ -451,6 +505,88 @@ namespace Suendenbock_App.Controllers.Api
                     quest.CharacterId = request.CharacterId.Value;
                 }
 
+                // Update PreviousQuestId und Requirement
+                if (request.PreviousQuestId.HasValue)
+                {
+                    // Validiere dass die Quest existiert
+                    var previousQuest = await _context.Quests.FindAsync(request.PreviousQuestId.Value);
+                    if (previousQuest == null)
+                    {
+                        return BadRequest(new { error = "Vorgänger-Quest nicht gefunden!" });
+                    }
+                    // Stelle sicher, dass die Vorgänger-Quest zum gleichen Act gehört
+                    if (previousQuest.ActId != quest.ActId)
+                    {
+                        return BadRequest(new { error = "Vorgänger-Quest muss zum gleichen Act gehören!" });
+                    }
+                    // Verhindere Zirkelbezüge
+                    if (previousQuest.Id == quest.Id)
+                    {
+                        return BadRequest(new { error = "Eine Quest kann nicht ihre eigene Vorgänger-Quest sein!" });
+                    }
+                    quest.PreviousQuestId = request.PreviousQuestId.Value;
+                    quest.PreviousQuestRequirement = request.PreviousQuestRequirement ?? "both";
+                }
+
+                // Marker entfernen falls gewünscht
+                if (request.RemoveMarker && quest.MapMarkerId.HasValue)
+                {
+                    var marker = await _context.MapMarkers.FindAsync(quest.MapMarkerId.Value);
+                    if (marker != null)
+                    {
+                        _context.MapMarkers.Remove(marker);
+                    }
+                    quest.MapMarkerId = null;
+                }
+
+                // Neuen Marker erstellen falls gewünscht
+                if (request.CreateMarker && request.MarkerXPercent.HasValue && request.MarkerYPercent.HasValue)
+                {
+                    // Validiere Koordinaten
+                    if (request.MarkerXPercent.Value < 0 || request.MarkerXPercent.Value > 100 ||
+                        request.MarkerYPercent.Value < 0 || request.MarkerYPercent.Value > 100)
+                    {
+                        return BadRequest(new { error = "Marker-Koordinaten müssen zwischen 0 und 100 liegen!" });
+                    }
+
+                    // Map des Acts laden
+                    var map = await _context.Maps.FirstOrDefaultAsync(m => m.ActId == quest.ActId);
+                    if (map != null)
+                    {
+                        // Falls bereits ein Marker existiert, aktualisiere ihn
+                        if (quest.MapMarkerId.HasValue)
+                        {
+                            var existingMarker = await _context.MapMarkers.FindAsync(quest.MapMarkerId.Value);
+                            if (existingMarker != null)
+                            {
+                                existingMarker.XPercent = request.MarkerXPercent.Value;
+                                existingMarker.YPercent = request.MarkerYPercent.Value;
+                                existingMarker.Label = quest.Title;
+                                existingMarker.Description = quest.Description;
+                            }
+                        }
+                        else
+                        {
+                            // Erstelle neuen Marker
+                            var marker = new MapMarker
+                            {
+                                MapId = map.Id,
+                                Label = quest.Title,
+                                Type = "quest",
+                                XPercent = request.MarkerXPercent.Value,
+                                YPercent = request.MarkerYPercent.Value,
+                                Description = quest.Description,
+                                CreatedAt = DateTime.Now
+                            };
+
+                            _context.MapMarkers.Add(marker);
+                            await _context.SaveChangesAsync();
+
+                            quest.MapMarkerId = marker.Id;
+                        }
+                    }
+                }
+
                 await _context.SaveChangesAsync();
 
                 return Ok(new
@@ -463,7 +599,9 @@ namespace Suendenbock_App.Controllers.Api
                         quest.Description,
                         quest.Type,
                         quest.Status,
-                        quest.CharacterId
+                        quest.CharacterId,
+                        quest.MapMarkerId,
+                        quest.PreviousQuestId
                     }
                 });
             }
@@ -1229,6 +1367,53 @@ namespace Suendenbock_App.Controllers.Api
         }
 
         /// <summary>
+        /// Marker-Position aktualisieren (Drag & Drop, nur für Gott)
+        /// PUT /api/game/markers/1/position
+        /// Body: { "xPercent": 45.5, "yPercent": 67.8 }
+        /// </summary>
+        [HttpPut("markers/{id}/position")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> UpdateMarkerPosition(int id, [FromBody] UpdateMarkerPositionRequest request)
+        {
+            try
+            {
+                var marker = await _context.MapMarkers.FindAsync(id);
+                if (marker == null)
+                {
+                    return NotFound(new { error = "Marker nicht gefunden!" });
+                }
+
+                // Validierung
+                if (request.XPercent < 0 || request.XPercent > 100 ||
+                    request.YPercent < 0 || request.YPercent > 100)
+                {
+                    return BadRequest(new { error = "Koordinaten müssen zwischen 0 und 100 liegen!" });
+                }
+
+                // Position aktualisieren
+                marker.XPercent = request.XPercent;
+                marker.YPercent = request.YPercent;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Marker-Position aktualisiert!",
+                    marker = new
+                    {
+                        id = marker.Id,
+                        xPercent = marker.XPercent,
+                        yPercent = marker.YPercent
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
         /// Marker löschen (nur für Gott)
         /// DELETE /api/game/markers/1
         /// </summary>
@@ -1380,6 +1565,13 @@ namespace Suendenbock_App.Controllers.Api
         public string Type { get; set; } = "individual"; // "individual" oder "group"
         public string? Status { get; set; } = "active"; // "active", "completed", "failed"
         public int? CharacterId { get; set; } // Nur für Type = "individual"
+        public int? PreviousQuestId { get; set; } // Für Questfolgen: Vorgänger-Quest
+        public string? PreviousQuestRequirement { get; set; } = "both"; // "completed", "failed", "both"
+
+        // Questmarker-Felder (optional)
+        public bool CreateMarker { get; set; } = false; // Soll ein Marker erstellt werden?
+        public double? MarkerXPercent { get; set; } // X-Position des Markers (0-100)
+        public double? MarkerYPercent { get; set; } // Y-Position des Markers (0-100)
     }
 
     public class UpdateQuestRequest
@@ -1387,12 +1579,27 @@ namespace Suendenbock_App.Controllers.Api
         public string? Title { get; set; }
         public string? Description { get; set; }
         public int? CharacterId { get; set; }
+        public int? PreviousQuestId { get; set; } // Für Questfolgen: Vorgänger-Quest
+        public string? PreviousQuestRequirement { get; set; } = "both"; // "completed", "failed", "both"
+
+        // Questmarker-Felder (optional)
+        public bool CreateMarker { get; set; } = false; // Soll ein Marker erstellt werden?
+        public double? MarkerXPercent { get; set; } // X-Position des Markers (0-100)
+        public double? MarkerYPercent { get; set; } // Y-Position des Markers (0-100)
+        public bool RemoveMarker { get; set; } = false; // Soll der bestehende Marker entfernt werden?
     }
 
     public class SetTrophyStatusRequest
     {
         public string Status { get; set; } = string.Empty;
     }
+
+    public class UpdateMarkerPositionRequest
+    {
+        public double XPercent { get; set; }
+        public double YPercent { get; set; }
+    }
+
     public class CreateMarkerRequest
     {
         public int MapId { get; set; }
