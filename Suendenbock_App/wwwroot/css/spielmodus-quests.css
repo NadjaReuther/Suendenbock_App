@@ -320,7 +320,32 @@
     font-style: italic;
     line-height: 1.6;
     margin-bottom: 1.5rem;
+
+    /* Scrollbar für lange Beschreibungen */
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
 }
+
+    /* Custom Scrollbar für Quest-Beschreibung */
+    .quest-description::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .quest-description::-webkit-scrollbar-track {
+        background: rgba(139, 94, 60, 0.1);
+        border-radius: 4px;
+    }
+
+    .quest-description::-webkit-scrollbar-thumb {
+        background: rgba(139, 94, 60, 0.3);
+        border-radius: 4px;
+        transition: background 0.2s ease;
+    }
+
+    .quest-description::-webkit-scrollbar-thumb:hover {
+        background: rgba(139, 94, 60, 0.5);
+    }
 
 /* ===== ASSIGNED CHARACTERS ===== */
 .quest-assigned {

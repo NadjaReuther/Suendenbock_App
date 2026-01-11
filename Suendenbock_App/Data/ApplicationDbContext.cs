@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using Suendenbock_App.Models;
 using Suendenbock_App.Models.Domain;
 using System.Reflection.Emit;
@@ -91,6 +92,18 @@ namespace Suendenbock_App.Data
 
         // Combat-System
         public DbSet<CombatSession> CombatSessions { get; set; }
+
+        // Versammlungsort System
+        public DbSet<ForumCategory> ForumCategories { get; set; }
+        public DbSet<ForumThread> ForumThreads { get; set; }
+        public DbSet<ForumReply> forumReplies { get; set; }
+        public DbSet<Poll> Polls { get; set; }
+        public DbSet<PollOption> PollOptions { get; set; }
+        public DbSet<PollVote> PollVotes { get; set; }
+        public DbSet<MonthlyEvent> MonthlyEvents { get; set; }
+        public DbSet<EventChore> EventChores { get; set; }
+        public DbSet<EventRSVP> EventRSVPs { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

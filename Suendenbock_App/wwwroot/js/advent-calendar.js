@@ -88,7 +88,10 @@ function handleDoorClick(doorElement) {
 // DATUMS-PRÜFUNG
 // ========================================
 function isDayAvailable(dayNumber) {
-   
+
+    //alle Türchen gehen auf immer
+    return true;
+
     // God-User können alle Türchen öffnen (für Testing)
     if (isGodUser) {
         return true;
@@ -99,9 +102,9 @@ function isDayAvailable(dayNumber) {
     const currentMonth = today.getMonth() + 1;  // Monate starten bei 0
 
     // Nur im Dezember erlauben
-    /*if (currentMonth !== 12) {
+    if (currentMonth !== 12) {
         return false;
-    }*/
+    }
 
     // Nur wenn der Tag erreicht oder überschritten ist
     return currentDay >= dayNumber;
