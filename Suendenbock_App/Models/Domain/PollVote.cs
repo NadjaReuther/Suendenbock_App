@@ -11,8 +11,8 @@ namespace Suendenbock_App.Models.Domain
         public DateTime VoteAt { get; set; }
 
         //Navigation Properties
-        public Poll Poll {  get; set; }
-        public PollOption PollOption { get; set; }
-        public Character Character { get; set; }
+        public Poll? Poll {  get; set; }
+        public PollOption? PollOption { get; set; }
+        public Character? Character { get; set; }
     }
 }
