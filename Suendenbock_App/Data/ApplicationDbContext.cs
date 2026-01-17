@@ -104,6 +104,8 @@ namespace Suendenbock_App.Data
         public DbSet<EventChore> EventChores { get; set; }
         public DbSet<EventRSVP> EventRSVPs { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
+        public DbSet<NewsItem> NewsItems { get; set; }
+        public DbSet<NewsComment> NewsComments { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -621,6 +623,15 @@ namespace Suendenbock_App.Data
                 .HasOne(po => po.Poll)
                 .WithMany(p => p.Options)
                 .HasForeignKey(po => po.PollId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ===== NEWS-SYSTEM BEZIEHUNGEN =====
+
+            // NewsComment -> NewsItem: CASCADE (wenn NewsItem gelöscht wird, Comments auch)
+            builder.Entity<NewsComment>()
+                .HasOne(nc => nc.NewsItem)
+                .WithMany(ni => ni.Comments)
+                .HasForeignKey(nc => nc.NewsItemId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

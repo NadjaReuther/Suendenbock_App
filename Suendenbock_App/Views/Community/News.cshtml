@@ -1,0 +1,184 @@
+@model Suendenbock_App.Models.ViewModels.NewsPageViewModel
+@{
+    ViewData["Title"] = "Archiv der Verkündigungen";
+}
+
+<div class="news-container">
+    <!-- Header Section -->
+    <div class="news-header">
+        <div class="header-content">
+            <a asp-action="Index" class="back-link">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Zurück zur Halle</span>
+            </a>
+            <h1 class="page-title">Archiv der Verkündigungen</h1>
+            <p class="page-subtitle">Jedes Pergament erzählt eine Geschichte des Reiches.</p>
+        </div>
+
+        @if(Model.IsAdmin)
+        {
+            <button class="btn-primary" id="createNewsBtn">
+                <span class="material-symbols-outlined">post_add</span>
+                Neuigkeit verkünden
+            </button>
+        }
+    </div>
+
+    <!-- News List -->
+    <div class="news-list">
+        @foreach (var newsItem in Model.NewsItems)
+        {
+            <article class="news-article @(newsItem.IsArchived ? "archived" : "")" data-news-id="@newsItem.Id">
+                <div class="article-gradient"></div>
+
+                <div class="article-content">
+                    <div class="article-meta">
+                        <div class="meta-left">
+                            <span class="news-category @(newsItem.IsArchived ? "archived" : "")">@newsItem.Category</span>
+                            <span class="meta-item">
+                                <span class="material-symbols-outlined">schedule</span>
+                                @newsItem.Date
+                            </span>
+                            <span class="meta-item">
+                                <span class="material-symbols-outlined">person</span>
+                                @newsItem.Author
+                            </span>
+                        </div>
+
+                        <div class="meta-right">
+                            @if (newsItem.IsArchived)
+                            {
+                                <span class="archive-badge">
+                                    <span class="material-symbols-outlined">inventory_2</span>
+                                    Archiv
+                                </span>
+                            }
+                            @if(newsItem.CanEdit)
+                            {
+                                <button class="icon-btn edit-news-btn" data-news-id="@newsItem.Id">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </button>
+                                <button class="icon-btn delete-news-btn" data-news-id="@newsItem.Id">
+                                    <span class="material-symbols-outlined">delete_forever</span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="article-body">
+                        <div class="article-icon">
+                            <span class="material-symbols-outlined">@newsItem.Icon</span>
+                        </div>
+                        <div class="article-text">
+                            <h2 class="article-title">@newsItem.Title</h2>
+                            <p class="article-paragraph">@newsItem.Content</p>
+                        </div>
+                    </div>
+
+                    <div class="article-footer">
+                        <button class="toggle-comments-btn" data-news-id="@newsItem.Id">
+                            <span class="material-symbols-outlined">forum</span>
+                            <span>Diskussion öffnen</span>
+                        </button>
+                    </div>
+
+                    <!-- Comments Section (Hidden by default) -->
+                    <div class="comments-section" data-news-id="@newsItem.Id" style="display: none;">
+                        <div class="comments-list">
+                            @if (!newsItem.Comments.Any())
+                            {
+                                <p class="empty-comments">Noch herrscht Stille in dieser Runde.</p>
+                            }
+                            else
+                            {
+                                @foreach (var comment in newsItem.Comments)
+                                {
+                                    <div class="comment-item" data-comment-id="@comment.Id">
+                                        <div class="comment-header">
+                                            <span class="comment-author">@comment.Author</span>
+                                            <div class="comment-meta">
+                                                <span class="comment-time">@comment.Time</span>
+                                                <span class="comment-year">ANNO 1618</span>
+                                                @if(comment.CanDelete)
+                                                {
+                                                    <button class="delete-comment-btn" data-news-id="@newsItem.Id" data-comment-id="@comment.Id">
+                                                        <span class="material-symbols-outlined">close</span>
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                        <p class="comment-text">"@comment.Text"</p>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <!-- New Comment Form -->
+                        <div class="comment-form">
+                            <textarea
+                                class="comment-input"
+                                placeholder="Hinterlasst eine Nachricht an das Volk..."
+                                rows="2"
+                                data-news-id="@newsItem.Id"></textarea>
+                            <button class="send-comment-btn" data-news-id="@newsItem.Id">
+                                <span class="material-symbols-outlined">send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="newsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content news-modal">
+        <div class="modal-header">
+            <h2 id="modalTitle">Botschaft verfassen</h2>
+            <button class="modal-close" onclick="closeNewsModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="newsForm">
+            <input type="hidden" id="newsId" value="">
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newsCategory">Kategorie</label>
+                    <select id="newsCategory" name="category" required class="form-control">
+                        <option value="Spiel-Update">Spiel-Update</option>
+                        <option value="Technik">Technik</option>
+                        <option value="Events">Events</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="newsTitle">Überschrift *</label>
+                    <input type="text" id="newsTitle" name="title" required class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="newsContent">Inhalt der Botschaft *</label>
+                    <textarea id="newsContent" name="content" rows="6" required class="form-control"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeNewsModal()">
+                    Abbrechen
+                </button>
+                <button type="submit" class="btn-primary">
+                    <span class="material-symbols-outlined">save</span>
+                    Besiegeln & Senden
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/news.css" />
+    <script src="~/js/news.js"></script>
+}

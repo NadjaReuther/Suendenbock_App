@@ -26,20 +26,35 @@
                 </div>
                 <div class="section-box">
                     <div class="news-scroll">
-                        <!-- Placeholder News -->
-                        <div class="news-item">
-                            <div class="news-icon-wrapper">
-                                <span class="material-symbols-outlined">campaign</span>
+                        @if (!Model.RecentNews.Any())
+                        {
+                            <div class="empty-widget">
+                                <span class="material-symbols-outlined">auto_stories</span>
+                                <p>Derzeit nichts Neues.</p>
                             </div>
-                            <div class="news-body">
-                                <h3>Willkommen in der Versammlungshalle</h3>
-                                <p class="news-excerpt">Werte Reisende, das neueste Update bringt Änderungen am Magiesystem und neue Quests...</p>
-                                <div class="news-footer">
-                                    <span><span class="material-symbols-outlined">person</span> Admin</span>
-                                    <span><span class="material-symbols-outlined">schedule</span> @DateTime.Now.ToString("dd.MM.yyyy")</span>
-                                </div>
-                            </div>
-                        </div>
+                        }
+                        else
+                        {
+                            @foreach (var news in Model.RecentNews)
+                            {
+                                <a asp-action="News" class="news-item">
+                                    <div class="news-icon-wrapper">
+                                        <span class="material-symbols-outlined">@news.Icon</span>
+                                    </div>
+                                    <div class="news-body">
+                                        <h3>@news.Title</h3>
+                                        <p class="news-excerpt">@news.Excerpt</p>
+                                        <div class="news-footer">
+                                            <span><span class="material-symbols-outlined">person</span> @news.Author</span>
+                                            <span><span class="material-symbols-outlined">schedule</span> @news.Date</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        }
+                    </div>
+                    <div class="widget-button-wrapper">
+                        <a asp-action="News" class="widget-button">Zum Archiv & Alle News</a>
                     </div>
                 </div>
             </div>

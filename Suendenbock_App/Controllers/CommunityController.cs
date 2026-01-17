@@ -74,6 +74,23 @@ namespace Suendenbock_App.Controllers
                 };
             }).ToList();
 
+            // Lade die neuesten 2 News (nur die jünger als 1 Monat sind)
+            var oneMonthAgo = DateTime.Now.AddMonths(-1);
+            var recentNews = await _context.NewsItems
+                .Where(n => n.CreatedAt >= oneMonthAgo)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(2)
+                .Select(n => new NewsPreview
+                {
+                    Id = n.Id,
+                    Title = n.Title,
+                    Excerpt = n.Excerpt,
+                    Icon = n.Icon,
+                    Author = n.Author,
+                    Date = n.CreatedAt.ToString("dd.MM.yyyy")
+                })
+                .ToListAsync();
+
             // Lade die neuesten 5 Forum-Threads
             var recentThreads = await _context.ForumThreads
                 .Include(t => t.Category)
@@ -115,6 +132,7 @@ namespace Suendenbock_App.Controllers
 
             var viewModel = new CommunityIndexViewModel
             {
+                RecentNews = recentNews,
                 UpcomingEvents = eventViewModels,
                 RecentThreads = recentThreads,
                 ActivePolls = activePolls,
@@ -201,6 +219,55 @@ namespace Suendenbock_App.Controllers
         {
             // TODO: Implementierung folgt
             return View();
+        }
+
+        // ==== NEWS ====
+        public async Task<IActionResult> News()
+        {
+            var userId = GetUserId();
+            var oneMonthAgo = DateTime.Now.AddMonths(-1);
+
+            // Lade alle News mit Kommentaren
+            var newsItems = await _context.NewsItems
+                .Include(n => n.Comments)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
+            // Konvertiere zu ViewModels
+            var newsViewModels = newsItems.Select(n =>
+            {
+                var isArchived = n.CreatedAt < oneMonthAgo;
+
+                return new NewsItemViewModel
+                {
+                    Id = n.Id,
+                    Title = n.Title,
+                    Content = n.Content,
+                    Excerpt = n.Excerpt,
+                    Category = n.Category,
+                    Icon = n.Icon,
+                    Author = n.Author,
+                    Date = n.CreatedAt.ToString("dd.MM.yyyy"),
+                    IsArchived = isArchived,
+                    CanEdit = User.IsInRole("Gott"),
+                    Comments = n.Comments.Select(c => new NewsCommentViewModel
+                    {
+                        Id = c.Id,
+                        Text = c.Text,
+                        Author = c.Author,
+                        Time = c.CreatedAt.ToString("HH:mm") + " Uhr",
+                        CanDelete = User.IsInRole("Gott")
+                    }).ToList()
+                };
+            }).ToList();
+
+            var viewModel = new NewsPageViewModel
+            {
+                NewsItems = newsViewModels,
+                IsAdmin = User.IsInRole("Gott")
+            };
+
+            return View(viewModel);
         }
 
         // Helper: Get Current User ID
