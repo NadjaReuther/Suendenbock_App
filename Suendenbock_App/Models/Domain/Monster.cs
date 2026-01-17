@@ -15,49 +15,84 @@ namespace Suendenbock_App.Models.Domain
         public bool perfected { get; set; } = false;
 
         /// <summary>
-        /// Kann man von diesem Monster eine gekaufte Trophäe erhalten?
-        /// Kann nur aktiviert werden, wenn meet = true
+        /// Hat die Guild dieses Monster gekauft? (schwächere Trophäe)
         /// </summary>
-        public bool BoughtTrophyAvailable { get; set; } = false;
+        public bool HasBoughtTrophy { get; set; } = false;
 
         /// <summary>
-        /// Kann man von diesem Monster eine erlegte Trophäe erhalten?
-        /// Kann nur aktiviert werden, wenn meet = true
+        /// Hat die Guild dieses Monster erlegt? (stärkere Trophäe)
         /// </summary>
-        public bool SlainTrophyAvailable { get; set; } = false;
+        public bool HasSlainTrophy { get; set; } = false;
 
         /// <summary>
         /// Effekt wenn die Trophäe gekauft wurde (schwächerer Effekt)
-        /// Nur erforderlich wenn BoughtTrophyAvailable = true
+        /// Nur relevant wenn HasBoughtTrophy = true
         /// </summary>
         [StringLength(500)]
         public string? BaseEffect { get; set; }
 
         /// <summary>
         /// Effekt wenn das Monster besiegt wurde (stärkerer Effekt)
-        /// Nur erforderlich wenn SlainTrophyAvailable = true
+        /// Nur relevant wenn HasSlainTrophy = true
         /// </summary>
         [StringLength(500)]
         public string? SlainEffect { get; set; }
-
-        // ===== STATUS & AUSRÜSTUNG (für die Guild) =====
-
-        /// <summary>
-        /// Status für die Guild "Wolkenbruch":
-        /// "none" = noch nicht erworben
-        /// "bought" = gekauft
-        /// "slain" = besiegt
-        /// "both" = gekauft UND später besiegt (seltener Fall)
-        /// </summary>
-        [Required]
-        [StringLength(50)]
-        public string Status { get; set; } = "none"; // "none", "bought", "slain", "both"
 
         /// <summary>
         /// Ist diese Trophäe gerade von der Guild ausgerüstet?
         /// Maximum 3 Trophäen gleichzeitig ausgerüstet!
         /// </summary>
         public bool IsEquipped { get; set; } = false;
+
+        /// <summary>
+        /// Position an der Wand (1, 2, oder 3)
+        /// null = nicht ausgerüstet
+        /// </summary>
+        public int? EquippedPosition { get; set; }
+
+        /// <summary>
+        /// Welche Variante bevorzugt die Guild, wenn beide verfügbar sind?
+        /// "bought" = gekaufte Variante wird genutzt
+        /// "slain" = erlegte Variante wird genutzt
+        /// null = keine Präferenz gesetzt (Default: slain wenn verfügbar)
+        /// </summary>
+        [StringLength(50)]
+        public string? PreferredVariant { get; set; }
+
+        /// <summary>
+        /// Berechneter Status basierend auf HasBoughtTrophy und HasSlainTrophy
+        /// "none" = noch nicht erworben
+        /// "bought" = nur gekauft ODER beide vorhanden + Präferenz "bought"
+        /// "slain" = nur erlegt ODER beide vorhanden + Präferenz "slain"
+        /// "both" = gekauft UND erlegt (wird nur intern verwendet)
+        /// </summary>
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public string Status
+        {
+            get
+            {
+                if (HasBoughtTrophy && HasSlainTrophy)
+                {
+                    // Beide vorhanden → Präferenz nutzen (Default: slain)
+                    return PreferredVariant == "bought" ? "bought" : "slain";
+                }
+                if (HasSlainTrophy) return "slain";
+                if (HasBoughtTrophy) return "bought";
+                return "none";
+            }
+        }
+
+        /// <summary>
+        /// Hat die Guild beide Varianten? (für UI-Toggle-Button)
+        /// </summary>
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public bool HasBothVariants => HasBoughtTrophy && HasSlainTrophy;
+
+        /// <summary>
+        /// Ist diese Trophäe überhaupt in der Truhe? (mindestens eine Variante erworben)
+        /// </summary>
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public bool IsInTrophyChest => HasBoughtTrophy || HasSlainTrophy;
 
         // Foreign Key
         public int MonstertypId { get; set; }

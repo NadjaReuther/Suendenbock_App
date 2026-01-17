@@ -40,6 +40,9 @@
                     <a asp-action="StartSession" class="btn btn-lg shadow" style="background: linear-gradient(135deg, #c9df8a 0%, #234d20 100%); color: white;">
                         Session starten
                     </a>
+                    <a asp-controller="Community" asp-action="Index" class="btn btn-lg shadow" style="background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%); color: #111111;">
+                        📅 Versammlung
+                    </a>
                 </div>
             </div>
         </div>
@@ -308,8 +311,8 @@
                                                    type="checkbox"
                                                    data-monster-id="@monster.Id"
                                                    data-toggle-type="boughtTrophy"
-                                                   @(monster.BoughtTrophyAvailable ? "checked" : "")
-                                                   title="Kaufbare Trophäe aktivieren/deaktivieren">
+                                                   @(monster.HasBoughtTrophy ? "checked" : "")
+                                                   title="Guild hat gekauft (aktivieren/deaktivieren)">
                                         </div>
                                     </td>
                                     <td>
@@ -318,8 +321,8 @@
                                                    type="checkbox"
                                                    data-monster-id="@monster.Id"
                                                    data-toggle-type="slainTrophy"
-                                                   @(monster.SlainTrophyAvailable ? "checked" : "")
-                                                   title="Erlegte Trophäe aktivieren/deaktivieren">
+                                                   @(monster.HasSlainTrophy ? "checked" : "")
+                                                   title="Guild hat erlegt (aktivieren/deaktivieren)">
                                         </div>
                                     </td>
                                     <td>

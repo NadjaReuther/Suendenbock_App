@@ -555,9 +555,12 @@ namespace Suendenbock_App.Data
             builder.Entity<Quest>()
                 .HasIndex(q => q.Type);
 
-            // Monster-Status für Filterung
+            // Monster-Trophäen-Filterung
             builder.Entity<Monster>()
-                .HasIndex(m => m.Status);
+                .HasIndex(m => m.HasBoughtTrophy);
+
+            builder.Entity<Monster>()
+                .HasIndex(m => m.HasSlainTrophy);
 
             // IsEquipped für schnelle Abfrage der ausgerüsteten Trophäen
             builder.Entity<Monster>()
@@ -596,6 +599,29 @@ namespace Suendenbock_App.Data
             // Nur ein aktiver Kampf pro Akt
             builder.Entity<CombatSession>()
                 .HasIndex(cs => new { cs.ActId, cs.IsActive });
+
+            // ===== POLL-SYSTEM BEZIEHUNGEN =====
+
+            // PollVote -> Poll: NO ACTION (wird indirekt über PollOption gelöscht)
+            builder.Entity<PollVote>()
+                .HasOne(pv => pv.Poll)
+                .WithMany(p => p.Votes)
+                .HasForeignKey(pv => pv.PollId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // PollVote -> PollOption: CASCADE (wenn Option gelöscht wird, Votes auch)
+            builder.Entity<PollVote>()
+                .HasOne(pv => pv.PollOption)
+                .WithMany(po => po.Votes)
+                .HasForeignKey(pv => pv.PollOptionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // PollOption -> Poll: CASCADE (wenn Poll gelöscht wird, Options auch)
+            builder.Entity<PollOption>()
+                .HasOne(po => po.Poll)
+                .WithMany(p => p.Options)
+                .HasForeignKey(po => po.PollId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

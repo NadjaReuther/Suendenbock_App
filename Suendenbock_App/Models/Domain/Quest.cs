@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Suendenbock_App.Models.Domain;
+using System.ComponentModel.DataAnnotations;
 
-namespace Suendenbock_App.Models.Domain
+namespace Suendenbock_App.Models
 {
     /// <summary>
     /// Eine Quest im Spiel

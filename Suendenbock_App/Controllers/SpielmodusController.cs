@@ -464,14 +464,10 @@ namespace Suendenbock_App.Controllers
         {
             // Alle Monster/Trophäen laden (mit Monstertyp)
             // Nur Monster anzeigen, die:
-            // 1. Begegnet wurden (meet = true) UND
-            // 2. Mindestens eine Trophäe verfügbar haben (BoughtTrophyAvailable ODER SlainTrophyAvailable) UND
-            // 3. Einen Status haben (nicht "none" = noch nicht erworben)
+            // 1. In der Trophäen-Truhe sind (HasBoughtTrophy ODER HasSlainTrophy)
             var monsters = await _context.Monsters
                 .Include(m => m.Monstertyp)
-                .Where(m => m.meet == true &&
-                           (m.BoughtTrophyAvailable || m.SlainTrophyAvailable) &&
-                           m.Status != "none")
+                .Where(m => m.HasBoughtTrophy || m.HasSlainTrophy)
                 .OrderBy(m => m.Name)
                 .Select(m => new TrophyViewModel
                 {
@@ -484,16 +480,25 @@ namespace Suendenbock_App.Controllers
                     SlainEffect = m.SlainEffect ?? string.Empty,
                     Status = m.Status,
                     IsEquipped = m.IsEquipped,
-                    BoughtTrophyAvailable = m.BoughtTrophyAvailable,
-                    SlainTrophyAvailable = m.SlainTrophyAvailable
+                    EquippedPosition = m.EquippedPosition,
+                    HasBoughtTrophy = m.HasBoughtTrophy,
+                    HasSlainTrophy = m.HasSlainTrophy,
+                    Meet = m.meet,
+                    Encounter = m.encounter,
+                    Perfected = m.perfected,
+                    Basics = m.Basics,
+                    EncounterDescription = m.Description,
+                    ProcessedDescription = m.ProcessedDescription
                 })
                 .ToListAsync();
 
             // Aufteilen: Equipped vs Inventory
+            // Equipped = nur Trophäen mit Position (1, 2, oder 3)
+            // Inventory = alle anderen (inkl. IsEquipped ohne Position)
             var viewModel = new TrophiesViewModel
             {
-                EquippedTrophies = monsters.Where(m => m.IsEquipped).ToList(),
-                InventoryTrophies = monsters.Where(m => !m.IsEquipped).ToList()
+                EquippedTrophies = monsters.Where(m => m.IsEquipped && m.EquippedPosition.HasValue).ToList(),
+                InventoryTrophies = monsters.Where(m => !m.IsEquipped || !m.EquippedPosition.HasValue).ToList()
             };
 
             return View(viewModel);
@@ -728,10 +733,22 @@ namespace Suendenbock_App.Controllers
         public string Description { get; set; } = string.Empty;
         public string BaseEffect { get; set; } = string.Empty;
         public string SlainEffect { get; set; } = string.Empty;
-        public string Status { get; set; } = "none"; // "none", "bought", "slain", "both"
+        public string Status { get; set; } = "none"; // "bought" oder "slain" (wird aus Model berechnet)
         public bool IsEquipped { get; set; }
-        public bool BoughtTrophyAvailable { get; set; }
-        public bool SlainTrophyAvailable { get; set; }
+        public int? EquippedPosition { get; set; } // Position an der Wand: 1, 2, oder 3
+        public bool HasBoughtTrophy { get; set; }
+        public bool HasSlainTrophy { get; set; }
+
+        // Monster-Beschreibungen für verschiedene Stufen
+        public bool Meet { get; set; }
+        public bool Encounter { get; set; }
+        public bool Perfected { get; set; }
+        public string? Basics { get; set; }
+        public string? EncounterDescription { get; set; }
+        public string? ProcessedDescription { get; set; }
+
+        // Helper für die View
+        public bool HasBothVariants => HasBoughtTrophy && HasSlainTrophy;
     }
     public class MapViewModel
     {

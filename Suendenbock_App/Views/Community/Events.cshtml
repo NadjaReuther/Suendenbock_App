@@ -1,0 +1,254 @@
+﻿@model Suendenbock_App.Models.ViewModels.EventsPageViewModel
+@{
+    ViewData["Title"] = "Chronik der Ereignisse";
+}
+
+<div class="spielmodus-container">
+    <!-- Header Section -->
+    <div class="events-header">
+        <div class="header-content">
+            <h1 class="page-title">Chronik der Ereignisse</h1>
+            <p class="page-subtitle">Dienstpläne und Schlachtenbereitschaft für das Reich.</p>
+        </div>
+
+        @if(Model.IsAdmin)
+        {
+            <button class="btn-primary" id="createEventBtn">
+                <span class="material-symbols-outlined">event_note</span>Termin verkünden
+            </button>
+        }
+    </div>
+
+    <!-- Events List -->
+    <div class="events-list">
+        @if(!Model.Events.Any())
+        {
+            <div class="empty-state">
+                <span class="material-symbols-outlined">event_busy</span>
+                <p>Keine Ereignisse geplant. Die Ruhe vor dem Sturm...</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var evt in Model.Events)
+            {
+                <div class="event-card" data-event-id="@evt.Id">
+                    <!-- Edit/Delete Buttons (nur für Creator oder Gott) -->
+                    @if(evt.CanEdit)
+                    {
+                        <div class="event-actions">
+                            <button class="btn-icon edit-event-btn" data-event-id="@evt.Id" title="Termin bearbeiten">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>
+                            <button class="btn-icon delete-event-btn" data-event-id="@evt.Id" title="Termin löschen">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+                    }
+
+                    <div class="event-content">
+                        <!-- Date Badge -->
+                        <div class="event-date-badge">
+                            <span class="badge-month">@evt.Month</span>
+                            <span class="badge-day">@evt.Day</span>
+                            <span class="badge-year">ANNO 1618</span>
+                        </div>
+
+                        <!-- Event Info -->
+                        <div class="event-info">
+                            <div class="event-meta">
+                                <span class="event-type event-type-@evt.Type.ToLower()">@evt.Type</span>
+                                <div class="event-time">
+                                    <span class="material-symbols-outlined">schedule</span>@evt.StartTime - @evt.EndTime Uhr
+                                </div>
+                                @if(evt.Type == "Spieltag")
+                                {
+                                    <span class="chore-indicator @(evt.HasChores ? "active" : "")">
+                                        <span class="material-symbols-outlined">assignment</span>
+                                        @(evt.HasChores ? "Dienstplan aktiv" : "Keine Chores")
+                                    </span>
+                                }
+                            </div>
+
+                            <h2 class="event-title">@evt.Title</h2>
+                            <p class="event-description">@evt.Description</p>
+                            <div class="event-footer">
+                                <div class="event-stats">
+                                    <div>
+                                        <span class="material-symbols-outlined">group</span>@evt.ParticipantsCount Teilnehmer
+                                    </div>
+                                    @if(evt.HasChores)
+                                    {
+                                        <div class="chore-toggle-wrapper">
+                                            <button class="btn-text toggle-chores" data-event-id="@evt.Id">
+                                                <span class="material-symbols-outlined">visibility</span>
+                                                <span>Dienstplan einsehen</span>
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+
+                                <!-- RSVP Buttons -->
+                                <div class="rsvp-buttons">
+                                    <button class="rsvp-btn rsvp-yes @(evt.CurrentUserRSVP == "yes" ? "active" : "")" data-event-id="@evt.Id" data-status="yes">
+                                        Teilnehmen
+                                    </button>
+                                    <button class="rsvp-btn rsvp-maybe @(evt.CurrentUserRSVP == "maybe" ? "active" : "")" data-event-id="@evt.Id" data-status="maybe">
+                                        Vielleicht
+                                    </button>
+                                    <button class="rsvp-btn rsvp-no @(evt.CurrentUserRSVP == "no" ? "active" : "")" data-event-id="@evt.Id" data-status="no">
+                                        Ablehnen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chore Matrix (hidden by Default) -->
+                    @if(evt.HasChores && evt.Chores != null)
+                    {
+                        <div class="chore-matrix" data-event-id="@evt.Id" style="display:none;">
+                            <div class="chore-matrix-header">
+                                <h3>
+                                    <span class="material-symbols-outlined">grid_view</span>
+                                    Dienstplan - Chore Matrix
+                                </h3>
+                                <span class="chore-hint">Hervorgehobende Dienste = Prio-Aufgaben</span>
+                            </div>
+                            <div class="chore-grid">
+                                @foreach(var choreName in Suendenbock_App.Models.Domain.ChoreNames.All)
+                                {
+                                    var isSpecial = Suendenbock_App.Models.Domain.ChoreNames.Special.Contains(choreName);
+                                    var assignedTo = evt.Chores.ContainsKey(choreName) ? evt.Chores[choreName] : "Offen";
+
+                                    <div class="chore-item @(isSpecial ? "special" : "")">
+                                        <div class="chore-name">
+                                            @if(isSpecial)
+                                            {
+                                                <span class="material-symbols-outlined">priority_high</span>
+                                            }
+                                            @choreName
+                                            <span class="chore-label">Aufgabe</span>
+                                        </div>
+                                        <span class="chore-assigned @(assignedTo != "Offen" ? "filled" : "")">
+                                            @assignedTo
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="eventModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content event-modal">
+        <div class="modal-header">
+            <h2 id="modalTitle">Termin verkünden</h2>
+            <button class="modal-close" onclick="closeEventModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="eventForm">
+            <input type="hidden" id="eventId" value="">
+
+            <div class="modal-body">
+                <!-- Grundlegende Informationen -->
+                <div class="form-section">
+                    <h3>Grundlegende Informationen</h3>
+
+                    <div class="form-group">
+                        <label for="eventTitle">Titel *</label>
+                        <input type="text" id="eventTitle" name="title" required
+                               placeholder="z.B. Monatlicher Spieltag" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventDescription">Beschreibung</label>
+                        <textarea id="eventDescription" name="description" rows="3"
+                                  placeholder="Details zum Event..." class="form-control"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventDate">Datum *</label>
+                            <input type="date" id="eventDate" name="date" required class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="eventType">Typ *</label>
+                            <select id="eventType" name="type" required class="form-control" onchange="toggleChoreSection()">
+                                <option value="">-- Wählen --</option>
+                                <option value="Spieltag">Spieltag</option>
+                                <option value="Vorbereitung">Vorbereitung</option>
+                                <option value="Ausflug">Ausflug</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventStartTime">Startzeit *</label>
+                            <input type="time" id="eventStartTime" name="startTime" required class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="eventEndTime">Endzeit *</label>
+                            <input type="time" id="eventEndTime" name="endTime" required class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chore Matrix (nur bei Spieltag) -->
+                <div id="choreSection" class="form-section" style="display: none;">
+                    <h3>
+                        <span class="material-symbols-outlined">grid_view</span>
+                        Dienstplan - Chore-Zuweisung
+                    </h3>
+                    <p class="form-hint">Weise Spielern Aufgaben zu. Leer lassen für "Offen".</p>
+
+                    <div class="chore-assignment-grid">
+                        @foreach(var choreName in Suendenbock_App.Models.Domain.ChoreNames.All)
+                        {
+                            var isSpecial = Suendenbock_App.Models.Domain.ChoreNames.Special.Contains(choreName);
+                            <div class="chore-assignment-item @(isSpecial ? "special" : "")">
+                                <label for="chore_@choreName.Replace(" ", "_")">
+                                    @if(isSpecial)
+                                    {
+                                        <span class="material-symbols-outlined">priority_high</span>
+                                    }
+                                    @choreName
+                                </label>
+                                <input type="text"
+                                       id="chore_@choreName.Replace(" ", "_")"
+                                       name="chore_@choreName"
+                                       placeholder="Name oder 'Offen'"
+                                       class="form-control chore-input">
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeEventModal()">
+                    Abbrechen
+                </button>
+                <button type="submit" class="btn-primary">
+                    <span class="material-symbols-outlined">save</span>
+                    Verkünden
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/spielmodus-events.css" />
+    <script src="~/js/events.js"></script>
+}

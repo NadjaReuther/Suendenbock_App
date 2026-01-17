@@ -16,6 +16,8 @@
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Material Symbols Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -76,6 +78,7 @@
                                 <i class="fas fa-users"></i> Verwaltung
                             </a>
                             <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">⚙️ Admin-Dashboard</a></li>
                                 <li><a class="dropdown-item" asp-controller="UserManagement" asp-action="Index">👥 Benutzerverwaltung</a></li>
                                 <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageAchievements">🏆 Achievement-Verwaltung</a></li>
                                 <li><a class="dropdown-item" asp-controller="Admin" asp-action="QRGenerator">📱 QR-Generator</a></li>

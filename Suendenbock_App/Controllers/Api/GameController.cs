@@ -693,25 +693,20 @@ namespace Suendenbock_App.Controllers.Api
                     return NotFound(new { error = "Trophäe nicht gefunden!" });
                 }
 
-                // Validierung: Toggle nur möglich wenn beide Varianten verfügbar sind
-                if (!trophy.BoughtTrophyAvailable || !trophy.SlainTrophyAvailable)
+                // Validierung: Toggle nur möglich wenn beide Varianten vorhanden sind
+                if (!trophy.HasBothVariants)
                 {
-                    return BadRequest(new { error = "Toggle nur möglich wenn beide Trophäen-Varianten verfügbar sind!" });
+                    return BadRequest(new { error = "Toggle nur möglich wenn beide Trophäen-Varianten vorhanden sind!" });
                 }
 
-                // Status wechseln: bought ↔ slain
-                if (trophy.Status == "bought")
+                // Präferenz wechseln: bought ↔ slain
+                if (trophy.PreferredVariant == "bought")
                 {
-                    trophy.Status = "slain";
+                    trophy.PreferredVariant = "slain";
                 }
-                else if (trophy.Status == "slain")
+                else
                 {
-                    trophy.Status = "bought";
-                }
-                else if (trophy.Status == "none" || string.IsNullOrEmpty(trophy.Status))
-                {
-                    // Wenn noch "none", setze auf "bought" als Default
-                    trophy.Status = "bought";
+                    trophy.PreferredVariant = "bought";
                 }
 
                 await _context.SaveChangesAsync();
@@ -768,36 +763,8 @@ namespace Suendenbock_App.Controllers.Api
                     return BadRequest(new { error = "Maximal 3 Trophäen können ausgerüstet sein!" });
                 }
 
-                // Ausrüsten - setze korrekten Status basierend auf verfügbaren Varianten
+                // Ausrüsten (Status wird automatisch aus HasBoughtTrophy/HasSlainTrophy berechnet)
                 trophy.IsEquipped = true;
-
-                // Status setzen wenn noch "none" oder anpassen an verfügbare Varianten
-                if (trophy.Status == "none" || trophy.Status == null)
-                {
-                    // Wenn nur SlainTrophyAvailable → Status = "slain"
-                    // Wenn nur BoughtTrophyAvailable → Status = "bought"
-                    // Wenn beide verfügbar → Default "bought"
-                    if (trophy.SlainTrophyAvailable && !trophy.BoughtTrophyAvailable)
-                    {
-                        trophy.Status = "slain";
-                    }
-                    else
-                    {
-                        trophy.Status = "bought";
-                    }
-                }
-                else
-                {
-                    // Korrigiere Status falls nicht passend zu verfügbaren Varianten
-                    if (trophy.Status == "bought" && !trophy.BoughtTrophyAvailable && trophy.SlainTrophyAvailable)
-                    {
-                        trophy.Status = "slain";
-                    }
-                    else if (trophy.Status == "slain" && !trophy.SlainTrophyAvailable && trophy.BoughtTrophyAvailable)
-                    {
-                        trophy.Status = "bought";
-                    }
-                }
 
                 await _context.SaveChangesAsync();
 
@@ -815,7 +782,60 @@ namespace Suendenbock_App.Controllers.Api
         }
 
         /// <summary>
-        /// Trophy Status auf "bought" oder "slain" setzen
+        /// Trophäe an bestimmter Position ausrüsten (Drag & Drop)
+        /// POST /api/game/trophies/1/equip
+        /// Body: { "position": 1 } (Position 1-3)
+        /// </summary>
+        [HttpPost("trophies/{id}/equip")]
+        public async Task<IActionResult> EquipTrophyAtPosition(int id, [FromBody] EquipTrophyRequest request)
+        {
+            try
+            {
+                var trophy = await _context.Monsters.FindAsync(id);
+                if (trophy == null)
+                {
+                    return NotFound(new { error = "Trophäe nicht gefunden!" });
+                }
+
+                // Validierung: Position muss 1-3 sein
+                if (request.Position < 1 || request.Position > 3)
+                {
+                    return BadRequest(new { error = "Position muss zwischen 1 und 3 liegen!" });
+                }
+
+                // Prüfe ob an dieser Position bereits eine Trophäe hängt
+                var existingTrophy = await _context.Monsters
+                    .FirstOrDefaultAsync(m => m.IsEquipped && m.EquippedPosition == request.Position);
+
+                if (existingTrophy != null)
+                {
+                    // Entferne die alte Trophäe von dieser Position
+                    existingTrophy.IsEquipped = false;
+                    existingTrophy.EquippedPosition = null;
+                }
+
+                // Ausrüsten der neuen Trophäe an dieser Position
+                trophy.IsEquipped = true;
+                trophy.EquippedPosition = request.Position;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = $"Trophäe an Position {request.Position} aufgehängt!",
+                    trophyId = id,
+                    position = request.Position,
+                    isEquipped = true
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Wechselt zwischen "bought" und "slain" Variante (nur wenn beide vorhanden)
         /// PUT /api/game/trophies/1/status
         /// Body: { "status": "bought" } oder { "status": "slain" }
         /// </summary>
@@ -830,20 +850,27 @@ namespace Suendenbock_App.Controllers.Api
                     return NotFound(new { error = "Trophäe nicht gefunden!" });
                 }
 
-                // Validierung
-                if (request.Status != "bought" && request.Status != "slain" && request.Status != "none")
+                // Nur erlaubt, wenn beide Varianten vorhanden
+                if (!trophy.HasBothVariants)
                 {
-                    return BadRequest(new { error = "Ungültiger Status! Erlaubt: bought, slain, none" });
+                    return BadRequest(new { error = "Kann nur wechseln, wenn beide Varianten vorhanden sind!" });
                 }
 
-                trophy.Status = request.Status;
+                // Validierung
+                if (request.Status != "bought" && request.Status != "slain")
+                {
+                    return BadRequest(new { error = "Ungültiger Status! Erlaubt: bought, slain" });
+                }
+
+                trophy.PreferredVariant = request.Status;
                 await _context.SaveChangesAsync();
 
                 return Ok(new
                 {
-                    message = $"Status auf '{request.Status}' gesetzt!",
+                    message = $"Variante auf '{request.Status}' gewechselt!",
                     trophyId = id,
-                    status = trophy.Status
+                    status = trophy.Status,
+                    preferredVariant = trophy.PreferredVariant
                 });
             }
             catch (Exception ex)
@@ -1592,6 +1619,11 @@ namespace Suendenbock_App.Controllers.Api
     public class SetTrophyStatusRequest
     {
         public string Status { get; set; } = string.Empty;
+    }
+
+    public class EquipTrophyRequest
+    {
+        public int Position { get; set; }
     }
 
     public class UpdateMarkerPositionRequest

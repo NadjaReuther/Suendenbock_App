@@ -259,5 +259,43 @@ namespace Suendenbock_App.Controllers
 
             return View();
         }
+
+        /// <summary>
+        /// Session starten - Lädt automatisch den aktiven Act und springt zur Wetter-Auswahl
+        /// Route: /Admin/StartSession
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> StartSession()
+        {
+            // Finde den aktiven Act
+            var activeAct = await _context.Acts
+                .Include(a => a.Map)
+                .FirstOrDefaultAsync(a => a.IsActive);
+
+            if (activeAct == null)
+            {
+                TempData["Error"] = "Kein aktiver Akt gefunden! Bitte aktiviere zuerst einen Akt.";
+                return RedirectToAction("Index");
+            }
+
+            // Lade die gleichen Daten wie bei GenerateSession
+            var companions = await _context.Characters
+                .Include(c => c.Affiliation)
+                .Where(c => c.Affiliation.Guild.Name == "Wolkenbruch")
+                .Select(c => $"{c.Vorname} {c.Nachname}")
+                .ToListAsync();
+
+            var countries = await _context.Herkunftslaender
+                .OrderBy(h => h.Name)
+                .Select(h => h.Name)
+                .ToListAsync();
+
+            ViewBag.Companions = companions;
+            ViewBag.Countries = countries;
+            ViewBag.ActiveActId = activeAct.Id; // Dieser Flag sagt der View, dass sie direkt den Act laden soll
+
+            // Verwende die gleiche View wie GenerateSession
+            return View("GenerateSession");
+        }
     }
 }

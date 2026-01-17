@@ -722,7 +722,18 @@
 }
 
 /* ===== RESPONSIVE ===== */
+
+/* Tablets (1024px und kleiner) */
 @media (max-width: 1024px) {
+    .spielmodus-battle-container {
+        padding: 1.5rem;
+    }
+
+    .battle-header h1 {
+        font-size: 3rem;
+    }
+
+    /* Combat Layout - Stack vertikal */
     .combat-layout {
         grid-template-areas:
             "enemy"
@@ -730,24 +741,307 @@
             "log"
             "actions";
         grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    /* Enemy Section */
+    .enemy-section {
+        padding: 1.5rem;
     }
 
     .enemy-sprite {
         width: 200px;
         height: 200px;
     }
+
+    .enemy-name {
+        font-size: 1.75rem;
+    }
+
+    /* Party Section */
+    .party-section {
+        padding: 1.5rem;
+    }
+
+    .party-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    /* Actions */
+    .action-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    /* Log */
+    .combat-log {
+        max-height: 200px;
+    }
 }
 
+/* Smartphones (768px und kleiner) */
 @media (max-width: 768px) {
+    .spielmodus-battle-container {
+        padding: 1rem;
+    }
+
+    .battle-header {
+        padding-bottom: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .battle-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .battle-header .subtitle {
+        font-size: 0.625rem;
+    }
+
+    /* Combat Layout */
+    .combat-layout {
+        gap: 1rem;
+    }
+
+    /* Enemy Section */
+    .enemy-section {
+        padding: 1rem;
+    }
+
+    .enemy-sprite {
+        width: 150px;
+        height: 150px;
+    }
+
+    .enemy-name {
+        font-size: 1.5rem;
+    }
+
+    .enemy-stats {
+        font-size: 0.875rem;
+    }
+
+    /* Party Section */
+    .party-section {
+        padding: 1rem;
+    }
+
+    .party-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .character-battle-card {
+        padding: 0.75rem;
+    }
+
+    .character-battle-name {
+        font-size: 0.9375rem;
+    }
+
+    .hp-bar,
+    .pokus-bar {
+        height: 1.5rem;
+    }
+
+    .stat-value {
+        font-size: 0.875rem;
+    }
+
+    /* Actions - einzelne Spalte */
     .action-buttons {
         grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        padding: 1rem;
+        font-size: 0.9375rem;
+    }
+
+    .action-btn .material-symbols-outlined {
+        font-size: 1.5rem;
+    }
+
+    /* Combat Log */
+    .combat-log {
+        max-height: 180px;
+        padding: 0.75rem;
+    }
+
+    .log-entry {
+        padding: 0.5rem;
+        font-size: 0.8125rem;
+    }
+
+    /* Result Modal */
+    .result-overlay {
+        padding: 1rem;
+    }
+
+    .result-content {
+        padding: 2rem 1.5rem;
+        max-width: 90%;
     }
 
     .result-icon {
-        font-size: 5rem;
+        font-size: 4rem;
+        margin-bottom: 1rem;
     }
 
     .result-title {
-        font-size: 2.5rem;
+        font-size: 2rem;
+    }
+
+    .result-message {
+        font-size: 1.125rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Selection Screens */
+    .monster-selection,
+    .character-selection {
+        padding: 1rem;
+    }
+
+    .selection-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .selection-card {
+        padding: 1rem;
+    }
+
+    .selection-card-name {
+        font-size: 0.9375rem;
+    }
+
+    /* Buttons */
+    .btn-start-combat {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9375rem;
+    }
+}
+
+/* Kleine Smartphones (480px und kleiner) */
+@media (max-width: 480px) {
+    .spielmodus-battle-container {
+        padding: 0.75rem;
+    }
+
+    .battle-header h1 {
+        font-size: 2rem;
+    }
+
+    .battle-header .subtitle {
+        font-size: 0.5rem;
+        letter-spacing: 0.2em;
+    }
+
+    /* Enemy Section */
+    .enemy-section {
+        padding: 0.75rem;
+    }
+
+    .enemy-sprite {
+        width: 120px;
+        height: 120px;
+    }
+
+    .enemy-name {
+        font-size: 1.25rem;
+    }
+
+    .enemy-stats {
+        font-size: 0.8125rem;
+    }
+
+    /* Party Section */
+    .party-section {
+        padding: 0.75rem;
+    }
+
+    .character-battle-card {
+        padding: 0.625rem;
+    }
+
+    .character-battle-name {
+        font-size: 0.875rem;
+    }
+
+    .stat-label {
+        font-size: 0.6875rem;
+    }
+
+    .stat-value {
+        font-size: 0.8125rem;
+    }
+
+    /* Actions */
+    .action-btn {
+        padding: 0.875rem;
+        font-size: 0.875rem;
+    }
+
+    .action-btn .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+
+    .action-btn-text {
+        font-size: 0.875rem;
+    }
+
+    /* Combat Log */
+    .combat-log {
+        max-height: 150px;
+        padding: 0.625rem;
+    }
+
+    .log-entry {
+        padding: 0.4375rem;
+        font-size: 0.75rem;
+    }
+
+    /* Result Modal */
+    .result-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .result-icon {
+        font-size: 3rem;
+    }
+
+    .result-title {
+        font-size: 1.75rem;
+    }
+
+    .result-message {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Selection Screens */
+    .selection-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .selection-card {
+        padding: 0.875rem;
+    }
+
+    .selection-card-image {
+        width: 80px;
+        height: 80px;
+    }
+
+    .selection-card-name {
+        font-size: 0.875rem;
+    }
+
+    .selection-card-stats {
+        font-size: 0.75rem;
     }
 }

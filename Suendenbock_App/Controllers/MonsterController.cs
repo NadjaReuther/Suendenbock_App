@@ -162,6 +162,14 @@ namespace Suendenbock_App.Controllers
             target.encounter = source.encounter;
             target.perfected = source.perfected;
             target.MonstertypId = source.MonstertypId;
+
+            // Trophäen-Felder
+            target.HasBoughtTrophy = source.HasBoughtTrophy;
+            target.HasSlainTrophy = source.HasSlainTrophy;
+            target.BaseEffect = source.BaseEffect;
+            target.SlainEffect = source.SlainEffect;
+            target.PreferredVariant = source.PreferredVariant;
+            target.IsEquipped = source.IsEquipped;
         }
 
         [HttpPost]
@@ -191,11 +199,11 @@ namespace Suendenbock_App.Controllers
                 }
                 else if (request.Field.ToLower() == "boughttrophy")
                 {
-                    monster.BoughtTrophyAvailable = request.Value;
+                    monster.HasBoughtTrophy = request.Value;
                 }
                 else if (request.Field.ToLower() == "slaintrophy")
                 {
-                    monster.SlainTrophyAvailable = request.Value;
+                    monster.HasSlainTrophy = request.Value;
                 }
                 else
                 {

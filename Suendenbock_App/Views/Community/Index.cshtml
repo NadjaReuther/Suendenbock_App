@@ -1,0 +1,279 @@
+@model Suendenbock_App.Models.ViewModels.CommunityIndexViewModel
+@{
+    ViewData["Title"] = "Versammlungshalle";
+}
+
+<div class="versammlungs-container">
+    <!-- Hero Section -->
+    <div class="versammlungs-hero">
+        <div class="hero-line"></div>
+        <h1 class="hero-title">Versammlungshalle</h1>
+        <p class="hero-subtitle">Ein Ort für Diskussionen, Ankündigungen und Planungen des Reiches.</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-layout">
+        <!-- Left Column (2/3) -->
+        <div class="main-content">
+            <!-- News Section -->
+            <div class="section-wrapper">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <span class="material-symbols-outlined">campaign</span>
+                        News & Ankündigungen
+                    </h2>
+                    <span class="material-symbols-outlined section-header-icon">history_edu</span>
+                </div>
+                <div class="section-box">
+                    <div class="news-scroll">
+                        <!-- Placeholder News -->
+                        <div class="news-item">
+                            <div class="news-icon-wrapper">
+                                <span class="material-symbols-outlined">campaign</span>
+                            </div>
+                            <div class="news-body">
+                                <h3>Willkommen in der Versammlungshalle</h3>
+                                <p class="news-excerpt">Werte Reisende, das neueste Update bringt Änderungen am Magiesystem und neue Quests...</p>
+                                <div class="news-footer">
+                                    <span><span class="material-symbols-outlined">person</span> Admin</span>
+                                    <span><span class="material-symbols-outlined">schedule</span> @DateTime.Now.ToString("dd.MM.yyyy")</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Widgets Row -->
+            <div class="widgets-row">
+                <!-- Polls Widget -->
+                <div class="widget-wrapper">
+                    <div class="widget-header">
+                        <h2 class="widget-title">
+                            <span class="material-symbols-outlined">poll</span>
+                            Umfragen
+                        </h2>
+                    </div>
+                    <div class="widget-box">
+                        <div class="widget-content">
+                            @if (!Model.ActivePolls.Any())
+                            {
+                                <div class="empty-widget">
+                                    <span class="material-symbols-outlined">poll</span>
+                                    <p>Keine aktiven Umfragen</p>
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var poll in Model.ActivePolls.Take(2))
+                                {
+                                    <div class="poll-item">
+                                        <span class="poll-status">Aktiv</span>
+                                        <h4>@poll.Question</h4>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 70%"></div>
+                                        </div>
+                                        <div class="poll-footer">
+                                            <span class="poll-action">Stimme abgeben →</span>
+                                            <span class="poll-count">@poll.TotalVotes Stimmen</span>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <div class="widget-button-wrapper">
+                            <a asp-action="Polls" class="widget-button">Alle Umfragen</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Events Widget -->
+                <div class="widget-wrapper">
+                    <div class="widget-header">
+                        <h2 class="widget-title">
+                            <span class="material-symbols-outlined">map</span>
+                            Akt-Planung
+                        </h2>
+                    </div>
+                    <div class="widget-box">
+                        <div class="widget-content">
+                            @if (!Model.UpcomingEvents.Any())
+                            {
+                                <div class="empty-widget">
+                                    <span class="material-symbols-outlined">event_busy</span>
+                                    <p>Keine Ereignisse geplant</p>
+                                </div>
+                            }
+                            else
+                            {
+                                var eventIndex = 0;
+                                @foreach (var evt in Model.UpcomingEvents.Take(2))
+                                {
+                                    <a asp-action="Events" class="event-item">
+                                        <div class="event-badge @(eventIndex == 0 ? "badge-spieltag" : "badge-other")">
+                                            <div class="badge-month-text">@evt.Month</div>
+                                            <div class="badge-day-text">@evt.Day</div>
+                                        </div>
+                                        <div class="event-details">
+                                            <h4>@evt.Title</h4>
+                                            <p>@evt.Type: @evt.StartTime - @evt.EndTime</p>
+                                        </div>
+                                    </a>
+                                    eventIndex++;
+                                }
+                            }
+                        </div>
+                        <div class="widget-button-wrapper">
+                            <a asp-action="Events" class="widget-button">Zum Kalender</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column (Sidebar - 1/3) -->
+        <aside class="sidebar-content">
+            <!-- Monatsbeitrag -->
+            <div class="sidebar-wrapper">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">
+                        <span class="material-symbols-outlined">token</span>
+                        Monatsbeitrag
+                    </h2>
+                    <span class="material-symbols-outlined header-icon">payments</span>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-scroll">
+                        <!-- Placeholder Spieler -->
+                        <div class="payment-item">
+                            <div class="payment-info">
+                                <div class="payment-dot paid"></div>
+                                <span class="payment-name">Jeremias</span>
+                            </div>
+                            <div class="payment-type">
+                                <span class="material-symbols-outlined">payments</span>
+                                <span>PayPal</span>
+                            </div>
+                        </div>
+                        <div class="payment-item">
+                            <div class="payment-info">
+                                <div class="payment-dot paid"></div>
+                                <span class="payment-name">Salome</span>
+                            </div>
+                            <div class="payment-type">
+                                <span class="material-symbols-outlined">account_balance</span>
+                                <span>Überweisung</span>
+                            </div>
+                        </div>
+                        <div class="payment-item">
+                            <div class="payment-info">
+                                <div class="payment-dot unpaid"></div>
+                                <span class="payment-name">Jewa</span>
+                            </div>
+                            <div class="payment-type">
+                                <span class="material-symbols-outlined">hourglass_empty</span>
+                                <span>Ausstehend</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sidebar-button-wrapper">
+                        <button class="sidebar-button">
+                            <span class="material-symbols-outlined">edit_note</span>
+                            Beiträge verwalten
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schandflecken (Support) -->
+            <div class="sidebar-wrapper">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">
+                        <span class="material-symbols-outlined">build</span>
+                        Schandflecken
+                    </h2>
+                    <span class="material-symbols-outlined header-icon">report_problem</span>
+                </div>
+                <div class="sidebar-box">
+                    <div class="sidebar-content-flex">
+                        <p class="support-hint">Fallen euch Risse in der Matrix oder technische Gebrechen auf? Meldet Schandflecken hier.</p>
+
+                        <div class="support-buttons">
+                            <button class="support-create">
+                                <span class="material-symbols-outlined">add</span>
+                                Ticket erstellen
+                            </button>
+                            <button class="support-toggle">
+                                <span class="material-symbols-outlined">list_alt</span>
+                                Tickets einsehen
+                            </button>
+                        </div>
+
+                        <div class="support-tickets">
+                            <p class="support-empty">Keine gemeldeten Schandflecken.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Forum Widget (Full Width) -->
+    <div class="forum-wrapper">
+        <div class="forum-header">
+            <div class="forum-title-group">
+                <h2 class="forum-title">
+                    <span class="material-symbols-outlined">forum</span>
+                    Forum & Absprachen
+                </h2>
+                <span class="forum-subtitle">Versammlungshalle</span>
+            </div>
+        </div>
+        <div class="forum-box">
+            @if (!Model.RecentThreads.Any())
+            {
+                <div class="empty-forum">
+                    <span class="material-symbols-outlined">forum</span>
+                    <p>Keine aktuellen Themen vorhanden.</p>
+                </div>
+            }
+            else
+            {
+                <div class="forum-grid">
+                    @foreach (var thread in Model.RecentThreads.Take(6))
+                    {
+                        <div class="thread-card">
+                            <div class="thread-icon">
+                                <span class="material-symbols-outlined">auto_stories</span>
+                            </div>
+                            <div class="thread-content">
+                                <div class="thread-meta">
+                                    <span class="thread-category">@thread.CategoryName</span>
+                                    <span class="thread-time">@thread.CreatedAt.ToString("dd.MM.yyyy")</span>
+                                </div>
+                                <h4 class="thread-title">@thread.Title</h4>
+                                <p class="thread-author">Von @thread.AuthorName • @thread.ReplyCount Antw.</p>
+                            </div>
+                            @if (thread.IsPinned)
+                            {
+                                <span class="thread-pin">
+                                    <span class="material-symbols-outlined">push_pin</span>
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            <div class="forum-footer">
+                <a asp-action="Forum" class="forum-button">
+                    Alle Themen der Versammlungshalle anzeigen
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/community-overview.css" />
+}

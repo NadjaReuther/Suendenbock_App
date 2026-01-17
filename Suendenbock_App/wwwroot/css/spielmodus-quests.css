@@ -755,20 +755,247 @@
     }
 
 /* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .quests-header h1 {
-        font-size: 2rem;
+
+/* Tablets (1024px und kleiner) */
+@media (max-width: 1024px) {
+    .spielmodus-quests-container {
+        padding: 1.5rem;
     }
 
+    .quests-header h1 {
+        font-size: 3rem;
+    }
+
+    /* Quest Tabs */
+    .quest-tabs {
+        gap: 0.75rem;
+    }
+
+    .quest-tab {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.9375rem;
+    }
+
+    /* Quest Grid */
+    .quests-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    /* Quest Card */
+    .quest-card {
+        padding: 1.25rem;
+    }
+
+    .quest-title {
+        font-size: 1.125rem;
+    }
+
+    /* Forms */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Smartphones (768px und kleiner) */
+@media (max-width: 768px) {
+    .spielmodus-quests-container {
+        padding: 1rem;
+    }
+
+    .quests-header {
+        padding-bottom: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .quests-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .quests-header .subtitle {
+        font-size: 0.625rem;
+    }
+
+    /* Quest Tabs */
     .quest-tabs {
         flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
     .quest-tab {
         flex: 1 1 45%;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
     }
 
+    /* Quest Grid - einzelne Spalte */
+    .quests-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Quest Card */
+    .quest-card {
+        padding: 1rem;
+    }
+
+    .quest-title {
+        font-size: 1rem;
+    }
+
+    .quest-description {
+        font-size: 0.875rem;
+    }
+
+    .quest-meta {
+        font-size: 0.75rem;
+    }
+
+    /* Quest Actions */
+    .quest-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .quest-btn {
+        width: 100%;
+        padding: 0.625rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    /* Forms */
     .form-row {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .form-group label {
+        font-size: 0.875rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* Verhindert Zoom auf iOS */
+        padding: 0.75rem;
+    }
+
+    /* Modals */
+    .modal-content {
+        width: 95%;
+        padding: 1rem;
+    }
+
+    .modal-header h3 {
+        font-size: 1.25rem;
+    }
+
+    /* Quest Status Badges */
+    .quest-status {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.625rem;
+    }
+
+    /* Quest Requirement Notice */
+    .quest-requirement-notice,
+    .quest-unavailable-notice {
+        padding: 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    .quest-requirement-notice .material-symbols-outlined,
+    .quest-unavailable-notice .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+}
+
+/* Kleine Smartphones (480px und kleiner) */
+@media (max-width: 480px) {
+    .spielmodus-quests-container {
+        padding: 0.75rem;
+    }
+
+    .quests-header h1 {
+        font-size: 2rem;
+    }
+
+    .quests-header .subtitle {
+        font-size: 0.5rem;
+        letter-spacing: 0.2em;
+    }
+
+    /* Quest Tabs */
+    .quest-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .quest-tab {
+        flex: 1 1 100%;
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 0.8125rem;
+    }
+
+    /* Quest Card */
+    .quest-card {
+        padding: 0.875rem;
+    }
+
+    .quest-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .quest-title {
+        font-size: 0.9375rem;
+    }
+
+    .quest-type {
+        font-size: 0.6875rem;
+    }
+
+    .quest-description {
+        font-size: 0.8125rem;
+    }
+
+    .quest-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        font-size: 0.6875rem;
+    }
+
+    /* Quest Actions */
+    .quest-btn {
+        padding: 0.5rem 0.875rem;
+        font-size: 0.8125rem;
+    }
+
+    .quest-btn .material-symbols-outlined {
+        font-size: 1rem;
+    }
+
+    /* Add Quest Button */
+    .add-quest-btn {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.875rem;
+    }
+
+    /* Forms */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        font-size: 0.8125rem;
+    }
+
+    /* Quest Status */
+    .quest-status {
+        font-size: 0.6875rem;
+        padding: 0.1875rem 0.5rem;
     }
 }

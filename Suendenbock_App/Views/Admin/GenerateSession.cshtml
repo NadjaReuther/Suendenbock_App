@@ -184,4 +184,30 @@
     </div>
 </div>
 
+@if (ViewBag.ActiveActId != null)
+{
+    <script>
+        // Flag setzen damit sessionGen das Initial-Modal überspringt
+        window.autoLoadActiveAct = true;
+    </script>
+}
+
 <script src="~/js/session-generator-v2.js"></script>
+
+@if (ViewBag.ActiveActId != null)
+{
+    <script>
+        // Automatisch den aktiven Act laden und zur Wetter-Auswahl springen
+        (function() {
+            const activeActId = @ViewBag.ActiveActId;
+
+            window.addEventListener('sessionGenReady', () => {
+                sessionGen.loadActs().then(() => {
+                    sessionGen.startReselectWeather(activeActId);
+                }).catch(error => {
+                    console.error('Fehler beim Laden des Akts:', error);
+                });
+            });
+        })();
+    </script>
+}

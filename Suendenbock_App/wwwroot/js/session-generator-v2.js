@@ -1,15 +1,16 @@
 // Session Generator JavaScript - Version 2 (lädt Wetterdaten von API)
 
 class SessionGenerator {
-    constructor() {
+    constructor(skipInitialModal = false) {
         this.currentView = 'initialModal';
         this.editingAct = null;
         this.actToLoad = null;
         this.selectedWeather = null;
-        this.mapImageFile = null; // Speichere die Datei statt Base64
+        this.mapImageFile = null;
         this.companions = [];
         this.acts = [];
-        this.weatherCache = {}; // Cache für Wetterdaten
+        this.weatherCache = {};
+        this.skipInitialModal = skipInitialModal;
 
         this.init();
     }
@@ -17,7 +18,11 @@ class SessionGenerator {
     init() {
         this.setupEventListeners();
         this.loadCompanions();
-        this.showView('initialModal');
+
+        // Initial-Modal nur bei "Session vorbereiten" zeigen, nicht bei "Session starten"
+        if (!this.skipInitialModal) {
+            this.showView('initialModal');
+        }
     }
 
     setupEventListeners() {
@@ -524,7 +529,10 @@ class SessionGenerator {
 }
 
 // Initialize when DOM is ready
-let sessionGen;
 document.addEventListener('DOMContentLoaded', () => {
-    sessionGen = new SessionGenerator();
+    const skipInitialModal = window.autoLoadActiveAct === true;
+    window.sessionGen = new SessionGenerator(skipInitialModal);
+
+    // Signalisiere dass sessionGen bereit ist (für StartSession Auto-Load)
+    window.dispatchEvent(new CustomEvent('sessionGenReady'));
 });

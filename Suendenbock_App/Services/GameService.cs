@@ -140,7 +140,7 @@ namespace Suendenbock_App.Services
             var monster = await _context.Monsters.FindAsync(monsterId);
             if (monster != null)
             {
-                monster.Status = monster.Status == "bought" ? "both" : "slain";
+                monster.HasSlainTrophy = true;
                 await _context.SaveChangesAsync();
             }
         }

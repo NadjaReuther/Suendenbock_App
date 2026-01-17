@@ -74,7 +74,7 @@ namespace Suendenbock_App.Controllers
                     return await HandleChoiceDoor(door, userId);
 
                 case DoorType.DirectAudio:
-                    return await HandleDirectAudioDoor(door, userId);
+                    return HandleDirectAudioDoor(door, userId);
 
                 default:
                     return BadRequest(new { message = "Unbekannter Türchen-Typ" });
@@ -441,19 +441,18 @@ namespace Suendenbock_App.Controllers
             });
         }
 
-        private Task<IActionResult> HandleDirectAudioDoor(AdventDoor door, string userId)
+        private IActionResult HandleDirectAudioDoor(AdventDoor door, string userId)
         {
             if (string.IsNullOrEmpty(door.AudioPath))
             {
-                return Task.FromResult<IActionResult>(
-                    BadRequest(new { message = "Keine Audio-Datei definiert" }));
+                return BadRequest(new { message = "Keine Audio-Datei definiert" });
             }
 
-            return Task.FromResult<IActionResult>(Ok(new
+            return Ok(new
             {
                 doorType = "directAudio",
                 audioPath = door.AudioPath
-            }));
+            });
         }
 
         private bool IsDayAvailable(int dayNumber)

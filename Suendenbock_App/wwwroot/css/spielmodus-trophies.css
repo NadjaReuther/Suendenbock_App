@@ -54,6 +54,11 @@
     justify-content: center;
     gap: 1rem;
     margin-bottom: 4rem;
+    background: rgba(239, 230, 213, 0.3);
+    padding: 1.5rem 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(212, 196, 168, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
     .section-divider .divider-line {
@@ -65,7 +70,7 @@
 
     .section-divider h2 {
         font-family: 'Cinzel', serif;
-        font-size: 1.125rem;
+        font-size: 2rem;
         text-transform: uppercase;
         letter-spacing: 0.4em;
         color: rgba(139, 94, 60, 0.7);
@@ -116,6 +121,13 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     justify-items: center;
+    max-width: 80rem;
+    margin: 0 auto 4rem auto;
+    background: rgba(239, 230, 213, 0.3);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(212, 196, 168, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* ===== TROPHY SLOT ===== */
@@ -125,6 +137,15 @@
     flex-direction: column;
     align-items: center;
     width: 13rem;
+}
+
+/* Drag & Drop Feedback */
+.trophy-slot.drag-over {
+    background: rgba(212, 175, 55, 0.1);
+    border-radius: 0.5rem;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+    transform: scale(1.05);
+    transition: all 0.2s ease;
 }
 
 /* Kette (oben) */
@@ -315,13 +336,13 @@
 
 .trophy-name {
     font-family: 'MedievalSharp', cursive;
-    font-size: 0.75rem;
+    font-size: 1.125rem;
     color: #5d4e37;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin: 0 0 0.25rem 0;
-    line-height: 1;
+    line-height: 1.2;
 }
 
 .nameplate-divider {
@@ -332,16 +353,17 @@
 }
 
 .trophy-effect {
-    font-size: 0.5625rem;
+    font-size: 0.875rem;
     color: #5d4e37;
     font-weight: bold;
     font-style: italic;
-    height: 1.5rem;
+    min-height: 2rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 1.2;
+    line-height: 1.3;
     margin: 0;
+    padding: 0 0.25rem;
 }
 
 /* ===== EMPTY SLOT ===== */
@@ -394,12 +416,6 @@
     }
 }
 
-@media (max-width: 768px) {
-    .equipped-grid {
-        grid-template-columns: 1fr;
-        gap: 4rem;
-    }
-}
 /* Teil 3: Inventory Section + Footer */
 
 /* ===== INVENTORY SECTION ===== */
@@ -441,6 +457,75 @@
         background: rgba(255, 255, 255, 0.4);
         border-color: #d4af37;
     }
+
+/* Drag & Drop für Inventory Cards */
+.inventory-card.draggable {
+    cursor: grab;
+    /* Fallback für Touch-Geräte */
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+}
+
+    .inventory-card.draggable:active {
+        cursor: grabbing;
+        cursor: -webkit-grabbing;
+        cursor: -moz-grabbing;
+    }
+
+/* Touch-Geräte: Zeige pointer statt grab */
+@media (pointer: coarse) {
+    .inventory-card.draggable {
+        cursor: pointer;
+    }
+
+    .inventory-card.draggable:active {
+        cursor: pointer;
+    }
+}
+
+/* Touch Support - Selected State */
+.inventory-card.touch-selected {
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.15);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+    transform: scale(1.02);
+}
+
+/* Trophy Slot - Placing State */
+.trophy-slot.placing-trophy {
+    animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Touch Hint */
+.touch-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 0.5rem;
+    color: #5d4e37;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.9375rem;
+    text-align: center;
+}
+
+.touch-hint .material-symbols-outlined {
+    font-size: 1.5rem;
+    color: #d4af37;
+}
 
 /* ===== INVENTORY SHIELD (kleiner) ===== */
 .inventory-shield {
@@ -539,12 +624,12 @@
 /* ===== INVENTORY INFO ===== */
 .inventory-trophy-name {
     font-family: 'MedievalSharp', cursive;
-    font-size: 1.125rem;
+    font-size: 1.375rem;
     color: #5d4e37;
     font-weight: bold;
     text-transform: uppercase;
     text-align: center;
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.5rem 0;
 }
 
 .inventory-meta {
@@ -555,7 +640,7 @@
 
 .monster-type {
     font-family: 'Cinzel', serif;
-    font-size: 0.625rem;
+    font-size: 0.875rem;
     color: rgba(139, 94, 60, 0.6);
     font-weight: bold;
     text-transform: uppercase;
@@ -564,7 +649,7 @@
 }
 
 .status-label {
-    font-size: 0.5rem;
+    font-size: 0.75rem;
     color: rgba(93, 78, 55, 0.4);
     text-transform: uppercase;
     font-weight: bold;
@@ -580,26 +665,68 @@
 }
 
 .inventory-description {
-    font-size: 0.6875rem;
+    font-size: 0.9375rem;
     color: rgba(93, 78, 55, 0.7);
     font-style: italic;
-    line-height: 1.4;
+    line-height: 1.5;
     text-align: center;
-    height: 3rem;
-    overflow: hidden;
+    min-height: 3rem;
     margin: 0 0 1.5rem 0;
+}
+
+/* ===== MONSTER BESCHREIBUNGEN (Collapsible) ===== */
+.monster-descriptions {
+    margin: 1rem 0 1.5rem 0;
+    width: 100%;
+}
+
+.description-section {
+    margin-bottom: 1rem;
+}
+
+.description-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #8b7355;
+    margin: 0 0 0.5rem 0;
+    text-align: left;
+}
+
+.description-content {
+    font-size: 0.875rem;
+    color: rgba(93, 78, 55, 0.8);
+    line-height: 1.6;
+    text-align: left;
+    padding: 0.75rem;
+    background: rgba(239, 230, 213, 0.3);
+    border-radius: 0.375rem;
+    border: 1px solid rgba(212, 196, 168, 0.3);
+}
+
+.description-toggle {
+    color: #d4af37;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 0.25rem;
+    transition: color 0.2s ease;
+}
+
+.description-toggle:hover {
+    color: #8B5E3C;
+    text-decoration: underline;
 }
 
 /* ===== EQUIP BUTTON ===== */
 .equip-btn {
     width: 100%;
-    padding: 0.75rem;
+    padding: 1rem;
     background: rgba(139, 94, 60, 0.1);
     color: #8B5E3C;
     border: 1px solid rgba(139, 94, 60, 0.2);
     border-radius: 0.25rem;
     font-family: 'Cinzel', serif;
-    font-size: 0.625rem;
+    font-size: 0.875rem;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.15em;
@@ -734,7 +861,7 @@
 
 .effect-label {
     font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #8b7355;
     margin: 0.5rem 0 0.25rem;
@@ -742,10 +869,10 @@
 
 .effect-text {
     font-family: 'Cinzel', serif;
-    font-size: 0.875rem;
+    font-size: 1.125rem;
     color: #5d4e37;
     margin: 0 0 0.5rem;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* ===== TROPHY VARIANTS (Verfügbare Varianten) ===== */
@@ -759,7 +886,7 @@
 
 .variants-label {
     font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: #8b7355;
     display: block;
@@ -778,10 +905,10 @@
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.375rem 0.75rem;
+    padding: 0.5rem 1rem;
     border-radius: 1rem;
     font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     border: 2px solid;
     transition: all 0.2s ease;
@@ -839,18 +966,283 @@
 }
 
 /* ===== RESPONSIVE ===== */
+
+/* Tablets (1024px und kleiner) */
 @media (max-width: 1024px) {
+    .spielmodus-trophies-container {
+        padding: 1.5rem;
+    }
+
+    /* Section Divider */
+    .section-divider h2 {
+        font-size: 1.5rem;
+        letter-spacing: 0.3em;
+    }
+
+    /* Equipped Grid - 3 Spalten bleiben, aber kleiner */
+    .equipped-grid {
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .trophy-slot {
+        width: 11rem;
+    }
+
+    .trophy-shield {
+        width: 10rem;
+        height: 10rem;
+    }
+
+    .trophy-nameplate {
+        width: 11rem;
+    }
+
+    .trophy-name {
+        font-size: 1rem;
+    }
+
+    .trophy-effect {
+        font-size: 0.75rem;
+    }
+
+    /* Inventory Grid - 2 Spalten */
     .inventory-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
     }
 }
 
+/* Smartphones (768px und kleiner) */
 @media (max-width: 768px) {
+    .spielmodus-trophies-container {
+        padding: 1rem;
+    }
+
+    .trophies-header h1 {
+        font-size: 2.5rem;
+    }
+
+    /* Section Divider */
+    .section-divider {
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .section-divider h2 {
+        font-size: 1.25rem;
+        letter-spacing: 0.2em;
+    }
+
+    .section-divider .divider-line {
+        max-width: 80px;
+    }
+
+    .trophy-slot {
+        width: 9rem;
+    }
+
+    .trophy-chain {
+        top: -3rem;
+        height: 4rem;
+    }
+
+    .trophy-shield {
+        width: 8rem;
+        height: 8rem;
+    }
+
+    .trophy-nameplate {
+        width: 9rem;
+    }
+
+    .trophy-name {
+        font-size: 0.875rem;
+    }
+
+    .trophy-effect {
+        font-size: 0.625rem;
+        min-height: 1.5rem;
+    }
+
+    .trophy-status-badge {
+        width: 1.75rem;
+        height: 1.75rem;
+    }
+
+    .trophy-status-badge .material-symbols-outlined {
+        font-size: 1rem;
+    }
+
+    /* Content Divider */
+    .content-divider {
+        margin: 3rem 0;
+        gap: 1rem;
+    }
+
+    .content-divider .divider-line {
+        max-width: 120px;
+    }
+
+    /* Inventory Grid - einzelne Spalte */
     .inventory-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
     .inventory-card {
         padding: 1.5rem;
+    }
+
+    .inventory-shield {
+        width: 8rem;
+        height: 8rem;
+    }
+
+    .inventory-trophy-name {
+        font-size: 1rem;
+    }
+
+    /* Description sections */
+    .description-content {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+    }
+
+    /* Back button */
+    .back-btn {
+        padding: 1rem;
+    }
+
+    .back-text {
+        font-size: 1rem;
+    }
+
+    .back-subtext {
+        font-size: 0.75rem;
+    }
+}
+@media (max-width: 524px) {
+    .equipped-grid {
+        grid-template-columns: 1fr;
+        gap: 4rem;
+    }
+}
+/* Kleine Smartphones (480px und kleiner) */
+@media (max-width: 480px) {
+    .spielmodus-trophies-container {
+        padding: 0.75rem;
+    }
+    
+    .trophies-header h1 {
+        font-size: 2rem;
+    }
+
+    .trophies-header .subtitle {
+        font-size: 0.625rem;
+        letter-spacing: 0.2em;
+    }
+
+    /* Section Divider */
+    .section-divider {
+        padding: 0.75rem;
+        margin-bottom: 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .section-divider h2 {
+        font-size: 1rem;
+        letter-spacing: 0.15em;
+    }
+
+    .section-divider .divider-line {
+        display: none;
+    }
+
+    /* Equipped Grid - einzelne Spalte */
+    .equipped-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 0.75rem;
+    }
+
+    .trophy-slot {
+        width: 100%;
+        max-width: 12rem;
+    }
+
+    .trophy-shield {
+        width: 10rem;
+        height: 10rem;
+    }
+
+    .trophy-nameplate {
+        width: 100%;
+        max-width: 12rem;
+    }
+
+    /* Content Divider */
+    .content-divider {
+        margin: 2rem 0;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .content-divider .divider-line {
+        display: none;
+    }
+
+    /* Inventory */
+    .inventory-card {
+        padding: 1rem;
+    }
+
+    /* Touch-Support auf kleinen Geräten */
+    .inventory-card.draggable {
+        cursor: pointer;
+    }
+
+    .trophy-slot.drop-zone {
+        cursor: pointer;
+    }
+
+    /* Selected State für Touch */
+    .inventory-card.touch-selected {
+        animation: pulse-glow 1s ease infinite;
+    }
+
+    @keyframes pulse-glow {
+        0%, 100% {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        }
+        50% {
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.6);
+        }
+    }
+
+    /* Touch Hint */
+    .touch-hint {
+        padding: 0.75rem;
+        font-size: 0.8125rem;
+        gap: 0.5rem;
+        flex-direction: column;
+    }
+
+    .touch-hint .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+
+    /* Trophy effects - kürzere Texte */
+    .trophy-effects {
+        font-size: 0.75rem;
+    }
+
+    .effect-label {
+        font-size: 0.75rem;
+    }
+
+    .effect-text {
+        font-size: 0.6875rem;
     }
 }
