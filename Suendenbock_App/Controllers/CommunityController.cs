@@ -217,8 +217,78 @@ namespace Suendenbock_App.Controllers
         // ==== POLLS ====
         public async Task<IActionResult> Polls()
         {
-            // TODO: Implementierung folgt
-            return View();
+            var userId = GetUserId();
+
+            // Lade alle Polls mit Options und Votes
+            var polls = await _context.Polls
+                .Include(p => p.Options)
+                    .ThenInclude(o => o.Votes)
+                        .ThenInclude(v => v.User)
+                .Include(p => p.Options)
+                    .ThenInclude(o => o.Votes)
+                        .ThenInclude(v => v.Character)
+                .Include(p => p.Votes)
+                    .ThenInclude(v => v.User)
+                .Include(p => p.Votes)
+                    .ThenInclude(v => v.Character)
+                .OrderByDescending(p => p.Status == "active")
+                .ThenByDescending(p => p.CreatedAt)
+                .ToListAsync();
+
+            // Konvertiere zu ViewModels
+            var pollViewModels = polls.Select(p =>
+            {
+                // Finde die Optionen, für die der User gestimmt hat
+                var userVotedOptionIds = p.Votes
+                    .Where(v => v.UserId == userId)
+                    .Select(v => v.PollOptionId)
+                    .ToList();
+
+                // Berechne Prozentsätze für jede Option
+                var totalVoters = p.TotalVoters;
+                var options = p.Options.OrderBy(o => o.SortOrder).Select(o =>
+                {
+                    var voteCount = o.Votes.Count;
+                    var percentage = totalVoters > 0 ? (double)voteCount / totalVoters * 100 : 0;
+
+                    return new PollOptionViewModel
+                    {
+                        Id = o.Id,
+                        Text = o.Text,
+                        Votes = voteCount,
+                        Percentage = percentage
+                    };
+                }).ToList();
+
+                // Sammle alle Wähler (unique)
+                var voterNames = p.Votes
+                    .GroupBy(v => v.UserId ?? v.CharacterId?.ToString() ?? "unknown")
+                    .Select(g => g.First().VoterName)
+                    .OrderBy(name => name)
+                    .ToList();
+
+                return new PollViewModel
+                {
+                    Id = p.Id,
+                    Question = p.Question,
+                    Status = p.Status,
+                    Category = p.Category,
+                    AllowMultipleChoices = p.AllowMultipleChoices,
+                    TotalVoters = totalVoters,
+                    Options = options,
+                    UserVotedOptionIds = userVotedOptionIds,
+                    VoterNames = voterNames,
+                    CanEdit = p.CreatedByUserId == userId || User.IsInRole("Gott")
+                };
+            }).ToList();
+
+            var viewModel = new PollsPageViewModel
+            {
+                Polls = pollViewModels,
+                IsAdmin = User.IsInRole("Gott")
+            };
+
+            return View(viewModel);
         }
 
         // ==== NEWS ====

@@ -18,6 +18,33 @@
     flex: 1;
 }
 
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #B89E68;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.back-link:hover {
+    color: #6A5ACD;
+}
+
+.back-link .material-symbols-outlined {
+    font-size: 1.25rem;
+    transition: transform 0.3s ease;
+}
+
+.back-link:hover .material-symbols-outlined {
+    transform: translateX(-0.25rem);
+}
+
 .page-title {
     font-family: 'Cinzel', serif;
     font-size: 2.5rem;
