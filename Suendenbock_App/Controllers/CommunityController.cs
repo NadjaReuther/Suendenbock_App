@@ -130,15 +130,34 @@ namespace Suendenbock_App.Controllers
                 })
                 .ToListAsync();
 
+            // Lade Monatsbeiträge für den aktuellen Monat
+            var currentYear = DateTime.Now.Year;
+            var currentMonth = DateTime.Now.Month;
+
+            var monthlyPayments = await _context.MonthlyPayments
+                .Where(mp => mp.Year == currentYear && mp.Month == currentMonth)
+                .OrderBy(mp => mp.PlayerName)
+                .Select(mp => new MonthlyPaymentViewModel
+                {
+                    Id = mp.Id,
+                    PlayerName = mp.PlayerName,
+                    Status = mp.Status,
+                    PaymentMethod = mp.PaymentMethod,
+                    PaidAtDisplay = mp.PaidAt.HasValue ? mp.PaidAt.Value.ToString("dd.MM.yyyy") : null
+                })
+                .ToListAsync();
+
             var viewModel = new CommunityIndexViewModel
             {
                 RecentNews = recentNews,
                 UpcomingEvents = eventViewModels,
                 RecentThreads = recentThreads,
                 ActivePolls = activePolls,
+                MonthlyPayments = monthlyPayments,
                 TotalEvents = await _context.MonthlyEvents.CountAsync(),
                 TotalThreads = await _context.ForumThreads.Where(t => !t.IsArchived).CountAsync(),
-                TotalPolls = await _context.Polls.Where(p => p.Status == "active").CountAsync()
+                TotalPolls = await _context.Polls.Where(p => p.Status == "active").CountAsync(),
+                IsAdmin = User.IsInRole("Gott")
             };
 
             return View(viewModel);

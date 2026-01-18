@@ -106,6 +106,7 @@ namespace Suendenbock_App.Data
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<NewsItem> NewsItems { get; set; }
         public DbSet<NewsComment> NewsComments { get; set; }
+        public DbSet<MonthlyPayment> MonthlyPayments { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

@@ -159,44 +159,49 @@
                 </div>
                 <div class="sidebar-box">
                     <div class="sidebar-scroll">
-                        <!-- Placeholder Spieler -->
-                        <div class="payment-item">
-                            <div class="payment-info">
-                                <div class="payment-dot paid"></div>
-                                <span class="payment-name">Jeremias</span>
-                            </div>
-                            <div class="payment-type">
+                        @if (!Model.MonthlyPayments.Any())
+                        {
+                            <div class="empty-widget">
                                 <span class="material-symbols-outlined">payments</span>
-                                <span>PayPal</span>
+                                <p>Keine Zahlungen für diesen Monat</p>
                             </div>
-                        </div>
-                        <div class="payment-item">
-                            <div class="payment-info">
-                                <div class="payment-dot paid"></div>
-                                <span class="payment-name">Salome</span>
-                            </div>
-                            <div class="payment-type">
-                                <span class="material-symbols-outlined">account_balance</span>
-                                <span>Überweisung</span>
-                            </div>
-                        </div>
-                        <div class="payment-item">
-                            <div class="payment-info">
-                                <div class="payment-dot unpaid"></div>
-                                <span class="payment-name">Jewa</span>
-                            </div>
-                            <div class="payment-type">
-                                <span class="material-symbols-outlined">hourglass_empty</span>
-                                <span>Ausstehend</span>
-                            </div>
-                        </div>
+                        }
+                        else
+                        {
+                            @foreach (var payment in Model.MonthlyPayments)
+                            {
+                                <div class="payment-item" data-payment-id="@payment.Id">
+                                    <div class="payment-info">
+                                        <div class="payment-dot @payment.Status"></div>
+                                        <span class="payment-name">@payment.PlayerName</span>
+                                    </div>
+                                    <div class="payment-type">
+                                        @if (payment.Status == "paid" && !string.IsNullOrEmpty(payment.PaymentMethod))
+                                        {
+                                            <span class="material-symbols-outlined">
+                                                @(payment.PaymentMethod == "PayPal" ? "payments" : "account_balance")
+                                            </span>
+                                            <span>@payment.PaymentMethod</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="material-symbols-outlined">hourglass_empty</span>
+                                            <span>Ausstehend</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
-                    <div class="sidebar-button-wrapper">
-                        <button class="sidebar-button">
-                            <span class="material-symbols-outlined">edit_note</span>
-                            Beiträge verwalten
-                        </button>
-                    </div>
+                    @if (Model.IsAdmin)
+                    {
+                        <div class="sidebar-button-wrapper">
+                            <button class="sidebar-button" id="managePaymentsBtn">
+                                <span class="material-symbols-outlined">edit_note</span>
+                                Beiträge verwalten
+                            </button>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -289,6 +294,63 @@
     </div>
 </div>
 
+<!-- Payments Modal -->
+<div id="paymentsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content payments-modal">
+        <div class="modal-header">
+            <h2>Monatsbeiträge verwalten</h2>
+            <button class="modal-close" onclick="closePaymentsModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="payments-header">
+                <h3>@DateTime.Now.ToString("MMMM yyyy")</h3>
+                <button class="btn-secondary" id="addPlayerBtn">
+                    <span class="material-symbols-outlined">person_add</span>
+                    Spieler hinzufügen
+                </button>
+            </div>
+
+            <div class="payments-list" id="paymentsList">
+                <!-- Will be populated via JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Player Modal -->
+<div id="addPlayerModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content add-player-modal">
+        <div class="modal-header">
+            <h2>Spieler hinzufügen</h2>
+            <button class="modal-close" onclick="closeAddPlayerModal()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <form id="addPlayerForm">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="playerName">Spielername *</label>
+                    <input type="text" id="playerName" name="playerName" required class="form-control" placeholder="Name des Spielers">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeAddPlayerModal()">
+                    Abbrechen
+                </button>
+                <button type="submit" class="btn-primary">
+                    Hinzufügen
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
     <link rel="stylesheet" href="~/css/community-overview.css" />
+    <script src="~/js/community-payments.js"></script>
 }
