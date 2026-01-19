@@ -9,8 +9,10 @@ class SessionGenerator {
         this.mapImageFile = null;
         this.companions = [];
         this.acts = [];
+        this.allActs = []; // For act activation modal
         this.weatherCache = {};
         this.skipInitialModal = skipInitialModal;
+        this.loadActMode = null; // 'work' or 'session'
 
         this.init();
     }
@@ -94,11 +96,25 @@ class SessionGenerator {
         this.showView('actFormModal');
     }
 
-    showLoadActView() {
+    showLoadActViewForWork() {
+        this.loadActMode = 'work';
         this.loadActs().then(() => {
-            this.renderActsList('actsList', 'load');
+            this.renderActsList('actsList', 'work');
             this.showView('loadActModal');
         });
+    }
+
+    showLoadActViewForSession() {
+        this.loadActMode = 'session';
+        this.loadActs().then(() => {
+            this.renderActsList('actsList', 'session');
+            this.showView('loadActModal');
+        });
+    }
+
+    // Backward compatibility
+    showLoadActView() {
+        this.showLoadActViewForWork();
     }
 
     showManageActsView() {
@@ -120,13 +136,16 @@ class SessionGenerator {
             const response = await fetch('/api/game/acts');
             if (response.ok) {
                 this.acts = await response.json();
+                this.allActs = this.acts; // Für Act-Aktivierung Modal
             } else {
                 console.error('Failed to load acts');
                 this.acts = [];
+                this.allActs = [];
             }
         } catch (error) {
             console.error('Error loading acts:', error);
             this.acts = [];
+            this.allActs = [];
         }
     }
 
@@ -169,7 +188,27 @@ class SessionGenerator {
             const mapImage = act.mapImageUrl || '/images/placeholder-map.png';
             const isActive = act.isActive;
 
-            if (mode === 'load') {
+            if (mode === 'work') {
+                // "An Act arbeiten" - direkt zum Dashboard
+                return `
+                    <div class="act-card ${isActive ? 'active-act' : ''}">
+                        <div class="act-card-content">
+                            <img src="${mapImage}" alt="Karte" class="act-card-image">
+                            <div class="act-card-info">
+                                <h3>Akt ${act.actNumber} ${isActive ? '<span style="color: #10b981; font-size: 0.9rem;">✓ Aktiv</span>' : ''}</h3>
+                                <p>${act.country || ''} - ${act.month || ''}</p>
+                                <p style="font-size:0.8rem; color:#999;">
+                                    Begleiter: ${act.companion1 || ''}${act.companion2 ? ' & ' + act.companion2 : ''}
+                                </p>
+                            </div>
+                        </div>
+                        <button class="btn-icon load" onclick="sessionGen.openActForWork(${act.id})">
+                            <i class="bi bi-folder-open"></i> Öffnen
+                        </button>
+                    </div>
+                `;
+            } else if (mode === 'session') {
+                // "Session starten" - Wetter wählen dann aktivieren
                 return `
                     <div class="act-card ${isActive ? 'active-act' : ''}">
                         <div class="act-card-content">
@@ -183,7 +222,7 @@ class SessionGenerator {
                             </div>
                         </div>
                         <button class="btn-icon load" onclick="sessionGen.startReselectWeather(${act.id})">
-                            <i class="bi bi-play-fill"></i> Laden
+                            <i class="bi bi-play-fill"></i> Session starten
                         </button>
                     </div>
                 `;
@@ -403,35 +442,143 @@ class SessionGenerator {
         this.showView('reselectWeatherModal');
     }
 
-    async startGame() {
+    async showActActivationModal() {
+        if (!this.selectedWeather || !this.actToLoad) {
+            alert('Bitte wähle ein Wetter aus!');
+            return;
+        }
+
+        // Ensure acts are loaded
+        if (!this.allActs || this.allActs.length === 0) {
+            await this.loadActs();
+        }
+
+        // Populate act dropdown
+        const actSelect = document.getElementById('actToActivate');
+        actSelect.innerHTML = this.allActs.map(act => `
+            <option value="${act.id}" ${act.id === this.actToLoad.id ? 'selected' : ''}>
+                Akt ${act.actNumber} - ${act.country || act.name} ${act.isActive ? '(AKTUELL AKTIV)' : ''}
+            </option>
+        `).join('');
+
+        // Show preview of selected act
+        this.updateActActivationPreview(this.actToLoad.id);
+
+        // Add change listener to update preview (only once)
+        const existingListener = actSelect.getAttribute('data-listener-added');
+        if (!existingListener) {
+            actSelect.addEventListener('change', () => {
+                this.updateActActivationPreview(parseInt(actSelect.value));
+            });
+            actSelect.setAttribute('data-listener-added', 'true');
+        }
+
+        // Show modal
+        this.showView('actActivationModal');
+    }
+
+    updateActActivationPreview(actId) {
+        const act = this.allActs.find(a => a.id === actId);
+        if (!act) return;
+
+        const preview = document.getElementById('actActivationPreview');
+        const weatherDisplay = act.id === this.actToLoad.id
+            ? `Wird gesetzt: ${this.selectedWeather}`
+            : (act.weather || 'Nicht festgelegt');
+
+        preview.innerHTML = `
+            <div class="act-preview-card">
+                <h4>Akt ${act.actNumber}: ${act.country || act.name}</h4>
+                <p><strong>Monat:</strong> ${act.month || 'Nicht festgelegt'}</p>
+                <p><strong>Wetter:</strong> ${weatherDisplay}</p>
+                <p><strong>Status:</strong> ${act.isActive ? '<span style="color: #10b981;">Aktiv</span>' : '<span style="color: #6b7280;">Inaktiv</span>'}</p>
+            </div>
+        `;
+    }
+
+    async confirmActActivation() {
+        const selectedActId = parseInt(document.getElementById('actToActivate').value);
+
+        try {
+            // First, save the weather for the act we loaded
+            const weatherResponse = await fetch(`/api/game/acts/${this.actToLoad.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ weather: this.selectedWeather })
+            });
+
+            if (!weatherResponse.ok) {
+                alert('Fehler beim Speichern des Wetters');
+                return;
+            }
+
+            // Then activate the selected act
+            const activateResponse = await fetch(`/api/game/acts/${selectedActId}/activate`, {
+                method: 'POST'
+            });
+
+            if (activateResponse.ok) {
+                // Redirect to Spielmodus with the activated act
+                window.location.href = `/Spielmodus/Dashboard?actId=${selectedActId}`;
+            } else {
+                alert('Fehler beim Aktivieren des Acts');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Fehler beim Starten der Session');
+        }
+    }
+
+    backToWeatherSelection() {
+        this.showView('reselectWeatherModal');
+    }
+
+    openActForWork(actId) {
+        // Direkt zum Dashboard ohne Aktivierung, ohne Wetter-Auswahl
+        window.location.href = `/Spielmodus/Dashboard?actId=${actId}`;
+    }
+
+    async startSession() {
+        // Session starten: Wetter speichern + Act aktivieren + zum Dashboard
         if (!this.selectedWeather || !this.actToLoad) {
             alert('Bitte wähle ein Wetter aus!');
             return;
         }
 
         try {
-            // Update act with selected weather
-            const response = await fetch(`/api/game/acts/${this.actToLoad.id}`, {
+            // 1. Wetter für den Act speichern
+            const weatherResponse = await fetch(`/api/game/acts/${this.actToLoad.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ weather: this.selectedWeather })
             });
 
-            if (response.ok) {
-                // Activate the act
-                await fetch(`/api/game/acts/${this.actToLoad.id}/activate`, {
-                    method: 'POST'
-                });
-
-                // Redirect to Spielmodus
-                window.location.href = '/Spielmodus/Dashboard';
-            } else {
-                alert('Fehler beim Starten der Session');
+            if (!weatherResponse.ok) {
+                alert('Fehler beim Speichern des Wetters');
+                return;
             }
+
+            // 2. Act aktivieren
+            const activateResponse = await fetch(`/api/game/acts/${this.actToLoad.id}/activate`, {
+                method: 'POST'
+            });
+
+            if (!activateResponse.ok) {
+                alert('Fehler beim Aktivieren des Acts');
+                return;
+            }
+
+            // 3. Zum Dashboard mit dem aktivierten Act
+            window.location.href = `/Spielmodus/Dashboard?actId=${this.actToLoad.id}`;
         } catch (error) {
-            console.error('Error starting game:', error);
+            console.error('Error starting session:', error);
             alert('Fehler beim Starten der Session');
         }
+    }
+
+    async startGame() {
+        // Backward compatibility - redirects to new function
+        await this.startSession();
     }
 
     updateCompanion2Options(companion1Value) {

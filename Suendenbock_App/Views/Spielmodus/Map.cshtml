@@ -30,6 +30,18 @@
         }
     </header>
 
+    <!-- Act Selector (nur für Gott) -->
+    @if (Model.IsGod)
+    {
+        <div class="act-selector-container">
+            <label for="actSelector">Arbeite an Act:</label>
+            <select id="actSelector" class="act-selector" onchange="switchWorkingAct(this.value)">
+                <!-- Wird via JavaScript gefüllt -->
+            </select>
+            <span class="act-status-indicator" id="actStatusIndicator"></span>
+        </div>
+    }
+
     @if (Model.CurrentMap == null)
     {
         <!-- Keine Karte vorhanden -->
@@ -177,4 +189,9 @@
         };
     </script>
     <script src="~/js/map.js"></script>
+
+    @if (Model.IsGod)
+    {
+        <script src="~/js/working-act-manager.js"></script>
+    }
 }

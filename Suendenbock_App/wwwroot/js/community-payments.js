@@ -1,5 +1,8 @@
 // Community Payments Management
 
+// Track if changes were made
+let paymentsChanged = false;
+
 // Manage Payments Button
 const managePaymentsBtn = document.getElementById('managePaymentsBtn');
 if (managePaymentsBtn) {
@@ -25,6 +28,7 @@ if (addPlayerForm) {
 
 async function openPaymentsModal() {
     const modal = document.getElementById('paymentsModal');
+    paymentsChanged = false; // Reset flag
 
     // Load payments
     await loadPayments();
@@ -34,6 +38,11 @@ async function openPaymentsModal() {
 
 function closePaymentsModal() {
     document.getElementById('paymentsModal').style.display = 'none';
+
+    // Reload page if changes were made
+    if (paymentsChanged) {
+        window.location.reload();
+    }
 }
 
 function openAddPlayerModal() {
@@ -131,9 +140,8 @@ async function togglePaymentStatus(paymentId, currentStatus) {
         });
 
         if (response.ok) {
+            paymentsChanged = true;
             await loadPayments();
-            // Reload the page to update sidebar
-            window.location.reload();
         } else {
             alert('Fehler beim Aktualisieren der Zahlung.');
         }
@@ -157,9 +165,8 @@ async function updatePaymentMethod(paymentId, paymentMethod) {
         });
 
         if (response.ok) {
+            paymentsChanged = true;
             await loadPayments();
-            // Reload the page to update sidebar
-            window.location.reload();
         } else {
             alert('Fehler beim Aktualisieren der Zahlungsart.');
         }
@@ -180,9 +187,8 @@ async function deletePayment(paymentId) {
         });
 
         if (response.ok) {
+            paymentsChanged = true;
             await loadPayments();
-            // Reload the page to update sidebar
-            window.location.reload();
         } else {
             alert('Fehler beim Löschen.');
         }
@@ -221,10 +227,9 @@ async function addPlayer() {
         });
 
         if (response.ok) {
+            paymentsChanged = true;
             closeAddPlayerModal();
             await loadPayments();
-            // Reload the page to update sidebar
-            window.location.reload();
         } else {
             const error = await response.text();
             alert('Fehler beim Hinzufügen: ' + error);

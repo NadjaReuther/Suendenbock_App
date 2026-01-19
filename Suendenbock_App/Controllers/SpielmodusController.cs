@@ -23,10 +23,28 @@ namespace Suendenbock_App.Controllers
         /// <summary>
         /// Haupt-Dashboard des Spielmodus
         /// Route: /Spielmodus/Dashboard
+        /// Gott kann mit ?actId=X einen spezifischen Act laden (zum Vorbereiten)
         /// </summary>
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(int? actId)
         {
             var isGod = User.IsInRole("Gott");
+
+            // Bestimme welchen Act geladen werden soll
+            // Gott: kann via actId Parameter jeden Act laden (zum Vorbereiten)
+            // Spieler: sehen nur den aktiven Act
+            Act? currentAct;
+            if (isGod && actId.HasValue)
+            {
+                currentAct = await _context.Acts
+                    .Include(a => a.Map)
+                    .FirstOrDefaultAsync(a => a.Id == actId.Value);
+            }
+            else
+            {
+                currentAct = await _context.Acts
+                    .Include(a => a.Map)
+                    .FirstOrDefaultAsync(a => a.IsActive);
+            }
 
             // Lade alle aktiven Spieler-Characters
             // Filter: nur Spieler-Characters (UserId != null)
@@ -54,11 +72,6 @@ namespace Suendenbock_App.Controllers
                     HealthBonus = f.HealthBonus
                 })
                 .ToListAsync();
-
-            // Lade aktuellen Act
-            var currentAct = await _context.Acts
-                .Include(a => a.Map)
-                .FirstOrDefaultAsync(a => a.IsActive);
 
             // Lade Wetterdaten für aktuellen Act (falls vorhanden)
             List<WeatherForecastDayViewModel> weatherForecast = new();
@@ -110,24 +123,40 @@ namespace Suendenbock_App.Controllers
         /// <summary>
         /// Map-Seite
         /// Route: /Spielmodus/Map
-        ///
-        /// Zeigt immer den aktiven Act (IsActive = true) an
+        /// Gott kann mit ?actId=X einen spezifischen Act laden
         /// </summary>
-        public async Task<IActionResult> Map(int? focusMarkerId = null)
+        public async Task<IActionResult> Map(int? actId, int? focusMarkerId = null)
         {
             var isGod = User.IsInRole("Gott");
 
-            // Aktuellen/aktiven Act laden
-            var currentAct = await _context.Acts
-                .Include(a => a.Map)
-                    .ThenInclude(m => m.Markers)
-                        .ThenInclude(marker => marker.Quests)
-                            .ThenInclude(q => q.Character)
-                .Include(a => a.Map)
-                    .ThenInclude(m => m.Markers)
-                        .ThenInclude(marker => marker.Quests)
-                            .ThenInclude(q => q.PreviousQuest) // Für Folgequest-Bedingung
-                .FirstOrDefaultAsync(a => a.IsActive);
+            // Bestimme welchen Act geladen werden soll
+            Act? currentAct;
+            if (isGod && actId.HasValue)
+            {
+                currentAct = await _context.Acts
+                    .Include(a => a.Map)
+                        .ThenInclude(m => m.Markers)
+                            .ThenInclude(marker => marker.Quests)
+                                .ThenInclude(q => q.Character)
+                    .Include(a => a.Map)
+                        .ThenInclude(m => m.Markers)
+                            .ThenInclude(marker => marker.Quests)
+                                .ThenInclude(q => q.PreviousQuest)
+                    .FirstOrDefaultAsync(a => a.Id == actId.Value);
+            }
+            else
+            {
+                currentAct = await _context.Acts
+                    .Include(a => a.Map)
+                        .ThenInclude(m => m.Markers)
+                            .ThenInclude(marker => marker.Quests)
+                                .ThenInclude(q => q.Character)
+                    .Include(a => a.Map)
+                        .ThenInclude(m => m.Markers)
+                            .ThenInclude(marker => marker.Quests)
+                                .ThenInclude(q => q.PreviousQuest)
+                    .FirstOrDefaultAsync(a => a.IsActive);
+            }
 
             // Alle aktiven Quests DES AKTUELLEN ACTS für Marker-Zuordnung (nur für Gott relevant)
             var activeQuests = isGod && currentAct != null
@@ -221,18 +250,28 @@ namespace Suendenbock_App.Controllers
         /// <summary>
         /// Quest-Übersicht Seite
         /// Route: /Spielmodus/Quests
+        /// Gott kann mit ?actId=X einen spezifischen Act laden
         /// </summary>
-        public async Task<IActionResult> Quests(string? focusQuestId = null)
+        public async Task<IActionResult> Quests(int? actId, string? focusQuestId = null)
         {
             var isGod = User.IsInRole("Gott");
 
-            // Aktuellen Act laden
-            var currentAct = await _context.Acts
-                .FirstOrDefaultAsync(a => a.IsActive);
+            // Bestimme welchen Act geladen werden soll
+            Act? currentAct;
+            if (isGod && actId.HasValue)
+            {
+                currentAct = await _context.Acts
+                    .FirstOrDefaultAsync(a => a.Id == actId.Value);
+            }
+            else
+            {
+                currentAct = await _context.Acts
+                    .FirstOrDefaultAsync(a => a.IsActive);
+            }
 
             if (currentAct == null)
             {
-                // Kein aktiver Act -> keine Quests anzeigen
+                // Kein Act -> keine Quests anzeigen
                 return View(new QuestsViewModel
                 {
                     Quests = new List<QuestViewModel>(),

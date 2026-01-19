@@ -24,23 +24,43 @@
         }
     </div>
 
+    <!-- Act Selector (nur für Gott) -->
+    @if (Model.IsGod)
+    {
+        <div class="act-selector-container">
+            <label for="actSelector">Arbeite an Act:</label>
+            <select id="actSelector" class="act-selector" onchange="switchWorkingAct(this.value)">
+                <!-- Wird via JavaScript gefüllt -->
+            </select>
+            <span class="act-status-indicator" id="actStatusIndicator"></span>
+        </div>
+    }
+
     <!-- Tab Navigation -->
     <div class="quest-tabs">
         <button class="quest-tab active" data-status="all">
             <span class="material-symbols-outlined">auto_stories</span>
-            <span>Alle</span>
+            <span>Alle
+                (@Model.Quests.Count())
+            </span>
         </button>
         <button class="quest-tab" data-status="active">
             <span class="material-symbols-outlined">history_edu</span>
-            <span>Aktuell</span>
+            <span>Aktuell
+                (@Model.Quests.Where(c => c.Status == "active").Count())
+            </span>
         </button>
         <button class="quest-tab" data-status="completed">
             <span class="material-symbols-outlined">verified</span>
-            <span>Abgeschlossen</span>
+            <span>Abgeschlossen
+                (@Model.Quests.Where(c => c.Status == "completed").Count())
+            </span>
         </button>
         <button class="quest-tab" data-status="failed">
             <span class="material-symbols-outlined">heart_broken</span>
-            <span>Gescheitert</span>
+            <span>Gescheitert
+                (@Model.Quests.Where(c => c.Status == "failed").Count())
+            </span>
         </button>
     </div>
 
@@ -351,4 +371,9 @@
     <script>
         const initialFocusQuestId = @Html.Raw(Model.FocusQuestId != null ? $"\"{Model.FocusQuestId}\"" : "null");
     </script>
+
+    @if (Model.IsGod)
+    {
+        <script src="~/js/working-act-manager.js"></script>
+    }
 }
