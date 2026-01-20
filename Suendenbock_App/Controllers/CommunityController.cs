@@ -21,18 +21,35 @@ namespace Suendenbock_App.Controllers
         public async Task<IActionResult> Index()
         {
             var userId = GetUserId();
+            var today = DateTime.Today;
 
-            // Lade die nächsten 5 Events
-            var upcomingEvents = await _context.MonthlyEvents
+            // Lade zukünftige Events (aufsteigend nach Datum)
+            var futureEvents = await _context.MonthlyEvents
                 .Include(e => e.RSVPs)
                 .Include(e => e.Chores)
-                .Where(e => e.Date >= DateTime.Today)
+                .Where(e => e.Date >= today)
                 .OrderBy(e => e.Date)
-                .Take(5)
+                .Take(3)
                 .ToListAsync();
 
+            // Falls weniger als 3 zukünftige Events, lade vergangene Events
+            var allEvents = futureEvents.ToList();
+            if (allEvents.Count < 3)
+            {
+                var neededCount = 3 - allEvents.Count;
+                var pastEvents = await _context.MonthlyEvents
+                    .Include(e => e.RSVPs)
+                    .Include(e => e.Chores)
+                    .Where(e => e.Date < today)
+                    .OrderByDescending(e => e.Date)
+                    .Take(neededCount)
+                    .ToListAsync();
+
+                allEvents.AddRange(pastEvents);
+            }
+
             // Konvertiere zu ViewModels
-            var eventViewModels = upcomingEvents.Select(e => {
+            var eventViewModels = allEvents.Select(e => {
                 var userRsvp = e.RSVPs.FirstOrDefault(r => r.UserId == userId);
 
                 Dictionary<string, string>? chores = null;
@@ -70,7 +87,8 @@ namespace Suendenbock_App.Controllers
                     Chores = chores,
                     HasChores = e.Type == "Spieltag",
                     CanEdit = e.CreatedByUserId == userId || User.IsInRole("Gott"),
-                    CreatedByUserId = e.CreatedByUserId
+                    CreatedByUserId = e.CreatedByUserId,
+                    IsPast = e.Date < DateTime.Today
                 };
             }).ToList();
 
@@ -147,6 +165,24 @@ namespace Suendenbock_App.Controllers
                 })
                 .ToListAsync();
 
+            // Lade die neuesten 5 Tickets
+            var recentTickets = await _context.Tickets
+                .Include(t => t.ReporterCharacter)
+                .Include(t => t.ReporterUser)
+                .OrderByDescending(t => t.CreatedAt)
+                .Take(5)
+                .Select(t => new TicketPreview
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Category = t.Category,
+                    Status = t.Status,
+                    ReporterName = t.ReporterCharacter != null ? t.ReporterCharacter.Vorname :
+                                   t.ReporterUser != null ? t.ReporterUser.UserName : "Unbekannt",
+                    CreatedAt = t.CreatedAt.ToString("dd.MM.yyyy")
+                })
+                .ToListAsync();
+
             var viewModel = new CommunityIndexViewModel
             {
                 RecentNews = recentNews,
@@ -154,9 +190,11 @@ namespace Suendenbock_App.Controllers
                 RecentThreads = recentThreads,
                 ActivePolls = activePolls,
                 MonthlyPayments = monthlyPayments,
+                RecentTickets = recentTickets,
                 TotalEvents = await _context.MonthlyEvents.CountAsync(),
                 TotalThreads = await _context.ForumThreads.Where(t => !t.IsArchived).CountAsync(),
                 TotalPolls = await _context.Polls.Where(p => p.Status == "active").CountAsync(),
+                PendingTicketsCount = await _context.Tickets.Where(t => t.Status == "Pending").CountAsync(),
                 IsAdmin = User.IsInRole("Gott")
             };
 
@@ -166,16 +204,29 @@ namespace Suendenbock_App.Controllers
         // ==== EVENTS ====
         public async Task<IActionResult> Events()
         {
-            // TODO: Implementierung folgt
             var userId = GetUserId();
+            var today = DateTime.Today;
 
-            // Lade alle Events mit RSVPs und Chores
-            var events = await _context.MonthlyEvents
+            // Lade zukünftige Events (aufsteigend nach Datum)
+            var futureEvents = await _context.MonthlyEvents
                 .Include(e => e.RSVPs)
                 .Include(e => e.Chores)
                 .Include(e => e.CreatedBy)
+                .Where(e => e.Date >= today)
                 .OrderBy(e => e.Date)
                 .ToListAsync();
+
+            // Lade vergangene Events (absteigend nach Datum - neueste zuerst)
+            var pastEvents = await _context.MonthlyEvents
+                .Include(e => e.RSVPs)
+                .Include(e => e.Chores)
+                .Include(e => e.CreatedBy)
+                .Where(e => e.Date < today)
+                .OrderByDescending(e => e.Date)
+                .ToListAsync();
+
+            // Kombiniere: zukünftige Events zuerst, dann vergangene
+            var events = futureEvents.Concat(pastEvents).ToList();
 
             // Konvertiere zu ViewModels
             var eventViewModels = events.Select(e =>
@@ -213,7 +264,8 @@ namespace Suendenbock_App.Controllers
                     Chores = chores,
                     HasChores = chores?.Any() ?? false,
                     CanEdit = e.CreatedByUserId == userId || User.IsInRole("Gott"),
-                    CreatedByUserId = e.CreatedByUserId
+                    CreatedByUserId = e.CreatedByUserId,
+                    IsPast = e.Date < DateTime.Today
                 };
             }).ToList();
 
@@ -354,6 +406,48 @@ namespace Suendenbock_App.Controllers
             {
                 NewsItems = newsViewModels,
                 IsAdmin = User.IsInRole("Gott")
+            };
+
+            return View(viewModel);
+        }
+
+        // ==== TICKETS ====
+        public async Task<IActionResult> Tickets()
+        {
+            var userId = GetUserId();
+            var isGod = User.IsInRole("Gott");
+
+            // Lade alle Tickets mit Reporter und Resolver
+            var tickets = await _context.Tickets
+                .Include(t => t.ReporterCharacter)
+                .Include(t => t.ReporterUser)
+                .Include(t => t.ResolvedBy)
+                .OrderBy(t => t.Status == "Pending" ? 0 : 1)
+                .ThenByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            // Konvertiere zu ViewModels
+            var ticketViewModels = tickets.Select(t =>
+            {
+                return new TicketViewModel
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Description = t.Description,
+                    Category = t.Category,
+                    Status = t.Status,
+                    ReporterName = t.ReporterName,
+                    CreatedAt = t.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
+                    ResolvedAt = t.ResolvedAt?.ToString("dd.MM.yyyy HH:mm"),
+                    ResolvedByName = t.ResolvedBy?.UserName,
+                    CanEdit = isGod
+                };
+            }).ToList();
+
+            var viewModel = new TicketsPageViewModel
+            {
+                Tickets = ticketViewModels,
+                IsAdmin = isGod
             };
 
             return View(viewModel);

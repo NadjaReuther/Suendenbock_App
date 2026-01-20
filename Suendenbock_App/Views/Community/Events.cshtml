@@ -36,7 +36,7 @@
         {
             @foreach (var evt in Model.Events)
             {
-                <div class="event-card" data-event-id="@evt.Id">
+                <div class="event-card @(evt.IsPast ? "event-card-past" : "")" data-event-id="@evt.Id">
                     <!-- Edit/Delete Buttons (nur für Creator oder Gott) -->
                     @if(evt.CanEdit)
                     {
@@ -52,7 +52,7 @@
 
                     <div class="event-content">
                         <!-- Date Badge -->
-                        <div class="event-date-badge">
+                        <div class="event-date-badge @(evt.IsPast ? "event-date-badge-past" : "")">
                             <span class="badge-month">@evt.Month</span>
                             <span class="badge-day">@evt.Day</span>
                             <span class="badge-year">ANNO 1618</span>
@@ -74,7 +74,7 @@
                                 }
                             </div>
 
-                            <h2 class="event-title">@evt.Title</h2>
+                            <h2 class="event-title @(evt.IsPast ? "event-title-past" : "")">@evt.Title</h2>
                             <p class="event-description">@evt.Description</p>
                             <div class="event-footer">
                                 <div class="event-stats">

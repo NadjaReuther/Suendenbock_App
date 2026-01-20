@@ -47,19 +47,19 @@
         <button class="quest-tab" data-status="active">
             <span class="material-symbols-outlined">history_edu</span>
             <span>Aktuell
-                (@Model.Quests.Where(c => c.Status == "active").Count())
+                <span class="tab-count">@Model.Quests.Where(c => c.Status == "active").Count()</span>
             </span>
         </button>
         <button class="quest-tab" data-status="completed">
             <span class="material-symbols-outlined">verified</span>
             <span>Abgeschlossen
-                (@Model.Quests.Where(c => c.Status == "completed").Count())
+                <span class="tab-count">@Model.Quests.Where(c => c.Status == "completed").Count()</span>
             </span>
         </button>
         <button class="quest-tab" data-status="failed">
             <span class="material-symbols-outlined">heart_broken</span>
             <span>Gescheitert
-                (@Model.Quests.Where(c => c.Status == "failed").Count())
+                <span class="tab-count">@Model.Quests.Where(c => c.Status == "failed").Count()</span>
             </span>
         </button>
     </div>

@@ -125,6 +125,15 @@
     transform: translateY(-2px);
 }
 
+/* Past Event Card */
+.event-card-past {
+    opacity: 0.6;
+}
+
+.event-card-past:hover {
+    opacity: 0.75;
+}
+
 /* Event Actions (Edit/Delete) */
 .event-actions {
     position: absolute;
@@ -209,6 +218,12 @@
     margin-top: 0.5rem;
     letter-spacing: 0.1em;
 }
+
+/* Past Event Date Badge */
+.event-date-badge-past {
+    opacity: 0.5;
+}
+
 /* ==== EVENT INFO ==== */
 .event-info {
     flex: 1;
@@ -287,6 +302,13 @@
     font-size: 1.75rem;
     margin: 0 0 1rem 0;
     padding-right: 3rem; /* Space for action buttons */
+}
+
+/* Past Event Title */
+.event-title-past {
+    text-decoration: line-through;
+    text-decoration-color: rgba(45, 36, 30, 0.4);
+    text-decoration-thickness: 2px;
 }
 
 .event-description {

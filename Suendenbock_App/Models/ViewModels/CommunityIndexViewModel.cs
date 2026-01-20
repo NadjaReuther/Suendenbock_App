@@ -7,10 +7,12 @@ namespace Suendenbock_App.Models.ViewModels
         public List<ForumThreadPreview> RecentThreads { get; set; } = new List<ForumThreadPreview>();
         public List<PollPreview> ActivePolls { get; set; } = new List<PollPreview>();
         public List<MonthlyPaymentViewModel> MonthlyPayments { get; set; } = new List<MonthlyPaymentViewModel>();
+        public List<TicketPreview> RecentTickets { get; set; } = new List<TicketPreview>();
 
         public int TotalEvents { get; set; }
         public int TotalThreads { get; set; }
         public int TotalPolls { get; set; }
+        public int PendingTicketsCount { get; set; }
         public bool IsAdmin { get; set; }
     }
 
@@ -44,5 +46,15 @@ namespace Suendenbock_App.Models.ViewModels
         public int TotalVotes { get; set; }
         public DateTime CreatedAt { get; set; }
         public string Status { get; set; } = string.Empty;
+    }
+
+    public class TicketPreview
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string ReporterName { get; set; } = string.Empty;
+        public string CreatedAt { get; set; } = string.Empty;
     }
 }

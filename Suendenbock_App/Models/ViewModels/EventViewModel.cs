@@ -25,6 +25,9 @@
         // Permissions
         public bool CanEdit { get; set; }
         public string CreatedByUserId { get; set; } = string.Empty;
+
+        // Status
+        public bool IsPast { get; set; }
     }
 
     public class EventsPageViewModel

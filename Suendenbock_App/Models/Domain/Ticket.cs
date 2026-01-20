@@ -12,7 +12,7 @@ namespace Suendenbock_App.Models.Domain
         [Required(ErrorMessage = "Die Beschreibung ist erforderlich")]
         public string Description { get; set; } = string.Empty;
         public int? ReporterCharacterId { get; set; }
-        public int? ReporterUserId { get; set; }
+        public string? ReporterUserId { get; set; }
         [Required]
         public string Category { get; set; } = string.Empty; // enum: "Bug", "Support", "Suggestion", "Other"
         [Required]
