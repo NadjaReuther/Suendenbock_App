@@ -55,7 +55,12 @@ async function createTicket() {
     const category = document.getElementById('ticketCategory').value;
 
     if (!title || !description) {
-        alert('Bitte fülle alle Pflichtfelder aus.');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Pflichtfelder fehlen',
+            text: 'Bitte fülle alle Pflichtfelder aus.',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -74,15 +79,29 @@ async function createTicket() {
 
         if (response.ok) {
             const result = await response.json();
-            alert(result.message || 'Ticket erfolgreich erstellt!');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Erfolg',
+                text: result.message || 'Ticket erfolgreich erstellt!',
+                confirmButtonColor: '#d97706'
+            });
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error || 'Fehler beim Erstellen',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -130,7 +149,12 @@ async function updateTicket() {
     const category = document.getElementById('editTicketCategory').value;
 
     if (!title || !description) {
-        alert('Bitte fülle alle Pflichtfelder aus.');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Pflichtfelder fehlen',
+            text: 'Bitte fülle alle Pflichtfelder aus.',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -148,15 +172,29 @@ async function updateTicket() {
         });
 
         if (response.ok) {
-            alert('Ticket erfolgreich aktualisiert!');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Erfolg',
+                text: 'Ticket erfolgreich aktualisiert!',
+                confirmButtonColor: '#d97706'
+            });
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error || 'Fehler beim Aktualisieren',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -165,7 +203,18 @@ document.querySelectorAll('.resolve-ticket-btn').forEach(btn => {
     btn.addEventListener('click', async function() {
         const ticketId = this.dataset.ticketId;
 
-        if (confirm('Möchtest du dieses Ticket als gelöst markieren?')) {
+        const result = await Swal.fire({
+            title: 'Ticket als gelöst markieren?',
+            text: 'Möchtest du dieses Ticket als gelöst markieren?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d97706',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Als gelöst markieren',
+            cancelButtonText: 'Abbrechen'
+        });
+
+        if (result.isConfirmed) {
             await resolveTicket(ticketId);
         }
     });
@@ -178,15 +227,29 @@ async function resolveTicket(ticketId) {
         });
 
         if (response.ok) {
-            alert('Ticket als gelöst markiert!');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Erfolg',
+                text: 'Ticket als gelöst markiert!',
+                confirmButtonColor: '#d97706'
+            });
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error || 'Fehler beim Markieren als gelöst',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -195,7 +258,18 @@ document.querySelectorAll('.reopen-ticket-btn').forEach(btn => {
     btn.addEventListener('click', async function() {
         const ticketId = this.dataset.ticketId;
 
-        if (confirm('Möchtest du dieses Ticket wieder öffnen?')) {
+        const result = await Swal.fire({
+            title: 'Ticket wieder öffnen?',
+            text: 'Möchtest du dieses Ticket wieder öffnen?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d97706',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Wieder öffnen',
+            cancelButtonText: 'Abbrechen'
+        });
+
+        if (result.isConfirmed) {
             await reopenTicket(ticketId);
         }
     });
@@ -208,15 +282,29 @@ async function reopenTicket(ticketId) {
         });
 
         if (response.ok) {
-            alert('Ticket wieder geöffnet!');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Erfolg',
+                text: 'Ticket wieder geöffnet!',
+                confirmButtonColor: '#d97706'
+            });
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error || 'Fehler beim Wiedereröffnen',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -225,7 +313,18 @@ document.querySelectorAll('.delete-ticket-btn').forEach(btn => {
     btn.addEventListener('click', async function() {
         const ticketId = this.dataset.ticketId;
 
-        if (confirm('Möchtest du dieses Ticket wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+        const result = await Swal.fire({
+            title: 'Ticket löschen?',
+            text: 'Möchtest du dieses Ticket wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d97706',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Löschen',
+            cancelButtonText: 'Abbrechen'
+        });
+
+        if (result.isConfirmed) {
             await deleteTicket(ticketId);
         }
     });
@@ -238,15 +337,29 @@ async function deleteTicket(ticketId) {
         });
 
         if (response.ok) {
-            alert('Ticket gelöscht!');
+            await Swal.fire({
+                icon: 'success',
+                title: 'Erfolg',
+                text: 'Ticket gelöscht!',
+                confirmButtonColor: '#d97706'
+            });
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error || 'Fehler beim Löschen',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 

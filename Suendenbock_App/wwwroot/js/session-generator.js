@@ -385,11 +385,9 @@ class SessionGenerator {
             if (response.ok) {
                 this.acts = await response.json();
             } else {
-                console.error('Failed to load acts');
                 this.acts = [];
             }
         } catch (error) {
-            console.error('Error loading acts:', error);
             this.acts = [];
         }
     }

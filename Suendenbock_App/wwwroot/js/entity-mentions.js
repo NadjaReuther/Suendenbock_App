@@ -260,7 +260,7 @@
             this.entities = data.results || [];
             this.showDropdown();
         } catch (error) {
-            console.error('Fehler beim Laden der Entitäten:', error);
+            // Fehler stillschweigend behandeln
         }
     }
 

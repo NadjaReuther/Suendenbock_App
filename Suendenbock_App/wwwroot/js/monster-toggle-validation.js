@@ -133,8 +133,6 @@ class MonsterToggleValidator {
 
 // Hilfsfunktion für Admin-Tabelle: Validierung für einzelne Monster-Zeile
 function validateMonsterToggle(monsterId, toggleType, isChecked) {
-    console.log('validateMonsterToggle called:', { monsterId, toggleType, isChecked });
-
     // Suche nach Toggles mit data-monster-id
     const meetToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="meet"]`);
     const encounterToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="encounter"]`);
@@ -142,24 +140,13 @@ function validateMonsterToggle(monsterId, toggleType, isChecked) {
     const boughtTrophyToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="boughtTrophy"]`);
     const slainTrophyToggle = $(`.monster-toggle[data-monster-id="${monsterId}"][data-toggle-type="slainTrophy"]`);
 
-    console.log('Found toggles:', {
-        meet: meetToggle.length,
-        encounter: encounterToggle.length,
-        perfected: perfectedToggle.length,
-        boughtTrophy: boughtTrophyToggle.length,
-        slainTrophy: slainTrophyToggle.length
-    });
-
     const isMeetChecked = meetToggle.is(':checked');
     const isEncounterChecked = encounterToggle.is(':checked');
-
-    console.log('Current states:', { isMeetChecked, isEncounterChecked });
 
     // AKTIVIERUNGS-Validierungen (wenn isChecked = true)
     if (isChecked) {
         // Wenn Encounter aktiviert werden soll, muss Meet aktiviert sein
         if (toggleType === 'encounter' && !isMeetChecked) {
-            console.log('Validation failed: Encounter ohne Meet');
             Swal.fire({
                 title: 'Ungültige Auswahl',
                 text: 'Encounter kann nur aktiviert werden, wenn Begegnung aktiviert ist.',
@@ -171,7 +158,6 @@ function validateMonsterToggle(monsterId, toggleType, isChecked) {
 
         // Wenn Perfected aktiviert werden soll, müssen Meet UND Encounter aktiviert sein
         if (toggleType === 'perfected' && (!isMeetChecked || !isEncounterChecked)) {
-            console.log('Validation failed: Perfected ohne Meet/Encounter');
             Swal.fire({
                 title: 'Ungültige Auswahl',
                 text: 'Perfected kann nur aktiviert werden, wenn sowohl Begegnung als auch Encounter aktiviert sind.',
@@ -183,7 +169,6 @@ function validateMonsterToggle(monsterId, toggleType, isChecked) {
 
         // Wenn Kaufbare Trophäe aktiviert werden soll, muss Meet aktiviert sein
         if (toggleType === 'boughtTrophy' && !isMeetChecked) {
-            console.log('Validation failed: BoughtTrophy ohne Meet');
             Swal.fire({
                 title: 'Ungültige Auswahl',
                 text: 'Kaufbare Trophäe kann nur aktiviert werden, wenn Begegnung aktiviert ist.',
@@ -195,7 +180,6 @@ function validateMonsterToggle(monsterId, toggleType, isChecked) {
 
         // Wenn Erlegte Trophäe aktiviert werden soll, muss Meet aktiviert sein
         if (toggleType === 'slainTrophy' && !isMeetChecked) {
-            console.log('Validation failed: SlainTrophy ohne Meet');
             Swal.fire({
                 title: 'Ungültige Auswahl',
                 text: 'Erlegte Trophäe kann nur aktiviert werden, wenn Begegnung aktiviert ist.',
@@ -206,6 +190,5 @@ function validateMonsterToggle(monsterId, toggleType, isChecked) {
         }
     }
 
-    console.log('Validation passed');
     return true;
 }

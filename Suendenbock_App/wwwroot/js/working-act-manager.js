@@ -35,11 +35,9 @@ async function loadActs() {
         const response = await fetch('/api/game/acts');
         if (response.ok) {
             allActs = await response.json();
-        } else {
-            console.error('Failed to load acts');
         }
     } catch (error) {
-        console.error('Error loading acts:', error);
+        // Fehler stillschweigend behandeln
     }
 }
 

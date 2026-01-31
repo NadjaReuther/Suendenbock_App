@@ -85,11 +85,16 @@ textInput.addEventListener('keypress', (e) => {
     }
 });
 
-function generateQRCode() {
+async function generateQRCode() {
     const text = textInput.value.trim();
 
     if (!text) {
-        alert('Bitte geben Sie Text oder eine URL ein!');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Eingabe fehlt',
+            text: 'Bitte geben Sie Text oder eine URL ein!',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -163,7 +168,7 @@ function addLogoToQRCode() {
     downloadBtn.style.display = 'block';
 }
 
-function downloadQRCode() {
+async function downloadQRCode() {
     const canvas = qrCodeContainer.querySelector('canvas');
     const img = qrCodeContainer.querySelector('img');
 
@@ -180,7 +185,12 @@ function downloadQRCode() {
         const ctx = downloadCanvas.getContext('2d');
         ctx.drawImage(img, 0, 0, size, size);
     } else {
-        alert('Bitte generieren Sie zuerst einen QR-Code!');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'QR-Code fehlt',
+            text: 'Bitte generieren Sie zuerst einen QR-Code!',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 

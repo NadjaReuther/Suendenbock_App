@@ -10,6 +10,9 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=MedievalSharp&display=swap" rel="stylesheet" />
 
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <!-- Battle CSS -->
     <link rel="stylesheet" href="~/css/spielmodus-battle.css" />
 }
@@ -28,6 +31,15 @@
                     Runde <span id="currentRound" class="text-6xl">1</span>
                 </h1>
                 <p class="text-amber-300/80 italic mt-3 text-xl tracking-wide" id="turnIndicator">Initiative wird berechnet...</p>
+                @if (!Model.IsGod)
+                {
+                    <div class="mt-4 bg-red-900/30 border border-red-500/50 rounded-lg px-6 py-3">
+                        <p class="text-red-300 text-lg font-semibold">
+                            <span class="text-2xl mr-2">👁️</span>
+                            Nur-Lese-Modus - Der Gott steuert den Kampf
+                        </p>
+                    </div>
+                }
             </header>
 
             <!-- Participants Grid -->
@@ -37,20 +49,23 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex flex-col items-center pt-6 space-y-4">
-                <button
-                    onclick="nextTurn()"
-                    class="group relative bg-amber-500 text-black px-24 py-6 font-display font-bold uppercase tracking-[0.4em] text-2xl shadow-[0_0_30px_rgba(245,158,11,0.4)] hover:shadow-[0_0_40px_rgba(245,158,11,0.6)] hover:scale-105 transition-all active:scale-95 rounded-lg border-2 border-amber-600">
-                    <div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-lg pointer-events-none"></div>
-                    <span>Nächster Zug</span>
-                </button>
-                <button
-                    onclick="endBattle()"
-                    class="text-base text-amber-500/60 uppercase tracking-[0.3em] font-bold hover:text-amber-500 transition-colors">
-                    Gefecht beenden
-                </button>
-            </div>
+            <!-- Action Buttons (nur für Gott) -->
+            @if (Model.IsGod)
+            {
+                <div class="flex flex-col items-center pt-6 space-y-4">
+                    <button
+                        onclick="nextTurn()"
+                        class="group relative bg-amber-500 text-black px-24 py-6 font-display font-bold uppercase tracking-[0.4em] text-2xl shadow-[0_0_30px_rgba(245,158,11,0.4)] hover:shadow-[0_0_40px_rgba(245,158,11,0.6)] hover:scale-105 transition-all active:scale-95 rounded-lg border-2 border-amber-600">
+                        <div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent rounded-lg pointer-events-none"></div>
+                        <span>Nächster Zug</span>
+                    </button>
+                    <button
+                        onclick="endBattle()"
+                        class="text-base text-amber-500/60 uppercase tracking-[0.3em] font-bold hover:text-amber-500 transition-colors">
+                        Gefecht beenden
+                    </button>
+                </div>
+            }
         </section>
 
         <!-- ===== VICTORY/DEFEAT SCREEN ===== -->
@@ -75,12 +90,18 @@
     <!-- SignalR Client Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         // Model-Daten für JavaScript (falls direkt aufgerufen ohne CombatSetup)
         const BATTLE_MODEL_DATA = {
             characters: @Html.Raw(Json.Serialize(Model.Characters)),
             monsters: @Html.Raw(Json.Serialize(Model.Monsters))
         };
+
+        // WICHTIG: Rollenbasierte Zugriffskontrolle
+        const IS_GOTT = @Json.Serialize(Model.IsGod);
     </script>
     <script src="~/js/battle.js"></script>
 

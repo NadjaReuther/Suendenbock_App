@@ -67,11 +67,20 @@ async function loadPayments() {
             const payments = await response.json();
             renderPayments(payments);
         } else {
-            alert('Fehler beim Laden der Zahlungen.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Laden der Zahlungen.',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -143,11 +152,20 @@ async function togglePaymentStatus(paymentId, currentStatus) {
             paymentsChanged = true;
             await loadPayments();
         } else {
-            alert('Fehler beim Aktualisieren der Zahlung.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Aktualisieren der Zahlung.',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -168,16 +186,36 @@ async function updatePaymentMethod(paymentId, paymentMethod) {
             paymentsChanged = true;
             await loadPayments();
         } else {
-            alert('Fehler beim Aktualisieren der Zahlungsart.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Aktualisieren der Zahlungsart.',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
 async function deletePayment(paymentId) {
-    if (!confirm('Möchtest du diesen Eintrag wirklich löschen?')) {
+    const result = await Swal.fire({
+        title: 'Eintrag löschen?',
+        text: 'Möchtest du diesen Eintrag wirklich löschen?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Löschen',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -190,11 +228,20 @@ async function deletePayment(paymentId) {
             paymentsChanged = true;
             await loadPayments();
         } else {
-            alert('Fehler beim Löschen.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Löschen.',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -202,7 +249,12 @@ async function addPlayer() {
     const playerName = document.getElementById('playerName').value.trim();
 
     if (!playerName) {
-        alert('Bitte gib einen Spielernamen ein.');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Name fehlt',
+            text: 'Bitte gib einen Spielernamen ein.',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -232,11 +284,20 @@ async function addPlayer() {
             await loadPayments();
         } else {
             const error = await response.text();
-            alert('Fehler beim Hinzufügen: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler beim Hinzufügen',
+                text: error || 'Fehler beim Hinzufügen',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 

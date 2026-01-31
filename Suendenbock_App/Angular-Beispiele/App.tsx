@@ -1,246 +1,269 @@
 
-import React, { useState, useEffect } from 'react';
-import { Hero } from './components/Hero';
-import { NewsSection } from './components/NewsSection';
-import { PollsWidget } from './components/PollsWidget';
-import { EventsWidget } from './components/EventsWidget';
-import { SupportSection } from './components/SupportSection';
-import { Sidebar } from './components/Sidebar';
-import { Footer } from './components/Footer';
-import { PollsPage } from './components/PollsPage';
-import { EventsPage } from './components/EventsPage';
-import { NewsPage } from './components/NewsPage';
-import { ForumPage } from './components/ForumPage';
-import { ForumWidget } from './components/ForumWidget';
-import { ThreadDetailPage } from './components/ThreadDetailPage';
+import React, { useState, useEffect, useMemo } from 'react';
+import { LoginView } from './views/LoginView';
+import { DashboardView } from './views/DashboardView';
+import { GuildView } from './views/GuildView';
+import { ProfileView } from './views/ProfileView';
+import { NotificationSettingsView } from './views/NotificationSettingsView';
+import { SecuritySettingsView } from './views/SecuritySettingsView';
+import { PrivacySettingsView } from './views/PrivacySettingsView';
+import { ChangePasswordView } from './views/ChangePasswordView';
+import { ChatListView } from './views/ChatListView';
+import { ChatDetailView } from './views/ChatDetailView';
+import { NewChatView } from './views/NewChatView';
+import { DiceTrayView } from './views/DiceTrayView';
+import { NewsView } from './views/NewsView';
+import { GodModeView } from './views/GodModeView';
+import { ViewType, ChatConversation, Character, Message, DiceResult } from './types';
 
-export interface NewsComment {
-  id: number;
-  author: string;
-  text: string;
-  time: string;
-}
-
-export interface NewsItem {
-  id: number;
-  icon: string;
-  title: string;
-  content: string;
-  excerpt: string;
-  author: string;
-  date: string;
-  category: string;
-  comments: NewsComment[];
-}
-
-export interface ThreadReply {
-  id: number;
-  author: string;
-  text: string;
-  time: string;
-}
-
-export interface Thread {
-  id: number;
-  title: string;
-  content: string;
-  author: string;
-  category: string;
-  time: string;
-  repliesCount: number;
-  replies: ThreadReply[];
-  icon: string;
-}
-
-const initialNews: NewsItem[] = [
-  {
-    id: 1,
-    icon: 'campaign',
-    title: 'Update 2.4: Die Schatten über Salzburg',
-    excerpt: 'Werte Reisende, das neueste Update bringt Änderungen am Magiesystem und neue Quests...',
-    content: 'Werte Reisende, das neueste Update bringt massive Änderungen am Magiesystem. Die Schattenlande-Expedition hat begonnen und neue Quests in der Altstadt warten auf euch. Die Gilden-Steuern wurden angepasst, um den Wiederaufbau der Taverne zu finanzieren.',
-    author: 'Admin',
-    date: new Date().toLocaleDateString('de-DE'),
-    category: 'Spiel-Update',
-    comments: [
-      { id: 101, author: 'Jeremias', text: 'Endlich mehr Magie! Die Taverne sieht auch schon besser aus.', time: '14:20 Uhr' },
-      { id: 102, author: 'Salome', text: 'Die Quests in der Altstadt sind ziemlich knackig, nehmt genug Tränke mit.', time: '15:45 Uhr' }
-    ]
-  },
-  {
-    id: 2,
-    icon: 'history_edu',
-    title: 'Serverwartung am kommenden Freitag',
-    excerpt: 'Zur Stabilisierung der Gilden-Datenbanken werden wir eine kurze Wartung durchführen.',
-    content: 'Zur Stabilisierung der Gilden-Datenbanken und zur Optimierung des Marktplatzes werden wir am Freitag zwischen 02:00 und 04:00 Uhr morgens eine Wartung durchführen. In dieser Zeit wird das Reich nicht betretbar sein.',
-    author: 'Tech-Priest',
-    date: '28.10.1618',
-    category: 'Technik',
-    comments: [
-      { id: 201, author: 'Jewa', text: 'Hoffentlich wird der Lag beim Marktplatz dadurch besser.', time: '09:12 Uhr' }
-    ]
-  },
-  {
-    id: 3,
-    icon: 'military_tech',
-    title: 'Der Sieger des Turniers steht fest!',
-    content: 'Nach drei Tagen voller Schweiß und Stahl hat Jeremias den Titel des Reichschampions errungen. Ein Festmahl zu seinen Ehren wird am kommenden Markttag abgehalten.',
-    excerpt: 'Jeremias hat den Titel des Reichschampions errungen. Ein Festmahl wird abgehalten.',
-    author: 'Herold',
-    date: '25.10.1618',
-    category: 'Events',
-    comments: []
-  }
+const INITIAL_MEMBERS: Character[] = [
+  { id: 'm1', name: 'Jeremias', class: 'Kleriker', level: 12, status: 'active', imageUrl: 'https://i.pravatar.cc/150?u=jeremias' },
+  { id: 'm2', name: 'Jewa', class: 'Bürgerin', level: 16, status: 'active', imageUrl: 'https://suna.home64.de/images/characters/jewa_brand_20251116183650.jpeg', wikiUrl: 'https://suna.home64.de/Character/CharacterSheet/16?searchTerm=jewa' },
+  { id: 'm3', name: 'Salome', class: 'Adlige', level: 20, status: 'active', imageUrl: 'https://i.pravatar.cc/150?u=salome' },
+  { id: 'm4', name: 'Hironimus', class: 'Gelehrter', level: 15, status: 'active', imageUrl: 'https://i.pravatar.cc/150?u=hironimus' },
+  { id: 'm5', name: 'Gabriel', class: 'Wächter', level: 18, status: 'active', imageUrl: 'https://i.pravatar.cc/150?u=gabriel' },
+  { id: 'm6', name: 'Jonata', class: 'Handwerkerin', level: 10, status: 'active', imageUrl: 'https://i.pravatar.cc/150?u=jonata' },
+  { id: 'm7', name: 'NPC', class: 'Admin', level: 99, status: 'active', imageUrl: 'https://i.pravatar.cc/150?u=npc' },
 ];
 
-const initialThreads: Thread[] = [
-  { 
-    id: 1, 
-    title: 'Geheimnisse der Schattenlande', 
-    content: 'Ich habe in den alten Ruinen südlich von Salzburg ein Pergament gefunden, das von einem geheimen Tunnelnetzwerk unter der Stadt spricht. Wer weiß mehr darüber?', 
-    author: 'Jeremias', 
-    category: 'Lore', 
-    time: 'Vor 5 Min.', 
-    repliesCount: 1, 
-    replies: [
-      { id: 1, author: 'Salome', text: 'Die alten Tunnel sind gefährlich, man sagt dort lauern Nachtmahre!', time: 'Vor 2 Min.' }
-    ], 
-    icon: 'auto_stories' 
-  },
-  { 
-    id: 2, 
-    title: 'Beste Tränke gegen Werwölfe', 
-    content: 'Silberdistel und Mondscheinwasser scheinen am besten zu wirken. Hat jemand Erfahrungen mit Alraunwurzel-Beimischung?',
-    author: 'Salome', 
-    category: 'Handwerk', 
-    time: 'Vor 24 Min.', 
-    repliesCount: 0, 
-    replies: [], 
-    icon: 'colorize' 
-  },
-  { 
-    id: 3, 
-    title: 'Kriegsrat: Angriff auf Salzburg', 
-    content: 'Wir müssen unsere Verteidigung an den Westtoren verstärken. Die Vorräte an Öl und Pfeilen sind knapp.',
-    author: 'Jewa', 
-    category: 'Taktik', 
-    time: 'Vor 1 Std.', 
-    repliesCount: 0, 
-    replies: [], 
-    icon: 'shield' 
-  },
+export const MEMBERS = INITIAL_MEMBERS;
+
+const INITIAL_CONVERSATIONS: ChatConversation[] = [
+  { id: 'c1', participant: INITIAL_MEMBERS[0], initiatorName: 'Jewa', title: 'Kräuterkunde', lastMessage: 'Habt Dank für die Kräuter!', time: '14:20' },
+  { id: 'c3', participant: INITIAL_MEMBERS[1], initiatorName: 'NPC', title: 'Geheime Quest', lastMessage: 'Ein neuer Brief von Okko...', time: 'Jetzt', npcMask: 'Okko' },
+  { id: 'c4', participant: INITIAL_MEMBERS[2], initiatorName: 'Jeremias', title: 'Testament', lastMessage: 'Ich werde darüber nachdenken.', time: 'Gestern' },
 ];
 
-type View = 'home' | 'polls' | 'events' | 'news' | 'forum' | 'thread-detail';
+const INITIAL_MESSAGES: Record<string, Message[]> = {
+  'c1': [
+    { id: '1', sender: INITIAL_MEMBERS[0].name, text: `Gott zum Gruße! Zum Thema 'Kräuterkunde' wollte ich noch etwas anmerken...`, timestamp: '14:00', isMe: false },
+    { id: '2', sender: 'Ich', text: 'Sprecht frei heraus, Jeremias. Ich höre zu.', timestamp: '14:15', isMe: true },
+    { id: '3', sender: INITIAL_MEMBERS[0].name, text: 'Habt Dank für die Kräuter!', timestamp: '14:20', isMe: false },
+  ],
+  'c3': [
+    { id: '4', sender: 'Okko', text: 'Ein neuer Brief von Okko...', timestamp: 'Jetzt', isMe: false }
+  ],
+  'c4': [
+    { id: '5', sender: 'Jeremias', text: 'Salome, wir müssen über das Testament sprechen.', timestamp: 'Gestern', isMe: false },
+    { id: '6', sender: 'Salome', text: 'Ich werde darüber nachdenken.', timestamp: 'Gestern', isMe: true }
+  ]
+};
+
+const INITIAL_UNREAD: Record<string, Record<string, number>> = {
+  'Jewa': { 'c3': 1 },
+  'NPC': {}
+};
+
+const NEWS_ITEMS = [
+  { id: 'n1', title: "Das Siegel der Gilde", date: "Vor 2 Tagen", content: "Ein neues Update für unsere Kommunikationswege wurde veröffentlicht." },
+  { id: 'n2', title: "Sieg im Kräutergarten", date: "Vor 1 Stunde", content: "Jewa hat heute durch geschicktes Handeln den Wettbewerb gewonnen. Gratulation an die Bürgerin!" },
+  { id: 'n3', title: "Briefe an den Rat", date: "Heute", content: "Neue Verordnungen zur Sicherheit in den Gassen wurden erlassen." }
+];
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<View>('home');
-  const [selectedThreadId, setSelectedThreadId] = useState<number | null>(null);
-  const [news, setNews] = useState<NewsItem[]>(initialNews);
-  const [threads, setThreads] = useState<Thread[]>(initialThreads);
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme');
-      return savedTheme === 'dark';
-    }
-    return false;
-  });
+  const [currentView, setCurrentView] = useState<ViewType>('LOGIN');
+  const [username, setUsername] = useState<string>('');
+  const [password, setPassword] = useState<string>('123456');
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [isUserOnlineVisible, setIsUserOnlineVisible] = useState(true);
+  const [newsSeen, setNewsSeen] = useState<Record<string, boolean>>({});
+  const [chatSourceIsGodMode, setChatSourceIsGodMode] = useState(false);
+  
+  const [members, setMembers] = useState<Character[]>(INITIAL_MEMBERS);
+  const [conversations, setConversations] = useState<ChatConversation[]>(INITIAL_CONVERSATIONS);
+  const [allMessages, setAllMessages] = useState<Record<string, Message[]>>(INITIAL_MESSAGES);
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, Record<string, number>>>(INITIAL_UNREAD);
+  const [globalRolls, setGlobalRolls] = useState<DiceResult[]>([]);
+
+  const processedMembers = useMemo(() => {
+    return members.map(member => {
+      const isOnline = member.name === username && isUserOnlineVisible;
+      return { ...member, isOnline };
+    });
+  }, [members, username, isUserOnlineVisible]);
+
+  const newsMentionsCount = useMemo(() => {
+    if (!username || newsSeen[username]) return 0;
+    return NEWS_ITEMS.filter(item => 
+      item.content.toLowerCase().includes(username.toLowerCase())
+    ).length;
+  }, [username, newsSeen]);
+
+  const stats = useMemo(() => {
+    const chatCount = conversations.filter(c => c.initiatorName === username || c.participant.name === username).length;
+    let messageCount = 0;
+    let rollCount = globalRolls.length;
+
+    Object.entries(allMessages).forEach(([cid, msgs]) => {
+      const chat = conversations.find(c => c.id === cid);
+      if (chat && (chat.initiatorName === username || chat.participant.name === username)) {
+        messageCount += (msgs as Message[]).length;
+      }
+    });
+    
+    return { chatCount, messageCount, rollCount };
+  }, [conversations, allMessages, globalRolls, username]);
+
+  const totalUnread = useMemo(() => {
+    if (!username || !unreadCounts[username]) return 0;
+    return (Object.values(unreadCounts[username]) as number[]).reduce((a, b) => a + b, 0);
+  }, [username, unreadCounts]);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
+    const timer = setTimeout(() => setIsInitialized(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const toggleDarkMode = () => setDarkMode(!darkMode);
-
-  const navigateTo = (view: View, id?: number) => {
-    if (view === 'thread-detail' && id) {
-      setSelectedThreadId(id);
-    }
-    setCurrentView(view);
-    window.scrollTo(0, 0);
+  const handleLogin = (name: string) => {
+    setUsername(name);
+    setCurrentView('DASHBOARD');
   };
 
-  const selectedThread = threads.find(t => t.id === selectedThreadId);
+  const handleLogout = () => {
+    setUsername('');
+    setSelectedChatId(null);
+    setCurrentView('LOGIN');
+  };
+
+  const navigate = (view: ViewType) => {
+    if (view !== 'CHAT_DETAIL') {
+      setSelectedChatId(null);
+      setChatSourceIsGodMode(false);
+    }
+    if (view === 'NEWS' && username) {
+      setNewsSeen(prev => ({ ...prev, [username]: true }));
+    }
+    setCurrentView(view);
+  };
+
+  const handleUpdateMemberImage = (newImageUrl: string) => {
+    setMembers(prev => prev.map(m => 
+      m.name === username ? { ...m, imageUrl: newImageUrl } : m
+    ));
+    setConversations(prev => prev.map(c => {
+      if (c.participant.name === username) {
+        return { ...c, participant: { ...c.participant, imageUrl: newImageUrl } };
+      }
+      return c;
+    }));
+  };
+
+  const handleSelectChat = (chat: ChatConversation) => {
+    if (username) {
+      setUnreadCounts(prev => ({
+        ...prev,
+        [username]: { ...(prev[username] || {}), [chat.id]: 0 }
+      }));
+    }
+    const exists = conversations.some(c => c.id === chat.id);
+    if (!exists) {
+      setConversations(prev => [chat, ...prev]);
+      if (!allMessages[chat.id]) {
+        setAllMessages(prev => ({ ...prev, [chat.id]: [] }));
+      }
+    }
+
+    // Determine if we are entering this chat from God Mode
+    if (currentView === 'GOD_MODE') {
+      setChatSourceIsGodMode(true);
+    } else {
+      setChatSourceIsGodMode(false);
+    }
+
+    setSelectedChatId(chat.id);
+    setCurrentView('CHAT_DETAIL');
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+    setConversations(prev => prev.filter(c => c.id !== chatId));
+    setAllMessages(prev => {
+      const next = { ...prev };
+      delete next[chatId];
+      return next;
+    });
+  };
+
+  const handleNewMessage = (chatId: string, message: Message) => {
+    const chat = conversations.find(c => c.id === chatId);
+    if (!chat) return;
+    let processedMessage = { ...message };
+    if (username === 'NPC' && message.isMe && chat.npcMask) {
+      processedMessage.sender = chat.npcMask;
+    } else if (message.isMe) {
+      processedMessage.sender = username;
+    }
+    
+    if (processedMessage.diceResult) {
+      setGlobalRolls(prev => [processedMessage.diceResult!, ...prev]);
+    }
+
+    setAllMessages(prev => ({ ...prev, [chatId]: [...(prev[chatId] || []), processedMessage] }));
+    setConversations(prev => prev.map(c => c.id === chatId ? { ...c, lastMessage: processedMessage.text || (processedMessage.diceResult ? 'Würfelwurf' : 'Bild'), time: processedMessage.timestamp } : c));
+    
+    const recipientName = message.isMe ? (chat.participant.name === username ? chat.initiatorName : chat.participant.name) : username;
+    if (message.isMe) {
+      setUnreadCounts(prev => ({ ...prev, [recipientName]: { ...(prev[recipientName] || {}), [chatId]: (prev[recipientName]?.[chatId] || 0) + 1 } }));
+    }
+  };
+
+  const activeChat = useMemo(() => conversations.find(c => c.id === selectedChatId), [conversations, selectedChatId]);
+  
+  const filteredConversations = useMemo(() => {
+    if (currentView === 'GOD_MODE' && username === 'NPC') return conversations;
+    return conversations.filter(c => c.initiatorName === username || c.participant.name === username);
+  }, [conversations, username, currentView]);
+
+  const getUnreadForChat = (chatId: string) => unreadCounts[username]?.[chatId] || 0;
+
+  if (!isInitialized) return <div className="min-h-screen bg-background-light"></div>;
 
   return (
-    <div className="min-h-screen flex flex-col relative transition-colors duration-300">
-      <button 
-        onClick={toggleDarkMode}
-        className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-lg hover:shadow-glow transition-all text-primary"
-        aria-label="Design-Modus umschalten"
-      >
-        <span className="material-icons-outlined">
-          {darkMode ? 'light_mode' : 'dark_mode'}
-        </span>
-      </button>
-
-      {currentView === 'home' && (
-        <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full animate-in fade-in duration-500">
-          <Hero />
-          
-          <div className="space-y-12">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              <div className="lg:col-span-2 space-y-12">
-                <NewsSection news={news} onViewAll={() => navigateTo('news')} />
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <PollsWidget onViewAll={() => navigateTo('polls')} />
-                  <EventsWidget onViewAll={() => navigateTo('events')} />
-                </div>
-              </div>
-              
-              <aside className="space-y-12">
-                <Sidebar />
-                <SupportSection />
-              </aside>
-            </div>
-
-            <ForumWidget 
-              threads={threads} 
-              setThreads={setThreads} 
-              onViewAllForum={() => navigateTo('forum')}
-              onOpenThread={(id) => navigateTo('thread-detail', id)}
-            />
-          </div>
-        </main>
-      )}
-
-      {currentView === 'polls' && (
-        <PollsPage onBack={() => navigateTo('home')} />
-      )}
-
-      {currentView === 'events' && (
-        <EventsPage onBack={() => navigateTo('home')} />
-      )}
-
-      {currentView === 'news' && (
-        <NewsPage news={news} setNews={setNews} onBack={() => navigateTo('home')} />
-      )}
-
-      {currentView === 'forum' && (
-        <ForumPage 
-          threads={threads} 
-          setThreads={setThreads} 
-          onBack={() => navigateTo('home')}
-          onOpenThread={(id) => navigateTo('thread-detail', id)}
+    <div className="max-w-md mx-auto min-h-screen relative shadow-2xl bg-background-light overflow-x-hidden font-sans text-black text-shadow-none">
+      {currentView === 'LOGIN' && <LoginView onLogin={handleLogin} correctPasswordHash={password} />}
+      {currentView === 'DASHBOARD' && (
+        <DashboardView 
+          username={username} 
+          onNavigate={navigate} 
+          totalUnread={totalUnread} 
+          members={members} 
+          newsMentions={newsMentionsCount}
         />
       )}
-
-      {currentView === 'thread-detail' && selectedThread && (
-        <ThreadDetailPage 
-          thread={selectedThread} 
-          onBack={() => navigateTo('forum')} 
-          setThreads={setThreads}
+      {currentView === 'GOD_MODE' && username === 'NPC' && (
+        <GodModeView 
+          onNavigate={navigate} 
+          conversations={conversations} 
+          onSelectChat={handleSelectChat} 
+          processedMembers={processedMembers} 
         />
       )}
-
-      <Footer />
+      {currentView === 'GUILD' && <GuildView onNavigate={navigate} totalUnread={totalUnread} />}
+      {currentView === 'NEWS' && <NewsView onNavigate={navigate} totalUnread={totalUnread} newsItems={NEWS_ITEMS} />}
+      {currentView === 'DICE_TRAY' && <DiceTrayView onNavigate={navigate} rolls={globalRolls} onNewRoll={(r) => setGlobalRolls(p => [r, ...p])} totalUnread={totalUnread} />}
+      {currentView === 'PROFILE' && (
+        <ProfileView onNavigate={navigate} onLogout={handleLogout} stats={stats} username={username} totalUnread={totalUnread} members={members} onUpdateImage={handleUpdateMemberImage} />
+      )}
+      {currentView === 'NOTIFICATION_SETTINGS' && <NotificationSettingsView onNavigate={navigate} totalUnread={totalUnread} />}
+      {currentView === 'SECURITY_SETTINGS' && <SecuritySettingsView onNavigate={navigate} onLogout={handleLogout} totalUnread={totalUnread} />}
+      {currentView === 'PRIVACY_SETTINGS' && <PrivacySettingsView onNavigate={navigate} isOnlineVisible={isUserOnlineVisible} onToggleOnlineVisibility={setIsUserOnlineVisible} totalUnread={totalUnread} />}
+      {currentView === 'CHANGE_PASSWORD' && <ChangePasswordView onNavigate={navigate} currentPasswordHash={password} onChangePassword={(p) => setPassword(p)} />}
+      {currentView === 'CHAT_LIST' && <ChatListView onNavigate={navigate} onDeleteChat={handleDeleteChat} onSelectChat={handleSelectChat} isUserOnlineVisible={isUserOnlineVisible} conversations={filteredConversations.map(c => ({...c, unread: getUnreadForChat(c.id)}))} currentUser={username} totalUnread={totalUnread} processedMembers={processedMembers} />}
+      {currentView === 'CHAT_DETAIL' && activeChat && (
+        <ChatDetailView 
+          chat={activeChat} 
+          messages={allMessages[activeChat.id] || []} 
+          onSendMessage={(msg) => handleNewMessage(activeChat.id, msg)} 
+          onNavigate={navigate} 
+          currentUser={username} 
+          processedMembers={processedMembers}
+          isPeeking={chatSourceIsGodMode}
+        />
+      )}
+      {currentView === 'NEW_CHAT' && <NewChatView onNavigate={navigate} currentUser={username} processedMembers={processedMembers} onStartChat={(member, title, npcIdentity) => {
+        const chatId = `c-new-${member.id}-${Date.now()}`;
+        handleSelectChat({ id: chatId, participant: member, initiatorName: username, title, lastMessage: 'Ein neuer Brief wurde verfasst...', time: 'Jetzt', npcMask: npcIdentity });
+      }} />}
     </div>
   );
 };

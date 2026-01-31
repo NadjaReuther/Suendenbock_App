@@ -162,6 +162,7 @@ namespace Suendenbock_App.Controllers
             target.encounter = source.encounter;
             target.perfected = source.perfected;
             target.MonstertypId = source.MonstertypId;
+            target.Lebenspunkte = source.Lebenspunkte;
 
             // Trophäen-Felder
             target.HasBoughtTrophy = source.HasBoughtTrophy;

@@ -68,11 +68,20 @@ async function toggleTrophyStatus(trophyId) {
             location.reload();
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Status konnte nicht gewechselt werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Status konnte nicht gewechselt werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Wechseln des Status!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Wechseln des Status!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -91,11 +100,20 @@ async function equipTrophyAtPosition(trophyId, position) {
             location.reload();
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Trophäe konnte nicht ausgerüstet werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Trophäe konnte nicht ausgerüstet werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Ausrüsten!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Ausrüsten!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -113,11 +131,20 @@ async function unequipTrophy(trophyId) {
             location.reload();
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Trophäe konnte nicht entfernt werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Trophäe konnte nicht entfernt werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Entfernen!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Entfernen!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -137,11 +164,20 @@ async function toggleTrophyType(trophyId, currentStatus) {
             location.reload();
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Status konnte nicht gewechselt werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Status konnte nicht gewechselt werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Wechseln des Trophäentyps!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Wechseln des Trophäentyps!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 

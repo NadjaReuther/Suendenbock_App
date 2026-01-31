@@ -1358,6 +1358,9 @@ namespace Suendenbock_App.Migrations
                     b.Property<bool>("IsEquipped")
                         .HasColumnType("bit");
 
+                    b.Property<int>("Lebenspunkte")
+                        .HasColumnType("int");
+
                     b.Property<int>("MonstertypId")
                         .HasColumnType("int");
 
@@ -1770,6 +1773,32 @@ namespace Suendenbock_App.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NewsItems");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.NightRestRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PlayerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NightRestRequests");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Obermagie", b =>

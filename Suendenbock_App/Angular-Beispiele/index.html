@@ -1,55 +1,52 @@
 
 <!DOCTYPE html>
 <html lang="de">
-  <head>
+<head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sündenbock 1618 - Forum</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=MedievalSharp&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Sündenbock 1618</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              primary: "#B89E68",
-              secondary: "#6A5ACD",
-              "background-light": "#F5F2E9",
-              "background-dark": "#1F1B18",
-              "surface-light": "#FFFCF7",
-              "surface-dark": "#2A2420",
-              "border-light": "#DCCEB0",
-              "border-dark": "#4A3F35",
-              "text-main-light": "#2D241E",
-              "text-main-dark": "#EDE8D5",
-            },
-            fontFamily: {
-              display: ["MedievalSharp", "cursive"],
-              body: ["Lora", "serif"],
-            },
-            boxShadow: {
-              'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.08)',
-              'glow': '0 0 15px rgba(184, 158, 104, 0.4)',
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#D4AF37",
+                        "background-light": "#F7F3E8",
+                        "parchment-border": "#C8B598",
+                        "card-bg": "#FDFBF7",
+                        "text-dark": "#3E2723",
+                        "accent-blue": "#5D5CDE",
+                    },
+                    fontFamily: {
+                        display: ["'UnifrakturMaguntia'", "cursive"],
+                        serif: ["'Cinzel'", "serif"],
+                        sans: ["'Lato'", "sans-serif"],
+                    }
+                }
             }
-          },
-        },
-      };
+        }
     </script>
     <style>
-      ::-webkit-scrollbar { width: 8px; }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #B89E68; border-radius: 4px; }
-      
-      .corner-border-tl { position: absolute; top: 0; left: 0; width: 16px; height: 16px; border-top: 2px solid #B89E68; border-left: 2px solid #B89E68; border-top-left-radius: 4px; }
-      .corner-border-tr { position: absolute; top: 0; right: 0; width: 16px; height: 16px; border-top: 2px solid #B89E68; border-right: 2px solid #B89E68; border-top-right-radius: 4px; }
-      .corner-border-bl { position: absolute; bottom: 0; left: 0; width: 16px; height: 16px; border-bottom: 2px solid #B89E68; border-left: 2px solid #B89E68; border-bottom-left-radius: 4px; }
-      .corner-border-br { position: absolute; bottom: 0; right: 0; width: 16px; height: 16px; border-bottom: 2px solid #B89E68; border-right: 2px solid #B89E68; border-bottom-right-radius: 4px; }
+        body {
+            background-color: #F7F3E8;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .parchment-texture {
+            background-image: url('https://www.transparenttextures.com/patterns/cream-paper.png');
+        }
+        .gothic-text {
+            font-family: 'UnifrakturMaguntia', cursive;
+        }
+        /* Hide scrollbars for a clean app feel */
+        ::-webkit-scrollbar {
+            display: none;
+        }
     </style>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@^19.2.3",
@@ -60,8 +57,8 @@
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark font-body antialiased transition-colors duration-300">
+<body class="parchment-texture">
     <div id="root"></div>
-  <script type="module" src="/index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>

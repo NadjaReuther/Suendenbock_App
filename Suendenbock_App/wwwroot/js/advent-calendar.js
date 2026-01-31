@@ -27,7 +27,7 @@ async function checkGodStatus() {
             isGodUser = data.isGod;
         }
     } catch (error) {
-        console.error('Fehler beim Prüfen des God-Status:', error);
+        // Fehler stillschweigend behandeln
     }
 }
 
@@ -42,7 +42,7 @@ async function loadOpenedDoors() {
             openedDoors = data.openedDoors || [];
         }
     } catch (error) {
-        console.error('Fehler beim Laden der geöffneten Türchen:', error);
+        // Fehler stillschweigend behandeln
     }
 }
 

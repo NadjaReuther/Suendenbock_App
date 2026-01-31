@@ -524,9 +524,9 @@ body {
 
 .modal-header {
     background-color: var(--primary);
-    padding: 1.5rem;
     text-align: center;
     position: relative;
+    display:block;
 }
 
     .modal-header .icon {
@@ -552,6 +552,7 @@ body {
     font-size: 1.875rem;
     text-transform: uppercase;
     letter-spacing: 0.15em;
+    padding: 0.5rem 0;
     margin: 0;
 }
 

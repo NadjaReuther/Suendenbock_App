@@ -208,7 +208,12 @@ async function castVote() {
     const selectedOptionIds = Array.from(selectedInputs).map(input => parseInt(input.value));
 
     if (selectedOptionIds.length === 0) {
-        alert('Bitte wähle mindestens eine Option.');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Keine Option gewählt',
+            text: 'Bitte wähle mindestens eine Option.',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -231,11 +236,20 @@ async function castVote() {
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler beim Abstimmen: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler beim Abstimmen',
+                text: error || 'Fehler beim Abstimmen',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -272,12 +286,17 @@ function closePollModal() {
     document.getElementById('pollModal').style.display = 'none';
 }
 
-function addPollOption() {
+async function addPollOption() {
     const optionsList = document.getElementById('pollOptionsList');
     const currentCount = optionsList.querySelectorAll('.poll-option-input').length;
 
     if (currentCount >= 10) {
-        alert('Maximal 10 Optionen erlaubt.');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Limit erreicht',
+            text: 'Maximal 10 Optionen erlaubt.',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -296,13 +315,18 @@ function addPollOption() {
     updateRemoveButtons();
 }
 
-function removePollOption(button) {
+async function removePollOption(button) {
     const optionDiv = button.closest('.poll-option-input');
     const optionsList = document.getElementById('pollOptionsList');
 
     // Don't allow removing if only 2 options left
     if (optionsList.querySelectorAll('.poll-option-input').length <= 2) {
-        alert('Mindestens 2 Optionen erforderlich.');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Mindestanzahl erreicht',
+            text: 'Mindestens 2 Optionen erforderlich.',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -345,7 +369,12 @@ async function createPoll() {
     }
 
     if (options.length < 2) {
-        alert('Mindestens 2 Optionen erforderlich.');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Zu wenige Optionen',
+            text: 'Mindestens 2 Optionen erforderlich.',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -380,11 +409,20 @@ async function createPoll() {
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler beim Speichern der Umfrage: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler beim Speichern',
+                text: error || 'Fehler beim Speichern der Umfrage',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -430,7 +468,18 @@ async function openEditPollModal(pollId) {
 }
 
 async function deletePoll(pollId) {
-    if (!confirm('Soll diese Volksbefragung wirklich für immer aus den Annalen gelöscht werden?')) {
+    const result = await Swal.fire({
+        title: 'Volksbefragung löschen?',
+        text: 'Soll diese Volksbefragung wirklich für immer aus den Annalen gelöscht werden?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Löschen',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -443,16 +492,36 @@ async function deletePoll(pollId) {
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler beim Löschen der Umfrage: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler beim Löschen',
+                text: error || 'Fehler beim Löschen der Umfrage',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
 async function closePoll(pollId) {
-    if (!confirm('Soll diese Volksbefragung beendet werden? Danach können keine weiteren Stimmen abgegeben werden.')) {
+    const result = await Swal.fire({
+        title: 'Volksbefragung beenden?',
+        text: 'Soll diese Volksbefragung beendet werden? Danach können keine weiteren Stimmen abgegeben werden.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Beenden',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -465,11 +534,20 @@ async function closePoll(pollId) {
             window.location.reload();
         } else {
             const error = await response.text();
-            alert('Fehler beim Beenden der Umfrage: ' + error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler beim Beenden',
+                text: error || 'Fehler beim Beenden der Umfrage',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 

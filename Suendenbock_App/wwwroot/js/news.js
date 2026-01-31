@@ -106,12 +106,21 @@ async function openEditModal(newsId) {
             document.getElementById('newsContent').value = data.content;
             document.getElementById('newsCategory').value = data.category;
         } else {
-            alert('Fehler beim Laden der Neuigkeit.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Laden der Neuigkeit.',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
@@ -163,16 +172,36 @@ async function saveNews() {
             closeNewsModal();
             window.location.reload();
         } else {
-            alert('Fehler beim Speichern der Neuigkeit.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Speichern der Neuigkeit.',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
 async function deleteNews(newsId) {
-    if (!confirm('Möchtest du diese Botschaft wirklich für immer aus der Chronik tilgen?')) {
+    const result = await Swal.fire({
+        title: 'Botschaft löschen?',
+        text: 'Möchtest du diese Botschaft wirklich für immer aus der Chronik tilgen?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Löschen',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -184,11 +213,20 @@ async function deleteNews(newsId) {
         if (response.ok) {
             window.location.reload();
         } else {
-            alert('Fehler beim Löschen der Neuigkeit.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Löschen der Neuigkeit.',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -210,16 +248,36 @@ async function addComment(newsId, text) {
         if (response.ok) {
             window.location.reload();
         } else {
-            alert('Fehler beim Hinzufügen des Kommentars.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Hinzufügen des Kommentars.',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
 async function deleteComment(newsId, commentId) {
-    if (!confirm('Soll dieser Kommentar aus der Versammlung entfernt werden?')) {
+    const result = await Swal.fire({
+        title: 'Kommentar löschen?',
+        text: 'Soll dieser Kommentar aus der Versammlung entfernt werden?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Löschen',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -231,11 +289,20 @@ async function deleteComment(newsId, commentId) {
         if (response.ok) {
             window.location.reload();
         } else {
-            alert('Fehler beim Löschen des Kommentars.');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Löschen des Kommentars.',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Ein Fehler ist aufgetreten.');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 

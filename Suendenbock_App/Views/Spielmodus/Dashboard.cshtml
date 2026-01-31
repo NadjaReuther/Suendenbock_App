@@ -6,6 +6,8 @@
 <!-- Link zum Spielmodus-CSS im Head -->
 @section Styles {
     <link rel="stylesheet" href="~/css/spielmodus.css" />
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 }
 
 <!-- Main Content -->
@@ -95,24 +97,26 @@
                 </div>
             }
 
-        <!-- Rest Buttons -->
-        <div class="rest-buttons">
-            <button class="rest-button" onclick="shortRest()">
-                <span class="material-symbols-outlined">restaurant</span>
-                <span>Kurze Rast</span>
-            </button>
+        <!-- Rest Buttons (nur für Spieler, nur wenn mindestens ein Charakter beschädigt oder Zauber gewirkt) -->
+        @if (!Model.IsGod)
+        {
+            <div class="rest-buttons" id="restButtons" style="display: none;">
+                <button class="rest-button" onclick="shortRest()">
+                    <span class="material-symbols-outlined">restaurant</span>
+                    <span>Kurze Rast</span>
+                </button>
 
-            <!--onclick="toggleCamp()" in button einbauen um Battle-System zu implementieren-->
-            <button id="campBtn" class="rest-button camp">
-                <div style="display: flex; flex-direction: column; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <span class="material-symbols-outlined" id="campIcon">fireplace</span>
-                        <span id="campText">Nachtlager</span>
+                <button id="campBtn" class="rest-button camp" onclick="toggleCamp()">
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span class="material-symbols-outlined" id="campIcon">fireplace</span>
+                            <span id="campText">Nachtlager</span>
+                        </div>
+                        <span class="confirm-text" id="confirmText" style="display: none;">Bestätigen</span>
                     </div>
-                    <span class="confirm-text" id="confirmText" style="display: none;">Bestätigen</span>
-                </div>
-            </button>
-        </div>
+                </button>
+            </div>
+        }
 
             <!-- Wetter-Widget -->
             @if (Model.WeatherForecast != null && Model.WeatherForecast.Count >= 5)
@@ -201,13 +205,9 @@
         <div class="modal-body">
             <!-- Pokus Summary -->
             <div class="pokus-summary">
-                <h3>Gesammelter Pokus</h3>
+                <h3>Gewirkte Zauber</h3>
                 <div class="pokus-grid" id="pokusGrid">
                     <!-- Wird via JavaScript gefüllt -->
-                </div>
-                <div class="pokus-total">
-                    <span class="label">Gruppen-Gesamt</span>
-                    <span class="value" id="totalPokus">0</span>
                 </div>
             </div>
 
@@ -240,15 +240,18 @@
 
 <!-- JavaScript -->
 @section Scripts {
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/spielmodus-dashboard.js"></script>
     <script>
         // Initial Daten vom Server
         const initialCharacters = @Html.Raw(Json.Serialize(Model.ActiveCharacters));
         const initialRestFoods = @Html.Raw(Json.Serialize(Model.RestFoods));
+        const initialIsGod = @Html.Raw(Json.Serialize(Model.IsGod));
 
         // Dashboard initialisieren
         window.addEventListener('DOMContentLoaded', () => {
-            initDashboard(initialCharacters, initialRestFoods);
+            initDashboard(initialCharacters, initialRestFoods, initialIsGod);
 
             // Tilt-Effekt für Pergament-Karten
             document.querySelectorAll('[data-tilt]').forEach(card => {

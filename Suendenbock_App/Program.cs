@@ -107,7 +107,8 @@ app.MapControllerRoute(
 app.MapControllers(); // F�r API-Controller hinzuf�gen
 app.MapRazorPages();
 
-// SignalR Hub Endpoint
+// SignalR Hub Endpoints
 app.MapHub<Suendenbock_App.Hubs.BattleHub>("/battlehub");
+app.MapHub<Suendenbock_App.Hubs.GameHub>("/gamehub");
 
 app.Run();

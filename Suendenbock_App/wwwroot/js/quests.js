@@ -145,7 +145,7 @@ function initQuests() {
     });
 
     // "Zur Karte" Button: Quest-Daten speichern und zur Map weiterleiten
-    document.getElementById('setMarkerOnMapBtn').addEventListener('click', () => {
+    document.getElementById('setMarkerOnMapBtn').addEventListener('click', async () => {
         // Sammle aktuelle Formular-Daten
         const form = document.getElementById('questForm');
         const isEditMode = form.dataset.editMode === 'true';
@@ -165,11 +165,21 @@ function initQuests() {
 
         // Validierung
         if (!questData.title) {
-            alert('Bitte gib einen Quest-Titel ein!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Titel fehlt',
+                text: 'Bitte gib einen Quest-Titel ein!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
         if (questData.type === 'individual' && !questData.characterId) {
-            alert('Bitte wähle einen Charakter aus!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Charakter fehlt',
+                text: 'Bitte wähle einen Charakter aus!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
 
@@ -310,11 +320,20 @@ async function updateQuestStatus(questId, newStatus) {
             location.reload();
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Status konnte nicht geändert werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Status konnte nicht geändert werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Ändern des Status!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Ändern des Status!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -342,7 +361,12 @@ async function handleQuestSubmit(e) {
     if (formData.type === 'individual') {
         const characterId = document.getElementById('questCharacter').value;
         if (!characterId) {
-            alert('Bitte wähle einen Charakter aus!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Charakter fehlt',
+                text: 'Bitte wähle einen Charakter aus!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
         formData.characterId = parseInt(characterId);
@@ -364,7 +388,12 @@ async function handleQuestSubmit(e) {
         const markerY = document.getElementById('questMarkerY').value;
 
         if (!markerX || !markerY) {
-            alert('Bitte gib X- und Y-Koordinaten für den Marker an!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Koordinaten fehlen',
+                text: 'Bitte gib X- und Y-Koordinaten für den Marker an!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
 
@@ -403,11 +432,20 @@ async function handleQuestSubmit(e) {
             } catch {
                 errorMsg = errorText;
             }
-            alert(`Fehler: ${errorMsg || (isEditMode ? 'Quest konnte nicht aktualisiert werden' : 'Quest konnte nicht erstellt werden')}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: errorMsg || (isEditMode ? 'Quest konnte nicht aktualisiert werden' : 'Quest konnte nicht erstellt werden'),
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert(`Fehler beim ${isEditMode ? 'Aktualisieren' : 'Erstellen'} der Quest!`);
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: `Fehler beim ${isEditMode ? 'Aktualisieren' : 'Erstellen'} der Quest!`,
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -508,7 +546,18 @@ async function handleDeleteQuest(questId) {
     const questCard = document.querySelector(`[data-quest-id="${questId}"]`);
     const questTitle = questCard ? questCard.querySelector('.quest-title').textContent.trim() : 'diese Quest';
 
-    if (!confirm(`Quest "${questTitle}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+    const result = await Swal.fire({
+        title: 'Quest löschen?',
+        text: `Quest "${questTitle}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Löschen',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -521,10 +570,19 @@ async function handleDeleteQuest(questId) {
             location.reload();
         } else {
             const text = await response.text();
-            alert(`Fehler beim Löschen: ${text || 'Unbekannter Fehler'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler beim Löschen',
+                text: text || 'Unbekannter Fehler',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Löschen der Quest!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Löschen der Quest!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }

@@ -37,6 +37,11 @@ let battleState = {
     sessionId: null
 };
 
+// ===== ROLE-BASED ACCESS CONTROL =====
+// IS_GOTT wird von Battle.cshtml gesetzt
+// Falls nicht gesetzt (alte Implementierung), default auf true für Kompatibilität
+const IS_GOTT_ROLE = typeof IS_GOTT !== 'undefined' ? IS_GOTT : true;
+
 // ===== SIGNALR CONNECTION =====
 let signalRConnection = null;
 let isConnected = false;
@@ -49,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // ===== SIGNALR SETUP =====
 async function setupSignalR(sessionId) {
     if (!sessionId) {
-        console.warn('Keine SessionId vorhanden - Battle läuft ohne Real-time Sync');
         return;
     }
 
@@ -62,8 +66,6 @@ async function setupSignalR(sessionId) {
 
         // Event: Battle State Update empfangen
         signalRConnection.on("ReceiveBattleState", (data) => {
-            console.log('Battle State Update empfangen:', data);
-
             // Nur updaten, wenn es nicht von diesem Client kommt
             if (data.sessionId === battleState.sessionId) {
                 const newSetup = JSON.parse(data.battleStateJson);
@@ -82,28 +84,23 @@ async function setupSignalR(sessionId) {
         });
 
         // Event: Kampf beendet
-        signalRConnection.on("CombatEnded", (data) => {
-            console.log('Kampf beendet:', data);
-            showResultScreen(data.result);
+        signalRConnection.on("CombatEnded", async (data) => {
+            await showResultScreen(data.result);
         });
 
         // Event: Quick Action empfangen
         signalRConnection.on("ReceiveAction", (data) => {
-            console.log('Action empfangen:', data);
             // Optional: Hier könntest du Animationen triggern
         });
 
         // Verbindung starten
         await signalRConnection.start();
-        console.log('SignalR verbunden');
         isConnected = true;
 
         // Combat Session beitreten
         await signalRConnection.invoke("JoinCombat", sessionId);
-        console.log(`Combat Session ${sessionId} beigetreten`);
 
     } catch (error) {
-        console.error('SignalR Fehler:', error);
         // Battle läuft trotzdem weiter, nur ohne Real-time Sync
     }
 }
@@ -128,42 +125,99 @@ async function syncBattleState() {
             battleState.currentTurnIndex
         );
     } catch (error) {
-        console.error('Fehler beim State Sync:', error);
+        // Fehler stillschweigend behandeln
     }
 }
 
 async function initBattle() {
-    // Daten aus localStorage laden
-    const setup = JSON.parse(localStorage.getItem('battleSetup') || '{}');
+    // WICHTIG: SessionId aus URL-Query lesen (Spieler werden mit ?sessionId=123 weitergeleitet)
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionIdFromUrl = urlParams.get('sessionId');
 
-    if (!setup.monsters || !setup.characterIds || !setup.initiatives) {
-        alert('Keine Battle-Daten gefunden! Bitte starte den Kampf über Combat Setup.');
-        window.location.href = '/Spielmodus/CombatSetup';
-        return;
+    if (sessionIdFromUrl) {
+        // Spieler kommt via Broadcast-Redirect → SessionId aus URL verwenden
+        battleState.sessionId = parseInt(sessionIdFromUrl);
+
+        // Battle State von Server laden
+        await loadBattleStateFromServer(battleState.sessionId);
+    } else {
+        // Gott hat Kampf direkt gestartet → Daten aus localStorage
+        const setup = JSON.parse(localStorage.getItem('battleSetup') || '{}');
+
+        if (!setup.monsters || !setup.characterIds || !setup.initiatives) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Keine Battle-Daten',
+                text: 'Bitte starte den Kampf über Combat Setup.',
+                confirmButtonColor: '#d97706'
+            });
+            window.location.href = '/Spielmodus/CombatSetup';
+            return;
+        }
+
+        // SessionId speichern (falls vorhanden)
+        if (setup.sessionId) {
+            battleState.sessionId = setup.sessionId;
+        }
+
+        // Participants erstellen aus localStorage
+        buildParticipants(setup);
+
+        // Battle Grid rendern
+        renderBattleGrid();
+
+        // Erste Runde starten
+        updateTurnIndicator();
     }
-
-    // DEBUG: BATTLE_MODEL_DATA prüfen
-    console.log('=== BATTLE_MODEL_DATA ===', BATTLE_MODEL_DATA);
-    console.log('Characters:', BATTLE_MODEL_DATA.characters);
-    console.log('Monsters:', BATTLE_MODEL_DATA.monsters);
-
-    // SessionId speichern (falls vorhanden)
-    if (setup.sessionId) {
-        battleState.sessionId = setup.sessionId;
-    }
-
-    // Participants erstellen
-    buildParticipants(setup);
-
-    // Battle Grid rendern
-    renderBattleGrid();
-
-    // Erste Runde starten
-    updateTurnIndicator();
 
     // SignalR verbinden (falls sessionId vorhanden)
     if (battleState.sessionId) {
         await setupSignalR(battleState.sessionId);
+    }
+}
+
+// ===== BATTLE STATE VOM SERVER LADEN =====
+async function loadBattleStateFromServer(sessionId) {
+    try {
+        // Combat Session vom Server abrufen
+        const response = await fetch(`/api/battle/session/${sessionId}`);
+
+        if (!response.ok) {
+            throw new Error('Combat Session nicht gefunden');
+        }
+
+        const session = await response.json();
+
+        // Battle State aus JSON parsen
+        const savedState = JSON.parse(session.battleStateJson);
+
+        // Wenn Participants noch nicht existieren (Setup-Daten), müssen wir sie erstellen
+        if (!savedState.participants || savedState.participants.length === 0) {
+            buildParticipants(savedState);
+        } else {
+            // Participants existieren bereits (wurde vom Gott schon erstellt)
+            battleState.participants = savedState.participants;
+        }
+
+        battleState.currentRound = session.currentRound;
+        battleState.currentTurnIndex = session.currentTurnIndex;
+
+        if (savedState.expandedConditions) {
+            battleState.expandedConditions = savedState.expandedConditions;
+        }
+
+        // UI rendern
+        renderBattleGrid();
+        updateTurnIndicator();
+
+    } catch (error) {
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler beim Laden',
+            text: 'Der Kampf konnte nicht geladen werden. Bitte versuche es erneut.',
+            confirmButtonColor: '#d97706'
+        });
+        window.location.href = '/Spielmodus/Dashboard';
     }
 }
 
@@ -175,17 +229,8 @@ function buildParticipants(setup) {
     setup.characterIds.forEach(charId => {
         const char = BATTLE_MODEL_DATA.characters.find(c => c.id === charId);
         if (!char) {
-            console.warn(`Character mit ID ${charId} nicht gefunden!`);
             return;
         }
-
-        // DEBUG: Character-Daten prüfen
-        console.log(`=== Character ${char.name} ===`);
-        console.log('Full char object:', char);
-        console.log('currentHealth:', char.currentHealth);
-        console.log('maxHealth:', char.maxHealth);
-        console.log('currentPokus:', char.currentPokus);
-        console.log('maxPokus:', char.maxPokus);
 
         const initKey = `char-${charId}`;
         const initiative = setup.initiatives[initKey] || 50;
@@ -196,8 +241,10 @@ function buildParticipants(setup) {
 
         const participant = {
             id: `char-${charId}`,
+            characterId: charId, // DB-ID für Speicherung
             name: char.name,
             initiative: parseInt(initiative),
+            originalInitiative: parseInt(initiative),
             type: char.isBegleiter ? 'companion' : 'player',
             currentHealth: currentHP,
             maxHealth: maxHP,
@@ -210,10 +257,11 @@ function buildParticipants(setup) {
             conditionCounters: {},
             conditionLevels: {},
             conditionStartRounds: {},
-            downedSaves: { Handeln: 'none', Wissen: 'none', Soziales: 'none' }
+            downedSaves: { Handeln: 'none', Wissen: 'none', Soziales: 'none' },
+            wounds: [],
+            readyToRevive: false
         };
 
-        console.log('Created participant:', participant);
         participants.push(participant);
     });
 
@@ -229,11 +277,12 @@ function buildParticipants(setup) {
             id: `monster-${index}`,
             name: monster.name,
             initiative: parseInt(initiative),
+            originalInitiative: parseInt(initiative),
             type: 'enemy',
             currentHealth: monsterSetup.health,
             maxHealth: monsterSetup.health,
-            currentPokus: monsterSetup.pokus || 0,
-            maxPokus: monsterSetup.pokus || 0,
+            currentPokus: 0,
+            maxPokus: 0,
             tempHealth: 0,
             isDead: false,
             isFallen: false,
@@ -241,9 +290,41 @@ function buildParticipants(setup) {
             conditionCounters: {},
             conditionLevels: {},
             conditionStartRounds: {},
-            downedSaves: { Handeln: 'none', Wissen: 'none', Soziales: 'none' }
+            downedSaves: { Handeln: 'none', Wissen: 'none', Soziales: 'none' },
+            wounds: [],
+            readyToRevive: false
         });
     });
+
+    // Extra-Teilnehmer hinzufügen (nur Name + HP, keine DB-Referenz, kein Pokus)
+    if (setup.extraParticipants) {
+        setup.extraParticipants.forEach((extra, index) => {
+            const initKey = `extra-${index}`;
+            const initiative = setup.initiatives[initKey] || 50;
+
+            participants.push({
+                id: `extra-${index}`,
+                name: extra.name,
+                initiative: parseInt(initiative),
+                originalInitiative: parseInt(initiative),
+                type: 'companion',
+                currentHealth: extra.health,
+                maxHealth: extra.health,
+                currentPokus: 0,
+                maxPokus: 0,
+                tempHealth: 0,
+                isDead: false,
+                isFallen: false,
+                activeConditions: [],
+                conditionCounters: {},
+                conditionLevels: {},
+                conditionStartRounds: {},
+                downedSaves: { Handeln: 'none', Wissen: 'none', Soziales: 'none' },
+                wounds: [],
+                readyToRevive: false
+            });
+        });
+    }
 
     // Nach Initiative sortieren (Unsichtbar zuerst)
     battleState.participants = sortParticipants(participants);
@@ -291,21 +372,45 @@ function renderParticipantCard(p, idx) {
 
     return `
         <div class="flex flex-col rounded border-2 transition-all duration-500 relative ${borderClasses} ${p.isDead ? 'opacity-20 grayscale cursor-not-allowed' : ''}"
-             data-participant-index="${idx}">
+             data-participant-index="${idx}"
+             draggable="${!p.isDead && IS_GOTT_ROLE}"
+             ondragstart="${IS_GOTT_ROLE ? `handleDragStart(event, ${idx})` : ''}"
+             ondragover="${IS_GOTT_ROLE ? `handleDragOver(event)` : ''}"
+             ondragleave="${IS_GOTT_ROLE ? `handleDragLeave(event)` : ''}"
+             ondrop="${IS_GOTT_ROLE ? `handleDrop(event, ${idx})` : ''}"
+             ondragend="${IS_GOTT_ROLE ? `handleDragEnd(event)` : ''}">
             <!-- Main Info Row -->
             <div class="p-4 flex items-center justify-between gap-4 flex-wrap md:flex-nowrap min-h-[120px]">
                 <!-- Initiative & Name -->
                 <div class="flex items-center space-x-4">
-                    <div class="${isActive ? (isInvisible ? 'bg-slate-300 text-black animate-pulse' : 'bg-amber-500 text-black animate-pulse') : 'bg-white/10 text-white/40'} w-12 h-12 rounded-full flex items-center justify-center font-bold text-base">
-                        ${p.initiative}
+                    <div class="flex items-center gap-2">
+                        <div class="flex flex-col items-center gap-1">
+                            <div class="${isActive ? (isInvisible ? 'bg-slate-300 text-black animate-pulse' : 'bg-amber-500 text-black animate-pulse') : 'bg-white/10 text-white/40'} w-12 h-12 rounded-full flex items-center justify-center font-bold text-base">
+                                ${p.initiative}
+                            </div>
+                            ${p.initiative !== p.originalInitiative && IS_GOTT_ROLE ? `
+                                <button
+                                    onclick="resetInitiative(${idx})"
+                                    class="bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 text-[10px] px-2 py-0.5 rounded border border-amber-500/40 transition-all"
+                                    title="Auf ${p.originalInitiative} zurücksetzen">
+                                    ↻ ${p.originalInitiative}
+                                </button>
+                            ` : ''}
+                        </div>
+                        ${!p.isDead && IS_GOTT_ROLE ? `
+                            <div class="cursor-move text-white/20 hover:text-white/60 transition-colors" title="Ziehen um Reihenfolge zu ändern">
+                                <span class="material-symbols-outlined text-2xl">drag_indicator</span>
+                            </div>
+                        ` : ''}
                     </div>
                     <div>
                         <p class="${p.type === 'enemy' ? 'text-red-400' : 'text-white'} font-['MedievalSharp'] text-2xl">${p.name}</p>
                         <div class="flex flex-wrap gap-1 mt-1">
-                            ${!p.isDead ? wounds.map(w => `
-                                <span class="text-[10px] bg-red-600/60 text-white border border-red-400 px-2 py-1 rounded uppercase font-bold tracking-tighter flex items-center space-x-1 shadow-[0_0_8px_rgba(220,38,38,0.5)]">
+                            ${!p.isDead ? p.wounds.map((w, wIdx) => `
+                                <span class="text-[10px] bg-red-600/60 text-white border border-red-400 px-2 py-1 rounded uppercase font-bold tracking-tighter flex items-center space-x-1 shadow-[0_0_8px_rgba(220,38,38,0.5)] ${IS_GOTT_ROLE ? 'group' : ''}">
                                     <span class="material-symbols-outlined text-[12px]">water_drop</span>
                                     <span>${w}</span>
+                                    ${IS_GOTT_ROLE ? `<button onclick="removeWound(${idx}, ${wIdx})" class="ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-white hover:text-red-200">×</button>` : ''}
                                 </span>
                             `).join('') : ''}
                             ${p.isDead ? '<span class="text-xs bg-[#800020] text-white px-2 py-1 rounded uppercase font-black tracking-widest">Gefallen</span>' : ''}
@@ -339,45 +444,74 @@ function renderDownedSaves(p, idx) {
         <div class="flex items-center space-x-6 animate-in fade-in duration-500">
             <div class="flex flex-col items-end mr-2">
                 <span class="text-sm uppercase font-display font-bold text-[#800020] animate-pulse tracking-widest">Todesrettung</span>
-                <span class="text-xs uppercase text-white/30 tracking-widest">Reihenfolge einhalten</span>
+                <span class="text-xs uppercase text-white/30 tracking-widest">${IS_GOTT_ROLE ? 'Reihenfolge einhalten' : 'Nur-Lese-Modus'}</span>
             </div>
 
             <div class="flex gap-4">
                 ${SAVE_KEYS.map((key, kIdx) => {
                     const status = p.downedSaves[key];
                     const prevStatus = kIdx > 0 ? p.downedSaves[SAVE_KEYS[kIdx - 1]] : 'success';
-                    const isDisabled = prevStatus === 'none';
+                    const isDisabled = prevStatus === 'none' || !IS_GOTT_ROLE;
 
                     return `
                         <div class="flex flex-col items-center space-y-1 transition-opacity ${isDisabled ? 'opacity-20 grayscale' : 'opacity-100'}">
                             <span class="text-xs uppercase tracking-tighter text-white/40 font-bold">${key}</span>
-                            <button
-                                onclick="${!isDisabled ? `cycleDownedStatus(${idx}, '${key}')` : ''}"
-                                ${isDisabled ? 'disabled' : ''}
-                                class="w-16 h-16 border-2 rounded flex items-center justify-center transition-all duration-300 relative ${
+                            ${IS_GOTT_ROLE ? `
+                                <button
+                                    onclick="${!isDisabled ? `cycleDownedStatus(${idx}, '${key}')` : ''}"
+                                    ${isDisabled ? 'disabled' : ''}
+                                    class="w-16 h-16 border-2 rounded flex items-center justify-center transition-all duration-300 relative ${
+                                        status === 'success' ? 'bg-green-700/60 border-green-400 shadow-[0_0_15px_rgba(74,222,128,0.4)]' :
+                                        status === 'fail' ? 'bg-[#800020]/70 border-red-500 shadow-[0_0_15px_rgba(128,0,32,0.5)]' :
+                                        'bg-gray-800/20 border-white/20 hover:border-white/40'
+                                    }">
+                                    ${status === 'success' ? '<span class="material-symbols-outlined text-white text-4xl font-black drop-shadow-md">check</span>' : ''}
+                                    ${status === 'fail' ? '<span class="material-symbols-outlined text-white text-4xl font-black drop-shadow-md">close</span>' : ''}
+                                </button>
+                            ` : `
+                                <div class="w-16 h-16 border-2 rounded flex items-center justify-center ${
                                     status === 'success' ? 'bg-green-700/60 border-green-400 shadow-[0_0_15px_rgba(74,222,128,0.4)]' :
                                     status === 'fail' ? 'bg-[#800020]/70 border-red-500 shadow-[0_0_15px_rgba(128,0,32,0.5)]' :
-                                    'bg-gray-800/20 border-white/20 hover:border-white/40'
+                                    'bg-gray-800/20 border-white/20'
                                 }">
-                                ${status === 'success' ? '<span class="material-symbols-outlined text-white text-4xl font-black drop-shadow-md">check</span>' : ''}
-                                ${status === 'fail' ? '<span class="material-symbols-outlined text-white text-4xl font-black drop-shadow-md">close</span>' : ''}
-                            </button>
+                                    ${status === 'success' ? '<span class="material-symbols-outlined text-white text-4xl font-black drop-shadow-md">check</span>' : ''}
+                                    ${status === 'fail' ? '<span class="material-symbols-outlined text-white text-4xl font-black drop-shadow-md">close</span>' : ''}
+                                </div>
+                            `}
                         </div>
                     `;
                 }).join('')}
             </div>
 
-            <div class="ml-6 flex items-center space-x-2 bg-black/40 p-1.5 rounded border border-white/10">
-                <input
-                    type="number"
-                    placeholder="HP"
-                    id="healthInput-${idx}"
-                    class="w-12 bg-white/5 border border-white/10 rounded text-center text-sm outline-none text-white font-bold"
-                />
-                <button onclick="applyAction(${idx}, 'heal')" class="w-10 h-10 flex items-center justify-center rounded bg-green-700/40 hover:bg-green-600 text-white transition-all">
-                    <span class="material-symbols-outlined text-base">healing</span>
-                </button>
-            </div>
+            ${IS_GOTT_ROLE ? (p.readyToRevive ? `
+                <div class="ml-6 flex flex-col items-center space-y-2 bg-green-900/40 p-3 rounded border border-green-500/60 animate-pulse">
+                    <span class="text-xs uppercase text-green-200 font-bold tracking-widest">Rettung möglich!</span>
+                    <button onclick="confirmRevive(${idx})" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white font-bold rounded transition-all shadow-lg flex items-center space-x-2">
+                        <span class="material-symbols-outlined">emergency</span>
+                        <span>Charakter retten</span>
+                    </button>
+                </div>
+            ` : `
+                <div class="ml-6 flex items-center space-x-2 bg-black/40 p-1.5 rounded border border-white/10">
+                    <input
+                        type="number"
+                        placeholder="HP"
+                        id="healthInput-${idx}"
+                        class="w-12 bg-white/5 border border-white/10 rounded text-center text-sm outline-none text-white font-bold"
+                    />
+                    <button onclick="applyAction(${idx}, 'heal')" class="w-10 h-10 flex items-center justify-center rounded bg-green-700/40 hover:bg-green-600 text-white transition-all">
+                        <span class="material-symbols-outlined text-base">healing</span>
+                    </button>
+                </div>
+            `) : (p.readyToRevive ? `
+                <div class="ml-6 flex flex-col items-center space-y-2 bg-green-900/40 p-3 rounded border border-green-500/60">
+                    <span class="text-xs uppercase text-green-200 font-bold tracking-widest">Rettung möglich!</span>
+                    <div class="px-6 py-3 bg-green-600/60 text-white font-bold rounded flex items-center space-x-2 cursor-not-allowed">
+                        <span class="material-symbols-outlined">emergency</span>
+                        <span>Warte auf Gott</span>
+                    </div>
+                </div>
+            ` : '')}
         </div>
     `;
 }
@@ -386,15 +520,21 @@ function renderNormalActions(p, idx, healthPercent, tempPercent) {
     return `
         <div class="flex flex-col items-stretch min-w-[280px]">
             <div class="flex justify-between items-end mb-1 gap-4">
-                ${p.type !== 'enemy' ? `
+                ${p.type === 'player' && IS_GOTT_ROLE ? `
                     <button
                         onclick="castMagic(${idx})"
                         class="group flex items-center space-x-2 bg-teal-900/40 hover:bg-teal-700/60 border border-teal-500/40 rounded px-4 py-2 transition-all active:scale-95">
                         <span class="material-symbols-outlined text-teal-300 text-base animate-pulse">auto_fix_high</span>
-                        <span class="text-xs uppercase font-bold tracking-widest text-teal-200">Magie wirken</span>
+                        <span class="text-xs uppercase font-bold tracking-widest text-teal-200">Zauber wirken</span>
                         <span class="bg-teal-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">${p.currentPokus}</span>
                     </button>
-                ` : '<div class="flex-grow"></div>'}
+                ` : (p.type === 'player' && !IS_GOTT_ROLE ? `
+                    <div class="flex items-center space-x-2 bg-teal-900/20 border border-teal-500/20 rounded px-4 py-2">
+                        <span class="material-symbols-outlined text-teal-300/40 text-base">auto_fix_high</span>
+                        <span class="text-xs uppercase font-bold tracking-widest text-teal-200/40">Zauber</span>
+                        <span class="bg-teal-500/40 text-white text-xs font-bold px-2 py-0.5 rounded-full">${p.currentPokus}</span>
+                    </div>
+                ` : '<div class="flex-grow"></div>')}
 
                 <div class="flex items-baseline space-x-1">
                     <span class="text-2xl font-bold font-['MedievalSharp'] text-white">${p.currentHealth}</span>
@@ -412,26 +552,28 @@ function renderNormalActions(p, idx, healthPercent, tempPercent) {
             </div>
         </div>
 
-        <div class="flex bg-black/60 rounded-lg border border-white/10 p-2 space-x-2">
-            <input
-                type="number"
-                placeholder="0"
-                id="healthInput-${idx}"
-                class="w-12 bg-white/5 border border-white/10 rounded text-center text-sm outline-none text-white font-bold"
-            />
-            <button onclick="applyAction(${idx}, 'damage')" class="w-10 h-10 flex items-center justify-center rounded bg-[#800020]/40 hover:bg-[#800020] text-white transition-all shadow-lg">
-                <span class="material-symbols-outlined text-base">skull</span>
-            </button>
-            <button onclick="applyAction(${idx}, 'heal')" class="w-10 h-10 flex items-center justify-center rounded bg-green-700/40 hover:bg-green-600 text-white transition-all shadow-lg">
-                <span class="material-symbols-outlined text-base">healing</span>
-            </button>
-            <button onclick="applyAction(${idx}, 'temp')" class="w-10 h-10 flex items-center justify-center rounded bg-sky-700/40 hover:bg-sky-600 text-white transition-all shadow-lg" title="Schild (tempLP)">
-                <span class="material-symbols-outlined text-base">shield_moon</span>
-            </button>
-            <button onclick="toggleConditionsPanel(${idx})" class="${battleState.expandedConditions[idx] ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40 hover:bg-white/20'} w-10 h-10 flex items-center justify-center rounded transition-all">
-                <span class="material-symbols-outlined text-base">settings_accessibility</span>
-            </button>
-        </div>
+        ${IS_GOTT_ROLE ? `
+            <div class="flex bg-black/60 rounded-lg border border-white/10 p-2 space-x-2">
+                <input
+                    type="number"
+                    placeholder="0"
+                    id="healthInput-${idx}"
+                    class="w-12 bg-white/5 border border-white/10 rounded text-center text-sm outline-none text-white font-bold"
+                />
+                <button onclick="applyAction(${idx}, 'damage')" class="w-10 h-10 flex items-center justify-center rounded bg-[#800020]/40 hover:bg-[#800020] text-white transition-all shadow-lg">
+                    <span class="material-symbols-outlined text-base">skull</span>
+                </button>
+                <button onclick="applyAction(${idx}, 'heal')" class="w-10 h-10 flex items-center justify-center rounded bg-green-700/40 hover:bg-green-600 text-white transition-all shadow-lg">
+                    <span class="material-symbols-outlined text-base">healing</span>
+                </button>
+                <button onclick="applyAction(${idx}, 'temp')" class="w-10 h-10 flex items-center justify-center rounded bg-sky-700/40 hover:bg-sky-600 text-white transition-all shadow-lg" title="Schild (tempLP)">
+                    <span class="material-symbols-outlined text-base">shield_moon</span>
+                </button>
+                <button onclick="toggleConditionsPanel(${idx})" class="${battleState.expandedConditions[idx] ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40 hover:bg-white/20'} w-10 h-10 flex items-center justify-center rounded transition-all">
+                    <span class="material-symbols-outlined text-base">settings_accessibility</span>
+                </button>
+            </div>
+        ` : ''}
     `;
 }
 
@@ -476,24 +618,42 @@ function renderExpandedConditions(p, idx) {
 }
 
 // ===== HELPER FUNCTIONS =====
+function getWoundTierByPercent(pct) {
+    if (pct < 10) return 4; // Tödlich
+    if (pct < 25) return 3; // Schwer
+    if (pct < 50) return 2; // Kompliziert
+    if (pct < 75) return 1; // Einfach
+    return 0; // Keine Wunde
+}
+
+function getWoundNameByTier(tier) {
+    const names = ['Keine', 'Einfach', 'Kompliziert', 'Schwer', 'Tödlich'];
+    return names[tier] || 'Keine';
+}
+
 function getWoundsByHp(current, max) {
-    const pct = (current / max) * 100;
-    const wounds = [];
-    if (current <= 0) return wounds;
-    if (pct < 10) wounds.push('Tödlich');
-    else if (pct < 25) wounds.push('Schwer');
-    else if (pct < 50) wounds.push('Kompliziert');
-    else if (pct < 75) wounds.push('Einfach');
-    return wounds;
+    // Diese Funktion wird jetzt nur noch für die Anzeige verwendet
+    // Tatsächliche Wunden werden im wounds Array getrackt
+    return [];
 }
 
 function calcConditionDamage(p, type, globalRound) {
     if (!p.activeConditions.includes(type)) return 0;
     const startRound = p.conditionStartRounds[type] || globalRound;
-    const duration = globalRound - startRound + 1;
-    const level = p.conditionLevels[type] || 1;
-    const step = type === 'Vergiftet' ? 2 : 4;
-    return (duration + level - 1) * step;
+    const duration = globalRound - startRound + 1; // Wie lange schon betroffen (Runde)
+    const level = p.conditionLevels[type] || 1;     // Stufe (1-6)
+
+    if (type === 'Vergiftet') {
+        // Formel: Schaden = Runde × 2^(Stufe-1)
+        if (level === 0) return 0;
+        return duration * Math.pow(2, level - 1);
+    } else if (type === 'Brennend') {
+        // Formel: Schaden = Runde × 4 × 2^(Stufe-1) = Runde × 2^(Stufe+1)
+        if (level === 0) return 0;
+        return duration * 4 * Math.pow(2, level - 1);
+    }
+
+    return 0;
 }
 
 function applyAutoDamage(p, round) {
@@ -508,6 +668,10 @@ function applyAutoDamage(p, round) {
     }
 
     if (totalDam > 0) {
+        // Vorher HP% und Wundstufe
+        const beforePercent = (updated.currentHealth / updated.maxHealth) * 100;
+        const beforeTier = getWoundTierByPercent(beforePercent);
+
         let rem = totalDam;
         if (updated.tempHealth > 0) {
             const consumed = Math.min(updated.tempHealth, rem);
@@ -515,6 +679,19 @@ function applyAutoDamage(p, round) {
             rem -= consumed;
         }
         updated.currentHealth = Math.max(0, updated.currentHealth - rem);
+
+        // Nachher HP% und Wundstufe
+        const afterPercent = (updated.currentHealth / updated.maxHealth) * 100;
+        const afterTier = getWoundTierByPercent(afterPercent);
+
+        // Wunden hinzufügen (NUR für Spieler-Charaktere, NICHT für Begleiter oder Monster)
+        if (updated.type === 'player' && afterTier > beforeTier) {
+            // Eine Wunde für die erreichte Stufe
+            if (afterTier > 0) {
+                updated.wounds.push(getWoundNameByTier(afterTier));
+            }
+        }
+
         if (updated.currentHealth === 0) {
             if (updated.type === 'enemy') updated.isDead = true;
             else updated.isFallen = true;
@@ -525,12 +702,19 @@ function applyAutoDamage(p, round) {
 
 // ===== ACTIONS =====
 function applyAction(index, mode) {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
     if (battleState.isAnimating) return;
 
     const inputVal = parseInt(document.getElementById(`healthInput-${index}`).value) || 0;
     const p = battleState.participants[index];
 
     if (mode === 'damage') {
+        // Vorher HP% und Wundstufe
+        const beforePercent = (p.currentHealth / p.maxHealth) * 100;
+        const beforeTier = getWoundTierByPercent(beforePercent);
+
         let totalDamage = inputVal;
         if (p.activeConditions.includes('Vergiftet')) {
             totalDamage += calcConditionDamage(p, 'Vergiftet', battleState.currentRound);
@@ -543,6 +727,19 @@ function applyAction(index, mode) {
             remainingDamage -= consumedTemp;
         }
         p.currentHealth = Math.max(0, p.currentHealth - remainingDamage);
+
+        // Nachher HP% und Wundstufe
+        const afterPercent = (p.currentHealth / p.maxHealth) * 100;
+        const afterTier = getWoundTierByPercent(afterPercent);
+
+        // Wunden hinzufügen (NUR für Spieler-Charaktere, NICHT für Begleiter oder Monster)
+        if (p.type === 'player' && afterTier > beforeTier) {
+            // Eine Wunde für die erreichte Stufe
+            if (afterTier > 0) {
+                p.wounds.push(getWoundNameByTier(afterTier));
+            }
+        }
+
         if (p.currentHealth === 0) {
             if (p.type === 'enemy') p.isDead = true;
             else p.isFallen = true;
@@ -561,22 +758,36 @@ function applyAction(index, mode) {
     syncBattleState();
 }
 
-function castMagic(index) {
+function removeWound(pIdx, woundIdx) {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
+    const p = battleState.participants[pIdx];
+    p.wounds.splice(woundIdx, 1);
+    renderBattleGrid();
+
+    // SignalR: State synchronisieren
+    syncBattleState();
+}
+
+async function castMagic(index) {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
     const p = battleState.participants[index];
-    if (p.currentPokus <= 0) {
-        alert('Keine Pokuspunkte mehr!');
+
+    if (p.activeConditions.includes('Blutend')) {
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Magie blockiert',
+            text: 'Blutende Charaktere können keine Magie wirken!',
+            confirmButtonColor: '#d97706'
+        });
         return;
     }
 
-    const cost = parseInt(prompt(`${p.name} wirkt Magie! Pokus-Kosten (verfügbar: ${p.currentPokus}):`, '1'));
-    if (!cost || cost <= 0) return;
-
-    if (cost > p.currentPokus) {
-        alert('Nicht genug Pokuspunkte!');
-        return;
-    }
-
-    p.currentPokus -= cost;
+    // Zauber-Zähler erhöhen
+    p.currentPokus += 1;
     renderBattleGrid();
 
     // SignalR: State synchronisieren
@@ -589,15 +800,45 @@ function toggleConditionsPanel(index) {
 }
 
 function toggleCondition(pIdx, condition) {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
     const p = battleState.participants[pIdx];
     const hasCondition = p.activeConditions.includes(condition);
     let autoEndTurn = false;
+
+    // Heldenmut ist ein globaler Buff für ALLE Verbündeten
+    if (condition === 'Heldenmut') {
+        battleState.participants.forEach((participant, idx) => {
+            // Nur Spieler und Begleiter, keine Gegner
+            if (participant.type !== 'enemy') {
+                if (hasCondition) {
+                    // Heldenmut von ALLEN entfernen
+                    participant.activeConditions = participant.activeConditions.filter(c => c !== 'Heldenmut');
+                } else {
+                    // Heldenmut für ALLE aktivieren
+                    if (!participant.activeConditions.includes('Heldenmut')) {
+                        participant.activeConditions = [...participant.activeConditions, 'Heldenmut'];
+                    }
+                }
+            }
+        });
+
+        renderBattleGrid();
+        syncBattleState();
+        return;
+    }
 
     if (hasCondition) {
         p.activeConditions = p.activeConditions.filter(c => c !== condition);
         delete p.conditionCounters[condition];
         delete p.conditionLevels[condition];
         delete p.conditionStartRounds[condition];
+
+        // Unsichtbar entfernt → Initiative zurücksetzen
+        if (condition === 'Unsichtbar') {
+            p.initiative = p.originalInitiative;
+        }
     } else {
         p.activeConditions = [...p.activeConditions, condition];
         if (condition === 'Übergebend') p.conditionCounters[condition] = 3;
@@ -606,6 +847,12 @@ function toggleCondition(pIdx, condition) {
             p.conditionStartRounds[condition] = battleState.currentRound;
         }
         if (condition === 'Liegend' && pIdx === battleState.currentTurnIndex && !p.isFallen) autoEndTurn = true;
+        if (condition === 'Ohnmächtig' && pIdx === battleState.currentTurnIndex) autoEndTurn = true;
+
+        // Unsichtbar aktiviert → auf Position 1 setzen (Initiative = 0)
+        if (condition === 'Unsichtbar') {
+            p.initiative = 0;
+        }
     }
 
     if (autoEndTurn) nextTurn();
@@ -617,6 +864,9 @@ function toggleCondition(pIdx, condition) {
 }
 
 function setConditionLevel(pIdx, condition, level) {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
     battleState.participants[pIdx].conditionLevels[condition] = parseInt(level);
     renderBattleGrid();
 
@@ -624,7 +874,111 @@ function setConditionLevel(pIdx, condition, level) {
     syncBattleState();
 }
 
+async function resetInitiative(pIdx) {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
+    const p = battleState.participants[pIdx];
+
+    // Bei Unsichtbar nur warnen, nicht zurücksetzen
+    if (p.activeConditions.includes('Unsichtbar')) {
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Initiative blockiert',
+            text: 'Unsichtbare Charaktere können ihre Initiative nicht manuell zurücksetzen. Entferne zuerst den Zustand "Unsichtbar".',
+            confirmButtonColor: '#d97706'
+        });
+        return;
+    }
+
+    p.initiative = p.originalInitiative;
+    renderBattleGrid();
+
+    // SignalR: State synchronisieren
+    syncBattleState();
+}
+
+// ===== DRAG & DROP FOR INITIATIVE =====
+let draggedIndex = null;
+
+function handleDragStart(event, index) {
+    if (!IS_GOTT_ROLE) return;
+    draggedIndex = index;
+    event.currentTarget.style.opacity = '0.5';
+    event.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+
+    // Visual Feedback: Border highlighten
+    const dropZone = event.currentTarget;
+    dropZone.style.borderColor = 'rgb(245, 158, 11)';
+    dropZone.style.borderWidth = '3px';
+
+    return false;
+}
+
+function handleDragLeave(event) {
+    // Border zurücksetzen
+    const dropZone = event.currentTarget;
+    dropZone.style.borderColor = '';
+    dropZone.style.borderWidth = '';
+}
+
+function handleDrop(event, dropIndex) {
+    if (!IS_GOTT_ROLE) return;
+    event.stopPropagation();
+    event.preventDefault();
+
+    // Border zurücksetzen
+    event.currentTarget.style.borderColor = '';
+    event.currentTarget.style.borderWidth = '';
+
+    if (draggedIndex === null || draggedIndex === dropIndex) return;
+
+    // Teilnehmer verschieben
+    const draggedParticipant = battleState.participants[draggedIndex];
+    const targetParticipant = battleState.participants[dropIndex];
+
+    // Initiative des gezogenen Teilnehmers anpassen
+    // Wenn nach unten gezogen (höhere Position = höhere Initiative), zwischen target und nächstem setzen
+    if (draggedIndex < dropIndex) {
+        // Nach unten gezogen
+        const nextParticipant = battleState.participants[dropIndex + 1];
+        if (nextParticipant) {
+            // Zwischen dropIndex und dropIndex+1
+            draggedParticipant.initiative = Math.floor((targetParticipant.initiative + nextParticipant.initiative) / 2);
+        } else {
+            // Ans Ende
+            draggedParticipant.initiative = targetParticipant.initiative + 1;
+        }
+    } else {
+        // Nach oben gezogen
+        const prevParticipant = battleState.participants[dropIndex - 1];
+        if (prevParticipant) {
+            // Zwischen dropIndex-1 und dropIndex
+            draggedParticipant.initiative = Math.floor((prevParticipant.initiative + targetParticipant.initiative) / 2);
+        } else {
+            // An den Anfang
+            draggedParticipant.initiative = targetParticipant.initiative - 1;
+        }
+    }
+
+    renderBattleGrid();
+    syncBattleState();
+}
+
+function handleDragEnd(event) {
+    event.currentTarget.style.opacity = '1';
+    draggedIndex = null;
+}
+
 function cycleDownedStatus(pIdx, key) {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
     const p = battleState.participants[pIdx];
 
     const keyIndex = SAVE_KEYS.indexOf(key);
@@ -657,11 +1011,8 @@ function cycleDownedStatus(pIdx, key) {
 
     let mustEndTurn = false;
     if (successes >= 2) {
-        p.isFallen = false;
-        p.currentHealth = 10;
-        p.activeConditions = Array.from(new Set([...p.activeConditions, 'Liegend']));
-        p.downedSaves = { Handeln: 'none', Wissen: 'none', Soziales: 'none' };
-        if (pIdx === battleState.currentTurnIndex) mustEndTurn = true;
+        // Bestätigung erforderlich vor Rettung
+        p.readyToRevive = true;
     } else if (fails >= 2) {
         p.isDead = true;
         p.isFallen = false;
@@ -676,8 +1027,31 @@ function cycleDownedStatus(pIdx, key) {
     }
 }
 
+function confirmRevive(pIdx) {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
+    const p = battleState.participants[pIdx];
+
+    p.isFallen = false;
+    p.currentHealth = 10;
+    p.activeConditions = Array.from(new Set([...p.activeConditions, 'Liegend']));
+    p.downedSaves = { Handeln: 'none', Wissen: 'none', Soziales: 'none' };
+    p.readyToRevive = false;
+
+    if (pIdx === battleState.currentTurnIndex) {
+        nextTurn();
+    } else {
+        renderBattleGrid();
+        syncBattleState();
+    }
+}
+
 // ===== TURN MANAGEMENT =====
 function nextTurn() {
+    if (!IS_GOTT_ROLE) {
+        return;
+    }
     if (battleState.isAnimating) return;
 
     // Übergebend-Counter reduzieren
@@ -693,7 +1067,20 @@ function nextTurn() {
     // Nächster Index
     let nextIdxInCurrentList = (battleState.currentTurnIndex + 1) % battleState.participants.length;
     let tempRound = battleState.currentRound;
-    if (nextIdxInCurrentList === 0) tempRound++;
+    let isNewRound = false;
+    if (nextIdxInCurrentList === 0) {
+        tempRound++;
+        isNewRound = true;
+    }
+
+    // Beim Rundenwechsel: Alle Initiativen zurücksetzen (außer Unsichtbar)
+    if (isNewRound) {
+        battleState.participants.forEach(p => {
+            if (!p.activeConditions.includes('Unsichtbar')) {
+                p.initiative = p.originalInitiative;
+            }
+        });
+    }
 
     const nextActorName = battleState.participants[nextIdxInCurrentList].name;
 
@@ -742,14 +1129,30 @@ function updateTurnIndicator() {
 }
 
 // ===== VICTORY/DEFEAT =====
-function checkVictoryDefeat() {
+async function checkVictoryDefeat() {
     const aliveEnemies = battleState.participants.filter(p => p.type === 'enemy' && !p.isDead);
     const aliveAllies = battleState.participants.filter(p => p.type !== 'enemy' && !p.isDead);
 
     if (aliveEnemies.length === 0) {
-        setTimeout(() => showResult('victory', '🏆 Sieg!', 'Alle Gegner wurden besiegt!'), 800);
+        // Sieg!
+        if (IS_GOTT_ROLE && isConnected && signalRConnection && battleState.sessionId) {
+            try {
+                await signalRConnection.invoke("EndCombat", battleState.sessionId, "victory");
+            } catch (error) {
+                // Fehler stillschweigend behandeln
+            }
+        }
+        setTimeout(async () => await showResultScreen('victory'), 800);
     } else if (aliveAllies.length === 0) {
-        setTimeout(() => showResult('defeat', '💀 Niederlage!', 'Die Gruppe wurde besiegt...'), 800);
+        // Niederlage!
+        if (IS_GOTT_ROLE && isConnected && signalRConnection && battleState.sessionId) {
+            try {
+                await signalRConnection.invoke("EndCombat", battleState.sessionId, "defeat");
+            } catch (error) {
+                // Fehler stillschweigend behandeln
+            }
+        }
+        setTimeout(async () => await showResultScreen('defeat'), 800);
     }
 }
 
@@ -767,17 +1170,103 @@ function showResult(type, title, message) {
     // TODO: HP/Pokus Updates an Backend senden
 }
 
-async function endBattle() {
-    if (!confirm('Gefecht wirklich beenden?')) return;
+// Speichert Charakterdaten in DB nach Kampfende
+async function saveCharacterData() {
+    const characterData = battleState.participants
+        .filter(p => p.type === 'player') // NUR Spieler (keine Begleiter, keine Monster)
+        .map(p => ({
+            characterId: p.characterId,
+            type: p.type,
+            currentHealth: p.currentHealth,
+            currentPokus: p.currentPokus
+        }));
 
-    // SignalR: Kampf beenden
+    try {
+        await fetch('/api/battle/save-character-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ characters: characterData })
+        });
+    } catch (error) {
+        console.error('[saveCharacterData] Error saving character data:', error);
+    }
+}
+
+async function showResultScreen(result) {
+    // Charakterdaten speichern (nur für Gott, um Duplikate zu vermeiden)
+    if (IS_GOTT_ROLE) {
+        await saveCharacterData();
+    }
+
+    let icon, title, message;
+
+    switch(result) {
+        case 'victory':
+            icon = '🏆';
+            title = 'Sieg!';
+            message = 'Alle Gegner wurden besiegt!';
+            break;
+        case 'defeat':
+            icon = '💀';
+            title = 'Niederlage!';
+            message = 'Die Gruppe wurde besiegt...';
+            break;
+        case 'aborted':
+        case 'manual':
+            icon = '⚔️';
+            title = 'Gefecht beendet';
+            message = 'Der Kampf wurde vom Gott abgebrochen.';
+            break;
+        default:
+            icon = '⚔️';
+            title = 'Kampf beendet';
+            message = 'Der Kampf ist vorbei.';
+    }
+
+    document.getElementById('battleGridScreen').classList.add('hidden');
+    document.getElementById('resultScreen').classList.remove('hidden');
+
+    document.getElementById('resultIcon').textContent = icon;
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultMessage').textContent = message;
+
+    // LocalStorage löschen
+    localStorage.removeItem('battleSetup');
+}
+
+async function endBattle() {
+    if (!IS_GOTT_ROLE) {
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Keine Berechtigung',
+            text: 'Nur der Gott kann den Kampf beenden.',
+            confirmButtonColor: '#d97706'
+        });
+        return;
+    }
+
+    const result = await Swal.fire({
+        title: 'Gefecht beenden?',
+        text: 'Möchtest du das Gefecht wirklich beenden?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ja, beenden',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) return;
+
+    // SignalR: Kampf beenden (an alle Teilnehmer senden)
     if (isConnected && signalRConnection && battleState.sessionId) {
         try {
-            await signalRConnection.invoke("EndCombat", battleState.sessionId, "manual");
+            await signalRConnection.invoke("EndCombat", battleState.sessionId, "aborted");
         } catch (error) {
-            console.error('Fehler beim Beenden des Kampfes:', error);
+            // Fehler stillschweigend behandeln
         }
     }
 
-    window.location.href = '/Spielmodus/Dashboard';
+    // Gott sieht auch den Result Screen
+    await showResultScreen("aborted");
 }

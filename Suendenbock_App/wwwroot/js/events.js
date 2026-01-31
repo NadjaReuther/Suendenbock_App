@@ -63,12 +63,21 @@ async function handleRsvp(e) {
         }
         else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'RSVP konnte nicht gespeichert werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'RSVP konnte nicht gespeichert werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     }
     catch (error) {
-        console.error('Fehler: ', error);
-        alert('Fehler beim Speichern des RSVP!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Speichern des RSVP!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -153,7 +162,12 @@ async function loadEventForEdit(eventId) {
         // Finde Event in der DOM
         const eventCard = document.querySelector(`.event-card[data-event-id="${eventId}"]`);
         if (!eventCard) {
-            alert('Event nicht gefunden!');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Event nicht gefunden!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
 
@@ -213,8 +227,12 @@ async function loadEventForEdit(eventId) {
         }
 
     } catch (error) {
-        console.error('Fehler beim Laden des Events:', error);
-        alert('Fehler beim Laden der Event-Daten!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Laden der Event-Daten!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -235,7 +253,12 @@ async function saveEvent(e) {
     // Sammle Form-Daten
     const dateValue = document.getElementById('eventDate').value;
     if (!dateValue) {
-        alert('Bitte wähle ein Datum aus!');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Datum fehlt',
+            text: 'Bitte wähle ein Datum aus!',
+            confirmButtonColor: '#d97706'
+        });
         window.isSavingEvent = false;
         return false;
     }
@@ -252,7 +275,12 @@ async function saveEvent(e) {
 
     // Validierung
     if (!formData.title || !formData.type || !formData.startTime || !formData.endTime) {
-        alert('Bitte fülle alle Pflichtfelder aus!');
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Pflichtfelder fehlen',
+            text: 'Bitte fülle alle Pflichtfelder aus!',
+            confirmButtonColor: '#d97706'
+        });
         window.isSavingEvent = false;
         return false;
     }
@@ -289,25 +317,39 @@ async function saveEvent(e) {
 
             // Unterschiedliche Meldung für Create vs. Edit
             const successMessage = isEdit
-                ? `✅ Termin erfolgreich aktualisiert! ID: ${eventId}`
-                : `✅ Termin erfolgreich verkündet! ID: ${result.eventId}`;
+                ? `Termin erfolgreich aktualisiert! ID: ${eventId}`
+                : `Termin erfolgreich verkündet! ID: ${result.eventId}`;
 
-            alert(successMessage);
+            await Swal.fire({
+                icon: 'success',
+                title: 'Erfolg',
+                text: successMessage,
+                confirmButtonColor: '#d97706'
+            });
 
             // Erfolg - Modal schließen und Seite neu laden
             closeEventModal();
             setTimeout(() => location.reload(), 500);
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Event konnte nicht gespeichert werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Event konnte nicht gespeichert werden',
+                confirmButtonColor: '#d97706'
+            });
             // Re-enable button on error
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalBtnHtml;
             window.isSavingEvent = false;
         }
     } catch (error) {
-        console.error('Fehler beim Speichern:', error);
-        alert('Fehler beim Speichern des Events!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Speichern des Events!',
+            confirmButtonColor: '#d97706'
+        });
 
         // Re-enable button on error
         const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -332,7 +374,18 @@ document.addEventListener('click', (e) => {
     const btn = e.currentTarget;
     const eventId = btn.dataset.eventId;
 
-    if (!confirm('Soll dieser Termin wirklich aus den Annalen gelöscht werden?')) {
+    const result = await Swal.fire({
+        title: 'Termin löschen?',
+        text: 'Soll dieser Termin wirklich aus den Annalen gelöscht werden?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Löschen',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) {
         return;
     }
 
@@ -358,11 +411,20 @@ document.addEventListener('click', (e) => {
          }
          else {
              const error = await response.json();
-             alert(`Fehler: ${error.error || 'Event konnte nicht gelöscht werden'}`);
+             await Swal.fire({
+                 icon: 'error',
+                 title: 'Fehler beim Löschen',
+                 text: error.error || 'Event konnte nicht gelöscht werden',
+                 confirmButtonColor: '#d97706'
+             });
          }
      }
     catch (error) {
-        console.error('Fehler: ', error);
-        alert('Fehler beim Löschen des Events!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Löschen des Events!',
+            confirmButtonColor: '#d97706'
+        });
     }
  }

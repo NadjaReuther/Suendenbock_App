@@ -57,45 +57,6 @@ namespace Suendenbock_App.Controllers.Api
             }
         }
 
-        // ===== KURZE RAST =====
-
-        /// <summary>
-        /// Kurze Rast: +5 HP für alle aktiven Characters
-        /// POST /api/game/short-rest
-        /// </summary>
-        [HttpPost("short-rest")]
-        public async Task<IActionResult> ShortRest()
-        {
-            try
-            {
-                // Alle aktiven Characters der Guild "Wolkenbruch"
-                var characters = await _context.Characters
-                    .ToListAsync();
-
-                foreach (var character in characters)
-                {
-                    // +5 HP, aber nicht über Maximum
-                    character.CurrentHealth = Math.Min(
-                        character.CurrentHealth + 5,
-                        character.BaseMaxHealth
-                    );
-                }
-
-                await _context.SaveChangesAsync();
-
-                return Ok(new
-                {
-                    message = "Kurze Rast abgeschlossen!",
-                    characters = characters.Count,
-                    healedAmount = 5
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = ex.Message });
-            }
-        }
-
         // ===== NACHTLAGER =====
 
         /// <summary>
@@ -128,7 +89,7 @@ namespace Suendenbock_App.Controllers.Api
                         character.BaseMaxHealth
                     );
 
-                    // Pokus zurücksetzen
+                    // Zauber-Zähler zurücksetzen auf 0
                     character.CurrentPokus = 0;
 
                     // Zeitstempel

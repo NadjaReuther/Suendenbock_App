@@ -3,6 +3,10 @@
 @{
     ViewData["Title"] = "Meine Character";
 }
+<!-- SignalR Hidden Inputs - Verwendet ActNumber (nicht DB-ID) -->
+<input type="hidden" id="global-act-id" value="@ViewBag.CurrentActId" />
+<input type="hidden" id="global-user-name" value="@User.Identity.Name" />
+<!-- DEBUG: ViewBag.CurrentActId (ActNumber) = @ViewBag.CurrentActId -->
 <div class="p-5 m-5 pergament-card" style="background: @Model.UserColor;">
 <header class="antique-header">
     <h1 style="text-align:center; color: #d4af37; font-family: 'MedievalSharp', cursive">
@@ -152,14 +156,27 @@
 </div>
 </div>
 @section Scripts {
+    <!-- SignalR Client Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <!-- Global SignalR direkt hier eingebunden -->
+    <script src="~/js/global-signalr.js" asp-append-version="true"></script>
+
     <script>
-        // Aktiven Kampf prüfen und Card anzeigen/verstecken
+        // SignalR übernimmt jetzt die Benachrichtigung!
+        // Das global-signalr.js Script leitet automatisch zum Kampf weiter
+        // Hier nur noch die Karte anzeigen, falls beim Laden bereits ein Kampf aktiv ist
+
         async function checkActiveCombat() {
             try {
-                // Aktuellen Act ID holen (angenommen Act 1, könnte dynamisch sein)
-                const actId = 1; // TODO: Dynamisch vom Backend holen
+                const actIdElement = document.getElementById('global-act-id');
+                if (!actIdElement || !actIdElement.value) {
+                    console.log('[Player] Keine ActId gefunden');
+                    return;
+                }
 
+                const actId = parseInt(actIdElement.value);
                 const response = await fetch(`/api/battle/active/${actId}`);
+
                 if (response.ok) {
                     const data = await response.json();
                     // Kampf ist aktiv - Card anzeigen
@@ -172,40 +189,23 @@
                     document.getElementById('activeCombatCard').style.display = 'none';
                 }
             } catch (error) {
-                console.error('Fehler beim Prüfen des aktiven Kampfes:', error);
+                console.error('[Player] Fehler beim Prüfen des aktiven Kampfes:', error);
             }
         }
 
         async function joinActiveCombat() {
-            if (!window.activeCombatData) {
+            if (!window.activeCombatSessionId) {
                 alert('Keine aktiven Kampfdaten gefunden!');
                 return;
             }
 
-            try {
-                // Battle Setup aus DB-State rekonstruieren
-                const battleStateJson = window.activeCombatData.battleStateJson;
-                const battleSetup = JSON.parse(battleStateJson);
-                battleSetup.sessionId = window.activeCombatSessionId;
-                battleSetup.actId = window.activeCombatData.actId;
-
-                // In localStorage speichern
-                localStorage.setItem('battleSetup', JSON.stringify(battleSetup));
-
-                // Zur Battle-Seite weiterleiten
-                window.location.href = '/Spielmodus/Battle';
-            } catch (error) {
-                console.error('Fehler beim Beitreten:', error);
-                alert('Fehler beim Beitreten zum Kampf. Bitte versuche es erneut.');
-            }
+            // Direkt zur Battle-Seite mit SessionId in URL
+            window.location.href = `/Spielmodus/Battle?sessionId=${window.activeCombatSessionId}`;
         }
 
-        // Beim Laden der Seite prüfen
+        // Beim Laden der Seite EINMALIG prüfen (kein Polling mehr!)
         document.addEventListener('DOMContentLoaded', () => {
             checkActiveCombat();
-
-            // Alle 10 Sekunden prüfen (optional)
-            setInterval(checkActiveCombat, 10000);
         });
     </script>
 }

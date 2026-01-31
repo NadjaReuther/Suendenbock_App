@@ -8,13 +8,10 @@ using System.Security.Claims;
 namespace Suendenbock_App.Controllers
 {
     [Authorize]
-    public class CommunityController : Controller
+    public class CommunityController : BaseController
     {
-        private ApplicationDbContext _context;
-
-        public CommunityController(ApplicationDbContext context)
+        public CommunityController(ApplicationDbContext context) : base(context)
         {
-            _context = context;
         }
 
         // ==== INDEX / OVERVIEW ====

@@ -93,6 +93,9 @@ namespace Suendenbock_App.Data
         // Combat-System
         public DbSet<CombatSession> CombatSessions { get; set; }
 
+        // Night Rest System
+        public DbSet<NightRestRequest> NightRestRequests { get; set; }
+
         // Versammlungsort System
         public DbSet<ForumCategory> ForumCategories { get; set; }
         public DbSet<ForumThread> ForumThreads { get; set; }

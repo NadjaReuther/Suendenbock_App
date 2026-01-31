@@ -18,6 +18,14 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
+    <!-- Hidden Fields für Global SignalR -->
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        @* ActId wird über ViewBag gesetzt oder aus aktiver Session gelesen *@
+        <input type="hidden" id="global-act-id" value="@ViewBag.CurrentActId" />
+        <input type="hidden" id="global-user-name" value="@User.Identity.Name" />
+    }
+
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -94,6 +102,15 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+
+    <!-- SignalR Client Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <!-- Global SignalR Connection (auf allen Seiten) -->
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <script src="~/js/global-signalr.js" asp-append-version="true"></script>
+    }
 
     <!-- Bildvergrößerungs-Script -->
     <script>

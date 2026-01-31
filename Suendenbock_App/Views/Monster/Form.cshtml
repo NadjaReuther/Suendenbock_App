@@ -62,10 +62,21 @@
                 </div>
                 <br />
                 <br />
-                <div class="row">                    
+                <div class="row">
                     <select class="form-select" asp-for="MonstertypId" asp-items="ViewBag.Monstertyp" required>
                         <option value="">Monstertyp auswählen...</option>
                     </select>
+                </div>
+                <br />
+                <br />
+                <div class="row">
+                    <label for="Lebenspunkte" class="form-label">
+                        <span class="label-icon">❤️</span> Lebenspunkte
+                    </label>
+                    <input type="number" class="form-control" id="Lebenspunkte" asp-for="Lebenspunkte" min="1" max="9999" placeholder="z.B. 100" required>
+                    <small class="form-text text-muted">
+                        Die maximalen Lebenspunkte des Monsters im Kampf (1-9999)
+                    </small>
                 </div>
             </div>
         </div>

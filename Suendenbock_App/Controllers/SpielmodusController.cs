@@ -9,13 +9,10 @@ using Suendenbock_App.Controllers.Api;
 namespace Suendenbock_App.Controllers
 {
     [Authorize] // Nur eingeloggte Benutzer können auf Spielmodus zugreifen
-    public class SpielmodusController : Controller
+    public class SpielmodusController : BaseController
     {
-        private readonly ApplicationDbContext _context;
-
-        public SpielmodusController(ApplicationDbContext context)
+        public SpielmodusController(ApplicationDbContext context) : base(context)
         {
-            _context = context;
         }
 
         // ===== DASHBOARD =====
@@ -47,9 +44,9 @@ namespace Suendenbock_App.Controllers
             }
 
             // Lade alle aktiven Spieler-Characters
-            // Filter: nur Spieler-Characters (UserId != null)
+            // Filter: nur Spieler-Characters (UserId != null, keine Begleiter)
             var characters = await _context.Characters
-                .Where(c => c.UserId != null || c.IsCompanion)
+                .Where(c => c.UserId != null && !c.IsCompanion)
                 .Select(c => new CharacterViewModel
                 {
                     Id = c.Id,
@@ -114,6 +111,12 @@ namespace Suendenbock_App.Controllers
                 WeatherForecast = weatherForecast,
                 IsGod = isGod
             };
+
+            // Für SignalR Global: ActId setzen
+            if (currentAct != null)
+            {
+                ViewBag.CurrentActId = currentAct.ActNumber;
+            }
 
             return View(viewModel);
         }
@@ -555,6 +558,8 @@ namespace Suendenbock_App.Controllers
         /// </summary>
         public async Task<IActionResult> Battle()
         {
+            var isGod = User.IsInRole("Gott");
+
             // Alle Characters laden (Spieler + Begleiter)
             var characters = await _context.Characters
                 .Where(c => c.UserId != null || c.IsCompanion)
@@ -595,7 +600,8 @@ namespace Suendenbock_App.Controllers
             var viewModel = new BattleViewModel
             {
                 Characters = characters,
-                Monsters = monsters
+                Monsters = monsters,
+                IsGod = isGod
             };
 
             return View(viewModel);
@@ -627,7 +633,8 @@ namespace Suendenbock_App.Controllers
                     Id = m.Id,
                     Name = m.Name,
                     ImagePath = m.ImagePath,
-                    MonstertypName = m.Monstertyp != null ? m.Monstertyp.Name : "Unbekannt"
+                    MonstertypName = m.Monstertyp != null ? m.Monstertyp.Name : "Unbekannt",
+                    Lebenspunkte = m.Lebenspunkte
                 })
                 .ToListAsync();
 
@@ -642,6 +649,7 @@ namespace Suendenbock_App.Controllers
                     Nachname = c.Nachname,
                     CurrentHealth = c.CurrentHealth,
                     MaxHealth = c.BaseMaxHealth,
+                    CurrentPokus = c.CurrentPokus,
                     IsBegleiter = false
                 })
                 .ToListAsync();
@@ -677,6 +685,7 @@ namespace Suendenbock_App.Controllers
                             Nachname = c.Nachname,
                             CurrentHealth = c.CurrentHealth,
                             MaxHealth = c.BaseMaxHealth,
+                            CurrentPokus = c.CurrentPokus,
                             IsBegleiter = true
                         })
                         .ToList();
@@ -848,6 +857,7 @@ namespace Suendenbock_App.Controllers
     {
         public List<BattleCharacterOption> Characters { get; set; } = new();
         public List<BattleMonsterOption> Monsters { get; set; } = new();
+        public bool IsGod { get; set; }
     }
 
     public class BattleCharacterOption
@@ -893,6 +903,7 @@ namespace Suendenbock_App.Controllers
         public string Name { get; set; } = string.Empty;
         public string ImagePath { get; set; } = string.Empty;
         public string MonstertypName { get; set; } = string.Empty;
+        public int Lebenspunkte { get; set; }
     }
 
     public class CharacterOptionViewModel
@@ -902,6 +913,7 @@ namespace Suendenbock_App.Controllers
         public string Nachname { get; set; } = string.Empty;
         public int CurrentHealth { get; set; }
         public int MaxHealth { get; set; }
+        public int CurrentPokus { get; set; }
         public bool IsBegleiter { get; set; }
     }
 }

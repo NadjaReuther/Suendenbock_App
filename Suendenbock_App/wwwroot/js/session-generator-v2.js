@@ -138,12 +138,10 @@ class SessionGenerator {
                 this.acts = await response.json();
                 this.allActs = this.acts; // Für Act-Aktivierung Modal
             } else {
-                console.error('Failed to load acts');
                 this.acts = [];
                 this.allActs = [];
             }
         } catch (error) {
-            console.error('Error loading acts:', error);
             this.acts = [];
             this.allActs = [];
         }
@@ -162,11 +160,9 @@ class SessionGenerator {
                 this.weatherCache[month] = data;
                 return data;
             } else {
-                console.error('Failed to load weather options');
                 return [];
             }
         } catch (error) {
-            console.error('Error loading weather options:', error);
             return [];
         }
     }
@@ -300,13 +296,28 @@ class SessionGenerator {
                 this.showView('actFormModal');
             }
         } catch (error) {
-            console.error('Error loading act:', error);
-            alert('Fehler beim Laden des Akts');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Laden des Akts',
+                confirmButtonColor: '#d97706'
+            });
         }
     }
 
     async deleteAct(actId) {
-        if (!confirm('Diesen Akt wirklich endgültig löschen?')) {
+        const result = await Swal.fire({
+            title: 'Akt löschen?',
+            text: 'Diesen Akt wirklich endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d97706',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Löschen',
+            cancelButtonText: 'Abbrechen'
+        });
+
+        if (!result.isConfirmed) {
             return;
         }
 
@@ -316,20 +327,45 @@ class SessionGenerator {
             });
 
             if (response.ok) {
-                alert('Akt erfolgreich gelöscht!');
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Erfolg',
+                    text: 'Akt erfolgreich gelöscht!',
+                    confirmButtonColor: '#d97706'
+                });
                 this.showManageActsView();
             } else {
                 const error = await response.json();
-                alert('Fehler: ' + (error.error || 'Unbekannter Fehler'));
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: error.error || 'Unbekannter Fehler',
+                    confirmButtonColor: '#d97706'
+                });
             }
         } catch (error) {
-            console.error('Error deleting act:', error);
-            alert('Fehler beim Löschen des Akts');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Löschen des Akts',
+                confirmButtonColor: '#d97706'
+            });
         }
     }
 
     async activateAct(actId) {
-        if (!confirm('Diesen Akt aktivieren? Alle anderen Acts werden deaktiviert.')) {
+        const result = await Swal.fire({
+            title: 'Akt aktivieren?',
+            text: 'Diesen Akt aktivieren? Alle anderen Acts werden deaktiviert.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d97706',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Aktivieren',
+            cancelButtonText: 'Abbrechen'
+        });
+
+        if (!result.isConfirmed) {
             return;
         }
 
@@ -340,15 +376,29 @@ class SessionGenerator {
 
             if (response.ok) {
                 const result = await response.json();
-                alert(result.message || 'Act erfolgreich aktiviert!');
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Erfolg',
+                    text: result.message || 'Act erfolgreich aktiviert!',
+                    confirmButtonColor: '#d97706'
+                });
                 this.showManageActsView(); // Liste neu laden
             } else {
                 const error = await response.json();
-                alert('Fehler: ' + (error.error || 'Unbekannter Fehler'));
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: error.error || 'Unbekannter Fehler',
+                    confirmButtonColor: '#d97706'
+                });
             }
         } catch (error) {
-            console.error('Error activating act:', error);
-            alert('Fehler beim Aktivieren des Akts');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Aktivieren des Akts',
+                confirmButtonColor: '#d97706'
+            });
         }
     }
 
@@ -361,17 +411,32 @@ class SessionGenerator {
         const weather = this.selectedWeather;
 
         if (!companion1) {
-            alert('Bitte wähle mindestens einen Begleiter aus!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Pflichtfeld fehlt',
+                text: 'Bitte wähle mindestens einen Begleiter aus!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
 
         if (!month) {
-            alert('Bitte wähle einen Monat aus!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Pflichtfeld fehlt',
+                text: 'Bitte wähle einen Monat aus!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
 
         if (!weather) {
-            alert('Bitte wähle ein Wetter aus!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Pflichtfeld fehlt',
+                text: 'Bitte wähle ein Wetter aus!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
 
@@ -411,16 +476,30 @@ class SessionGenerator {
 
             if (response.ok) {
                 const result = await response.json();
-                alert(result.message);
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Erfolg',
+                    text: result.message,
+                    confirmButtonColor: '#d97706'
+                });
                 this.resetForm();
                 this.showLoadActView();
             } else {
                 const error = await response.json();
-                alert('Fehler: ' + (error.error || 'Unbekannter Fehler'));
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: error.error || 'Unbekannter Fehler',
+                    confirmButtonColor: '#d97706'
+                });
             }
         } catch (error) {
-            console.error('Error saving act:', error);
-            alert('Fehler beim Speichern des Akts');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Speichern des Akts',
+                confirmButtonColor: '#d97706'
+            });
         }
     }
 
@@ -444,7 +523,12 @@ class SessionGenerator {
 
     async showActActivationModal() {
         if (!this.selectedWeather || !this.actToLoad) {
-            alert('Bitte wähle ein Wetter aus!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Wetter nicht gewählt',
+                text: 'Bitte wähle ein Wetter aus!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
 
@@ -508,7 +592,12 @@ class SessionGenerator {
             });
 
             if (!weatherResponse.ok) {
-                alert('Fehler beim Speichern des Wetters');
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: 'Fehler beim Speichern des Wetters',
+                    confirmButtonColor: '#d97706'
+                });
                 return;
             }
 
@@ -521,11 +610,20 @@ class SessionGenerator {
                 // Redirect to Spielmodus with the activated act
                 window.location.href = `/Spielmodus/Dashboard?actId=${selectedActId}`;
             } else {
-                alert('Fehler beim Aktivieren des Acts');
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: 'Fehler beim Aktivieren des Acts',
+                    confirmButtonColor: '#d97706'
+                });
             }
         } catch (error) {
-            console.error('Error:', error);
-            alert('Fehler beim Starten der Session');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Starten der Session',
+                confirmButtonColor: '#d97706'
+            });
         }
     }
 
@@ -541,7 +639,12 @@ class SessionGenerator {
     async startSession() {
         // Session starten: Wetter speichern + Act aktivieren + zum Dashboard
         if (!this.selectedWeather || !this.actToLoad) {
-            alert('Bitte wähle ein Wetter aus!');
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Wetter nicht gewählt',
+                text: 'Bitte wähle ein Wetter aus!',
+                confirmButtonColor: '#d97706'
+            });
             return;
         }
 
@@ -554,7 +657,12 @@ class SessionGenerator {
             });
 
             if (!weatherResponse.ok) {
-                alert('Fehler beim Speichern des Wetters');
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: 'Fehler beim Speichern des Wetters',
+                    confirmButtonColor: '#d97706'
+                });
                 return;
             }
 
@@ -564,15 +672,24 @@ class SessionGenerator {
             });
 
             if (!activateResponse.ok) {
-                alert('Fehler beim Aktivieren des Acts');
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: 'Fehler beim Aktivieren des Acts',
+                    confirmButtonColor: '#d97706'
+                });
                 return;
             }
 
             // 3. Zum Dashboard mit dem aktivierten Act
             window.location.href = `/Spielmodus/Dashboard?actId=${this.actToLoad.id}`;
         } catch (error) {
-            console.error('Error starting session:', error);
-            alert('Fehler beim Starten der Session');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Starten der Session',
+                confirmButtonColor: '#d97706'
+            });
         }
     }
 

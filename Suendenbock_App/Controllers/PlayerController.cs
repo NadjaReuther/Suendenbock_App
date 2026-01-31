@@ -10,9 +10,8 @@ using Suendenbock_App.Services;
 namespace Suendenbock_App.Controllers
 {
     [Authorize(Roles = "Spieler")]
-    public class PlayerController : Controller
+    public class PlayerController : BaseController
     {
-        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAchievementService _achievementService;
 
@@ -23,8 +22,8 @@ namespace Suendenbock_App.Controllers
         /// <param name="userManager"></param>
         /// <param name="achievementService"></param>
         public PlayerController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IAchievementService achievementService)
+            : base(context)
         {
-            _context = context;
             _userManager = userManager;
             _achievementService = achievementService;
         }
@@ -46,6 +45,13 @@ namespace Suendenbock_App.Controllers
                     .ThenInclude(o => o.Obermagie)
                     .ThenInclude(l => l.LightCard)
                 .FirstOrDefaultAsync();
+
+            // WICHTIG: CurrentActId für SignalR setzen (verwendet ActNumber statt Id)
+            var activeAct = await _context.Acts.FirstOrDefaultAsync(a => a.IsActive);
+            if (activeAct != null)
+            {
+                ViewBag.CurrentActId = activeAct.ActNumber;
+            }
 
             return View(character);
         }

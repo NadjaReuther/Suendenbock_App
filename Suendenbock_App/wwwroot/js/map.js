@@ -151,7 +151,6 @@ function handleQuestMarkerClick(e) {
 
     // Validierung: Position muss im Bereich 0-100 sein
     if (x < 0 || x > 100 || y < 0 || y > 100) {
-        console.log('Position außerhalb:', { x, y });
         return;
     }
 
@@ -340,21 +339,8 @@ function handleMapClick(e) {
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    // Debug
-    console.log('Klick auf Layer:', {
-        x: x.toFixed(2),
-        y: y.toFixed(2),
-        clientX: e.clientX,
-        clientY: e.clientY,
-        rectLeft: rect.left,
-        rectTop: rect.top,
-        rectWidth: rect.width,
-        rectHeight: rect.height
-    });
-
     // Validierung: Position muss im Bereich 0-100 sein
     if (x < 0 || x > 100 || y < 0 || y > 100) {
-        console.log('Position außerhalb:', { x, y });
         return;
     }
 
@@ -464,11 +450,20 @@ async function handleCreateMarker(e) {
             location.reload(); // Seite neu laden
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Marker konnte nicht erstellt werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Marker konnte nicht erstellt werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Erstellen des Markers!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Erstellen des Markers!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -550,7 +545,18 @@ function showMarkerDetails(markerId) {
 // ===== MARKER LÖSCHEN =====
 
 async function deleteMarker(markerId) {
-    if (!confirm('Diesen Marker wirklich löschen?')) return;
+    const result = await Swal.fire({
+        title: 'Marker löschen?',
+        text: 'Diesen Marker wirklich löschen?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Löschen',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
         const response = await fetch(`/api/game/markers/${markerId}`, {
@@ -562,11 +568,20 @@ async function deleteMarker(markerId) {
             location.reload();
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Marker konnte nicht gelöscht werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Marker konnte nicht gelöscht werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Löschen!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Löschen!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -576,7 +591,18 @@ async function handleActivateAct(e) {
     const btn = e.currentTarget;
     const actId = btn.dataset.actId;
 
-    if (!confirm('Diesen Act aktivieren? (Der aktuelle Act wird deaktiviert)')) return;
+    const result = await Swal.fire({
+        title: 'Act aktivieren?',
+        text: 'Diesen Act aktivieren? (Der aktuelle Act wird deaktiviert)',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Aktivieren',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
         const response = await fetch(`/api/game/acts/${actId}/activate`, {
@@ -587,11 +613,20 @@ async function handleActivateAct(e) {
             location.reload();
         } else {
             const error = await response.json();
-            alert(`Fehler: ${error.error || 'Act konnte nicht aktiviert werden'}`);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error.error || 'Act konnte nicht aktiviert werden',
+                confirmButtonColor: '#d97706'
+            });
         }
     } catch (error) {
-        console.error('Fehler:', error);
-        alert('Fehler beim Aktivieren!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Aktivieren!',
+            confirmButtonColor: '#d97706'
+        });
     }
 }
 
@@ -797,17 +832,26 @@ async function endDrag() {
             // Bei Fehler: Zurück zur ursprünglichen Position
             marker.style.left = `${originalPosition.x}%`;
             marker.style.top = `${originalPosition.y}%`;
-            alert('Fehler beim Aktualisieren der Marker-Position!');
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: 'Fehler beim Aktualisieren der Marker-Position!',
+                confirmButtonColor: '#d97706'
+            });
         } else {
             // Erfolg-Feedback
             showSuccessToast('Marker-Position aktualisiert');
         }
     } catch (error) {
-        console.error('Fehler:', error);
         // Bei Fehler: Zurück zur ursprünglichen Position
         marker.style.left = `${originalPosition.x}%`;
         marker.style.top = `${originalPosition.y}%`;
-        alert('Fehler beim Aktualisieren!');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Fehler beim Aktualisieren!',
+            confirmButtonColor: '#d97706'
+        });
     }
 
     draggedMarker = null;

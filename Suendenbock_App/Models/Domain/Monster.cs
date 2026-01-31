@@ -94,6 +94,13 @@ namespace Suendenbock_App.Models.Domain
         [System.ComponentModel.DataAnnotations.Schema.NotMapped]
         public bool IsInTrophyChest => HasBoughtTrophy || HasSlainTrophy;
 
+        /// <summary>
+        /// Lebenspunkte des Monsters (für Combat System)
+        /// </summary>
+        [Required(ErrorMessage = "Lebenspunkte sind erforderlich")]
+        [Range(1, 9999, ErrorMessage = "Lebenspunkte müssen zwischen 1 und 9999 liegen")]
+        public int Lebenspunkte { get; set; } = 100;
+
         // Foreign Key
         public int MonstertypId { get; set; }
         // Navigation Property Monster has a Monstertyp

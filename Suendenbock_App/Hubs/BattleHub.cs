@@ -22,10 +22,12 @@ namespace Suendenbock_App.Hubs
     public class BattleHub : Hub
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<GameHub> _gameHub;
 
-        public BattleHub(ApplicationDbContext context)
+        public BattleHub(ApplicationDbContext context, IHubContext<GameHub> gameHub)
         {
             _context = context;
+            _gameHub = gameHub;
         }
 
         /// <summary>
@@ -133,14 +135,30 @@ namespace Suendenbock_App.Hubs
                 session.Result = result;
                 await _context.SaveChangesAsync();
 
-                // An alle Teilnehmer senden
-                string groupName = $"combat-session-{combatSessionId}";
-                await Clients.Group(groupName).SendAsync("CombatEnded", new
+                // An alle Teilnehmer IM BATTLE senden (combat-session Group)
+                string battleGroupName = $"combat-session-{combatSessionId}";
+                await Clients.Group(battleGroupName).SendAsync("CombatEnded", new
                 {
                     sessionId = session.Id,
                     result = session.Result,
                     endedAt = session.EndedAt
                 });
+
+                // WICHTIG: Auch an alle im ACT senden (für Dashboard-Banner)
+                var act = await _context.Acts.FindAsync(session.ActId);
+                if (act != null)
+                {
+                    string actGroupName = $"act-{act.ActNumber}";
+                    await _gameHub.Clients.Group(actGroupName).SendAsync("CombatEnded", new
+                    {
+                        actId = session.ActId,
+                        sessionId = session.Id,
+                        result = session.Result,
+                        endedAt = session.EndedAt
+                    });
+
+                    Console.WriteLine($"[BattleHub] Combat ended broadcast sent to Act {act.ActNumber}, Result: {result}");
+                }
             }
         }
 

@@ -83,11 +83,43 @@
                         <div id="monsterContainer" class="space-y-4">
                             <!-- Dropdowns werden hier via JS eingefügt -->
                         </div>
+
+                        <!-- Zusätzliche Teilnehmer -->
+                        <div class="mt-4 pt-4 border-t border-primary/20">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-cinzel tracking-wider text-text-main/70">Zusätzliche Teilnehmer</h3>
+                                <button type="button"
+                                        onclick="addExtraParticipant()"
+                                        class="flex items-center gap-1 px-3 py-1 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded text-xs font-cinzel transition-colors">
+                                    <span class="material-icons text-sm">add</span>
+                                    <span>Hinzufügen</span>
+                                </button>
+                            </div>
+                            <div id="extraParticipantContainer" class="space-y-3 mt-2">
+                                <!-- Wird via JS eingefügt -->
+                            </div>
+                        </div>
                     </div>
 
                     <!-- RIGHT COLUMN: Character Selection -->
                     <div class="space-y-6">
-                        <h3 class="text-lg font-cinzel tracking-wider text-text-main/80 border-b border-primary/30 pb-2">Charaktere auswählen</h3>
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-cinzel tracking-wider text-text-main/80 border-b border-primary/30 pb-2 flex-1">Charaktere auswählen</h3>
+                            <div class="flex gap-2">
+                                <button type="button"
+                                        onclick="selectAllCharacters()"
+                                        class="flex items-center gap-1 px-3 py-1 bg-primary/20 hover:bg-primary/30 border border-primary/50 rounded text-xs font-cinzel transition-colors">
+                                    <span class="material-icons text-sm">done_all</span>
+                                    <span>Alle auswählen</span>
+                                </button>
+                                <button type="button"
+                                        onclick="deselectAllCharacters()"
+                                        class="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 border border-red-300 rounded text-xs font-cinzel transition-colors text-red-700">
+                                    <span class="material-icons text-sm">clear</span>
+                                    <span>Alle abwählen</span>
+                                </button>
+                            </div>
+                        </div>
 
                         <div class="space-y-3">
                             @foreach (var character in Model.Characters)
@@ -200,6 +232,8 @@
 
         let monsterCounter = 0;
         let selectedMonsters = {}; // { monsterId: { health: X, pokus: Y } }
+        let extraParticipantCounter = 0;
+        let extraParticipants = {}; // { extraId: { name, health } }
 
         // ===== MONSTER DROPDOWN HINZUFÜGEN =====
 
@@ -215,7 +249,7 @@
                         <select class="monster-select flex-1 bg-[#E8DCC0] border border-primary/50 rounded px-3 py-2 text-text-main focus:ring-primary focus:border-primary focus:outline-none transition-shadow shadow-inner bg-pattern"
                                 onchange="monsterSelected(this, '${dropdownId}')">
                             <option value="">-- Monster wählen --</option>
-                            ${COMBAT_DATA.monsters.map(m => `<option value="${m.id}">${m.name} (${m.monstertypName})</option>`).join('')}
+                            ${COMBAT_DATA.monsters.map(m => `<option value="${m.id}" data-lebenspunkte="${m.lebenspunkte}">${m.name} (${m.monstertypName})</option>`).join('')}
                         </select>
                         <button type="button"
                                 onclick="removeMonsterDropdown('${dropdownId}')"
@@ -224,23 +258,13 @@
                         </button>
                     </div>
                     <div class="monster-stats hidden pl-4 space-y-2 border-l-2 border-primary/30">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-cinzel tracking-wider text-text-main/70 mb-1">Health</label>
-                                <input type="number"
-                                       min="1"
-                                       class="monster-health w-full bg-[#E8DCC0] border border-primary/50 rounded px-2 py-1 text-sm text-text-main focus:ring-primary focus:border-primary focus:outline-none"
-                                       placeholder="z.B. 100"
-                                       oninput="updateMonsterStats('${dropdownId}')" />
-                            </div>
-                            <div>
-                                <label class="block text-xs font-cinzel tracking-wider text-text-main/70 mb-1">Pokus</label>
-                                <input type="number"
-                                       min="0"
-                                       class="monster-pokus w-full bg-[#E8DCC0] border border-primary/50 rounded px-2 py-1 text-sm text-text-main focus:ring-primary focus:border-primary focus:outline-none"
-                                       placeholder="z.B. 10"
-                                       oninput="updateMonsterStats('${dropdownId}')" />
-                            </div>
+                        <div>
+                            <label class="block text-xs font-cinzel tracking-wider text-text-main/70 mb-1">Lebenspunkte (HP)</label>
+                            <input type="number"
+                                   min="1"
+                                   class="monster-health w-full bg-[#E8DCC0] border border-primary/50 rounded px-2 py-1.5 text-sm text-text-main focus:ring-primary focus:border-primary focus:outline-none"
+                                   placeholder="z.B. 100"
+                                   oninput="updateMonsterStats('${dropdownId}')" />
                         </div>
                     </div>
                 </div>
@@ -255,11 +279,25 @@
         function monsterSelected(selectElement, dropdownId) {
             const monsterId = selectElement.value;
             const statsDiv = selectElement.closest('.monster-dropdown-item').querySelector('.monster-stats');
+            const healthInput = selectElement.closest('.monster-dropdown-item').querySelector('.monster-health');
 
             if (monsterId) {
                 statsDiv.classList.remove('hidden');
+
+                // Lebenspunkte automatisch aus der DB vorausfüllen
+                const selectedOption = selectElement.options[selectElement.selectedIndex];
+                const lebenspunkte = selectedOption.getAttribute('data-lebenspunkte');
+
+                if (lebenspunkte && healthInput) {
+                    healthInput.value = lebenspunkte;
+                    // Trigger oninput event, um selectedMonsters zu aktualisieren
+                    updateMonsterStats(dropdownId);
+                }
             } else {
                 statsDiv.classList.add('hidden');
+                if (healthInput) {
+                    healthInput.value = '';
+                }
                 delete selectedMonsters[dropdownId];
             }
 
@@ -272,15 +310,13 @@
             const item = document.querySelector(`[data-dropdown-id="${dropdownId}"]`);
             const select = item.querySelector('.monster-select');
             const health = item.querySelector('.monster-health').value;
-            const pokus = item.querySelector('.monster-pokus').value;
 
             const monsterId = select.value;
 
-            if (monsterId && health && pokus) {
+            if (monsterId && health) {
                 selectedMonsters[dropdownId] = {
                     monsterId: parseInt(monsterId),
-                    health: parseInt(health),
-                    pokus: parseInt(pokus)
+                    health: parseInt(health)
                 };
             } else {
                 delete selectedMonsters[dropdownId];
@@ -298,6 +334,83 @@
                 delete selectedMonsters[dropdownId];
                 validateForm();
             }
+        }
+
+        // ===== EXTRA TEILNEHMER =====
+
+        function addExtraParticipant() {
+            const container = document.getElementById('extraParticipantContainer');
+            if (!container) return;
+
+            const extraId = `extra-${extraParticipantCounter++}`;
+
+            const html = `
+                <div class="extra-participant-item animate-fade-in" data-extra-id="${extraId}">
+                    <div class="flex items-center gap-2">
+                        <input type="text"
+                               class="extra-name flex-1 bg-[#E8DCC0] border border-primary/50 rounded px-3 py-2 text-text-main focus:ring-primary focus:border-primary focus:outline-none text-sm"
+                               placeholder="Name"
+                               oninput="updateExtraParticipant('${extraId}')">
+                        <input type="number"
+                               min="1"
+                               class="extra-health w-24 bg-[#E8DCC0] border border-primary/50 rounded px-2 py-2 text-text-main focus:ring-primary focus:border-primary focus:outline-none text-sm text-center"
+                               placeholder="HP"
+                               oninput="updateExtraParticipant('${extraId}')">
+                        <button type="button"
+                                onclick="removeExtraParticipant('${extraId}')"
+                                class="flex items-center justify-center w-9 h-9 bg-red-100 hover:bg-red-200 border border-red-300 rounded text-red-600 transition-colors">
+                            <span class="material-icons text-sm">close</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', html);
+            validateForm();
+        }
+
+        function updateExtraParticipant(extraId) {
+            const item = document.querySelector(`[data-extra-id="${extraId}"]`);
+            const name = item.querySelector('.extra-name').value.trim();
+            const health = item.querySelector('.extra-health').value;
+
+            if (name && health) {
+                extraParticipants[extraId] = {
+                    name: name,
+                    health: parseInt(health)
+                };
+            } else {
+                delete extraParticipants[extraId];
+            }
+
+            validateForm();
+        }
+
+        function removeExtraParticipant(extraId) {
+            const item = document.querySelector(`[data-extra-id="${extraId}"]`);
+            if (item) {
+                item.remove();
+                delete extraParticipants[extraId];
+                validateForm();
+            }
+        }
+
+        // ===== CHARACTER SELECTION =====
+
+        function selectAllCharacters() {
+            const checkboxes = document.querySelectorAll('.character-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = true;
+            });
+            validateForm();
+        }
+
+        function deselectAllCharacters() {
+            const checkboxes = document.querySelectorAll('.character-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = false;
+            });
+            validateForm();
         }
 
         // ===== VALIDATION =====
@@ -358,10 +471,19 @@
                         name: monsterData.name,
                         type: 'monster',
                         monsterId: monster.monsterId,
-                        health: monster.health,
-                        pokus: monster.pokus
+                        health: monster.health
                     });
                 }
+            });
+
+            // Extra-Teilnehmer hinzufügen
+            Object.values(extraParticipants).forEach((extra, index) => {
+                participants.push({
+                    id: `extra-${index}`,
+                    name: extra.name,
+                    type: 'extra',
+                    health: extra.health
+                });
             });
 
             // Inputs generieren
@@ -369,7 +491,7 @@
                 <div class="bg-[#E8DCC0]/70 border border-primary/30 p-4 rounded hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-2 mb-2">
                         <label class="text-[10px] uppercase tracking-widest font-bold flex-1 ${
-                            p.type === 'monster' ? 'text-red-600' : p.isBegleiter ? 'text-primary' : 'text-secondary'
+                            p.type === 'monster' ? 'text-red-600' : p.type === 'extra' ? 'text-primary' : p.isBegleiter ? 'text-primary' : 'text-secondary'
                         }">
                             ${p.name}
                         </label>
@@ -378,6 +500,8 @@
                                 '<span class="px-2 py-0.5 bg-primary/20 border border-primary/40 rounded text-[8px] font-cinzel">Begleiter</span>' :
                                 '<span class="px-2 py-0.5 bg-secondary/20 border border-secondary/40 rounded text-[8px] font-cinzel">Spieler</span>'
                             ) :
+                            p.type === 'extra' ?
+                            '<span class="px-2 py-0.5 bg-primary/20 border border-primary/40 rounded text-[8px] font-cinzel">Extra</span>' :
                             '<span class="px-2 py-0.5 bg-red-600/20 border border-red-600/40 rounded text-[8px] font-cinzel">Monster</span>'
                         }
                     </div>
@@ -418,6 +542,7 @@
             const setup = {
                 monsters: Object.values(selectedMonsters),
                 characterIds: selectedCharacterIds,
+                extraParticipants: Object.values(extraParticipants),
                 initiatives: initiatives
             };
 

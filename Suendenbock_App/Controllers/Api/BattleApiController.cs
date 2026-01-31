@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models;
 using System.Text.Json;
+using Microsoft.AspNetCore.SignalR;
+using Suendenbock_App.Hubs;
 
 namespace Suendenbock_App.Controllers.Api
 {
@@ -20,10 +22,12 @@ namespace Suendenbock_App.Controllers.Api
     public class BattleApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<GameHub> _gameHub;
 
-        public BattleApiController(ApplicationDbContext context)
+        public BattleApiController(ApplicationDbContext context, IHubContext<GameHub> gameHub)
         {
             _context = context;
+            _gameHub = gameHub;
         }
 
         /// <summary>
@@ -62,6 +66,26 @@ namespace Suendenbock_App.Controllers.Api
                 _context.CombatSessions.Add(newSession);
                 await _context.SaveChangesAsync();
 
+                // Act laden um ActNumber zu bekommen (für SignalR Group Name)
+                var act = await _context.Acts.FindAsync(newSession.ActId);
+                if (act == null)
+                {
+                    return BadRequest(new { error = "Act nicht gefunden!" });
+                }
+
+                // WICHTIG: Broadcast an alle Spieler im Act, dass ein Kampf begonnen hat
+                // Group Name verwendet ActNumber (logische Nummer) statt ActId (Datenbank-ID)
+                string groupName = $"act-{act.ActNumber}";
+                await _gameHub.Clients.Group(groupName).SendAsync("CombatStarted", new
+                {
+                    actId = newSession.ActId,
+                    combatSessionId = newSession.Id,
+                    message = "Ein Kampf hat begonnen!",
+                    timestamp = DateTime.UtcNow
+                });
+
+                Console.WriteLine($"[BattleApi] Combat started broadcast sent to Act Number {act.ActNumber} (DB-ID: {newSession.ActId}), SessionId: {newSession.Id}");
+
                 return Ok(new
                 {
                     sessionId = newSession.Id,
@@ -76,10 +100,10 @@ namespace Suendenbock_App.Controllers.Api
         }
 
         /// <summary>
-        /// Ruft die aktive Combat Session für einen Akt ab.
+        /// Ruft die aktive Combat Session für einen Akt ab (verwendet Datenbank-ID).
         /// Wird von Spielern aufgerufen, um zu prüfen, ob ein Kampf läuft.
         /// </summary>
-        /// <param name="actId">ID des Akts</param>
+        /// <param name="actId">Datenbank-ID des Akts</param>
         /// <returns>Die aktive Combat Session oder null</returns>
         [HttpGet("active/{actId}")]
         public async Task<IActionResult> GetActiveCombatSession(int actId)
@@ -100,6 +124,72 @@ namespace Suendenbock_App.Controllers.Api
                 currentTurnIndex = session.CurrentTurnIndex,
                 battleStateJson = session.BattleStateJson,
                 startedAt = session.StartedAt
+            });
+        }
+
+        /// <summary>
+        /// Ruft die aktive Combat Session für einen Akt ab (verwendet ActNumber).
+        /// Wird von Spielern aufgerufen, um zu prüfen, ob ein Kampf läuft.
+        /// </summary>
+        /// <param name="actNumber">Logische Nummer des Akts (1, 2, 3...)</param>
+        /// <returns>Die aktive Combat Session oder null</returns>
+        [HttpGet("active/act/{actNumber}")]
+        public async Task<IActionResult> GetActiveCombatSessionByActNumber(int actNumber)
+        {
+            // Finde Act anhand ActNumber
+            var act = await _context.Acts.FirstOrDefaultAsync(a => a.ActNumber == actNumber);
+            if (act == null)
+            {
+                return NotFound(new { message = "Act nicht gefunden" });
+            }
+
+            // Finde aktive Combat Session für diesen Act
+            var session = await _context.CombatSessions
+                .FirstOrDefaultAsync(cs => cs.ActId == act.Id && cs.IsActive);
+
+            if (session == null)
+            {
+                return NotFound(new { message = "Keine aktive Combat Session gefunden" });
+            }
+
+            return Ok(new
+            {
+                sessionId = session.Id,
+                actId = session.ActId,
+                actNumber = act.ActNumber,
+                currentRound = session.CurrentRound,
+                currentTurnIndex = session.CurrentTurnIndex,
+                battleStateJson = session.BattleStateJson,
+                startedAt = session.StartedAt
+            });
+        }
+
+        /// <summary>
+        /// Ruft eine Combat Session anhand ihrer SessionId ab.
+        /// Wird von Spielern aufgerufen, die via URL beitreten (?sessionId=123)
+        /// </summary>
+        /// <param name="sessionId">ID der Combat Session</param>
+        /// <returns>Die Combat Session</returns>
+        [HttpGet("session/{sessionId}")]
+        public async Task<IActionResult> GetCombatSessionById(int sessionId)
+        {
+            var session = await _context.CombatSessions
+                .FirstOrDefaultAsync(cs => cs.Id == sessionId);
+
+            if (session == null)
+            {
+                return NotFound(new { message = "Combat Session nicht gefunden" });
+            }
+
+            return Ok(new
+            {
+                sessionId = session.Id,
+                actId = session.ActId,
+                currentRound = session.CurrentRound,
+                currentTurnIndex = session.CurrentTurnIndex,
+                battleStateJson = session.BattleStateJson,
+                startedAt = session.StartedAt,
+                isActive = session.IsActive
             });
         }
 
@@ -156,6 +246,50 @@ namespace Suendenbock_App.Controllers.Api
 
             return Ok(sessions);
         }
+
+        /// <summary>
+        /// Speichert Charakterdaten nach dem Kampf (HP, Pokus, Wunden).
+        /// Wird aufgerufen wenn der Kampf endet, um den Spielstand zu persistieren.
+        /// Nur Spieler-Charaktere werden gespeichert. Begleiter werden zurückgesetzt.
+        /// </summary>
+        [HttpPost("save-character-data")]
+        public async Task<IActionResult> SaveCharacterData([FromBody] SaveCharacterDataRequest request)
+        {
+            try
+            {
+                foreach (var charData in request.Characters)
+                {
+                    // Nur Spieler-Charaktere speichern (type === 'player')
+                    if (charData.Type != "player") continue;
+
+                    var character = await _context.Characters.FindAsync(charData.CharacterId);
+                    if (character == null) continue;
+
+                    // HP und Pokus aktualisieren
+                    character.CurrentHealth = charData.CurrentHealth;
+                    character.CurrentPokus = charData.CurrentPokus;
+                }
+
+                // Begleiter zurücksetzen (volle HP, 0 Pokus)
+                var companions = await _context.Characters
+                    .Where(c => c.IsCompanion)
+                    .ToListAsync();
+
+                foreach (var companion in companions)
+                {
+                    companion.CurrentHealth = companion.BaseMaxHealth;
+                    companion.CurrentPokus = 0;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Charakterdaten gespeichert, Begleiter zurückgesetzt" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 
     // ===== REQUEST/RESPONSE MODELS =====
@@ -169,5 +303,18 @@ namespace Suendenbock_App.Controllers.Api
     public class EndCombatSessionRequest
     {
         public string Result { get; set; } = ""; // "victory" or "defeat"
+    }
+
+    public class SaveCharacterDataRequest
+    {
+        public List<CharacterDataItem> Characters { get; set; } = new();
+    }
+
+    public class CharacterDataItem
+    {
+        public int CharacterId { get; set; }
+        public string Type { get; set; } = ""; // "player", "companion", "enemy"
+        public int CurrentHealth { get; set; }
+        public int CurrentPokus { get; set; }
     }
 }
