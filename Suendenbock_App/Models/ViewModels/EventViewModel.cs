@@ -17,6 +17,7 @@
         // RSVP Info
         public int ParticipantsCount { get; set; }
         public string? CurrentUserRSVP { get; set; } // "yes", "maybe", "no" oder null
+        public List<RsvpParticipantViewModel> Participants { get; set; } = new();
 
         // Chores (nur bei Spieltagen
         public Dictionary<string, string>? Chores { get; set; } // ChoreName -> AssignedToName
@@ -28,6 +29,12 @@
 
         // Status
         public bool IsPast { get; set; }
+    }
+
+    public class RsvpParticipantViewModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty; // "yes", "maybe", "no"
     }
 
     public class EventsPageViewModel

@@ -76,6 +76,39 @@
 
                             <h2 class="event-title @(evt.IsPast ? "event-title-past" : "")">@evt.Title</h2>
                             <p class="event-description">@evt.Description</p>
+
+                            <!-- Teilnehmer-Liste -->
+                            @if (evt.Participants != null && evt.Participants.Any())
+                            {
+                                <div class="participant-list">
+                                    @{ var yesGroup = evt.Participants.Where(p => p.Status == "yes").ToList(); }
+                                    @{ var maybeGroup = evt.Participants.Where(p => p.Status == "maybe").ToList(); }
+                                    @{ var noGroup = evt.Participants.Where(p => p.Status == "no").ToList(); }
+
+                                    @if (yesGroup.Any())
+                                    {
+                                        <div class="participant-group participant-yes">
+                                            <span class="material-symbols-outlined">check_circle</span>
+                                            <span>@string.Join(", ", yesGroup.Select(p => p.Name))</span>
+                                        </div>
+                                    }
+                                    @if (maybeGroup.Any())
+                                    {
+                                        <div class="participant-group participant-maybe">
+                                            <span class="material-symbols-outlined">help_circle</span>
+                                            <span>@string.Join(", ", maybeGroup.Select(p => p.Name))</span>
+                                        </div>
+                                    }
+                                    @if (noGroup.Any())
+                                    {
+                                        <div class="participant-group participant-no">
+                                            <span class="material-symbols-outlined">cancel</span>
+                                            <span>@string.Join(", ", noGroup.Select(p => p.Name))</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+
                             <div class="event-footer">
                                 <div class="event-stats">
                                     <div>

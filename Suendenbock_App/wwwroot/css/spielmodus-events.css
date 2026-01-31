@@ -543,6 +543,39 @@
     color: #1a1a1a;
 }
 
+/* ===== TEILNEHMER-LISTE ===== */
+
+.participant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1.25rem;
+}
+
+.participant-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.participant-group .material-symbols-outlined {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.participant-yes {
+    color: rgb(21, 128, 61);
+}
+
+.participant-maybe {
+    color: var(--gold, #B89E68);
+}
+
+.participant-no {
+    color: #dc3545;
+}
+
 /* ===== RESPONSIVE ===== */
 
 /* Tablets (1024px) */

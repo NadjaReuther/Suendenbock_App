@@ -207,6 +207,9 @@ namespace Suendenbock_App.Controllers
             // Lade zukünftige Events (aufsteigend nach Datum)
             var futureEvents = await _context.MonthlyEvents
                 .Include(e => e.RSVPs)
+                    .ThenInclude(r => r.User)
+                .Include(e => e.RSVPs)
+                    .ThenInclude(r => r.Character)
                 .Include(e => e.Chores)
                 .Include(e => e.CreatedBy)
                 .Where(e => e.Date >= today)
@@ -216,6 +219,9 @@ namespace Suendenbock_App.Controllers
             // Lade vergangene Events (absteigend nach Datum - neueste zuerst)
             var pastEvents = await _context.MonthlyEvents
                 .Include(e => e.RSVPs)
+                    .ThenInclude(r => r.User)
+                .Include(e => e.RSVPs)
+                    .ThenInclude(r => r.Character)
                 .Include(e => e.Chores)
                 .Include(e => e.CreatedBy)
                 .Where(e => e.Date < today)
@@ -258,6 +264,15 @@ namespace Suendenbock_App.Controllers
                     Description = e.Description,
                     ParticipantsCount = e.ParticipantsCount,
                     CurrentUserRSVP = userRsvp?.Status,
+                    Participants = e.RSVPs
+                        .Select(r => new RsvpParticipantViewModel
+                        {
+                            Name = r.Character?.Vorname ?? r.User?.UserName ?? "Unbekannt",
+                            Status = r.Status
+                        })
+                        .OrderBy(p => p.Status == "yes" ? 0 : p.Status == "maybe" ? 1 : 2)
+                        .ThenBy(p => p.Name)
+                        .ToList(),
                     Chores = chores,
                     HasChores = chores?.Any() ?? false,
                     CanEdit = e.CreatedByUserId == userId || User.IsInRole("Gott"),
