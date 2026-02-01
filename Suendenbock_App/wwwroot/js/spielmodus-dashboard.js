@@ -5,6 +5,8 @@ let isCampConfirming = false;
 let selectedFoodId = null;
 let IS_GOTT_ROLE = false; // Wird vom inline script überschrieben
 let isGodNightRestActive = false; // Tracks ob Gott das Night-Rest-Modal gerade offen hat
+let godNightRestActId = null; // ActId aus der Nachtlager-Anfrage (Spieler-Act), nicht Gott's eigenes Act
+let isNightRestPending = false; // Spieler: Tracks ob eine Nachtlager-Anfrage gerade offen ist
 
 function initDashboard(initialCharacters, initialRestFoods, isGod) {
     characters = initialCharacters;
@@ -18,32 +20,16 @@ function initDashboard(initialCharacters, initialRestFoods, isGod) {
     // SignalR Event-Listener registrieren
     setupNightRestListeners();
 
-    // Prüfe ob bereits eine Nachtlager-Anfrage offen ist (nur für Gott)
-    if (IS_GOTT_ROLE) {
-        checkForPendingNightRestRequest();
-    }
-}
-
-// ===== PRÜFE AUF OFFENE NACHTLAGER-ANFRAGE =====
-
-async function checkForPendingNightRestRequest() {
-    const actId = window.globalSignalR?.getActId();
-    if (!actId) return;
-
-    try {
-        const response = await fetch(`/api/night-rest/pending/${actId}`);
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log('[checkForPendingNightRestRequest] Found pending request:', data);
-
-            // Zeige Modal mit kleiner Verzögerung
-            setTimeout(() => {
-                showGodNightRestModal(data);
-            }, 1000);
-        }
-    } catch (error) {
-        // Keine Anfrage vorhanden - kein Problem
+    // Spieler: beim Verlassen der Seite aktive Anfrage stornieren
+    if (!IS_GOTT_ROLE) {
+        window.addEventListener('beforeunload', () => {
+            if (isNightRestPending) {
+                const actId = window.globalSignalR?.getActId();
+                if (actId) {
+                    navigator.sendBeacon(`/api/night-rest/cancel/${actId}`);
+                }
+            }
+        });
     }
 }
 
@@ -64,19 +50,24 @@ function setupNightRestListeners() {
     // Event: Night Rest Completed (für alle Spieler)
     window.addEventListener('nightRestCompleted', async (event) => {
         const data = event.detail;
+        isNightRestPending = false;
 
         // Schließe Warte-Dialog
         Swal.close();
 
-        // Baue Pro-Charakter Pokus-Übersicht
+        // Baue Pro-Charakter Übersicht mit HP + Pokus + Mahlzeit
         let charactersHtml = '';
         if (data.characters && data.characters.length > 0) {
             charactersHtml = '<ul style="list-style: none; padding: 0; text-align: left;">';
             data.characters.forEach(char => {
                 const extraPart = char.extraPokus > 0 ? ` + ${char.extraPokus} Extra` : '';
                 charactersHtml += `
-                    <li style="margin-bottom: 0.4rem; padding: 0.35rem 0.5rem; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 0.9rem;">
-                        <strong>${char.name}:</strong> ${char.spellCount} Zauber${extraPart} = <strong>${char.totalPokus} Pokuspunkte</strong>
+                    <li style="margin-bottom: 0.5rem; padding: 0.4rem 0.6rem; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 0.85rem;">
+                        <strong>${char.name}:</strong><br>
+                        <span style="opacity: 0.85;">❤️ ${char.currentHealth} / ${char.maxHealth} LP</span>
+                        <span style="opacity: 0.55; margin: 0 0.3rem;">|</span>
+                        <span style="opacity: 0.7;">🍽️ ${char.foodName} (+${char.healthBonus} LP)</span><br>
+                        <span style="opacity: 0.85;">✨ ${char.spellCount} Zauber${extraPart} = <strong>${char.totalPokus} Pokuspunkte</strong></span>
                     </li>
                 `;
             });
@@ -89,9 +80,6 @@ function setupNightRestListeners() {
             title: 'Nachtlager abgeschlossen',
             html: `
                 <div style="text-align: left; margin: 1rem 0;">
-                    <p><strong>Nahrung:</strong> ${data.foodName} (+${data.healthBonus} LP)</p>
-                    <hr style="border-color: rgba(255,255,255,0.15); margin: 0.6rem 0;">
-                    <p style="margin-bottom: 0.4rem;"><strong>Pokuspunkte:</strong></p>
                     ${charactersHtml}
                 </div>
             `,
@@ -113,6 +101,7 @@ function setupNightRestListeners() {
             }
         } else {
             // Spieler: Warte-Dialog schließen und Benachrichtigung zeigen
+            isNightRestPending = false;
             Swal.close();
             await Swal.fire({
                 icon: 'info',
@@ -128,45 +117,62 @@ function setupNightRestListeners() {
 // ===== GOTT: NACHTLAGER MODAL =====
 
 async function showGodNightRestModal(data) {
-    // Fülle Pokus-Grid mit Extra-Pokus Eingabe pro Charakter
+    // Speichere den ActId aus der Anfrage (Spieler-Act) — nicht Gott's eigenes Act
+    godNightRestActId = data.actId || window.globalSignalR?.getActId();
+
     const pokusGrid = document.getElementById('pokusGrid');
     pokusGrid.innerHTML = '';
 
+    // Verstecke globale Food-Section (nicht mehr nötig)
+    const foodSection = document.querySelector('.food-section');
+    if (foodSection) foodSection.style.display = 'none';
+
+    // Ändere Titel auf Spielerliste
+    const summaryTitle = pokusGrid.closest('.pokus-summary')?.querySelector('h3');
+    if (summaryTitle) summaryTitle.textContent = 'Spieler & Nachtlager';
+
+    // Mahlzeit-Optionen HTML (wiederverwendbar pro Spieler)
+    const foodOptionsHtml = restFoods.map(food =>
+        `<option value="${food.id}">${food.name} (+${food.healthBonus} LP)</option>`
+    ).join('');
+
+    // Spalten-Header
+    const header = document.createElement('div');
+    header.className = 'player-row player-row-header';
+    header.innerHTML = `
+        <div>Spieler</div>
+        <div>Zauber</div>
+        <div>+ Extra</div>
+        <div>Mahlzeit</div>
+    `;
+    pokusGrid.appendChild(header);
+
+    // Spieler-Zeilen
     data.characters.forEach(char => {
         if (char.isCompanion) return;
 
-        const wrapper = document.createElement('div');
-        wrapper.innerHTML = `
-            <div class="pokus-item">
-                <span class="name">${char.name}</span>
-                <div class="value">
-                    <span class="number">${char.currentPokus}</span>
-                    <span class="material-symbols-outlined icon">auto_fix_high</span>
-                </div>
+        const row = document.createElement('div');
+        row.className = 'player-row';
+        row.innerHTML = `
+            <div class="player-name">${char.name}</div>
+            <div class="player-zauber">
+                <span class="player-pokus-value">${char.currentPokus}</span>
+                <span class="material-symbols-outlined">auto_fix_high</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.4rem; margin-top: 0.3rem; justify-content: flex-end;">
-                <span style="font-size: 0.75rem; opacity: 0.6;">+ Extra:</span>
+            <div class="player-extra">
                 <input type="number" class="extra-pokus-input" data-char-id="${char.id}" value="0" min="0"
-                       style="width: 48px; padding: 0.15rem 0.25rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: inherit; text-align: center; font-size: 0.85rem; -moz-appearance: textfield;"
                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             </div>
+            <div class="player-mahlzeit">
+                <select class="meal-select" data-char-id="${char.id}">
+                    ${foodOptionsHtml}
+                </select>
+            </div>
         `;
-        pokusGrid.appendChild(wrapper);
+        pokusGrid.appendChild(row);
     });
 
-    // Zeige Food-Section und fülle Nahrungsoptionen als Combobox
-    const foodSection = document.querySelector('.food-section');
-    if (foodSection) foodSection.style.display = 'block';
-
-    const foodOptions = document.getElementById('foodOptions');
-    let selectHtml = '<select id="god-food-select" style="width: 100%; padding: 0.5rem 0.6rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: inherit; font-size: 0.9rem; cursor: pointer;">';
-    restFoods.forEach(food => {
-        selectHtml += `<option value="${food.id}">${food.name} (+${food.healthBonus} LP)</option>`;
-    });
-    selectHtml += '</select>';
-    foodOptions.innerHTML = selectHtml;
-
-    // Setze Buttons
+    // Buttons
     const modalButtons = document.querySelector('.modal-buttons');
     modalButtons.innerHTML = `
         <button class="modal-button-primary" onclick="confirmGodNightRest()">
@@ -182,20 +188,21 @@ async function showGodNightRestModal(data) {
 }
 
 async function confirmGodNightRest() {
-    const foodSelect = document.getElementById('god-food-select');
-    if (!foodSelect) return;
-    const foodId = parseInt(foodSelect.value);
-    if (!foodId) return;
-
     // Sammle Extra-Pokus pro Charakter
     const extraPokusPerCharacter = {};
     document.querySelectorAll('.extra-pokus-input').forEach(input => {
         extraPokusPerCharacter[input.dataset.charId] = parseInt(input.value) || 0;
     });
 
+    // Sammle Mahlzeit pro Charakter
+    const foodPerCharacter = {};
+    document.querySelectorAll('.meal-select').forEach(select => {
+        foodPerCharacter[select.dataset.charId] = parseInt(select.value);
+    });
+
     isGodNightRestActive = false;
     closeCampModal();
-    await applyNightRest(foodId, extraPokusPerCharacter);
+    await applyNightRest(foodPerCharacter, extraPokusPerCharacter);
 }
 
 function updateStatusDisplay() {
@@ -427,7 +434,8 @@ async function requestNightRest() {
     try {
         // Sende Request an Gott via SignalR
         await connection.invoke("RequestNightRest", actId, userName || "Spieler");
-    
+        isNightRestPending = true;
+
         // Zeige Warte-Nachricht mit Abbrechen-Option
         const { isConfirmed } = await Swal.fire({
             icon: 'info',
@@ -441,10 +449,12 @@ async function requestNightRest() {
 
         // Wenn Spieler aktiv auf Abbrechen klickt
         if (isConfirmed) {
+            isNightRestPending = false;
             await cancelNightRest();
         }
 
     } catch (error) {
+        isNightRestPending = false;
         await Swal.fire({
             icon: 'error',
             title: 'Fehler',
@@ -455,9 +465,10 @@ async function requestNightRest() {
 }
 
 // GOTT: Nachtlager anwenden (via SignalR)
-async function applyNightRest(foodId, extraPokusPerCharacter) {
+async function applyNightRest(foodPerCharacter, extraPokusPerCharacter) {
     const connection = window.globalSignalR?.connection;
-    const actId = window.globalSignalR?.getActId();
+    // Verwende den gespeicherten ActId aus der Anfrage, nicht Gott's eigenes Act
+    const actId = godNightRestActId || window.globalSignalR?.getActId();
 
     if (!connection || !actId) {
         await Swal.fire({
@@ -470,18 +481,11 @@ async function applyNightRest(foodId, extraPokusPerCharacter) {
     }
 
     try {
-        await connection.invoke("ApplyNightRest", actId, foodId, extraPokusPerCharacter);
-
-        await Swal.fire({
-            icon: 'success',
-            title: 'Nachtlager durchgeführt',
-            text: 'Die Gruppe wurde geheilt!',
-            confirmButtonColor: '#d97706'
-        });
-
-        setTimeout(() => window.location.reload(), 1500);
-
+        await connection.invoke("ApplyNightRest", actId, foodPerCharacter, extraPokusPerCharacter);
+        // Kein Swal hier — der nightRestCompleted-Handler zeigt das Ergebnis für beide Seiten an
+        godNightRestActId = null;
     } catch (error) {
+        godNightRestActId = null;
         await Swal.fire({
             icon: 'error',
             title: 'Fehler',

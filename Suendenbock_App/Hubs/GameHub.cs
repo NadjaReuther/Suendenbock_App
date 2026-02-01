@@ -158,14 +158,28 @@ namespace Suendenbock_App.Hubs
         /// Begleiter werden NICHT beeinflusst (HP/Pokus wird nach jedem Kampf zurückgesetzt).
         /// Löscht die Anfrage aus der DB.
         /// </summary>
-        public async Task ApplyNightRest(int actId, int foodId, Dictionary<string, int> extraPokusPerCharacter)
+        public async Task ApplyNightRest(int actId, Dictionary<string, int> foodPerCharacter, Dictionary<string, int> extraPokusPerCharacter)
         {
-            // Hole die Nahrung
-            var food = await _context.RestFoods.FindAsync(foodId);
-            if (food == null)
+            // Null-Sicherheit: leere Dicts wenn null
+            foodPerCharacter ??= new Dictionary<string, int>();
+            extraPokusPerCharacter ??= new Dictionary<string, int>();
+
+            // Prüfe ob noch eine aktive Anfrage existiert — Spieler könnte die Seite verlassen haben
+            var activeRequest = await _context.NightRestRequests
+                .FirstOrDefaultAsync(r => r.ActId == actId && r.IsActive);
+
+            if (activeRequest == null)
             {
+                Console.WriteLine($"[GameHub] ApplyNightRest für Act {actId} abgebrochen — keine aktive Anfrage mehr.");
                 return;
             }
+
+            // Lade alle verwendeten Nahrungen
+            var usedFoodIds = foodPerCharacter.Values.Distinct().ToList();
+            var foods = await _context.RestFoods
+                .Where(f => usedFoodIds.Contains(f.Id))
+                .ToListAsync();
+            var foodDict = foods.ToDictionary(f => f.Id);
 
             // Hole NUR Spieler-Charaktere (keine Begleiter, keine NPCs)
             var characters = await _context.Characters
@@ -182,9 +196,14 @@ namespace Suendenbock_App.Hubs
                 int spellCount = character.CurrentPokus;
                 int extraPokus = extraPokusPerCharacter.TryGetValue(character.Id.ToString(), out var ep) ? ep : 0;
 
-                // Spieler heilen
+                // Hole individuelle Mahlzeit für diesen Charakter
+                var charFoodId = foodPerCharacter.TryGetValue(character.Id.ToString(), out var fid) ? fid : 0;
+                var charFood = foodDict.TryGetValue(charFoodId, out var f) ? f : null;
+                int healthBonus = charFood?.HealthBonus ?? 0;
+
+                // Spieler heilen mit ihrer individuellen Mahlzeit
                 character.CurrentHealth = Math.Min(
-                    character.CurrentHealth + food.HealthBonus,
+                    character.CurrentHealth + healthBonus,
                     character.BaseMaxHealth
                 );
 
@@ -198,7 +217,11 @@ namespace Suendenbock_App.Hubs
                     name = $"{character.Vorname} {character.Nachname}".Trim(),
                     spellCount,
                     extraPokus,
-                    totalPokus = character.CurrentPokus
+                    totalPokus = character.CurrentPokus,
+                    currentHealth = character.CurrentHealth,
+                    maxHealth = character.BaseMaxHealth,
+                    foodName = charFood?.Name ?? "Keine Mahlzeit",
+                    healthBonus = healthBonus
                 });
             }
 
@@ -219,13 +242,11 @@ namespace Suendenbock_App.Hubs
             await Clients.Group(groupName).SendAsync("NightRestCompleted", new
             {
                 actId,
-                foodName = food.Name,
-                healthBonus = food.HealthBonus,
                 characters = characterResults,
                 timestamp = DateTime.UtcNow
             });
 
-            Console.WriteLine($"[GameHub] Night rest applied in Act {actId}, Food: {food.Name}, removed pending requests");
+            Console.WriteLine($"[GameHub] Night rest applied in Act {actId}, removed pending requests");
         }
 
         /// <summary>

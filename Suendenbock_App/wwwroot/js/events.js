@@ -19,6 +19,11 @@ function initEventListeners() {
         btn.addEventListener('click', toggleChoreMatrix);
     });
 
+    // Toggle Teilnehmer-Badges
+    document.querySelectorAll('.toggle-participants-btn').forEach(btn => {
+        btn.addEventListener('click', toggleParticipantBadges);
+    });
+
     // Create Event Button (nur für Admins)
     const createBtn = document.getElementById('createEventBtn');
     if (createBtn) {
@@ -53,13 +58,13 @@ async function handleRsvp(e) {
         });
 
         if (response.ok) {
-            // Update UI: Remove 'active' from all buttons, add to clicked one
+            // Sofort Feedback: Button aktiv schalten
             const eventCard = btn.closest('.event-card');
             eventCard.querySelectorAll('.rsvp-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            // Optional: Update participant count
-            // location.reload(); // Einfache Variante, aber nicht die schönste
+            // Seite neu laden damit Teilnehmer-Liste und Button-Zustand synchron bleiben
+            setTimeout(() => location.reload(), 400);
         }
         else {
             const error = await response.json();
@@ -99,6 +104,21 @@ function toggleChoreMatrix(e) {
         choreMatrix.style.display = 'none';
         icon.textContent = 'visibility';
         btn.innerHTML = '<span class="material-symbols-outlined">visibility</span> Dienstplan einsehen';
+    }
+}
+
+// ==== TEILNEHMER TOGGLE ====
+function toggleParticipantBadges(e) {
+    const btn = e.currentTarget;
+    const eventId = btn.dataset.eventId;
+    const badgesContainer = document.querySelector(`.participant-badges[data-event-id="${eventId}"]`);
+
+    if (badgesContainer.style.display === 'none' || !badgesContainer.style.display) {
+        badgesContainer.style.display = 'flex';
+        btn.classList.add('active');
+    } else {
+        badgesContainer.style.display = 'none';
+        btn.classList.remove('active');
     }
 }
 

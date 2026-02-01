@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Hubs;
 
 namespace Suendenbock_App.Controllers.Api
 {
@@ -12,10 +14,12 @@ namespace Suendenbock_App.Controllers.Api
     public class NightRestApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IHubContext<GameHub> _hubContext;
 
-        public NightRestApiController(ApplicationDbContext context)
+        public NightRestApiController(ApplicationDbContext context, IHubContext<GameHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         /// <summary>
@@ -53,6 +57,42 @@ namespace Suendenbock_App.Controllers.Api
                 characters = characterData,
                 timestamp = request.RequestedAt
             });
+        }
+
+        /// <summary>
+        /// Storniert eine aktive Nachtlager-Anfrage.
+        /// Wird vom Spieler via navigator.sendBeacon beim Verlassen der Seite aufgerufen.
+        /// Deaktiviert die Anfrage in der DB und sendet NightRestCancelled an alle im Act.
+        /// </summary>
+        [HttpPost("cancel/{actId}")]
+        public async Task<IActionResult> CancelRequest(int actId)
+        {
+            var pendingRequests = await _context.NightRestRequests
+                .Where(r => r.ActId == actId && r.IsActive)
+                .ToListAsync();
+
+            if (pendingRequests.Count == 0)
+            {
+                return Ok(new { message = "Keine aktive Anfrage zu stornieren" });
+            }
+
+            foreach (var request in pendingRequests)
+            {
+                request.IsActive = false;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Sende NightRestCancelled an alle im Act — damit Gott das Modal schließt
+            string groupName = $"act-{actId}";
+            await _hubContext.Clients.Group(groupName).SendAsync("NightRestCancelled", new
+            {
+                actId,
+                timestamp = DateTime.UtcNow
+            });
+
+            Console.WriteLine($"[NightRestApi] Request cancelled for Act {actId} via sendBeacon");
+            return Ok(new { message = "Anfrage abgebrochen" });
         }
     }
 }

@@ -77,43 +77,33 @@
                             <h2 class="event-title @(evt.IsPast ? "event-title-past" : "")">@evt.Title</h2>
                             <p class="event-description">@evt.Description</p>
 
-                            <!-- Teilnehmer-Liste -->
-                            @if (evt.Participants != null && evt.Participants.Any())
-                            {
-                                <div class="participant-list">
-                                    @{ var yesGroup = evt.Participants.Where(p => p.Status == "yes").ToList(); }
-                                    @{ var maybeGroup = evt.Participants.Where(p => p.Status == "maybe").ToList(); }
-                                    @{ var noGroup = evt.Participants.Where(p => p.Status == "no").ToList(); }
-
-                                    @if (yesGroup.Any())
+                            <!-- Teilnehmer-Abschnitt (wie bei Polls) -->
+                            <div class="participant-section">
+                                <div class="participant-header">
+                                    <span class="participant-count">
+                                        <span class="material-symbols-outlined">groups</span>
+                                        @(evt.Participants?.Count ?? 0) Teilnehmer
+                                    </span>
+                                    @if (evt.Participants != null && evt.Participants.Any())
                                     {
-                                        <div class="participant-group participant-yes">
-                                            <span class="material-symbols-outlined">check_circle</span>
-                                            <span>@string.Join(", ", yesGroup.Select(p => p.Name))</span>
-                                        </div>
-                                    }
-                                    @if (maybeGroup.Any())
-                                    {
-                                        <div class="participant-group participant-maybe">
-                                            <span class="material-symbols-outlined">help_circle</span>
-                                            <span>@string.Join(", ", maybeGroup.Select(p => p.Name))</span>
-                                        </div>
-                                    }
-                                    @if (noGroup.Any())
-                                    {
-                                        <div class="participant-group participant-no">
-                                            <span class="material-symbols-outlined">cancel</span>
-                                            <span>@string.Join(", ", noGroup.Select(p => p.Name))</span>
-                                        </div>
+                                        <button class="toggle-participants-btn" data-event-id="@evt.Id">
+                                            <span class="material-symbols-outlined">expand_more</span>
+                                        </button>
                                     }
                                 </div>
-                            }
+                                @if (evt.Participants != null && evt.Participants.Any())
+                                {
+                                    <div class="participant-badges" data-event-id="@evt.Id" style="display: none;">
+                                        @foreach (var p in evt.Participants)
+                                        {
+                                            <span class="participant-badge participant-badge-@p.Status">@p.Name</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
 
                             <div class="event-footer">
                                 <div class="event-stats">
-                                    <div>
-                                        <span class="material-symbols-outlined">group</span>@evt.ParticipantsCount Teilnehmer
-                                    </div>
                                     @if(evt.HasChores)
                                     {
                                         <div class="chore-toggle-wrapper">
