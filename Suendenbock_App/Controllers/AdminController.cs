@@ -225,6 +225,129 @@ namespace Suendenbock_App.Controllers
             return RedirectToAction(nameof(ManageAchievements));
         }
 
+        // ===== FELDEFFEKTE-VERWALTUNG =====
+
+        /// <summary>
+        /// Feldeffekt-Verwaltung nur für Gott - Übersicht aller Feldeffekte
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ManageFeldEffekte()
+        {
+            var feldEffekte = await _context.FeldEffekte
+                .Include(fe => fe.LightCard)
+                .OrderBy(fe => fe.Name)
+                .ToListAsync();
+
+            return View(feldEffekte);
+        }
+
+        /// <summary>
+        /// Formular zum Erstellen eines neuen Feldeffekts
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> CreateFeldEffekt()
+        {
+            ViewBag.LightCards = await _context.LightCards
+                .OrderBy(lc => lc.Bezeichnung)
+                .ToListAsync();
+
+            return View(new FeldEffekt());
+        }
+
+        /// <summary>
+        /// Speichert einen neuen Feldeffekt
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateFeldEffekt(FeldEffekt feldEffekt)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.FeldEffekte.Add(feldEffekt);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Feldeffekt '{feldEffekt.Name}' wurde erfolgreich erstellt!";
+                return RedirectToAction(nameof(ManageFeldEffekte));
+            }
+
+            // Reload LightCards wenn Validierung fehlschlägt
+            ViewBag.LightCards = await _context.LightCards
+                .OrderBy(lc => lc.Bezeichnung)
+                .ToListAsync();
+
+            return View(feldEffekt);
+        }
+
+        /// <summary>
+        /// Formular zum Bearbeiten eines Feldeffekts
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> EditFeldEffekt(int id)
+        {
+            var feldEffekt = await _context.FeldEffekte
+                .Include(fe => fe.LightCard)
+                .FirstOrDefaultAsync(fe => fe.Id == id);
+
+            if (feldEffekt == null)
+            {
+                TempData["Error"] = "Feldeffekt nicht gefunden.";
+                return RedirectToAction(nameof(ManageFeldEffekte));
+            }
+
+            ViewBag.LightCards = await _context.LightCards
+                .OrderBy(lc => lc.Bezeichnung)
+                .ToListAsync();
+
+            return View(feldEffekt);
+        }
+
+        /// <summary>
+        /// Speichert einen bearbeiteten Feldeffekt
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditFeldEffekt(FeldEffekt feldEffekt)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.FeldEffekte.Update(feldEffekt);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Feldeffekt '{feldEffekt.Name}' wurde erfolgreich aktualisiert!";
+                return RedirectToAction(nameof(ManageFeldEffekte));
+            }
+
+            // Reload LightCards wenn Validierung fehlschlägt
+            ViewBag.LightCards = await _context.LightCards
+                .OrderBy(lc => lc.Bezeichnung)
+                .ToListAsync();
+
+            return View(feldEffekt);
+        }
+
+        /// <summary>
+        /// Löscht einen Feldeffekt
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteFeldEffekt(int id)
+        {
+            var feldEffekt = await _context.FeldEffekte.FindAsync(id);
+            if (feldEffekt != null)
+            {
+                _context.FeldEffekte.Remove(feldEffekt);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Feldeffekt '{feldEffekt.Name}' wurde erfolgreich gelöscht!";
+            }
+            else
+            {
+                TempData["Error"] = "Feldeffekt nicht gefunden.";
+            }
+
+            return RedirectToAction(nameof(ManageFeldEffekte));
+        }
+
         // ===== SESSION VORBEREITEN (GenerateSession) =====
 
         /// <summary>

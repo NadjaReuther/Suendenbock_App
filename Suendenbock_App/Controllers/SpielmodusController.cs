@@ -597,10 +597,25 @@ namespace Suendenbock_App.Controllers
                 })
                 .ToListAsync();
 
+            // Alle Feldeffekte laden (für Gott zur Auswahl)
+            var fieldEffects = await _context.FeldEffekte
+                .Include(fe => fe.LightCard)
+                .OrderBy(fe => fe.Name)
+                .Select(fe => new FeldEffektOption
+                {
+                    Id = fe.Id,
+                    Name = fe.Name,
+                    Beschreibung = fe.Beschreibung,
+                    ColorCode = fe.LightCard != null ? fe.LightCard.Farbcode : "#ffffff",
+                    LightCardName = fe.LightCard != null ? fe.LightCard.Bezeichnung : "Unbekannt"
+                })
+                .ToListAsync();
+
             var viewModel = new BattleViewModel
             {
                 Characters = characters,
                 Monsters = monsters,
+                AllFieldEffects = fieldEffects,
                 IsGod = isGod
             };
 
@@ -857,6 +872,7 @@ namespace Suendenbock_App.Controllers
     {
         public List<BattleCharacterOption> Characters { get; set; } = new();
         public List<BattleMonsterOption> Monsters { get; set; } = new();
+        public List<FeldEffektOption> AllFieldEffects { get; set; } = new();
         public bool IsGod { get; set; }
     }
 
@@ -883,6 +899,16 @@ namespace Suendenbock_App.Controllers
         public int Defense { get; set; }
         public bool IsBoss { get; set; }
     }
+
+    public class FeldEffektOption
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Beschreibung { get; set; }
+        public string ColorCode { get; set; } = string.Empty;
+        public string LightCardName { get; set; } = string.Empty;
+    }
+
     public class CombatSetupViewModel
     {
         public int ActId { get; set; }

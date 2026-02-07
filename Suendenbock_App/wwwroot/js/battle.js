@@ -34,7 +34,8 @@ let battleState = {
     currentRound: 1,
     isAnimating: false,
     expandedConditions: {},
-    sessionId: null
+    sessionId: null,
+    activeFieldEffects: [] // Array of { feldEffektId, name, colorCode, strength }
 };
 
 // ===== ROLE-BASED ACCESS CONTROL =====
@@ -74,12 +75,16 @@ async function setupSignalR(sessionId) {
                 if (newSetup.participants) {
                     battleState.participants = newSetup.participants;
                 }
+                if (newSetup.activeFieldEffects) {
+                    battleState.activeFieldEffects = newSetup.activeFieldEffects;
+                }
                 battleState.currentRound = data.currentRound;
                 battleState.currentTurnIndex = data.currentTurnIndex;
 
                 // UI neu rendern
                 renderBattleGrid();
                 updateTurnIndicator();
+                renderFieldEffects();
             }
         });
 
@@ -114,7 +119,8 @@ async function syncBattleState() {
     try {
         const battleStateJson = JSON.stringify({
             participants: battleState.participants,
-            expandedConditions: battleState.expandedConditions
+            expandedConditions: battleState.expandedConditions,
+            activeFieldEffects: battleState.activeFieldEffects
         });
 
         await signalRConnection.invoke(
@@ -174,6 +180,9 @@ async function initBattle() {
     if (battleState.sessionId) {
         await setupSignalR(battleState.sessionId);
     }
+
+    // Feldeffekte rendern
+    renderFieldEffects();
 }
 
 // ===== BATTLE STATE VOM SERVER LADEN =====
@@ -206,9 +215,14 @@ async function loadBattleStateFromServer(sessionId) {
             battleState.expandedConditions = savedState.expandedConditions;
         }
 
+        if (savedState.activeFieldEffects) {
+            battleState.activeFieldEffects = savedState.activeFieldEffects;
+        }
+
         // UI rendern
         renderBattleGrid();
         updateTurnIndicator();
+        renderFieldEffects();
 
     } catch (error) {
         await Swal.fire({
@@ -1232,6 +1246,287 @@ async function showResultScreen(result) {
 
     // LocalStorage löschen
     localStorage.removeItem('battleSetup');
+}
+
+// ===== FIELD EFFECTS SYSTEM =====
+
+// Global state for modal
+let selectedStrength = null;
+
+// Render active field effects as gradient banner
+function renderFieldEffects() {
+    const banner = document.getElementById('fieldEffectsBanner');
+    const container = document.getElementById('activeFieldEffectsContainer');
+
+    if (!banner || !container) return;
+
+    // Für Gott: Banner IMMER anzeigen (auch ohne aktive Effekte, damit der Button sichtbar ist)
+    // Für Spieler: Nur anzeigen wenn Effekte aktiv sind
+    if (battleState.activeFieldEffects.length === 0) {
+        if (!IS_GOTT_ROLE) {
+            banner.classList.add('hidden');
+            return;
+        }
+        // Gott: Banner anzeigen, aber mit neutralem Hintergrund
+        banner.classList.remove('hidden');
+        banner.style = 'background: linear-gradient(135deg, #374151 0%, #1f2937 100%)';
+        container.innerHTML = '<p class="text-gray-400 italic text-sm">Keine Feldeffekte aktiv</p>';
+        return;
+    }
+
+    banner.classList.remove('hidden');
+
+    // Create gradient from all active field effect colors
+    const colors = battleState.activeFieldEffects.map(fe => fe.colorCode);
+    let gradientStyle = '';
+
+    if (colors.length === 1) {
+        gradientStyle = `background: ${colors[0]}`;
+    } else {
+        // Create linear gradient for multiple colors
+        const stops = colors.map((color, index) => {
+            const percent = (index / (colors.length - 1)) * 100;
+            return `${color} ${percent}%`;
+        }).join(', ');
+        gradientStyle = `background: linear-gradient(to right, ${stops})`;
+    }
+
+    banner.style = gradientStyle;
+
+    // Render individual effect badges
+    container.innerHTML = battleState.activeFieldEffects.map(fe => {
+        const strengthColors = {
+            'einfach': 'bg-green-900/60 border-green-500 text-green-200',
+            'mittel': 'bg-yellow-900/60 border-yellow-500 text-yellow-200',
+            'schwer': 'bg-red-900/60 border-red-500 text-red-200'
+        };
+
+        const colorClass = strengthColors[fe.strength] || 'bg-gray-700 border-gray-500 text-gray-200';
+
+        // Beschreibung für onclick vorbereiten (escapen)
+        const escapedName = (fe.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const escapedDescription = (fe.beschreibung || 'Keine Beschreibung verfügbar').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const escapedStrength = (fe.strength || '').replace(/'/g, "\\'");
+        const escapedColorCode = (fe.colorCode || '').replace(/'/g, "\\'");
+
+        return `
+            <div class="flex items-center gap-2 ${colorClass} border-2 rounded-lg px-3 py-2 relative group">
+                <button onclick="showFieldEffectDescription('${escapedName}', '${escapedDescription}', '${escapedStrength}', '${escapedColorCode}')"
+                        class="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
+                        title="Klicken für Details">
+                    <span class="font-bold">${fe.name}</span>
+                    <span class="text-sm opacity-80">(${fe.strength})</span>
+                    <span class="text-xs opacity-60">ℹ️</span>
+                </button>
+                ${IS_GOTT_ROLE ? `
+                    <button onclick="removeFieldEffect(${fe.feldEffektId})"
+                            class="ml-2 hover:text-white transition-colors text-lg leading-none"
+                            title="Entfernen">
+                        ×
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+// Open field effect modal
+function openFieldEffectModal() {
+    if (!IS_GOTT_ROLE) return;
+
+    const modal = document.getElementById('fieldEffectModal');
+    if (!modal) return;
+
+    // Reset modal state
+    document.getElementById('fieldEffectSelect').value = '';
+    document.getElementById('fieldEffectDescription').classList.add('hidden');
+    selectedStrength = null;
+    document.querySelectorAll('.strength-btn').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-white');
+    });
+
+    modal.classList.remove('hidden');
+}
+
+// Close field effect modal
+function closeFieldEffectModal() {
+    const modal = document.getElementById('fieldEffectModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Handle field effect selection change
+document.addEventListener('DOMContentLoaded', () => {
+    const selectEl = document.getElementById('fieldEffectSelect');
+    if (selectEl) {
+        selectEl.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const description = selectedOption.getAttribute('data-description');
+
+            const descDiv = document.getElementById('fieldEffectDescription');
+            const descText = document.getElementById('fieldEffectDescriptionText');
+
+            if (description && description !== 'null' && description !== '') {
+                descText.textContent = description;
+                descDiv.classList.remove('hidden');
+            } else {
+                descDiv.classList.add('hidden');
+            }
+        });
+    }
+});
+
+// Select strength
+function selectStrength(strength) {
+    selectedStrength = strength;
+
+    // Update button styling
+    document.querySelectorAll('.strength-btn').forEach(btn => {
+        if (btn.getAttribute('data-strength') === strength) {
+            btn.classList.add('ring-2', 'ring-white');
+        } else {
+            btn.classList.remove('ring-2', 'ring-white');
+        }
+    });
+}
+
+// Add field effect
+async function addFieldEffect() {
+    if (!IS_GOTT_ROLE) return;
+
+    const selectEl = document.getElementById('fieldEffectSelect');
+    const selectedOption = selectEl.options[selectEl.selectedIndex];
+
+    if (!selectedOption.value) {
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Keine Auswahl',
+            text: 'Bitte wähle einen Feldeffekt aus.',
+            confirmButtonColor: '#d97706'
+        });
+        return;
+    }
+
+    if (!selectedStrength) {
+        await Swal.fire({
+            icon: 'warning',
+            title: 'Keine Stärke gewählt',
+            text: 'Bitte wähle eine Stärke für den Feldeffekt.',
+            confirmButtonColor: '#d97706'
+        });
+        return;
+    }
+
+    const feldEffektId = parseInt(selectedOption.value);
+    const name = selectedOption.getAttribute('data-name');
+    const colorCode = selectedOption.getAttribute('data-color');
+    const beschreibung = selectedOption.getAttribute('data-description') || '';
+
+    // Check if already active
+    if (battleState.activeFieldEffects.some(fe => fe.feldEffektId === feldEffektId)) {
+        await Swal.fire({
+            icon: 'info',
+            title: 'Bereits aktiv',
+            text: 'Dieser Feldeffekt ist bereits aktiv.',
+            confirmButtonColor: '#d97706'
+        });
+        return;
+    }
+
+    // Add to state
+    battleState.activeFieldEffects.push({
+        feldEffektId,
+        name,
+        colorCode,
+        strength: selectedStrength,
+        beschreibung: beschreibung
+    });
+
+    // Re-render
+    renderFieldEffects();
+
+    // Sync via SignalR
+    await syncBattleState();
+
+    // Close modal
+    closeFieldEffectModal();
+}
+
+// Remove field effect
+async function removeFieldEffect(feldEffektId) {
+    if (!IS_GOTT_ROLE) return;
+
+    battleState.activeFieldEffects = battleState.activeFieldEffects.filter(
+        fe => fe.feldEffektId !== feldEffektId
+    );
+
+    // Re-render
+    renderFieldEffects();
+
+    // Sync via SignalR
+    await syncBattleState();
+}
+
+// Show field effect description in slide-in panel (für alle sichtbar)
+function showFieldEffectDescription(name, beschreibung, strength, colorCode) {
+    const panel = document.getElementById('fieldEffectPanel');
+    const overlay = document.getElementById('fieldEffectPanelOverlay');
+    const panelTitle = document.getElementById('panelTitle');
+    const panelDescription = document.getElementById('panelDescription');
+    const panelStrength = document.getElementById('panelStrength');
+    const panelHeader = document.getElementById('panelHeader');
+
+    if (!panel || !overlay) return;
+
+    // Setze Inhalt
+    panelTitle.textContent = name;
+    // HTML-Tags in Beschreibung rendern (innerHTML statt textContent)
+    panelDescription.innerHTML = beschreibung || '<em class="text-gray-400">Keine Beschreibung verfügbar</em>';
+
+    // Stärke Badge
+    const strengthConfig = {
+        'einfach': { text: 'Einfach', classes: 'bg-green-900/60 border border-green-500 text-green-200' },
+        'mittel': { text: 'Mittel', classes: 'bg-yellow-900/60 border border-yellow-500 text-yellow-200' },
+        'schwer': { text: 'Schwer', classes: 'bg-red-900/60 border border-red-500 text-red-200' }
+    };
+
+    const strengthInfo = strengthConfig[strength] || { text: strength, classes: 'bg-gray-700 border border-gray-500 text-gray-200' };
+    panelStrength.textContent = strengthInfo.text;
+    panelStrength.className = `inline-block px-3 py-1 rounded-full text-sm font-semibold ${strengthInfo.classes}`;
+
+    // Header Border mit Feldeffekt-Farbe
+    if (colorCode) {
+        panelHeader.style.borderBottomColor = colorCode;
+        panelHeader.style.borderBottomWidth = '3px';
+        panel.style.borderLeftColor = colorCode;
+    }
+
+    // Overlay anzeigen
+    overlay.classList.remove('hidden');
+    setTimeout(() => {
+        overlay.classList.add('overlay-active');
+    }, 10);
+
+    // Panel einsliden
+    panel.classList.add('panel-open');
+}
+
+// Close field effect panel
+function closeFieldEffectPanel() {
+    const panel = document.getElementById('fieldEffectPanel');
+    const overlay = document.getElementById('fieldEffectPanelOverlay');
+
+    if (!panel || !overlay) return;
+
+    // Panel aussliden
+    panel.classList.remove('panel-open');
+
+    // Overlay ausblenden
+    overlay.classList.remove('overlay-active');
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 300);
 }
 
 async function endBattle() {

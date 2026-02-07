@@ -42,6 +42,27 @@
                 }
             </header>
 
+            <!-- Field Effects Banner -->
+            <div id="fieldEffectsBanner" class="hidden bg-gradient-to-r border border-white/20 rounded-lg shadow-2xl overflow-hidden mb-6">
+                <div class="p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-amber-300 font-bold text-lg flex items-center gap-2">
+                            <span class="text-2xl">⚡</span>
+                            Feldeffekte
+                        </h3>
+                        @if (Model.IsGod)
+                        {
+                            <button onclick="openFieldEffectModal()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 px-4 py-2 rounded text-sm font-semibold transition-colors">
+                                + Feldeffekt hinzufügen
+                            </button>
+                        }
+                    </div>
+                    <div id="activeFieldEffectsContainer" class="flex flex-wrap gap-2">
+                        <!-- Active field effects will be rendered here via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
             <!-- Participants Grid -->
             <div class="bg-white/5 border border-white/10 rounded-lg shadow-2xl overflow-hidden backdrop-blur-sm">
                 <div class="p-4 space-y-4 max-h-[72vh] overflow-y-auto custom-scrollbar" id="participantsContainer">
@@ -86,6 +107,107 @@
     </main>
 </div>
 
+<!-- Field Effect Modal (nur für Gott) -->
+@if (Model.IsGod)
+{
+    <div id="fieldEffectModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 border-2 border-amber-500/50 rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-amber-300">Feldeffekt aktivieren</h3>
+                <button onclick="closeFieldEffectModal()" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Field Effect Selection -->
+                <div>
+                    <label class="block text-amber-300 font-semibold mb-2">Feldeffekt wählen</label>
+                    <select id="fieldEffectSelect" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+                        <option value="">-- Bitte wählen --</option>
+                        @foreach (var effect in Model.AllFieldEffects)
+                        {
+                            <option value="@effect.Id" data-name="@effect.Name" data-color="@effect.ColorCode" data-description="@effect.Beschreibung">
+                                @effect.Name (@effect.LightCardName)
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Description Display -->
+                <div id="fieldEffectDescription" class="hidden bg-gray-800/50 border border-gray-700 rounded p-3">
+                    <p class="text-gray-300 text-sm italic" id="fieldEffectDescriptionText"></p>
+                </div>
+
+                <!-- Strength Selection -->
+                <div>
+                    <label class="block text-amber-300 font-semibold mb-2">Stärke</label>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="selectStrength('einfach')" class="flex-1 bg-green-900/40 hover:bg-green-900/60 border-2 border-green-600/50 text-green-300 py-2 rounded font-semibold transition-colors strength-btn" data-strength="einfach">
+                            Einfach
+                        </button>
+                        <button type="button" onclick="selectStrength('mittel')" class="flex-1 bg-yellow-900/40 hover:bg-yellow-900/60 border-2 border-yellow-600/50 text-yellow-300 py-2 rounded font-semibold transition-colors strength-btn" data-strength="mittel">
+                            Mittel
+                        </button>
+                        <button type="button" onclick="selectStrength('schwer')" class="flex-1 bg-red-900/40 hover:bg-red-900/60 border-2 border-red-600/50 text-red-300 py-2 rounded font-semibold transition-colors strength-btn" data-strength="schwer">
+                            Schwer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeFieldEffectModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded font-semibold transition-colors">
+                        Abbrechen
+                    </button>
+                    <button onclick="addFieldEffect()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-black py-2 rounded font-semibold transition-colors">
+                        Aktivieren
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Field Effect Description Slide-in Panel (für alle sichtbar) -->
+<div id="fieldEffectPanel" class="fixed top-0 right-0 h-full w-96 bg-gray-900 border-l-4 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50">
+    <div class="h-full flex flex-col">
+        <!-- Header mit dynamischer Farbe -->
+        <div id="panelHeader" class="p-6 border-b border-gray-700">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-3xl">⚡</span>
+                        <h3 id="panelTitle" class="text-2xl font-bold text-amber-300">Feldeffekt</h3>
+                    </div>
+                    <div id="panelStrength" class="inline-block px-3 py-1 rounded-full text-sm font-semibold"></div>
+                </div>
+                <button onclick="closeFieldEffectPanel()" class="text-gray-400 hover:text-white text-4xl leading-none transition-colors ml-4">
+                    &times;
+                </button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-amber-300 font-semibold mb-2 uppercase tracking-wider text-sm">Beschreibung</h4>
+                    <p id="panelDescription" class="text-gray-300 leading-relaxed text-base"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-6 border-t border-gray-700 bg-gray-800/50">
+            <button onclick="closeFieldEffectPanel()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 rounded-lg transition-colors">
+                Verstanden
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay für Slide-in Panel -->
+<div id="fieldEffectPanelOverlay" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity duration-300 opacity-0" onclick="closeFieldEffectPanel()"></div>
+
 @section Scripts {
     <!-- SignalR Client Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
@@ -97,7 +219,8 @@
         // Model-Daten für JavaScript (falls direkt aufgerufen ohne CombatSetup)
         const BATTLE_MODEL_DATA = {
             characters: @Html.Raw(Json.Serialize(Model.Characters)),
-            monsters: @Html.Raw(Json.Serialize(Model.Monsters))
+            monsters: @Html.Raw(Json.Serialize(Model.Monsters)),
+            allFieldEffects: @Html.Raw(Json.Serialize(Model.AllFieldEffects))
         };
 
         // WICHTIG: Rollenbasierte Zugriffskontrolle
@@ -126,6 +249,15 @@
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: rgba(212, 175, 55, 0.8);
+        }
+
+        /* Slide-in Panel */
+        #fieldEffectPanel.panel-open {
+            transform: translateX(0) !important;
+        }
+
+        #fieldEffectPanelOverlay.overlay-active {
+            opacity: 1 !important;
         }
 
         /* Animations */

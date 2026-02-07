@@ -11,7 +11,7 @@ namespace Suendenbock_App.Models.Domain
         [Required(ErrorMessage = "Die Beschreibung ist erforderlich")]
         public string Content { get; set; } = string.Empty;
         public int? AuthorCharacterId { get; set; }
-        public int? AuthorUserId { get; set; }
+        public string? AuthorUserId { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

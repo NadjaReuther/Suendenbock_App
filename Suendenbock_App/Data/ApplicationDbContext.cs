@@ -92,6 +92,7 @@ namespace Suendenbock_App.Data
 
         // Combat-System
         public DbSet<CombatSession> CombatSessions { get; set; }
+        public DbSet<FeldEffekt> FeldEffekte { get; set; }
 
         // Night Rest System
         public DbSet<NightRestRequest> NightRestRequests { get; set; }
@@ -606,6 +607,13 @@ namespace Suendenbock_App.Data
             builder.Entity<CombatSession>()
                 .HasIndex(cs => new { cs.ActId, cs.IsActive });
 
+            // FeldEffekt -> LightCard (RESTRICT)
+            builder.Entity<FeldEffekt>()
+                .HasOne(fe => fe.LightCard)
+                .WithMany()
+                .HasForeignKey(fe => fe.LightCardId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // ===== POLL-SYSTEM BEZIEHUNGEN =====
 
             // PollVote -> Poll: NO ACTION (wird indirekt über PollOption gelöscht)
@@ -637,6 +645,43 @@ namespace Suendenbock_App.Data
                 .WithMany(ni => ni.Comments)
                 .HasForeignKey(nc => nc.NewsItemId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // ===== FORUM-SYSTEM BEZIEHUNGEN =====
+
+            // ForumThread -> Character (Optional)
+            builder.Entity<ForumThread>()
+                .HasOne(ft => ft.AuthorCharacter)
+                .WithMany()
+                .HasForeignKey(ft => ft.AuthorCharacterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ForumThread -> ApplicationUser (Optional)
+            builder.Entity<ForumThread>()
+                .HasOne(ft => ft.AuthorUser)
+                .WithMany()
+                .HasForeignKey(ft => ft.AuthorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ForumReply -> ForumThread: CASCADE (wenn Thread gelöscht wird, Replies auch)
+            builder.Entity<ForumReply>()
+                .HasOne(fr => fr.Thread)
+                .WithMany(ft => ft.Replies)
+                .HasForeignKey(fr => fr.ThreadId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ForumReply -> Character (Optional)
+            builder.Entity<ForumReply>()
+                .HasOne(fr => fr.AuthorCharacter)
+                .WithMany()
+                .HasForeignKey(fr => fr.AuthorCharacterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ForumReply -> ApplicationUser (Optional)
+            builder.Entity<ForumReply>()
+                .HasOne(fr => fr.AuthorUser)
+                .WithMany()
+                .HasForeignKey(fr => fr.AuthorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

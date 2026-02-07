@@ -14,7 +14,7 @@ namespace Suendenbock_App.Models.Domain
         [Required]
         public int CategoryId { get; set; }
         public int? AuthorCharacterId { get; set; }
-        public int? AuthorUserId { get; set; }
+        public string? AuthorUserId { get; set; }
         [Required]
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

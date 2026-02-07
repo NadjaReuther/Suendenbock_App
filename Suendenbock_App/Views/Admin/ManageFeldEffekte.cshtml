@@ -1,0 +1,116 @@
+@model IEnumerable<Suendenbock_App.Models.Domain.FeldEffekt>
+@{
+    ViewData["Title"] = "Feldeffekt-Verwaltung";
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Feldeffekt-Verwaltung
+    </h3>
+</header>
+
+<div class="container-fluid mt-4">
+    <!-- TempData Benachrichtigungen -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>✓ Erfolg!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>✗ Fehler!</strong> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Aktionen -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <a asp-action="CreateFeldEffekt" class="btn btn-success btn-lg">
+                ➕ Neuen Feldeffekt erstellen
+            </a>
+        </div>
+    </div>
+
+    <!-- Feldeffekte Tabelle -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow mb-4">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="mb-0">
+                    ⚡ Alle Feldeffekte
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">ID</th>
+                                <th>Name</th>
+                                <th>Beschreibung</th>
+                                <th style="width: 150px;">Farbe</th>
+                                <th style="width: 150px;">Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var feldEffekt in Model)
+                            {
+                                <tr>
+                                    <td><strong>@feldEffekt.Id</strong></td>
+                                    <td><strong>@feldEffekt.Name</strong></td>
+                                    <td>@(string.IsNullOrEmpty(feldEffekt.Beschreibung) ? "-" : feldEffekt.Beschreibung)</td>
+                                    <td>
+                                        @if (feldEffekt.LightCard != null)
+                                        {
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <div style="width: 30px; height: 30px; background-color: @feldEffekt.LightCard.Farbcode; border: 2px solid #333; border-radius: 4px;"></div>
+                                                <span>@feldEffekt.LightCard.Bezeichnung</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Keine Farbe</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="EditFeldEffekt" asp-route-id="@feldEffekt.Id" class="btn btn-sm btn-primary" title="Bearbeiten">
+                                                ✏️
+                                            </a>
+                                            <form asp-action="DeleteFeldEffekt" asp-route-id="@feldEffekt.Id" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bist du sicher, dass du den Feldeffekt \'@feldEffekt.Name\' löschen möchtest?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Löschen">
+                                                    🗑️
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            Keine Feldeffekte gefunden. Erstelle deinen ersten Feldeffekt!
+        </div>
+    }
+
+    <!-- Zurück-Button -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <a asp-action="Index" class="btn btn-secondary btn-lg shadow">
+                Zurück zur Admin-Übersicht
+            </a>
+        </div>
+    </div>
+</div>

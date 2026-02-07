@@ -1,0 +1,112 @@
+@model Suendenbock_App.Models.Domain.FeldEffekt
+@{
+    ViewData["Title"] = "Feldeffekt bearbeiten";
+    var lightCards = ViewBag.LightCards as List<Suendenbock_App.Models.Domain.LightCard>;
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        Feldeffekt bearbeiten
+    </h3>
+</header>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg" style="border: 2px solid #d4af37;">
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0">⚡ Feldeffekt bearbeiten</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditFeldEffekt" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">
+                                Name <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Name" class="form-control" placeholder="z.B. Giftiger Nebel" required />
+                            <div class="form-text">
+                                Name des Feldeffekts
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <!-- Beschreibung -->
+                        <div class="mb-3">
+                            <label asp-for="Beschreibung" class="form-label">
+                                Beschreibung
+                            </label>
+                            <textarea asp-for="Beschreibung" class="form-control" rows="3" placeholder="Beschreibe die Wirkung des Feldeffekts..."></textarea>
+                            <div class="form-text">
+                                Optionale Beschreibung des Feldeffekts
+                            </div>
+                            <span asp-validation-for="Beschreibung" class="text-danger"></span>
+                        </div>
+
+                        <!-- LightCard -->
+                        <div class="mb-3">
+                            <label asp-for="LightCardId" class="form-label">
+                                Farbe <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="LightCardId" class="form-select" id="lightCardSelect" required>
+                                <option value="">-- Farbe wählen --</option>
+                                @if (lightCards != null)
+                                {
+                                    foreach (var lightCard in lightCards)
+                                    {
+                                        <option value="@lightCard.Id" data-color="@lightCard.Farbcode" selected="@(lightCard.Id == Model.LightCardId)">
+                                            @lightCard.Bezeichnung
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text">
+                                Wähle die Farbe für die Darstellung im Kampf
+                            </div>
+                            <span asp-validation-for="LightCardId" class="text-danger"></span>
+
+                            <!-- Color Preview -->
+                            <div id="colorPreview" class="mt-2" style="display: @(Model.LightCardId > 0 ? "block" : "none");">
+                                <strong>Vorschau:</strong>
+                                <div id="colorBox" style="width: 100px; height: 40px; border: 2px solid #333; border-radius: 4px; margin-top: 8px; background-color: @(Model.LightCard?.Farbcode ?? "#fff");"></div>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="ManageFeldEffekte" class="btn btn-secondary btn-lg">
+                                ← Abbrechen
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                ✓ Änderungen speichern
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Color Preview on LightCard Selection
+        document.getElementById('lightCardSelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const color = selectedOption.getAttribute('data-color');
+            const preview = document.getElementById('colorPreview');
+            const colorBox = document.getElementById('colorBox');
+
+            if (color) {
+                colorBox.style.backgroundColor = color;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+    </script>
+}
