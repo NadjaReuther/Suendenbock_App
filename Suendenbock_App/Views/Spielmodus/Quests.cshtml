@@ -276,7 +276,10 @@
                 <!-- Description -->
                 <div class="form-group">
                     <label>Beschreibung</label>
-                    <textarea id="questDescription" name="description" rows="3"></textarea>
+                    <div id="editor-wrapper-quest">
+                        <textarea id="questDescription" name="description" class="d-none"></textarea>
+                        <div id="wysiwyg-editor-quest"></div>
+                    </div>
                 </div>
 
                 <!-- Type & Status -->
@@ -371,6 +374,11 @@
 @section Scripts {
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- CKEditor Scripts -->
+    <script src="~/js/wysiwyg-editor.js"></script>
+    <link rel="stylesheet" href="~/css/wysiwyg-editor.css" />
+
     <script src="~/js/quests.js"></script>
     <script>
         const initialFocusQuestId = @Html.Raw(Model.FocusQuestId != null ? $"\"{Model.FocusQuestId}\"" : "null");

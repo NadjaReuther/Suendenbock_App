@@ -1,5 +1,8 @@
 // News.js - Interactivity for News Page
 
+// Global variable for CKEditor instance
+let newsEditor = null;
+
 // Toggle Comments Section
 document.querySelectorAll('.toggle-comments-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -77,7 +80,7 @@ if (newsForm) {
 
 // === MODAL FUNCTIONS ===
 
-function openCreateModal() {
+async function openCreateModal() {
     const modal = document.getElementById('newsModal');
     const modalTitle = document.getElementById('modalTitle');
     const newsId = document.getElementById('newsId');
@@ -85,6 +88,14 @@ function openCreateModal() {
     modalTitle.textContent = 'Botschaft verfassen';
     newsId.value = '';
     document.getElementById('newsForm').reset();
+
+    // Initialize CKEditor if not already initialized
+    if (!newsEditor) {
+        newsEditor = new WikiWYSIWYGEditor('#newsContent', '#wysiwyg-editor-news');
+    } else {
+        // Clear editor content
+        newsEditor.setContent('');
+    }
 
     modal.style.display = 'flex';
 }
@@ -97,14 +108,21 @@ async function openEditModal(newsId) {
     modalTitle.textContent = 'Botschaft anpassen';
     newsIdField.value = newsId;
 
+    // Initialize CKEditor if not already initialized
+    if (!newsEditor) {
+        newsEditor = new WikiWYSIWYGEditor('#newsContent', '#wysiwyg-editor-news');
+    }
+
     // Load news data via AJAX
     try {
         const response = await fetch(`/api/news/${newsId}`);
         if (response.ok) {
             const data = await response.json();
             document.getElementById('newsTitle').value = data.title;
-            document.getElementById('newsContent').value = data.content;
             document.getElementById('newsCategory').value = data.category;
+
+            // Set content in CKEditor
+            newsEditor.setContent(data.content || '');
         } else {
             await Swal.fire({
                 icon: 'error',

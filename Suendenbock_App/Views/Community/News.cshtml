@@ -161,7 +161,10 @@
 
                 <div class="form-group">
                     <label for="newsContent">Inhalt der Botschaft *</label>
-                    <textarea id="newsContent" name="content" rows="6" required class="form-control"></textarea>
+                    <div id="editor-wrapper-news">
+                        <textarea id="newsContent" name="content" required class="form-control d-none"></textarea>
+                        <div id="wysiwyg-editor-news"></div>
+                    </div>
                 </div>
             </div>
 
@@ -187,5 +190,10 @@
 @section Scripts {
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- CKEditor Scripts -->
+    <script src="~/js/wysiwyg-editor.js"></script>
+    <link rel="stylesheet" href="~/css/wysiwyg-editor.css" />
+
     <script src="~/js/news.js"></script>
 }

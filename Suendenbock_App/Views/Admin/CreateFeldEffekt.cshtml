@@ -38,9 +38,12 @@
                             <label asp-for="Beschreibung" class="form-label">
                                 Beschreibung
                             </label>
-                            <textarea asp-for="Beschreibung" class="form-control" rows="3" placeholder="Beschreibe die Wirkung des Feldeffekts..."></textarea>
+                            <div id="editor-wrapper-feldeffekt">
+                                <textarea asp-for="Beschreibung" class="form-control d-none" id="feldeffektBeschreibung" placeholder="Beschreibe die Wirkung des Feldeffekts..."></textarea>
+                                <div id="wysiwyg-editor-feldeffekt"></div>
+                            </div>
                             <div class="form-text">
-                                Optionale Beschreibung des Feldeffekts
+                                Optionale Beschreibung des Feldeffekts (HTML-Formatierung möglich)
                             </div>
                             <span asp-validation-for="Beschreibung" class="text-danger"></span>
                         </div>
@@ -92,7 +95,17 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <!-- CKEditor Scripts -->
+    <script src="~/js/wysiwyg-editor.js"></script>
+    <link rel="stylesheet" href="~/css/wysiwyg-editor.css" />
+
     <script>
+        // Initialize CKEditor for Beschreibung
+        document.addEventListener('DOMContentLoaded', async function() {
+            const wikiEditor = new WikiWYSIWYGEditor('#feldeffektBeschreibung', '#wysiwyg-editor-feldeffekt');
+        });
+
         // Color Preview on LightCard Selection
         document.getElementById('lightCardSelect').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];

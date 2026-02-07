@@ -2,6 +2,7 @@
 
 let selectedCharacters = [];
 let currentTab = 'all';
+let questEditor = null;
 
 // ===== INITIALIZATION =====
 
@@ -451,7 +452,15 @@ async function handleQuestSubmit(e) {
 
 // ===== MODAL =====
 
-function openModal() {
+async function openModal() {
+    // Initialize CKEditor if not already initialized
+    if (!questEditor) {
+        questEditor = new WikiWYSIWYGEditor('#questDescription', '#wysiwyg-editor-quest');
+    } else {
+        // Clear editor content
+        questEditor.setContent('');
+    }
+
     document.getElementById('questModal').style.display = 'flex';
     document.getElementById('questTitle').focus();
 }
@@ -459,6 +468,11 @@ function openModal() {
 function closeModal() {
     document.getElementById('questModal').style.display = 'none';
     document.getElementById('questForm').reset();
+
+    // Clear editor content
+    if (questEditor) {
+        questEditor.setContent('');
+    }
 
     // Reset marker button group
     document.getElementById('markerSetButtonGroup').style.display = 'none';
@@ -491,9 +505,18 @@ function handleEditQuest(questId) {
     const assignedCharacter = questCard.querySelector('.assigned-character:not([style*="italic"])');
     let characterName = assignedCharacter ? assignedCharacter.textContent.trim() : null;
 
+    // Initialize CKEditor if not already initialized
+    if (!questEditor) {
+        questEditor = new WikiWYSIWYGEditor('#questDescription', '#wysiwyg-editor-quest');
+    }
+
     // Populate modal
     document.getElementById('questTitle').value = title;
-    document.getElementById('questDescription').value = description === 'Keine Beschreibung hinterlegt.' ? '' : description;
+
+    // Set description in CKEditor
+    const descriptionContent = description === 'Keine Beschreibung hinterlegt.' ? '' : description;
+    questEditor.setContent(descriptionContent);
+
     document.getElementById('questType').value = type;
     document.getElementById('questStatus').value = status;
 

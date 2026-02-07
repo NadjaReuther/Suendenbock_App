@@ -66,4 +66,17 @@
             }
         }
     }
+
+    setContent(content) {
+        if (this.editor) {
+            this.editor.setData(content || '');
+        }
+    }
+
+    getContent() {
+        if (this.editor) {
+            return this.editor.getData();
+        }
+        return this.textarea.value;
+    }
 }
