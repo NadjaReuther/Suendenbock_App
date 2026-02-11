@@ -1634,6 +1634,12 @@ namespace Suendenbock_App.Controllers.Api
                 };
 
                 _context.MapRegions.Add(region);
+
+                // WICHTIG: Verlinkte Detail-Karte aktualisieren, um ParentMapId zu setzen
+                linkedMap.ParentMapId = request.MapId;
+                linkedMap.IsWorldMap = false;
+                _context.Maps.Update(linkedMap);
+
                 await _context.SaveChangesAsync();
 
                 return Ok(new
@@ -1668,6 +1674,14 @@ namespace Suendenbock_App.Controllers.Api
                 if (region == null)
                 {
                     return NotFound(new { error = "Region nicht gefunden!" });
+                }
+
+                // WICHTIG: Verlinkte Detail-Karte aktualisieren, um ParentMapId zu entfernen
+                var linkedMap = await _context.Maps.FindAsync(region.LinkedMapId);
+                if (linkedMap != null)
+                {
+                    linkedMap.ParentMapId = null;
+                    _context.Maps.Update(linkedMap);
                 }
 
                 _context.MapRegions.Remove(region);
@@ -1705,6 +1719,27 @@ namespace Suendenbock_App.Controllers.Api
                 if (string.IsNullOrEmpty(request.PolygonPoints))
                 {
                     return BadRequest(new { error = "Polygon-Punkte sind erforderlich!" });
+                }
+
+                // Falls LinkedMapId geändert wird, alte und neue Maps aktualisieren
+                if (region.LinkedMapId != request.LinkedMapId)
+                {
+                    // Alte verlinkte Map: ParentMapId entfernen
+                    var oldLinkedMap = await _context.Maps.FindAsync(region.LinkedMapId);
+                    if (oldLinkedMap != null)
+                    {
+                        oldLinkedMap.ParentMapId = null;
+                        _context.Maps.Update(oldLinkedMap);
+                    }
+
+                    // Neue verlinkte Map: ParentMapId setzen
+                    var newLinkedMap = await _context.Maps.FindAsync(request.LinkedMapId);
+                    if (newLinkedMap != null)
+                    {
+                        newLinkedMap.ParentMapId = request.MapId;
+                        newLinkedMap.IsWorldMap = false;
+                        _context.Maps.Update(newLinkedMap);
+                    }
                 }
 
                 // Aktualisieren

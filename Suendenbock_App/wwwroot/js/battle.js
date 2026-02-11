@@ -280,6 +280,20 @@ function buildParticipants(setup) {
     });
 
     // Monster hinzufügen
+    // Zähle Monster vom gleichen Typ für Nummerierung
+    const monsterTypeCounts = {};
+    const monsterTypeCounters = {};
+
+    // Erste Durchlauf: Zähle wie viele Monster vom gleichen Typ es gibt
+    setup.monsters.forEach((monsterSetup) => {
+        const monster = BATTLE_MODEL_DATA.monsters.find(m => m.id === monsterSetup.monsterId);
+        if (!monster) return;
+
+        const baseName = monster.name;
+        monsterTypeCounts[baseName] = (monsterTypeCounts[baseName] || 0) + 1;
+    });
+
+    // Zweiter Durchlauf: Erstelle Monster mit Nummerierung
     setup.monsters.forEach((monsterSetup, index) => {
         const monster = BATTLE_MODEL_DATA.monsters.find(m => m.id === monsterSetup.monsterId);
         if (!monster) return;
@@ -287,9 +301,19 @@ function buildParticipants(setup) {
         const initKey = `monster-${index}`;
         const initiative = setup.initiatives[initKey] || 50;
 
+        const baseName = monster.name;
+        let displayName = baseName;
+
+        // Nummerierung nur wenn mehrere Monster vom gleichen Typ
+        if (monsterTypeCounts[baseName] > 1) {
+            monsterTypeCounters[baseName] = (monsterTypeCounters[baseName] || 0) + 1;
+            displayName = `${baseName} ${monsterTypeCounters[baseName]}`;
+        }
+
         participants.push({
             id: `monster-${index}`,
-            name: monster.name,
+            name: displayName,
+            baseName: baseName, // Speichere Original-Namen für spätere Referenz
             initiative: parseInt(initiative),
             originalInitiative: parseInt(initiative),
             type: 'enemy',
@@ -312,13 +336,34 @@ function buildParticipants(setup) {
 
     // Extra-Teilnehmer hinzufügen (nur Name + HP, keine DB-Referenz, kein Pokus)
     if (setup.extraParticipants) {
+        // Zähle Extra-Teilnehmer vom gleichen Namen für Nummerierung
+        const extraTypeCounts = {};
+        const extraTypeCounters = {};
+
+        // Erste Durchlauf: Zähle wie viele Extras vom gleichen Namen es gibt
+        setup.extraParticipants.forEach((extra) => {
+            const baseName = extra.name;
+            extraTypeCounts[baseName] = (extraTypeCounts[baseName] || 0) + 1;
+        });
+
+        // Zweiter Durchlauf: Erstelle Extras mit Nummerierung
         setup.extraParticipants.forEach((extra, index) => {
             const initKey = `extra-${index}`;
             const initiative = setup.initiatives[initKey] || 50;
 
+            const baseName = extra.name;
+            let displayName = baseName;
+
+            // Nummerierung nur wenn mehrere Extras vom gleichen Namen
+            if (extraTypeCounts[baseName] > 1) {
+                extraTypeCounters[baseName] = (extraTypeCounters[baseName] || 0) + 1;
+                displayName = `${baseName} ${extraTypeCounters[baseName]}`;
+            }
+
             participants.push({
                 id: `extra-${index}`,
-                name: extra.name,
+                name: displayName,
+                baseName: baseName, // Speichere Original-Namen für spätere Referenz
                 initiative: parseInt(initiative),
                 originalInitiative: parseInt(initiative),
                 type: 'companion',
@@ -359,9 +404,79 @@ function renderBattleGrid() {
     const container = document.getElementById('participantsContainer');
     if (!container) return;
 
-    container.innerHTML = battleState.participants.map((p, idx) => {
-        return renderParticipantCard(p, idx);
+    // Nur LEBENDE Teilnehmer anzeigen (tote Monster ausblenden)
+    const aliveParticipants = battleState.participants
+        .map((p, idx) => ({ participant: p, originalIndex: idx }))
+        .filter(item => !item.participant.isDead);
+
+    container.innerHTML = aliveParticipants.map(item => {
+        return renderParticipantCard(item.participant, item.originalIndex);
     }).join('');
+
+    // Gefallene-Liste rendern
+    renderDefeatedList();
+}
+
+function renderDefeatedList() {
+    const container = document.getElementById('defeatedListContainer');
+    const badge = document.getElementById('defeatedCountBadge');
+
+    if (!container) return;
+
+    // Sammle alle toten Gegner (Monster/Enemies)
+    const defeatedEnemies = battleState.participants.filter(p => p.isDead && p.type === 'enemy');
+
+    // Update Badge
+    if (badge) {
+        if (defeatedEnemies.length > 0) {
+            badge.textContent = defeatedEnemies.length;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+
+    if (defeatedEnemies.length === 0) {
+        container.innerHTML = '<p class="text-white/40 text-sm italic">Noch keine Gegner gefallen</p>';
+        return;
+    }
+
+    // Gruppiere nach baseName und speichere alle Namen (mit Nummern)
+    const defeatedGroups = {};
+    defeatedEnemies.forEach(p => {
+        const baseName = p.baseName || p.name;
+        if (!defeatedGroups[baseName]) {
+            defeatedGroups[baseName] = [];
+        }
+        defeatedGroups[baseName].push(p.name);
+    });
+
+    // Erstelle HTML - zeige alle individuellen Monster mit Nummern
+    const html = Object.entries(defeatedGroups).map(([baseName, names]) => {
+        // Sortiere Namen natürlich (damit "Monster 1", "Monster 2", etc. richtig sortiert sind)
+        names.sort((a, b) => {
+            const numA = parseInt(a.match(/\d+$/)?.[0] || 0);
+            const numB = parseInt(b.match(/\d+$/)?.[0] || 0);
+            return numA - numB;
+        });
+
+        const namesList = names.join(', ');
+
+        return `
+            <div class="px-3 py-2 bg-red-900/20 border border-red-500/30 rounded">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="material-symbols-outlined text-red-400 text-lg">skull</span>
+                    <span class="text-red-200 font-['MedievalSharp'] font-bold">${baseName}</span>
+                    <span class="text-red-300 font-bold text-sm">×${names.length}</span>
+                </div>
+                <div class="text-red-300/70 text-xs ml-7">
+                    ${namesList}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
 }
 
 function renderParticipantCard(p, idx) {
@@ -412,8 +527,24 @@ function renderParticipantCard(p, idx) {
                             ` : ''}
                         </div>
                         ${!p.isDead && IS_GOTT_ROLE ? `
-                            <div class="cursor-move text-white/20 hover:text-white/60 transition-colors" title="Ziehen um Reihenfolge zu ändern">
-                                <span class="material-symbols-outlined text-2xl">drag_indicator</span>
+                            <div class="flex flex-col gap-1">
+                                <button
+                                    onclick="moveParticipantUp(${idx})"
+                                    class="cursor-pointer text-white/30 hover:text-amber-400 hover:bg-amber-500/10 transition-colors p-1 rounded disabled:opacity-20 disabled:cursor-not-allowed"
+                                    title="Eine Position nach oben"
+                                    ${idx === 0 ? 'disabled' : ''}>
+                                    <span class="material-symbols-outlined text-lg">keyboard_arrow_up</span>
+                                </button>
+                                <div class="cursor-move text-white/20 hover:text-white/60 transition-colors" title="Ziehen um Reihenfolge zu ändern">
+                                    <span class="material-symbols-outlined text-xl">drag_indicator</span>
+                                </div>
+                                <button
+                                    onclick="moveParticipantDown(${idx})"
+                                    class="cursor-pointer text-white/30 hover:text-amber-400 hover:bg-amber-500/10 transition-colors p-1 rounded disabled:opacity-20 disabled:cursor-not-allowed"
+                                    title="Eine Position nach unten"
+                                    ${idx === battleState.participants.length - 1 ? 'disabled' : ''}>
+                                    <span class="material-symbols-outlined text-lg">keyboard_arrow_down</span>
+                                </button>
                             </div>
                         ` : ''}
                     </div>
@@ -914,12 +1045,47 @@ async function resetInitiative(pIdx) {
 
 // ===== DRAG & DROP FOR INITIATIVE =====
 let draggedIndex = null;
+let autoScrollInterval = null;
 
 function handleDragStart(event, index) {
     if (!IS_GOTT_ROLE) return;
     draggedIndex = index;
     event.currentTarget.style.opacity = '0.5';
     event.dataTransfer.effectAllowed = 'move';
+
+    // Auto-Scroll aktivieren
+    enableAutoScroll();
+}
+
+function enableAutoScroll() {
+    const container = document.getElementById('participantsContainer');
+    if (!container) return;
+
+    // Intervall für Auto-Scroll während Drag
+    if (autoScrollInterval) clearInterval(autoScrollInterval);
+
+    autoScrollInterval = setInterval(() => {
+        if (draggedIndex === null) {
+            clearInterval(autoScrollInterval);
+            return;
+        }
+
+        // Prüfe Mausposition relativ zum Container
+        const rect = container.getBoundingClientRect();
+        const mouseY = event.clientY;
+
+        const scrollThreshold = 100; // Pixel vom Rand
+        const scrollSpeed = 10;
+
+        // Scroll nach oben wenn Maus nahe oberer Rand
+        if (mouseY - rect.top < scrollThreshold) {
+            container.scrollTop -= scrollSpeed;
+        }
+        // Scroll nach unten wenn Maus nahe unterer Rand
+        else if (rect.bottom - mouseY < scrollThreshold) {
+            container.scrollTop += scrollSpeed;
+        }
+    }, 50);
 }
 
 function handleDragOver(event) {
@@ -930,6 +1096,22 @@ function handleDragOver(event) {
     const dropZone = event.currentTarget;
     dropZone.style.borderColor = 'rgb(245, 158, 11)';
     dropZone.style.borderWidth = '3px';
+
+    // Auto-Scroll basierend auf Mausposition
+    const container = document.getElementById('participantsContainer');
+    if (container) {
+        const rect = container.getBoundingClientRect();
+        const mouseY = event.clientY;
+
+        const scrollThreshold = 100;
+        const scrollSpeed = 10;
+
+        if (mouseY - rect.top < scrollThreshold) {
+            container.scrollTop -= scrollSpeed;
+        } else if (rect.bottom - mouseY < scrollThreshold) {
+            container.scrollTop += scrollSpeed;
+        }
+    }
 
     return false;
 }
@@ -952,41 +1134,168 @@ function handleDrop(event, dropIndex) {
 
     if (draggedIndex === null || draggedIndex === dropIndex) return;
 
-    // Teilnehmer verschieben
+    // WICHTIG: Verschiebe den Teilnehmer direkt im Array UND passe Initiative an!
     const draggedParticipant = battleState.participants[draggedIndex];
     const targetParticipant = battleState.participants[dropIndex];
+    const oldCurrentTurnIndex = battleState.currentTurnIndex;
 
-    // Initiative des gezogenen Teilnehmers anpassen
-    // Wenn nach unten gezogen (höhere Position = höhere Initiative), zwischen target und nächstem setzen
+    // Entferne den gezogenen Teilnehmer aus dem Array
+    battleState.participants.splice(draggedIndex, 1);
+
+    // Berechne die neue Einfügeposition
+    let newInsertIndex = dropIndex;
     if (draggedIndex < dropIndex) {
-        // Nach unten gezogen
-        const nextParticipant = battleState.participants[dropIndex + 1];
+        // Nach unten gezogen: Index ist schon korrekt
+        newInsertIndex = dropIndex;
+    }
+
+    // Füge den Teilnehmer an der neuen Position ein
+    battleState.participants.splice(newInsertIndex, 0, draggedParticipant);
+
+    // WICHTIG: Initiative anpassen basierend auf der neuen Position
+    // So bleibt die Position während der Runde stabil!
+    if (draggedIndex < newInsertIndex) {
+        // Nach unten gezogen: Initiative zwischen Ziel und nächstem
+        const nextParticipant = battleState.participants[newInsertIndex + 1];
         if (nextParticipant) {
-            // Zwischen dropIndex und dropIndex+1
             draggedParticipant.initiative = Math.floor((targetParticipant.initiative + nextParticipant.initiative) / 2);
         } else {
-            // Ans Ende
+            // Ans Ende: Initiative höher als Ziel
             draggedParticipant.initiative = targetParticipant.initiative + 1;
         }
     } else {
-        // Nach oben gezogen
-        const prevParticipant = battleState.participants[dropIndex - 1];
+        // Nach oben gezogen: Initiative zwischen vorherigem und Ziel
+        const prevParticipant = battleState.participants[newInsertIndex - 1];
         if (prevParticipant) {
-            // Zwischen dropIndex-1 und dropIndex
             draggedParticipant.initiative = Math.floor((prevParticipant.initiative + targetParticipant.initiative) / 2);
         } else {
-            // An den Anfang
+            // An den Anfang: Initiative niedriger als Ziel
             draggedParticipant.initiative = targetParticipant.initiative - 1;
         }
     }
 
+    // CurrentTurnIndex anpassen basierend auf der Verschiebung
+    const currentPlayerId = battleState.participants[oldCurrentTurnIndex].id;
+
+    if (oldCurrentTurnIndex === draggedIndex) {
+        // WICHTIG: Der aktuelle Spieler wurde verschoben!
+        // Der Zug geht IMMER an den Spieler, der vorher NACH ihm kam
+        // Das ist jetzt der Spieler an der alten Position (draggedIndex)
+        battleState.currentTurnIndex = draggedIndex;
+    } else {
+        // Jemand ANDERES wurde verschoben
+        // Der aktuelle Zug soll auf dem GLEICHEN SPIELER bleiben (nicht Index!)
+        // Finde den aktuellen Spieler nach der Verschiebung
+        battleState.currentTurnIndex = battleState.participants.findIndex(p => p.id === currentPlayerId);
+    }
+
     renderBattleGrid();
+    updateTurnIndicator();
     syncBattleState();
 }
 
 function handleDragEnd(event) {
     event.currentTarget.style.opacity = '1';
     draggedIndex = null;
+
+    // Auto-Scroll deaktivieren
+    if (autoScrollInterval) {
+        clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
+    }
+}
+
+// ===== MOVE UP/DOWN BUTTONS FOR INITIATIVE =====
+function moveParticipantUp(index) {
+    if (!IS_GOTT_ROLE || index === 0) return;
+
+    // WICHTIG: Verschiebe im Array UND tausche Initiative!
+    const participant = battleState.participants[index];
+    const prevParticipant = battleState.participants[index - 1];
+    const oldCurrentTurnIndex = battleState.currentTurnIndex;
+
+    // Tausche Initiativen (damit Position während Runde stabil bleibt!)
+    const tempInitiative = participant.initiative;
+    participant.initiative = prevParticipant.initiative;
+    prevParticipant.initiative = tempInitiative;
+
+    // Entferne Teilnehmer aus aktueller Position
+    battleState.participants.splice(index, 1);
+
+    // Füge ihn eine Position früher ein
+    battleState.participants.splice(index - 1, 0, participant);
+
+    // CurrentTurnIndex anpassen
+    const currentPlayerId = battleState.participants[oldCurrentTurnIndex].id;
+
+    if (oldCurrentTurnIndex === index) {
+        // WICHTIG: Der aktuelle Spieler wurde nach oben verschoben
+        // Der Zug geht an den Spieler, der vorher nach ihm kam (jetzt an alter Position)
+        battleState.currentTurnIndex = index;
+    } else {
+        // Jemand ANDERES wurde verschoben
+        // Der aktuelle Zug soll auf dem GLEICHEN SPIELER bleiben (nicht Index!)
+        battleState.currentTurnIndex = battleState.participants.findIndex(p => p.id === currentPlayerId);
+    }
+
+    renderBattleGrid();
+    updateTurnIndicator();
+    syncBattleState();
+
+    // Scroll zur verschobenen Karte
+    scrollToParticipant(index - 1);
+}
+
+function moveParticipantDown(index) {
+    if (!IS_GOTT_ROLE || index === battleState.participants.length - 1) return;
+
+    // WICHTIG: Verschiebe im Array UND tausche Initiative!
+    const participant = battleState.participants[index];
+    const nextParticipant = battleState.participants[index + 1];
+    const oldCurrentTurnIndex = battleState.currentTurnIndex;
+
+    // Tausche Initiativen (damit Position während Runde stabil bleibt!)
+    const tempInitiative = participant.initiative;
+    participant.initiative = nextParticipant.initiative;
+    nextParticipant.initiative = tempInitiative;
+
+    // Entferne Teilnehmer aus aktueller Position
+    battleState.participants.splice(index, 1);
+
+    // Füge ihn eine Position später ein
+    battleState.participants.splice(index + 1, 0, participant);
+
+    // CurrentTurnIndex anpassen
+    const currentPlayerId = battleState.participants[oldCurrentTurnIndex].id;
+
+    if (oldCurrentTurnIndex === index) {
+        // WICHTIG: Der aktuelle Spieler wurde nach unten verschoben
+        // Der Zug geht an den Spieler, der vorher nach ihm kam (jetzt an alter Position)
+        battleState.currentTurnIndex = index;
+    } else {
+        // Jemand ANDERES wurde verschoben
+        // Der aktuelle Zug soll auf dem GLEICHEN SPIELER bleiben (nicht Index!)
+        battleState.currentTurnIndex = battleState.participants.findIndex(p => p.id === currentPlayerId);
+    }
+
+    renderBattleGrid();
+    updateTurnIndicator();
+    syncBattleState();
+
+    // Scroll zur verschobenen Karte
+    scrollToParticipant(index + 1);
+}
+
+function scrollToParticipant(index) {
+    const container = document.getElementById('participantsContainer');
+    if (!container) return;
+
+    setTimeout(() => {
+        const cards = container.querySelectorAll('[data-participant-index]');
+        if (cards[index]) {
+            cards[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, 100);
 }
 
 function cycleDownedStatus(pIdx, key) {
@@ -1087,20 +1396,31 @@ function nextTurn() {
         isNewRound = true;
     }
 
-    // Beim Rundenwechsel: Alle Initiativen zurücksetzen (außer Unsichtbar)
+    let newTurnIdx;
+
     if (isNewRound) {
+        // Beim Rundenwechsel: Alle Initiativen zurücksetzen (außer Unsichtbar)
         battleState.participants.forEach(p => {
             if (!p.activeConditions.includes('Unsichtbar')) {
                 p.initiative = p.originalInitiative;
             }
         });
+
+        // Sortieren nach Initiative
+        battleState.participants = sortParticipants(battleState.participants);
+
+        // WICHTIG: Bei Rundenwechsel IMMER bei Index 0 beginnen (kleinste Initiative)
+        newTurnIdx = 0;
+    } else {
+        // Kein Rundenwechsel: Merke die ID des nächsten Spielers VOR dem Sortieren!
+        const nextActorId = battleState.participants[nextIdxInCurrentList].id;
+
+        // Sortieren (falls Unsichtbar geändert wurde)
+        battleState.participants = sortParticipants(battleState.participants);
+
+        // Finde den nächsten Spieler nach ID
+        newTurnIdx = battleState.participants.findIndex(p => p.id === nextActorId);
     }
-
-    const nextActorName = battleState.participants[nextIdxInCurrentList].name;
-
-    // Sortieren (falls Unsichtbar geändert wurde)
-    battleState.participants = sortParticipants(battleState.participants);
-    let newTurnIdx = battleState.participants.findIndex(p => p.name === nextActorName);
 
     // Auto-Damage anwenden
     battleState.participants[newTurnIdx] = applyAutoDamage(battleState.participants[newTurnIdx], tempRound);
@@ -1527,6 +1847,32 @@ function closeFieldEffectPanel() {
     setTimeout(() => {
         overlay.classList.add('hidden');
     }, 300);
+}
+
+// Toggle defeated enemies panel
+function toggleDefeatedPanel() {
+    const panel = document.getElementById('defeatedPanel');
+    const overlay = document.getElementById('defeatedPanelOverlay');
+
+    if (!panel || !overlay) return;
+
+    const isOpen = panel.classList.contains('panel-open');
+
+    if (isOpen) {
+        // Panel schließen
+        panel.classList.remove('panel-open');
+        overlay.classList.remove('overlay-active');
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 300);
+    } else {
+        // Panel öffnen
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.classList.add('overlay-active');
+        }, 10);
+        panel.classList.add('panel-open');
+    }
 }
 
 async function endBattle() {

@@ -663,7 +663,19 @@ namespace Suendenbock_App.Controllers
                 existingMap.Name = viewModel.Name;
                 existingMap.ActId = viewModel.ActId;
                 existingMap.IsWorldMap = viewModel.IsWorldMap;
-                existingMap.ParentMapId = viewModel.ParentMapId;
+
+                // WICHTIG: Wenn zu Weltkarte konvertiert, ParentMapId entfernen
+                // Wenn Detail-Karte bleibt, ParentMapId beibehalten (wird von MapRegions gesetzt)
+                if (viewModel.IsWorldMap)
+                {
+                    existingMap.ParentMapId = null;
+                }
+                else
+                {
+                    // Für Detail-Karten: ParentMapId nur übernehmen wenn vorhanden
+                    // (wird normalerweise von MapRegions automatisch gesetzt)
+                    existingMap.ParentMapId = viewModel.ParentMapId;
+                }
 
                 // Bild-Upload (optional bei Edit)
                 if (imageFile != null && imageFile.Length > 0)
