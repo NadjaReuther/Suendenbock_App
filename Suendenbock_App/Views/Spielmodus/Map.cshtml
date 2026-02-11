@@ -4,10 +4,8 @@
 }
 
 @section Styles {
-    <!-- Dein CSS -->
     <link rel="stylesheet" href="~/css/spielmodus.css" />
     <link rel="stylesheet" href="~/css/spielmodus-map.css" />
-    <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 }
 
@@ -17,7 +15,7 @@
     <header class="map-header">
         <div class="map-header-content">
             <div>
-                <h1>Weltkarte</h1>
+                <h1>@(Model.CurrentMap?.IsWorldMap == true ? "Weltkarte" : Model.CurrentMap?.RegionName ?? "Weltkarte")</h1>
                 <p class="subtitle">Die Pfade des Schicksals</p>
             </div>
         </div>
@@ -32,13 +30,28 @@
         }
     </header>
 
-    <!-- Act Selector (nur für Gott) -->
+    @if (Model.CurrentMap != null && !Model.CurrentMap.IsWorldMap && Model.CurrentMap.ParentMapId.HasValue)
+    {
+        <nav class="map-breadcrumb">
+            <a href="/Spielmodus/Map?mapId=@Model.CurrentMap.ParentMapId" class="breadcrumb-item">
+                <span class="material-symbols-outlined">public</span>
+                <span>@(Model.CurrentMap.ParentMapName ?? "Weltkarte")</span>
+            </a>
+            <span class="breadcrumb-separator">
+                <span class="material-symbols-outlined">chevron_right</span>
+            </span>
+            <span class="breadcrumb-item current">
+                <span class="material-symbols-outlined">map</span>
+                <span>@(Model.CurrentMap.RegionName ?? Model.CurrentMap.Name)</span>
+            </span>
+        </nav>
+    }
+
     @if (Model.IsGod)
     {
         <div class="act-selector-container">
             <label for="actSelector">Arbeite an Act:</label>
             <select id="actSelector" class="act-selector" onchange="switchWorkingAct(this.value)">
-                <!-- Wird via JavaScript gefüllt -->
             </select>
             <span class="act-status-indicator" id="actStatusIndicator"></span>
         </div>
@@ -46,7 +59,6 @@
 
     @if (Model.CurrentMap == null)
     {
-        <!-- Keine Karte vorhanden -->
         <div class="no-map">
             <span class="material-symbols-outlined">map</span>
             <p>Für diesen Act existiert noch keine Karte.</p>
@@ -62,7 +74,6 @@
 
             @if (Model.IsGod)
             {
-                <!-- Gott: Marker-Tools Sidebar -->
                 <aside class="marker-tools">
                     <div class="tools-card">
                         <h3>Kartentasche</h3>
@@ -97,25 +108,41 @@
 
             <!-- Karten-Container -->
             <div class="map-canvas-wrapper">
-                <!-- Bild bestimmt Größe -->
                 <img src="@Model.CurrentMap.ImageUrl"
                      alt="@Model.CurrentMap.Name"
                      class="map-background-image"
                      id="mapImage"
                      data-no-zoom="true" />
 
-                <!-- Marker-Layer ÜBER dem Bild -->
+                @if (Model.CurrentMap.IsWorldMap && Model.CurrentMap.Regions.Any())
+                {
+                    <svg class="map-regions-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        @foreach (var region in Model.CurrentMap.Regions)
+                        {
+                            var points = System.Text.Json.JsonSerializer.Deserialize<List<System.Text.Json.JsonElement>>(region.PolygonPoints);
+                            var pointsString = string.Join(" ", points.Select(p => $"{p.GetProperty("x").GetString()},{p.GetProperty("y").GetString()}"));
+
+                            <polygon class="clickable-region"
+                                     points="@pointsString"
+                                     data-region-id="@region.Id"
+                                     data-region-name="@region.RegionName"
+                                     data-linked-map-id="@region.LinkedMapId">
+                                <title>@region.RegionName</title>
+                            </polygon>
+                        }
+                    </svg>
+                }
+
                 <div class="map-marker-layer"
                      id="mapCanvas"
                      data-map-id="@Model.CurrentMap.Id"
                      data-is-god="@Model.IsGod.ToString().ToLower()">
-
-                    <!-- Marker -->
-                    @foreach (var marker in Model.CurrentMap.Markers)
+                    @foreach (var marker in Model.CurrentMap.Markers.Where(m => m.Type != "region"))
                     {
                         <div class="map-marker marker-@marker.Type"
                              data-marker-id="@marker.Id"
                              data-marker-type="@marker.Type"
+                             data-linked-map-id="@(marker.LinkedMapId?.ToString() ?? "")"
                              style="left: @(marker.XPercent.ToString(System.Globalization.CultureInfo.InvariantCulture))%; top: @(marker.YPercent.ToString(System.Globalization.CultureInfo.InvariantCulture))%;">
                             <div class="marker-pin">
                                 <span class="material-symbols-outlined">
@@ -147,7 +174,6 @@
         </main>
     }
 
-    <!-- Zurück Button -->
     <section class="map-back">
         <a href="/Spielmodus/Dashboard" class="back-btn">
             <span class="material-symbols-outlined">fireplace</span>
@@ -163,7 +189,6 @@
     </footer>
 </div>
 
-<!-- Marker Popup (für Details/Erstellen) -->
 <div id="markerPopup" class="marker-popup" style="display: none;">
     <div class="popup-content">
         <div class="popup-header">
@@ -174,22 +199,19 @@
         </div>
 
         <div class="popup-body" id="popupBody">
-            <!-- Dynamisch befüllt via JavaScript -->
-        </div>
     </div>
 </div>
 
 @section Scripts {
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Model-Daten für JavaScript
         const MAP_DATA = {
             mapId: @(Model.CurrentMap?.Id ?? 0),
             isGod: @Model.IsGod.ToString().ToLower(),
             markers: @Html.Raw(Json.Serialize(Model.CurrentMap?.Markers ?? new List<Suendenbock_App.Controllers.MarkerViewModel>())),
             activeQuests: @Html.Raw(Json.Serialize(Model.ActiveQuests)),
-            focusMarkerId: @(Model.FocusMarkerId?.ToString() ?? "null")
+            focusMarkerId: @(Model.FocusMarkerId?.ToString() ?? "null"),
+            childMaps: @Html.Raw(Json.Serialize(Model.CurrentMap?.ChildMaps ?? new List<Suendenbock_App.Controllers.ChildMapViewModel>()))
         };
     </script>
     <script src="~/js/map.js"></script>

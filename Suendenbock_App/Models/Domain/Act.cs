@@ -99,6 +99,28 @@ namespace Suendenbock_App.Models
         public int ActId { get; set; }
         public Act Act { get; set; } = null!;
 
+        /// <summary>
+        /// HIERARCHIE: Parent-Karte (null = Weltkarte/Root)
+        /// Ermöglicht 2-Ebenen-Hierarchie: Weltkarte → Regionskarten
+        /// </summary>
+        public int? ParentMapId { get; set; }
+        public Map? ParentMap { get; set; }
+
+        /// <summary>
+        /// HIERARCHIE: Ist dies eine Weltkarte? (oberste Ebene)
+        /// true = Weltkarte (zeigt Regionen)
+        /// false = Detail-Karte einer Region (zeigt Quests)
+        /// </summary>
+        public bool IsWorldMap { get; set; } = false;
+
+        /// <summary>
+        /// HIERARCHIE: Name der Region (nur für Detail-Karten)
+        /// z.B. "Königreich Nord", "Wüste Süd", "Gebirge Ost"
+        /// null bei Weltkarten
+        /// </summary>
+        [StringLength(200)]
+        public string? RegionName { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // ===== BEZIEHUNGEN =====
@@ -107,6 +129,11 @@ namespace Suendenbock_App.Models
         /// Orte/Marker auf dieser Karte
         /// </summary>
         public List<MapMarker> Markers { get; set; } = new();
+
+        /// <summary>
+        /// HIERARCHIE: Sub-Karten/Regionen (wenn dies eine Weltkarte ist)
+        /// </summary>
+        public List<Map> ChildMaps { get; set; } = new();
     }
 
     /// <summary>
@@ -139,11 +166,19 @@ namespace Suendenbock_App.Models
         public string Label { get; set; } = string.Empty;
 
         /// <summary>
-        /// Marker-Typ: "quest", "info", "danger", "settlement"
+        /// Marker-Typ: "quest", "info", "danger", "settlement", "region"
+        /// "region" = Klickbarer Marker auf Weltkarte, öffnet Detail-Karte
         /// </summary>
         [Required]
         [StringLength(50)]
-        public string Type { get; set; } = "info"; // "quest", "info", "danger", "settlement"
+        public string Type { get; set; } = "info"; // "quest", "info", "danger", "settlement", "region"
+
+        /// <summary>
+        /// HIERARCHIE: Für region-Marker: Verlinkte Detail-Karte
+        /// null = kein Link (normale Marker)
+        /// </summary>
+        public int? LinkedMapId { get; set; }
+        public Map? LinkedMap { get; set; }
 
         [StringLength(1000)]
         public string? Description { get; set; }

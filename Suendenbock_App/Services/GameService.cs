@@ -187,11 +187,20 @@ namespace Suendenbock_App.Services
         /// </summary>
         public async Task<Act?> GetCurrentActAsync()
         {
-            return await _context.Acts
-                .Include(a => a.Map)
-                    .ThenInclude(m => m.Markers)
-                        .ThenInclude(mm => mm.Quests)
+            var act = await _context.Acts
                 .FirstOrDefaultAsync(a => a.IsActive);
+
+            if (act != null)
+            {
+                // Lade Weltkarte mit Markers und Quests
+                act.Map = await _context.Maps
+                    .Where(m => m.ActId == act.Id && m.IsWorldMap)
+                    .Include(m => m.Markers)
+                        .ThenInclude(mm => mm.Quests)
+                    .FirstOrDefaultAsync();
+            }
+
+            return act;
         }
     }
 }

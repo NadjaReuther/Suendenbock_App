@@ -197,6 +197,146 @@
         color: rgba(93, 78, 55, 0.4);
     }
 
+/* ===== BREADCRUMB NAVIGATION ===== */
+.map-breadcrumb {
+    max-width: 96rem;
+    margin: 0 auto 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #d4c4a8;
+    border-radius: 0.5rem;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #8B5E3C;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+    .breadcrumb-item:hover:not(.current) {
+        color: #d4af37;
+    }
+
+    .breadcrumb-item.current {
+        color: #5d4e37;
+        font-weight: bold;
+    }
+
+    .breadcrumb-item .material-symbols-outlined {
+        font-size: 1.125rem;
+    }
+
+.breadcrumb-separator {
+    color: rgba(139, 94, 60, 0.3);
+}
+
+    .breadcrumb-separator .material-symbols-outlined {
+        font-size: 1rem;
+    }
+
+/* ===== REGION MAPS OVERVIEW ===== */
+.region-maps-overview {
+    max-width: 96rem;
+    margin: 0 auto 3rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #d4c4a8;
+    border-radius: 0.5rem;
+}
+
+.region-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.region-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border: 2px solid #d4c4a8;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+    .region-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        border-color: #d4af37;
+    }
+
+.region-card-image {
+    width: 100%;
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+    .region-card-image::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3) 100%);
+    }
+
+.region-card-content {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+    .region-card-content h3 {
+        font-family: 'MedievalSharp', cursive;
+        font-size: 1.125rem;
+        color: #5d4e37;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .region-card-content p {
+        font-family: 'Cinzel', serif;
+        font-size: 0.75rem;
+        color: rgba(93, 78, 55, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin: 0 0 1rem 0;
+        flex: 1;
+    }
+
+.region-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+    .region-card-footer .material-symbols-outlined {
+        color: #d4af37;
+        font-size: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .region-card:hover .region-card-footer .material-symbols-outlined {
+        transform: translateX(4px);
+    }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
     .map-header h1 {
@@ -210,6 +350,15 @@
 
     .act-tabs {
         flex-wrap: wrap;
+    }
+
+    .map-breadcrumb {
+        padding: 0.75rem 1rem;
+        font-size: 0.6875rem;
+    }
+
+    .region-cards-grid {
+        grid-template-columns: 1fr;
     }
 }
 /* Teil 2: Sidebar & Karten-Canvas */
@@ -476,6 +625,21 @@
 .map-marker.marker-settlement .marker-pin {
     background: #57534e;
     border-top-color: #57534e;
+}
+
+/* Region: Purple (for navigable regions on world maps) */
+.map-marker.marker-region .marker-pin {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-top-color: #667eea;
+}
+
+.map-marker.marker-region.clickable {
+    cursor: pointer;
+}
+
+.map-marker.marker-region.clickable:hover {
+    transform: translate(-50%, -100%) scale(1.15);
+    filter: brightness(1.1);
 }
 
 /* ===== RESPONSIVE ===== */
@@ -769,6 +933,12 @@
     .marker-type-badge.marker-settlement {
         background: rgba(87, 83, 78, 0.2);
         color: #292524;
+    }
+
+    /* Region: Purple */
+    .marker-type-badge.marker-region {
+        background: rgba(102, 126, 234, 0.2);
+        color: #4c1d95;
     }
 
 .marker-description {
@@ -1163,4 +1333,30 @@
     .quest-description {
         font-size: 0.75rem;
     }
+}
+
+/* ========================================
+   SVG Polygon Regions (Clickable Areas)
+   ======================================== */
+
+.map-regions-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5; /* Above image, below markers */
+}
+
+.clickable-region {
+    pointer-events: all;
+    cursor: pointer;
+    transition: fill 0.3s ease;
+    fill: transparent; /* Unsichtbar im Normalzustand */
+    stroke: none; /* Kein Rand */
+}
+
+.clickable-region:hover {
+    fill: rgba(0, 0, 0, 0.3) !important; /* Dunkle Overlay beim Hover */
 }

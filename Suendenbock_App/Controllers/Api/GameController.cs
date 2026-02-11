@@ -853,7 +853,6 @@ namespace Suendenbock_App.Controllers.Api
             try
             {
                 var acts = await _context.Acts
-                    .Include(a => a.Map)
                     .OrderBy(a => a.ActNumber)
                     .Select(a => new
                     {
@@ -868,7 +867,10 @@ namespace Suendenbock_App.Controllers.Api
                         a.Month,
                         a.Weather,
                         a.CreatedAt,
-                        MapImageUrl = a.Map != null ? a.Map.ImageUrl : null
+                        MapImageUrl = _context.Maps
+                            .Where(m => m.ActId == a.Id && m.IsWorldMap)
+                            .Select(m => m.ImageUrl)
+                            .FirstOrDefault()
                     })
                     .ToListAsync();
 
@@ -891,7 +893,6 @@ namespace Suendenbock_App.Controllers.Api
             try
             {
                 var act = await _context.Acts
-                    .Include(a => a.Map)
                     .Where(a => a.Id == id)
                     .Select(a => new
                     {
@@ -906,7 +907,10 @@ namespace Suendenbock_App.Controllers.Api
                         a.Month,
                         a.Weather,
                         a.CreatedAt,
-                        MapImageUrl = a.Map != null ? a.Map.ImageUrl : null
+                        MapImageUrl = _context.Maps
+                            .Where(m => m.ActId == a.Id && m.IsWorldMap)
+                            .Select(m => m.ImageUrl)
+                            .FirstOrDefault()
                     })
                     .FirstOrDefaultAsync();
 
@@ -1015,7 +1019,8 @@ namespace Suendenbock_App.Controllers.Api
                     {
                         // Log inner exception details
                         var innerMessage = mapEx.InnerException != null ? mapEx.InnerException.Message : mapEx.Message;
-                        return StatusCode(500, new {
+                        return StatusCode(500, new
+                        {
                             error = "Fehler beim Speichern der Karte",
                             details = innerMessage,
                             actCreated = true,
@@ -1063,13 +1068,17 @@ namespace Suendenbock_App.Controllers.Api
             try
             {
                 var act = await _context.Acts
-                    .Include(a => a.Map)
                     .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (act == null)
                 {
                     return NotFound(new { error = "Act nicht gefunden!" });
                 }
+
+                // Lade Weltkarte falls vorhanden
+                act.Map = await _context.Maps
+                    .Where(m => m.ActId == act.Id && m.IsWorldMap)
+                    .FirstOrDefaultAsync();
 
                 // Update Act
                 if (!string.IsNullOrWhiteSpace(request.Name))
@@ -1179,7 +1188,6 @@ namespace Suendenbock_App.Controllers.Api
             try
             {
                 var act = await _context.Acts
-                    .Include(a => a.Map)
                     .FirstOrDefaultAsync(a => a.Id == id);
 
                 if (act == null)
@@ -1187,6 +1195,7 @@ namespace Suendenbock_App.Controllers.Api
                     return NotFound(new { error = "Act nicht gefunden!" });
                 }
 
+                // Kein Include nötig - Cascade Delete kümmert sich um Maps
                 _context.Acts.Remove(act);
                 await _context.SaveChangesAsync();
 
@@ -1296,7 +1305,7 @@ namespace Suendenbock_App.Controllers.Api
                     return BadRequest(new { error = "Koordinaten müssen zwischen 0 und 100 liegen!" });
                 }
 
-                var validTypes = new[] { "quest", "info", "danger", "settlement" };
+                var validTypes = new[] { "quest", "info", "danger", "settlement", "region" };
                 if (!validTypes.Contains(request.Type))
                 {
                     return BadRequest(new { error = "Ungültiger Marker-Typ!" });
@@ -1536,8 +1545,184 @@ namespace Suendenbock_App.Controllers.Api
             }
         }
 
-    }
 
+
+
+        // ===== MAP REGIONS API =====
+
+        /// <summary>
+        /// Alle Regionen einer Map laden
+        /// GET /api/game/maps/1/regions
+        /// </summary>
+        [HttpGet("maps/{mapId}/regions")]
+        public async Task<IActionResult> GetMapRegions(int mapId)
+        {
+            try
+            {
+                var regions = await _context.MapRegions
+                    .Where(r => r.MapId == mapId)
+                    .Select(r => new
+                    {
+                        r.Id,
+                        r.RegionName,
+                        r.PolygonPoints,
+                        r.LinkedMapId
+                    })
+                    .ToListAsync();
+
+                return Ok(regions);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Fehler beim Laden der Regionen: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Region erstellen
+        /// POST /api/game/map-regions
+        /// </summary>
+        [HttpPost("map-regions")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> CreateMapRegion([FromBody] CreateMapRegionRequest request)
+        {
+            try
+            {
+                // Validierung
+                if (request.MapId <= 0)
+                {
+                    return BadRequest(new { error = "Map-ID ist erforderlich!" });
+                }
+
+                if (request.LinkedMapId <= 0)
+                {
+                    return BadRequest(new { error = "Verlinkte Map-ID ist erforderlich!" });
+                }
+
+                if (string.IsNullOrEmpty(request.RegionName))
+                {
+                    return BadRequest(new { error = "Regionsname ist erforderlich!" });
+                }
+
+                if (string.IsNullOrEmpty(request.PolygonPoints))
+                {
+                    return BadRequest(new { error = "Polygon-Punkte sind erforderlich!" });
+                }
+
+                // Map existiert?
+                var map = await _context.Maps.FindAsync(request.MapId);
+                if (map == null)
+                {
+                    return NotFound(new { error = "Map nicht gefunden!" });
+                }
+
+                // Verlinkte Map existiert?
+                var linkedMap = await _context.Maps.FindAsync(request.LinkedMapId);
+                if (linkedMap == null)
+                {
+                    return NotFound(new { error = "Verlinkte Map nicht gefunden!" });
+                }
+
+                // Region erstellen
+                var region = new MapRegion
+                {
+                    MapId = request.MapId,
+                    LinkedMapId = request.LinkedMapId,
+                    RegionName = request.RegionName,
+                    PolygonPoints = request.PolygonPoints,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.MapRegions.Add(region);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Region erfolgreich erstellt!",
+                    region = new
+                    {
+                        region.Id,
+                        region.RegionName,
+                        region.PolygonPoints,
+                        region.LinkedMapId
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Fehler beim Erstellen der Region: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Region löschen
+        /// DELETE /api/game/map-regions/5
+        /// </summary>
+        [HttpDelete("map-regions/{id}")]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> DeleteMapRegion(int id)
+        {
+            try
+            {
+                var region = await _context.MapRegions.FindAsync(id);
+                if (region == null)
+                {
+                    return NotFound(new { error = "Region nicht gefunden!" });
+                }
+
+                _context.MapRegions.Remove(region);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Region erfolgreich gelöscht!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Fehler beim Löschen der Region: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// UPDATE: Polygon-Region aktualisieren
+        /// PUT /api/game/map-regions/{id}
+        /// </summary>
+        [HttpPut("map-regions/{id}")]
+        public async Task<IActionResult> UpdateMapRegion(int id, [FromBody] CreateMapRegionRequest request)
+        {
+            try
+            {
+                var region = await _context.MapRegions.FindAsync(id);
+                if (region == null)
+                {
+                    return NotFound(new { error = "Region nicht gefunden!" });
+                }
+
+                // Validierung
+                if (string.IsNullOrEmpty(request.RegionName))
+                {
+                    return BadRequest(new { error = "Regionsname ist erforderlich!" });
+                }
+
+                if (string.IsNullOrEmpty(request.PolygonPoints))
+                {
+                    return BadRequest(new { error = "Polygon-Punkte sind erforderlich!" });
+                }
+
+                // Aktualisieren
+                region.RegionName = request.RegionName;
+                region.LinkedMapId = request.LinkedMapId;
+                region.PolygonPoints = request.PolygonPoints;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Region erfolgreich aktualisiert!", region = new { region.Id, region.RegionName, region.PolygonPoints, region.LinkedMapId } });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Fehler beim Aktualisieren der Region: {ex.Message}" });
+            }
+        }
+    }
+    
     // ===== REQUEST MODELS =====
 
     public class NightRestRequest
@@ -1636,5 +1821,12 @@ namespace Suendenbock_App.Controllers.Api
         public string? Month { get; set; }
         public string? Weather { get; set; }
         public IFormFile? MapImage { get; set; } // Bilddatei statt Base64-String
+    }
+    public class CreateMapRegionRequest
+    {
+        public int MapId { get; set; }
+        public int LinkedMapId { get; set; }
+        public string RegionName { get; set; } = string.Empty;
+        public string PolygonPoints { get; set; } = string.Empty;
     }
 }

@@ -2381,15 +2381,26 @@ namespace Suendenbock_App.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<bool>("IsWorldMap")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("ParentMapId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RegionName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("ActId")
-                        .IsUnique();
+                    b.HasIndex("ActId");
+
+                    b.HasIndex("ParentMapId");
 
                     b.ToTable("Maps");
                 });
@@ -2414,6 +2425,9 @@ namespace Suendenbock_App.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("LinkedMapId")
+                        .HasColumnType("int");
+
                     b.Property<int>("MapId")
                         .HasColumnType("int");
 
@@ -2430,9 +2444,46 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LinkedMapId");
+
                     b.HasIndex("MapId");
 
                     b.ToTable("MapMarkers");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.MapRegion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LinkedMapId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MapId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PolygonPoints")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RegionName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LinkedMapId");
+
+                    b.HasIndex("MapId");
+
+                    b.ToTable("MapRegions");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Quest", b =>
@@ -3336,21 +3387,54 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Map", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Act", "Act")
-                        .WithOne("Map")
-                        .HasForeignKey("Suendenbock_App.Models.Map", "ActId")
+                        .WithMany()
+                        .HasForeignKey("ActId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Suendenbock_App.Models.Map", "ParentMap")
+                        .WithMany("ChildMaps")
+                        .HasForeignKey("ParentMapId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Act");
+
+                    b.Navigation("ParentMap");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.MapMarker", b =>
                 {
+                    b.HasOne("Suendenbock_App.Models.Map", "LinkedMap")
+                        .WithMany()
+                        .HasForeignKey("LinkedMapId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Suendenbock_App.Models.Map", "Map")
                         .WithMany("Markers")
                         .HasForeignKey("MapId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("LinkedMap");
+
+                    b.Navigation("Map");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.MapRegion", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Map", "LinkedMap")
+                        .WithMany()
+                        .HasForeignKey("LinkedMapId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Map", "Map")
+                        .WithMany()
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LinkedMap");
 
                     b.Navigation("Map");
                 });
@@ -3389,8 +3473,6 @@ namespace Suendenbock_App.Migrations
 
             modelBuilder.Entity("Suendenbock_App.Models.Act", b =>
                 {
-                    b.Navigation("Map");
-
                     b.Navigation("Quests");
                 });
 
@@ -3573,6 +3655,8 @@ namespace Suendenbock_App.Migrations
 
             modelBuilder.Entity("Suendenbock_App.Models.Map", b =>
                 {
+                    b.Navigation("ChildMaps");
+
                     b.Navigation("Markers");
                 });
 

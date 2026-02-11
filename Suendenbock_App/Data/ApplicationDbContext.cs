@@ -84,6 +84,7 @@ namespace Suendenbock_App.Data
         public DbSet<Act> Acts { get; set; }
         public DbSet<Map> Maps { get; set; }
         public DbSet<MapMarker> MapMarkers { get; set; }
+        public DbSet<MapRegion> MapRegions { get; set; }
         public DbSet<RestFood> RestFoods { get; set; }
 
         // Weather-System
@@ -539,12 +540,21 @@ namespace Suendenbock_App.Data
                 .HasForeignKey(q => q.PreviousQuestId)
                 .OnDelete(DeleteBehavior.Restrict); // Vorgänger-Quest kann nicht gelöscht werden, wenn Folge-Quests existieren
 
-            // Act -> Map (One-to-One)
+            // Act <-> Maps Beziehung
+            // Ein Act kann mehrere Maps haben (Weltkarte + Detail-Karten)
+            // Act.Map ist NICHT gemappt - wird manuell im Code geladen
+
+            // WICHTIG: Ignoriere Act.Map Navigation Property
+            // Sonst erstellt EF Core eine Shadow Property "ActId1"
+            builder.Entity<Act>()
+                .Ignore(a => a.Map);
+
+            // Basis-Beziehung: Map -> Act (Many-to-One)
             builder.Entity<Map>()
                 .HasOne(m => m.Act)
-                .WithOne(a => a.Map)
-                .HasForeignKey<Map>(m => m.ActId)
-                .OnDelete(DeleteBehavior.Cascade); // Wenn Act gelöscht, Map auch
+                .WithMany() // Keine Collection von Act -> Maps
+                .HasForeignKey(m => m.ActId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Map -> MapMarker (One-to-Many)
             builder.Entity<MapMarker>()
@@ -681,6 +691,42 @@ namespace Suendenbock_App.Data
                 .HasOne(fr => fr.AuthorUser)
                 .WithMany()
                 .HasForeignKey(fr => fr.AuthorUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ===== MAP-HIERARCHIE BEZIEHUNGEN =====
+
+            // Map -> ParentMap (Self-Referential): RESTRICT
+            // Child-Karten verweisen auf ihre Parent-Weltkarte
+            builder.Entity<Map>()
+                .HasOne(m => m.ParentMap)
+                .WithMany(m => m.ChildMaps)
+                .HasForeignKey(m => m.ParentMapId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // MapMarker -> LinkedMap: RESTRICT
+            // Region-Marker verweisen auf Detail-Karten
+            builder.Entity<MapMarker>()
+                .HasOne(mm => mm.LinkedMap)
+                .WithMany()
+                .HasForeignKey(mm => mm.LinkedMapId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ===== MAP REGION BEZIEHUNGEN =====
+
+            // MapRegion -> Map (Weltkarte): CASCADE
+            // Regions auf der Weltkarte
+            builder.Entity<MapRegion>()
+                .HasOne(mr => mr.Map)
+                .WithMany()
+                .HasForeignKey(mr => mr.MapId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // MapRegion -> LinkedMap: RESTRICT
+            // Verlinkte Detail-Karte darf nicht gelöscht werden
+            builder.Entity<MapRegion>()
+                .HasOne(mr => mr.LinkedMap)
+                .WithMany()
+                .HasForeignKey(mr => mr.LinkedMapId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

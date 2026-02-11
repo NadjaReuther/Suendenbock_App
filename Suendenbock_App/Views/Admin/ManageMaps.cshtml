@@ -1,0 +1,592 @@
+@using Suendenbock_App.Models
+@model dynamic
+@{
+    ViewData["Title"] = "Karten-Verwaltung";
+}
+
+<div class="admin-container">
+    <div class="container-fluid py-4">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                <strong>⚠️ Fehler:</strong> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <strong>✅ Erfolg:</strong> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="mb-0">🗺️ Karten-Verwaltung</h1>
+                    <a asp-action="CreateMap" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Neue Karte erstellen
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle"></i> Hierarchisches Karten-System</h5>
+                    <p class="mb-0">
+                        <strong>Weltkarten</strong> zeigen die gesamte Welt eines Acts mit Region-Markern.<br>
+                        <strong>Detail-Karten</strong> zeigen eine spezifische Region mit Quest-Markern und sind einer Weltkarte untergeordnet.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maps Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="pergament-table-card">
+                    <h3 class="pergament-header">Alle Karten</h3>
+                    <table id="mapsTable" class="medieval-table w-100">
+                        <thead>
+                            <tr>
+                                <th>Vorschau</th>
+                                <th>Act</th>
+                                <th>Name</th>
+                                <th>Typ</th>
+                                <th>Region</th>
+                                <th>Parent Map</th>
+                                <th>Marker</th>
+                                <th>🗡️ Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var map in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@map.ImageUrl" alt="@map.Name" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #d4c4a8;" />
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">Act @map.ActNumber</span>
+                                    </td>
+                                    <td><strong>@map.Name</strong></td>
+                                    <td>
+                                        @if (map.IsWorldMap)
+                                        {
+                                            <span class="badge" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                                <i class="fas fa-globe"></i> Weltkarte
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-map"></i> Detail-Karte
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(map.RegionName))
+                                        {
+                                            <span class="text-muted">@map.RegionName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(map.ParentMapName))
+                                        {
+                                            <span class="badge bg-info">@map.ParentMapName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning">@map.MarkerCount Marker</span>
+                                    </td>
+                                    <td>
+                                        <div class="medieval-actions">
+                                            <a asp-controller="Spielmodus" asp-action="Map" asp-route-mapId="@map.Id" target="_blank"
+                                               class="medieval-btn view-btn" title="Karte ansehen">
+                                                👁️
+                                            </a>
+                                            <a asp-action="EditMap" asp-route-id="@map.Id"
+                                               class="medieval-btn edit-btn" title="Karte bearbeiten">
+                                                ✏️
+                                            </a>
+                                            @if (map.IsWorldMap)
+                                            {
+                                                <button class="medieval-btn special-btn"
+                                                        onclick="openRegionDrawer(@map.Id, '@map.Name', '@map.ImageUrl')"
+                                                        title="Neue Region zeichnen">
+                                                    🎨
+                                                </button>
+                                                <button class="medieval-btn info-btn"
+                                                        onclick="manageRegions(@map.Id, '@map.Name')"
+                                                        title="Regionen verwalten">
+                                                    📋
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="medieval-btn special-btn"
+                                                        onclick="convertToWorldMap(@map.Id, '@map.Name')"
+                                                        title="Zu Weltkarte konvertieren">
+                                                    🌍
+                                                </button>
+                                            }
+                                            <button class="medieval-btn delete-btn"
+                                                    onclick="deleteMap(@map.Id, '@map.Name', @map.ChildMapCount)"
+                                                    title="Karte löschen">
+                                                🗡️
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Region Drawer Modal -->
+<div class="modal fade" id="regionDrawerModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <h5 class="modal-title">🎨 Regionen zeichnen</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong>📍 Anleitung:</strong> Klicke auf die Karte, um die Eckpunkte deiner Region zu markieren.
+                    Mindestens 3 Punkte erforderlich. Klicke "Polygon schließen", wenn fertig.
+                </div>
+
+                <!-- Map Canvas -->
+                <div id="regionDrawerCanvas" style="position: relative; max-width: 100%; margin-bottom: 1rem;">
+                    <img id="drawerMapImage" src="" alt="Map" style="width: 100%; display: block; border: 2px solid #d4c4a8; border-radius: 8px;" />
+                    <svg id="drawerSvgOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                        <polygon id="drawerPolygon" fill="rgba(100,150,255,0.3)" stroke="#4a90e2" stroke-width="2" points="" />
+                        <g id="drawerPoints"></g>
+                    </svg>
+                </div>
+
+                <!-- Form -->
+                <form id="regionForm">
+                    <input type="hidden" id="drawerMapId" />
+                    <input type="hidden" id="drawerPolygonPoints" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Regionsname *</label>
+                            <input type="text" id="regionName" class="form-control" placeholder="z.B. Königreich Nord" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Verlinkte Detail-Karte *</label>
+                            <select id="linkedMapId" class="form-select" required>
+                                <option value="">-- Detail-Karte auswählen --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span id="pointCounter" class="badge bg-secondary">0 Punkte</span>
+                            <button type="button" class="btn btn-warning btn-sm ms-2" onclick="clearPolygon()">
+                                <i class="fas fa-undo"></i> Zurücksetzen
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Abbrechen</button>
+                            <button type="submit" class="btn btn-success" id="saveRegionBtn" disabled>
+                                <i class="fas fa-save"></i> Polygon schließen & Speichern
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Regionen-Verwaltung Modal -->
+<div class="modal fade" id="manageRegionsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">🗺️ Regionen verwalten: <span id="manageRegionsMapName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="regionsListContainer">
+                    <p class="text-center">Lade Regionen...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#mapsTable').DataTable({
+                dom: '<"row pergament-controls mb-2"<"col-sm-12 col-md-5"l><"col-sm-12 col-md-7"f>>' +
+                    '<"row"<"col-sm-12"tr>>' +
+                    '<"row pergament-footer mt-5"<"col-sm-12 col-md-4"i><"col-sm-12 col-md-8"p>>',
+                pageLength: 10,
+                lengthMenu: [[5, 10, 25, -1], [5, 10, 25, "Alle"]],
+                language: {
+                    search: "🔍 Karten durchsuchen:",
+                    lengthMenu: "Zeige _MENU_ Einträge",
+                    info: "📜 _START_ bis _END_ von _TOTAL_ Karten",
+                    infoEmpty: "📰 Keine Karten vorhanden",
+                    infoFiltered: "(🔎 gefiltert von _MAX_ Gesamt)",
+                    paginate: {
+                        first: "⏮️ Erste",
+                        last: "⏭️ Letzte",
+                        next: "▶️ Nächste",
+                        previous: "◀️ Vorherige"
+                    },
+                    emptyTable: "📋 Keine Karten vorhanden",
+                    zeroRecords: "🔍 Keine passenden Karten gefunden"
+                },
+                columnDefs: [
+                    { orderable: false, targets: [0, -1] }
+                ],
+                order: [[1, 'asc'], [3, 'desc'], [2, 'asc']],
+                responsive: true,
+                autoWidth: false
+            });
+        });
+
+        function convertToWorldMap(id, name) {
+            Swal.fire({
+                title: 'Zu Weltkarte konvertieren?',
+                html: `Die Karte <strong>"${name}"</strong> wird zur Weltkarte konvertiert.<br><br>` +
+                    `<small class="text-muted">Die Karte wird von ihrer Parent-Map getrennt und kann dann eigene Detail-Karten haben.</small>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: '🌍 Konvertieren',
+                cancelButtonText: 'Abbrechen',
+                confirmButtonColor: '#667eea'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: "POST",
+                        url: "@Url.Action("ConvertToWorldMap", "Admin")",
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire('Konvertiert!', response.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Fehler!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Fehler!', 'Ein unerwarteter Fehler ist aufgetreten.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function deleteMap(id, name, childCount) {
+            if (childCount > 0) {
+                Swal.fire({
+                    title: 'Löschen nicht möglich!',
+                    html: `Die Karte <strong>"${name}"</strong> hat noch <strong>${childCount}</strong> Region(en) zugeordnet.<br><br>` +
+                        `<small class="text-muted">Lösche oder verschiebe zuerst alle Detail-Karten.</small>`,
+                    icon: 'warning',
+                    confirmButtonText: 'Verstanden',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Karte wirklich löschen?',
+                html: `Die Karte <strong>"${name}"</strong> wird unwiderruflich gelöscht.<br><br>` +
+                    `<small class="text-muted">Alle Marker auf dieser Karte werden ebenfalls entfernt.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '🗡️ Löschen',
+                cancelButtonText: 'Abbrechen',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: "POST",
+                        url: "@Url.Action("DeleteMap", "Admin")",
+                        data: { id: id },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire('Gelöscht!', response.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Fehler!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Fehler!', 'Ein unerwarteter Fehler ist aufgetreten.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        // ===== REGION DRAWER =====
+        let currentPolygonPoints = [];
+        let currentMapId = null;
+
+        function openRegionDrawer(mapId, mapName, mapImageUrl) {
+            currentMapId = mapId;
+            currentPolygonPoints = [];
+
+            // Modal öffnen
+            const modal = new bootstrap.Modal(document.getElementById('regionDrawerModal'));
+            modal.show();
+
+            // Bild setzen
+            document.getElementById('drawerMapImage').src = mapImageUrl;
+            document.getElementById('drawerMapId').value = mapId;
+
+            // Detail-Karten laden
+            loadDetailMaps(mapId);
+
+            // Reset
+            clearPolygon();
+
+            // Click-Event auf Bild
+            const img = document.getElementById('drawerMapImage');
+            img.style.cursor = 'crosshair';
+
+            img.onclick = function (e) {
+                addPolygonPoint(e);
+            };
+        }
+
+        function addPolygonPoint(e) {
+            const img = e.target;
+            const rect = img.getBoundingClientRect();
+
+            // Berechne Prozent-Position
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+            currentPolygonPoints.push({ x: x.toFixed(2), y: y.toFixed(2) });
+
+            updatePolygonPreview();
+        }
+
+        function updatePolygonPreview() {
+            const polygon = document.getElementById('drawerPolygon');
+            const pointsGroup = document.getElementById('drawerPoints');
+            const counter = document.getElementById('pointCounter');
+            const saveBtn = document.getElementById('saveRegionBtn');
+
+            // Polygon-Punkte als SVG-Format
+            const pointsString = currentPolygonPoints.map(p => `${p.x}%,${p.y}%`).join(' ');
+            polygon.setAttribute('points', pointsString);
+
+            // Punkt-Marker zeichnen
+            pointsGroup.innerHTML = '';
+            currentPolygonPoints.forEach((p, i) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', `${p.x}%`);
+                circle.setAttribute('cy', `${p.y}%`);
+                circle.setAttribute('r', '4');
+                circle.setAttribute('fill', '#4a90e2');
+                circle.setAttribute('stroke', 'white');
+                circle.setAttribute('stroke-width', '2');
+                pointsGroup.appendChild(circle);
+
+                // Punkt-Nummer
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', `${p.x}%`);
+                text.setAttribute('y', `${parseFloat(p.y) - 1}%`);
+                text.setAttribute('fill', 'white');
+                text.setAttribute('font-size', '12');
+                text.setAttribute('font-weight', 'bold');
+                text.setAttribute('text-anchor', 'middle');
+                text.textContent = i + 1;
+                pointsGroup.appendChild(text);
+            });
+
+            // Counter & Button
+            counter.textContent = `${currentPolygonPoints.length} Punkte`;
+            saveBtn.disabled = currentPolygonPoints.length < 3;
+        }
+
+        function clearPolygon() {
+            currentPolygonPoints = [];
+            updatePolygonPreview();
+            document.getElementById('regionName').value = '';
+            document.getElementById('linkedMapId').value = '';
+        }
+
+        async function loadDetailMaps(worldMapId) {
+            try {
+                const maps = @Html.Raw(Json.Serialize(Model));
+                const numericMapId = Number(worldMapId);
+                const worldMap = maps.find(m => Number(m.id) === numericMapId);
+
+                if (!worldMap) return;
+
+                const detailMaps = maps.filter(m =>
+                    !m.isWorldMap && Number(m.actId) === Number(worldMap.actId)
+                );
+
+                const select = document.getElementById('linkedMapId');
+                select.innerHTML = '<option value="">-- Detail-Karte auswählen --</option>';
+
+                detailMaps.forEach(map => {
+                    const option = document.createElement('option');
+                    option.value = map.id;
+                    option.textContent = `${map.regionName || map.name}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Fehler beim Laden der Detail-Karten:', error);
+            }
+        }
+
+        // Form Submit
+        document.getElementById('regionForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const regionName = document.getElementById('regionName').value;
+            const linkedMapId = parseInt(document.getElementById('linkedMapId').value);
+
+            if (!regionName || !linkedMapId || currentPolygonPoints.length < 3) {
+                Swal.fire('Fehler', 'Bitte alle Felder ausfüllen und mindestens 3 Punkte setzen!', 'error');
+                return;
+            }
+
+            // JSON-Format für Polygon
+            const polygonJson = JSON.stringify(currentPolygonPoints);
+
+            try {
+                const response = await fetch('/api/game/map-regions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mapId: currentMapId,
+                        linkedMapId: linkedMapId,
+                        regionName: regionName,
+                        polygonPoints: polygonJson
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    Swal.fire('Erfolg!', 'Region erfolgreich erstellt!', 'success').then(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('regionDrawerModal')).hide();
+                        clearPolygon();
+                    });
+                } else {
+                    Swal.fire('Fehler', result.error || 'Region konnte nicht erstellt werden', 'error');
+                }
+            } catch (error) {
+                Swal.fire('Fehler', 'Ein unerwarteter Fehler ist aufgetreten', 'error');
+                console.error(error);
+            }
+        });
+
+        // ===== REGIONEN VERWALTEN =====
+        async function manageRegions(mapId, mapName) {
+            document.getElementById('manageRegionsMapName').textContent = mapName;
+            const modal = new bootstrap.Modal(document.getElementById('manageRegionsModal'));
+            modal.show();
+
+            try {
+                const response = await fetch(`/api/game/maps/${mapId}/regions`);
+                const regions = await response.json();
+
+                const container = document.getElementById('regionsListContainer');
+
+                if (regions.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center">Keine Regionen vorhanden. Klicke auf 🎨 um eine neue Region zu zeichnen.</p>';
+                    return;
+                }
+
+                let html = '<div class="list-group">';
+                regions.forEach(region => {
+                    html += `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${region.regionName}</h6>
+                                    <small class="text-muted">Verlinkte Map ID: ${region.linkedMapId}</small>
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-danger" onclick="deleteRegion(${region.id}, '${region.regionName}', ${mapId}, '${mapName}')">
+                                        🗡️ Löschen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Fehler beim Laden der Regionen:', error);
+                document.getElementById('regionsListContainer').innerHTML =
+                    '<p class="text-danger text-center">Fehler beim Laden der Regionen</p>';
+            }
+        }
+
+        async function deleteRegion(regionId, regionName, mapId, mapName) {
+            const result = await Swal.fire({
+                title: 'Region löschen?',
+                text: `Möchtest du die Region "${regionName}" wirklich löschen?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ja, löschen!',
+                cancelButtonText: 'Abbrechen'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/api/game/map-regions/${regionId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        Swal.fire('Gelöscht!', data.message, 'success');
+                        // Reload regions list
+                        manageRegions(mapId, mapName);
+                    } else {
+                        Swal.fire('Fehler', data.error || 'Region konnte nicht gelöscht werden', 'error');
+                    }
+                } catch (error) {
+                    Swal.fire('Fehler', 'Ein unerwarteter Fehler ist aufgetreten', 'error');
+                    console.error(error);
+                }
+            }
+        }
+    </script>
+}

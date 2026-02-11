@@ -52,6 +52,8 @@ function initMap() {
         marker.addEventListener('click', (e) => {
             e.stopPropagation();
             const markerId = marker.dataset.markerId;
+
+            // Zeige Marker-Details
             showMarkerDetails(markerId);
         });
 
@@ -67,6 +69,17 @@ function initMap() {
         if (e.target.id === 'markerPopup') {
             closePopup();
         }
+    });
+
+    // Polygon-Regionen anklicken → Navigiere zur Detail-Karte
+    document.querySelectorAll('.clickable-region').forEach(polygon => {
+        polygon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const linkedMapId = polygon.dataset.linkedMapId;
+            if (linkedMapId) {
+                window.location.href = `/Spielmodus/Map?mapId=${linkedMapId}`;
+            }
+        });
     });
 }
 
@@ -355,7 +368,7 @@ function showCreateMarkerForm() {
     const title = document.getElementById('popupTitle');
     const body = document.getElementById('popupBody');
 
-    title.textContent = selectedMarkerType === 'quest' ? 'Quest zuweisen' : 'Punkt benennen';
+    title.textContent = selectedMarkerType === 'quest' ? 'Quest zuweisen' : selectedMarkerType === 'region' ? 'Region verlinken' : 'Punkt benennen';
 
     let formHtml = '<form id="createMarkerForm">';
 
@@ -374,6 +387,24 @@ function showCreateMarkerForm() {
                 </div>
             `;
         }
+    } else if (selectedMarkerType === 'region') {
+        // Region-Marker: Label + Linked Map Dropdown
+        formHtml += `
+            <div class="form-group">
+                <label>Regionsname</label>
+                <input type="text" name="label" required autofocus placeholder="z.B. Königreich Nord" />
+            </div>
+            <div class="form-group">
+                <label>Detail-Karte verlinken</label>
+                <select name="linkedMapId" required>
+                    <option value="">Bitte wählen...</option>
+                    ${MAP_DATA.childMaps ? MAP_DATA.childMaps.map(m => `<option value="${m.id}">${m.regionName}</option>`).join('') : ''}
+                </select>
+                <small style="display: block; margin-top: 0.25rem; color: #666;">
+                    Beim Klick auf diesen Marker wird zur gewählten Region navigiert.
+                </small>
+            </div>
+        `;
     } else {
         // Label + Description
         formHtml += `
@@ -419,6 +450,7 @@ async function handleCreateMarker(e) {
     let label = formData.get('label') || '';
     const description = formData.get('description') || null;
     const questId = formData.get('questId');
+    const linkedMapId = formData.get('linkedMapId');
 
     // Bei Quest: Label = Quest-Titel
     if (selectedMarkerType === 'quest' && questId) {
@@ -435,7 +467,8 @@ async function handleCreateMarker(e) {
         xPercent: pendingPosition.x,
         yPercent: pendingPosition.y,
         description: description,
-        questId: questId ? parseInt(questId) : null
+        questId: questId ? parseInt(questId) : null,
+        linkedMapId: linkedMapId ? parseInt(linkedMapId) : null
     };
 
     try {
@@ -514,6 +547,18 @@ function showMarkerDetails(markerId) {
                 </div>
             `;
         }
+    }
+
+    // Region-spezifische Informationen
+    if (marker.type === 'region' && marker.linkedMapName) {
+        detailsHtml += `
+            <div class="region-info">
+                <p style="margin-top: 1rem; color: #666; font-size: 0.95rem;">
+                    <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.2rem;">map</span>
+                    Führt zur Detailkarte: <strong>${marker.linkedMapName}</strong>
+                </p>
+            </div>
+        `;
     }
 
     if (marker.description) {
@@ -645,7 +690,8 @@ function getMarkerIcon(type) {
         quest: 'priority_high',
         info: 'info',
         danger: 'skull',
-        settlement: 'fort'
+        settlement: 'fort',
+        region: 'explore'
     };
     return icons[type] || 'location_on';
 }
@@ -655,7 +701,8 @@ function getMarkerTypeLabel(type) {
         quest: 'Quest',
         info: 'Information',
         danger: 'Gefahr',
-        settlement: 'Ort'
+        settlement: 'Ort',
+        region: 'Region'
     };
     return labels[type] || type;
 }

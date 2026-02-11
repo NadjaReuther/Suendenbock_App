@@ -15,8 +15,6 @@ namespace Suendenbock_App.Controllers
         {
         }
 
-        // ===== DASHBOARD =====
-
         /// <summary>
         /// Haupt-Dashboard des Spielmodus
         /// Route: /Spielmodus/Dashboard
@@ -33,14 +31,20 @@ namespace Suendenbock_App.Controllers
             if (isGod && actId.HasValue)
             {
                 currentAct = await _context.Acts
-                    .Include(a => a.Map)
                     .FirstOrDefaultAsync(a => a.Id == actId.Value);
             }
             else
             {
                 currentAct = await _context.Acts
-                    .Include(a => a.Map)
                     .FirstOrDefaultAsync(a => a.IsActive);
+            }
+
+            // Lade Weltkarte des Acts
+            if (currentAct != null)
+            {
+                currentAct.Map = await _context.Maps
+                    .Where(m => m.ActId == currentAct.Id && m.IsWorldMap)
+                    .FirstOrDefaultAsync();
             }
 
             // Lade alle aktiven Spieler-Characters
@@ -121,44 +125,54 @@ namespace Suendenbock_App.Controllers
             return View(viewModel);
         }
 
-        // ===== WEITERE VIEWS (kommen später) =====
-
         /// <summary>
         /// Map-Seite
         /// Route: /Spielmodus/Map
         /// Gott kann mit ?actId=X einen spezifischen Act laden
+        /// HIERARCHIE: ?mapId=X lädt spezifische Karte (Weltkarte oder Detail-Karte)
         /// </summary>
-        public async Task<IActionResult> Map(int? actId, int? focusMarkerId = null)
+        public async Task<IActionResult> Map(int? actId, int? mapId, int? focusMarkerId = null)
         {
             var isGod = User.IsInRole("Gott");
 
-            // Bestimme welchen Act geladen werden soll
-            Act? currentAct;
-            if (isGod && actId.HasValue)
+            Map? selectedMap = null;
+            Act? currentAct = null;
+
+            if (mapId.HasValue)
+            {
+                selectedMap = await _context.Maps
+                    .AsNoTracking()
+                    .Include(m => m.Act)
+                    .Include(m => m.ParentMap)
+                    .FirstOrDefaultAsync(m => m.Id == mapId.Value);
+
+                currentAct = selectedMap?.Act;
+            }
+            else if (isGod && actId.HasValue)
             {
                 currentAct = await _context.Acts
-                    .Include(a => a.Map)
-                        .ThenInclude(m => m.Markers)
-                            .ThenInclude(marker => marker.Quests)
-                                .ThenInclude(q => q.Character)
-                    .Include(a => a.Map)
-                        .ThenInclude(m => m.Markers)
-                            .ThenInclude(marker => marker.Quests)
-                                .ThenInclude(q => q.PreviousQuest)
                     .FirstOrDefaultAsync(a => a.Id == actId.Value);
+
+                if (currentAct != null)
+                {
+                    selectedMap = await _context.Maps
+                        .AsNoTracking()
+                        .Where(m => m.ActId == currentAct.Id && m.IsWorldMap)
+                        .FirstOrDefaultAsync();
+                }
             }
             else
             {
                 currentAct = await _context.Acts
-                    .Include(a => a.Map)
-                        .ThenInclude(m => m.Markers)
-                            .ThenInclude(marker => marker.Quests)
-                                .ThenInclude(q => q.Character)
-                    .Include(a => a.Map)
-                        .ThenInclude(m => m.Markers)
-                            .ThenInclude(marker => marker.Quests)
-                                .ThenInclude(q => q.PreviousQuest)
                     .FirstOrDefaultAsync(a => a.IsActive);
+
+                if (currentAct != null)
+                {
+                    selectedMap = await _context.Maps
+                        .AsNoTracking()
+                        .Where(m => m.ActId == currentAct.Id && m.IsWorldMap)
+                        .FirstOrDefaultAsync();
+                }
             }
 
             // Alle aktiven Quests DES AKTUELLEN ACTS für Marker-Zuordnung (nur für Gott relevant)
@@ -185,70 +199,124 @@ namespace Suendenbock_App.Controllers
                     IsActive = currentAct.IsActive
                 } : null,
                 FocusMarkerId = focusMarkerId,
-                CurrentMap = currentAct?.Map != null ? new MapViewModelData
+                CurrentMap = selectedMap != null ? new MapViewModelData
                 {
-                    Id = currentAct.Map.Id,
-                    Name = currentAct.Map.Name,
-                    ImageUrl = currentAct.Map.ImageUrl,
-                    Markers = currentAct.Map.Markers
-                        .Where(m =>
-                        {
-                            // Zeige alle Nicht-Quest-Marker
-                            if (m.Type != "quest") return true;
-
-                            // Für Quest-Marker: Prüfe ob Quest sichtbar ist
-                            var quest = m.Quests.FirstOrDefault();
-                            if (quest == null) return false;
-
-                            // Quest muss aktiv sein
-                            if (quest.Status != "active") return false;
-
-                            // Wenn Quest eine Folgequest ist, prüfe ob Vorgänger-Bedingung erfüllt
-                            if (quest.PreviousQuestId.HasValue)
-                            {
-                                if (quest.PreviousQuest == null) return false;
-
-                                var requirement = quest.PreviousQuestRequirement ?? "both";
-                                var isVisible = requirement switch
-                                {
-                                    "completed" => quest.PreviousQuest.Status == "completed",
-                                    "failed" => quest.PreviousQuest.Status == "failed",
-                                    "both" => quest.PreviousQuest.Status == "completed" || quest.PreviousQuest.Status == "failed",
-                                    _ => false
-                                };
-                                if (!isVisible) return false;
-                            }
-
-                            return true;
-                        })
-                        .Select(m =>
-                        {
-                            var quest = m.Quests.FirstOrDefault();
-                            return new MarkerViewModel
-                            {
-                                Id = m.Id,
-                                Label = m.Label,
-                                Type = m.Type,
-                                XPercent = m.XPercent,
-                                YPercent = m.YPercent,
-                                Description = m.Description,
-                                QuestId = quest?.Id,
-                                QuestTitle = quest?.Title,
-                                QuestCharacterName = quest?.Character != null
-                                    ? $"{quest.Character.Vorname} {quest.Character.Nachname}"
-                                    : null,
-                                QuestType = quest?.Type
-                            };
-                        }).ToList()
+                    Id = selectedMap.Id,
+                    Name = selectedMap.Name,
+                    ImageUrl = selectedMap.ImageUrl,
+                    IsWorldMap = selectedMap.IsWorldMap,
+                    RegionName = selectedMap.RegionName,
+                    ParentMapId = selectedMap.ParentMapId,
+                    ParentMapName = selectedMap.ParentMap?.Name,
+                    ChildMaps = new List<ChildMapViewModel>(),
+                    Markers = new List<MarkerViewModel>()
                 } : null,
                 ActiveQuests = activeQuests,
                 IsGod = isGod
             };
 
+            if (viewModel.CurrentMap != null)
+            {
+                var allMarkersWithQuests = await _context.MapMarkers
+                    .AsNoTracking()
+                    .Where(m => m.MapId == viewModel.CurrentMap.Id)
+                    .Select(m => new
+                    {
+                        Id = m.Id,
+                        Label = m.Label,
+                        Type = m.Type,
+                        XPercent = m.XPercent,
+                        YPercent = m.YPercent,
+                        Description = m.Description,
+                        LinkedMapId = m.LinkedMapId,
+                        QuestId = m.Quests.FirstOrDefault() != null ? m.Quests.FirstOrDefault().Id : (int?)null,
+                        QuestTitle = m.Quests.FirstOrDefault() != null ? m.Quests.FirstOrDefault().Title : null,
+                        QuestStatus = m.Quests.FirstOrDefault() != null ? m.Quests.FirstOrDefault().Status : null,
+                        QuestType = m.Quests.FirstOrDefault() != null ? m.Quests.FirstOrDefault().Type : null,
+                        QuestPreviousQuestId = m.Quests.FirstOrDefault() != null ? m.Quests.FirstOrDefault().PreviousQuestId : null,
+                        QuestPreviousQuestRequirement = m.Quests.FirstOrDefault() != null ? m.Quests.FirstOrDefault().PreviousQuestRequirement : null,
+                        PreviousQuestStatus = m.Quests.FirstOrDefault() != null && m.Quests.FirstOrDefault().PreviousQuest != null
+                            ? m.Quests.FirstOrDefault().PreviousQuest.Status
+                            : null,
+                        CharacterVorname = m.Quests.FirstOrDefault() != null && m.Quests.FirstOrDefault().Character != null
+                            ? m.Quests.FirstOrDefault().Character.Vorname
+                            : null,
+                        CharacterNachname = m.Quests.FirstOrDefault() != null && m.Quests.FirstOrDefault().Character != null
+                            ? m.Quests.FirstOrDefault().Character.Nachname
+                            : null
+                    })
+                    .ToListAsync();
+
+                viewModel.CurrentMap.Markers = allMarkersWithQuests
+                    .Where(x =>
+                    {
+                        if (x.Type != "quest") return true;
+                        if (!x.QuestId.HasValue) return false;
+                        if (x.QuestStatus != "active") return false;
+                        if (x.QuestPreviousQuestId.HasValue)
+                        {
+                            var requirement = x.QuestPreviousQuestRequirement ?? "both";
+                            var isVisible = requirement switch
+                            {
+                                "completed" => x.PreviousQuestStatus == "completed",
+                                "failed" => x.PreviousQuestStatus == "failed",
+                                "both" => x.PreviousQuestStatus == "completed" || x.PreviousQuestStatus == "failed",
+                                _ => false
+                            };
+                            if (!isVisible) return false;
+                        }
+
+                        return true;
+                    })
+                    .Select(x => new MarkerViewModel
+                    {
+                        Id = x.Id,
+                        Label = x.Label,
+                        Type = x.Type,
+                        XPercent = x.XPercent,
+                        YPercent = x.YPercent,
+                        Description = x.Description,
+                        QuestId = x.QuestId,
+                        QuestTitle = x.QuestTitle,
+                        QuestCharacterName = !string.IsNullOrEmpty(x.CharacterVorname)
+                            ? $"{x.CharacterVorname} {x.CharacterNachname}"
+                            : null,
+                        QuestType = x.QuestType,
+                        LinkedMapId = x.LinkedMapId,
+                        LinkedMapName = null
+                    }).ToList();
+            }
+
+            if (viewModel.CurrentMap != null && viewModel.CurrentMap.IsWorldMap)
+            {
+                viewModel.CurrentMap.Regions = await _context.MapRegions
+                    .Where(r => r.MapId == viewModel.CurrentMap.Id)
+                    .Select(r => new MapRegionViewModel
+                    {
+                        Id = r.Id,
+                        RegionName = r.RegionName,
+                        PolygonPoints = r.PolygonPoints,
+                        LinkedMapId = r.LinkedMapId
+                    })
+                    .ToListAsync();
+            }
+
+            if (viewModel.CurrentMap != null && viewModel.CurrentMap.IsWorldMap)
+            {
+                viewModel.CurrentMap.ChildMaps = await _context.Maps
+                    .Where(cm => cm.ParentMapId == viewModel.CurrentMap.Id)
+                    .Select(cm => new ChildMapViewModel
+                    {
+                        Id = cm.Id,
+                        Name = cm.Name,
+                        RegionName = cm.RegionName ?? cm.Name,
+                        ImageUrl = cm.ImageUrl
+                    })
+                    .ToListAsync();
+            }
+
             return View(viewModel);
         }
-
-        // ===== QUESTS =====
 
         /// <summary>
         /// Quest-Übersicht Seite
@@ -274,7 +342,6 @@ namespace Suendenbock_App.Controllers
 
             if (currentAct == null)
             {
-                // Kein Act -> keine Quests anzeigen
                 return View(new QuestsViewModel
                 {
                     Quests = new List<QuestViewModel>(),
@@ -284,7 +351,6 @@ namespace Suendenbock_App.Controllers
                 });
             }
 
-            // Alle Quests DES AKTUELLEN ACTS laden (mit Character + MapMarker + PreviousQuest)
             var allQuests = await _context.Quests
                 .Include(q => q.Character)
                 .Include(q => q.MapMarker)
@@ -293,29 +359,22 @@ namespace Suendenbock_App.Controllers
                 .OrderByDescending(q => q.CreatedAt)
                 .ToListAsync();
 
-            // Hilfsfunktion: Prüft ob eine Quest verfügbar ist (Bedingung erfüllt)
             bool IsQuestAvailable(Quest q)
             {
-                // Keine Vorgänger-Quest = immer verfügbar
                 if (!q.PreviousQuestId.HasValue) return true;
-
-                // Vorgänger-Quest muss existieren
                 if (q.PreviousQuest == null) return false;
-
-                // Prüfe Bedingung basierend auf PreviousQuestRequirement
                 var requirement = q.PreviousQuestRequirement ?? "both";
                 return requirement switch
                 {
                     "completed" => q.PreviousQuest.Status == "completed",
                     "failed" => q.PreviousQuest.Status == "failed",
                     "both" => q.PreviousQuest.Status == "completed" || q.PreviousQuest.Status == "failed",
-                    _ => false // Ungültige Bedingung = nicht verfügbar
+                    _ => false
                 };
             }
 
-            // Gott sieht alle Quests (mit IsAvailable-Flag), normale User nur verfügbare
             var visibleQuests = allQuests
-                .Where(q => isGod || IsQuestAvailable(q)) // Gott: alle, User: nur verfügbare
+                .Where(q => isGod || IsQuestAvailable(q))
                 .Select(q => new QuestViewModel
                 {
                     Id = q.Id,
@@ -330,11 +389,10 @@ namespace Suendenbock_App.Controllers
                     PreviousQuestId = q.PreviousQuestId,
                     PreviousQuestTitle = q.PreviousQuest?.Title,
                     MapMarkerId = q.MapMarkerId,
-                    IsAvailable = IsQuestAvailable(q) // Setze Flag für View
+                    IsAvailable = IsQuestAvailable(q)
                 })
                 .ToList();
 
-            // Alle aktiven Spieler-Characters für Filter + Dropdown
             var characters = await _context.Characters
                 .Where(c => c.UserId != null)
                 .Select(c => new { c.Id, FullName = $"{c.Vorname}" })
@@ -347,14 +405,11 @@ namespace Suendenbock_App.Controllers
                 CharactersForDropdown = characters.ToDictionary(c => c.Id, c => c.FullName),
                 FocusQuestId = focusQuestId,
                 IsGod = isGod,
-                // Für Vorgänger-Quest Dropdown: Alle aktiven Quests des Acts (ohne Bedingung)
                 AllQuestsForDropdown = allQuests.ToDictionary(q => q.Id, q => q.Title)
             };
 
             return View(viewModel);
         }
-
-        // ===== QUEST EDIT & DELETE =====
 
         /// <summary>
         /// Quest bearbeiten (nur für Gott)
@@ -375,7 +430,6 @@ namespace Suendenbock_App.Controllers
                     return NotFound("Quest nicht gefunden!");
                 }
 
-                // Update quest properties
                 if (!string.IsNullOrWhiteSpace(request.Title))
                 {
                     quest.Title = request.Title;
@@ -385,17 +439,15 @@ namespace Suendenbock_App.Controllers
                 quest.Type = request.Type;
                 quest.Status = request.Status;
 
-                // Update character assignment
                 if (request.Type == "individual" && request.CharacterId.HasValue)
                 {
                     quest.CharacterId = request.CharacterId.Value;
                 }
                 else if (request.Type == "group")
                 {
-                    quest.CharacterId = null; // Gruppenquests haben keinen einzelnen Character
+                    quest.CharacterId = null;
                 }
 
-                // Update PreviousQuestId und Requirement
                 if (request.PreviousQuestId.HasValue)
                 {
                     var previousQuest = await _context.Quests.FindAsync(request.PreviousQuestId.Value);
@@ -415,7 +467,6 @@ namespace Suendenbock_App.Controllers
                     quest.PreviousQuestRequirement = request.PreviousQuestRequirement ?? "both";
                 }
 
-                // Optional: Questmarker erstellen/aktualisieren
                 if (request.CreateMarker && request.MarkerXPercent.HasValue && request.MarkerYPercent.HasValue)
                 {
                     if (request.MarkerXPercent.Value < 0 || request.MarkerXPercent.Value > 100 ||
@@ -429,7 +480,6 @@ namespace Suendenbock_App.Controllers
                     {
                         if (quest.MapMarkerId.HasValue)
                         {
-                            // Marker aktualisieren
                             var existingMarker = await _context.MapMarkers.FindAsync(quest.MapMarkerId.Value);
                             if (existingMarker != null)
                             {
@@ -441,7 +491,6 @@ namespace Suendenbock_App.Controllers
                         }
                         else
                         {
-                            // Neuen Marker erstellen
                             var marker = new MapMarker
                             {
                                 MapId = map.Id,
@@ -546,21 +595,14 @@ namespace Suendenbock_App.Controllers
             return View(viewModel);
         }
 
-        // ===== BATTLE =====
-
         /// <summary>
         /// Kampf-Seite
         /// Route: /Spielmodus/Battle
-        /// 
-        /// Zeigt Monster-Auswahl (nur meet=true Monster)
-        /// Dann Character-Auswahl
-        /// Dann Start Combat
         /// </summary>
         public async Task<IActionResult> Battle()
         {
             var isGod = User.IsInRole("Gott");
 
-            // Alle Characters laden (Spieler + Begleiter)
             var characters = await _context.Characters
                 .Where(c => c.UserId != null || c.IsCompanion)
                 .OrderBy(c => c.Nachname)
@@ -579,7 +621,6 @@ namespace Suendenbock_App.Controllers
                 })
                 .ToListAsync();
 
-            // Alle freigeschalteten Monster (meet = true)
             var monsters = await _context.Monsters
                 .Include(m => m.Monstertyp)
                 .Where(m => m.meet)
@@ -597,7 +638,6 @@ namespace Suendenbock_App.Controllers
                 })
                 .ToListAsync();
 
-            // Alle Feldeffekte laden (für Gott zur Auswahl)
             var fieldEffects = await _context.FeldEffekte
                 .Include(fe => fe.LightCard)
                 .OrderBy(fe => fe.Name)
@@ -621,24 +661,17 @@ namespace Suendenbock_App.Controllers
 
             return View(viewModel);
         }
+
         /// <summary>
         /// Combat-Setup Seite
         /// Route: /Spielmodus/CombatSetup
-        ///
-        /// Gott wählt:
-        /// 1. Monster (alle mit meet == true, mehrere möglich via Dropdown)
-        /// 2. Für jedes Monster: Health + Pokus eingeben
-        /// 3. Characters (Spieler + Begleiter des aktuellen Akts)
-        /// 4. Setup speichern
         /// </summary>
         [Authorize(Roles = "Gott")]
         public async Task<IActionResult> CombatSetup()
         {
-            // Aktuellen Act laden
             var currentAct = await _context.Acts
                 .FirstOrDefaultAsync(a => a.IsActive);
 
-            // Alle Monster mit meet == true (keine Gruppierung nach Typ)
             var monsters = await _context.Monsters
                 .Include(m => m.Monstertyp)
                 .Where(m => m.meet == true)
@@ -653,7 +686,6 @@ namespace Suendenbock_App.Controllers
                 })
                 .ToListAsync();
 
-            // Alle Spieler-Characters (UserId != null)
             var playerCharacters = await _context.Characters
                 .Where(c => c.UserId != null)
                 .OrderBy(c => c.Nachname)
@@ -669,7 +701,6 @@ namespace Suendenbock_App.Controllers
                 })
                 .ToListAsync();
 
-            // Begleiter des aktuellen Akts laden
             var companions = new List<CharacterOptionViewModel>();
             if (currentAct != null)
             {
@@ -685,8 +716,6 @@ namespace Suendenbock_App.Controllers
 
                 if (companionNames.Any())
                 {
-
-                    //// Begleiter laden - voller Name-Vergleich (Companion1/2 speichern "Vorname Nachname")
                     var allCompanions = await _context.Characters
                         .ToListAsync();
 
@@ -707,7 +736,6 @@ namespace Suendenbock_App.Controllers
                 }
             }
 
-            // Zusammenführen: Spieler + Begleiter des Akts
             var allCharacters = playerCharacters.Concat(companions).ToList();
 
             var viewModel = new CombatSetupViewModel
@@ -720,8 +748,6 @@ namespace Suendenbock_App.Controllers
             return View(viewModel);
         }
     }
-
-    // ===== VIEW MODELS =====
 
     public class SpielmodusDashboardViewModel
     {
@@ -750,14 +776,13 @@ namespace Suendenbock_App.Controllers
         public string Quality { get; set; } = string.Empty;
         public int HealthBonus { get; set; }
     }
-    // ===== VIEW MODELS =====
 
     public class QuestsViewModel
     {
         public List<QuestViewModel> Quests { get; set; } = new();
         public List<string> Characters { get; set; } = new();
         public Dictionary<int, string> CharactersForDropdown { get; set; } = new();
-        public Dictionary<int, string> AllQuestsForDropdown { get; set; } = new(); // Für Vorgänger-Quest Auswahl
+        public Dictionary<int, string> AllQuestsForDropdown { get; set; } = new();
         public string? FocusQuestId { get; set; }
         public bool IsGod { get; set; }
     }
@@ -767,19 +792,17 @@ namespace Suendenbock_App.Controllers
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty; // "individual" oder "group"
-        public string Status { get; set; } = string.Empty; // "active", "completed", "failed"
+        public string Type { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public string? CharacterName { get; set; }
         public int? CharacterId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
-        public int? PreviousQuestId { get; set; } // Vorgänger-Quest für Questfolgen
-        public string? PreviousQuestTitle { get; set; } // Titel der Vorgänger-Quest
-        public int? MapMarkerId { get; set; } // MapMarker-ID für Link zur Karte
-        public bool IsAvailable { get; set; } = true; // Gibt an, ob die Quest für Spieler verfügbar ist (Bedingung erfüllt)
+        public int? PreviousQuestId { get; set; }
+        public string? PreviousQuestTitle { get; set; }
+        public int? MapMarkerId { get; set; }
+        public bool IsAvailable { get; set; } = true;
     }
-
-    // ===== VIEW MODELS =====
 
     public class TrophiesViewModel
     {
@@ -796,21 +819,17 @@ namespace Suendenbock_App.Controllers
         public string Description { get; set; } = string.Empty;
         public string BaseEffect { get; set; } = string.Empty;
         public string SlainEffect { get; set; } = string.Empty;
-        public string Status { get; set; } = "none"; // "bought" oder "slain" (wird aus Model berechnet)
+        public string Status { get; set; } = "none";
         public bool IsEquipped { get; set; }
-        public int? EquippedPosition { get; set; } // Position an der Wand: 1, 2, oder 3
+        public int? EquippedPosition { get; set; }
         public bool HasBoughtTrophy { get; set; }
         public bool HasSlainTrophy { get; set; }
-
-        // Monster-Beschreibungen für verschiedene Stufen
         public bool Meet { get; set; }
         public bool Encounter { get; set; }
         public bool Perfected { get; set; }
         public string? Basics { get; set; }
         public string? EncounterDescription { get; set; }
         public string? ProcessedDescription { get; set; }
-
-        // Helper für die View
         public bool HasBothVariants => HasBoughtTrophy && HasSlainTrophy;
     }
     public class MapViewModel
@@ -819,7 +838,7 @@ namespace Suendenbock_App.Controllers
         public MapViewModelData? CurrentMap { get; set; }
         public List<QuestOption> ActiveQuests { get; set; } = new();
         public bool IsGod { get; set; }
-        public int? FocusMarkerId { get; set; } // Marker-ID zum Fokussieren/Highlighten
+        public int? FocusMarkerId { get; set; }
     }
 
     public class ActViewModel
@@ -845,22 +864,36 @@ namespace Suendenbock_App.Controllers
         public string Name { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
         public List<MarkerViewModel> Markers { get; set; } = new();
+        public int? ParentMapId { get; set; }
+        public string? ParentMapName { get; set; }
+        public bool IsWorldMap { get; set; }
+        public string? RegionName { get; set; }
+        public List<MapRegionViewModel> Regions { get; set; } = new();
+        public List<ChildMapViewModel> ChildMaps { get; set; } = new();
+    }
+
+    public class ChildMapViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string RegionName { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
     }
 
     public class MarkerViewModel
     {
         public int Id { get; set; }
         public string Label { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty; // "quest", "info", "danger", "settlement"
+        public string Type { get; set; } = string.Empty;
         public double XPercent { get; set; }
         public double YPercent { get; set; }
         public string? Description { get; set; }
-
-        // Quest-spezifische Felder
         public int? QuestId { get; set; }
         public string? QuestTitle { get; set; }
         public string? QuestCharacterName { get; set; }
-        public string? QuestType { get; set; } // "individual" oder "group"
+        public string? QuestType { get; set; }
+        public int? LinkedMapId { get; set; }
+        public string? LinkedMapName { get; set; }
     }
 
     public class QuestOption
@@ -941,5 +974,13 @@ namespace Suendenbock_App.Controllers
         public int MaxHealth { get; set; }
         public int CurrentPokus { get; set; }
         public bool IsBegleiter { get; set; }
+    }
+
+    public class MapRegionViewModel
+    {
+        public int Id { get; set; }
+        public string RegionName { get; set; } = string.Empty;
+        public string PolygonPoints { get; set; } = string.Empty;
+        public int LinkedMapId { get; set; }
     }
 }
