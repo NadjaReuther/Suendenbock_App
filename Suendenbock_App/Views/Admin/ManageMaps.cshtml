@@ -59,7 +59,6 @@
                                 <th>Act</th>
                                 <th>Name</th>
                                 <th>Typ</th>
-                                <th>Region</th>
                                 <th>Parent Map</th>
                                 <th>Marker</th>
                                 <th>🗡️ Aktionen</th>
@@ -88,16 +87,6 @@
                                             <span class="badge bg-secondary">
                                                 <i class="fas fa-map"></i> Detail-Karte
                                             </span>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (!string.IsNullOrEmpty(map.RegionName))
-                                        {
-                                            <span class="text-muted">@map.RegionName</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">—</span>
                                         }
                                     </td>
                                     <td>

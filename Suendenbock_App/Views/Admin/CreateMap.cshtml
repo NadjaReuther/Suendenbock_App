@@ -9,7 +9,12 @@
             <div class="col-md-8 offset-md-2">
                 <div class="card shadow">
                     <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <h3 class="mb-0"><i class="fas fa-map"></i> Neue Karte erstellen</h3>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="mb-0"><i class="fas fa-map"></i> Neue Karte erstellen</h3>
+                            <button type="button" class="btn btn-sm btn-light" onclick="toggleHelpPanel()" title="Hilfe anzeigen">
+                                <i class="fas fa-question-circle"></i> Hilfe
+                            </button>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
@@ -58,32 +63,11 @@
                                         <small class="d-block text-muted">Zeigt eine spezifische Region. Muss einer Weltkarte untergeordnet sein und hat einen Regionsnamen.</small>
                                     </label>
                                 </div>
-                            </div>
-
-                            <!-- Region Name (only for Detail Maps) -->
-                            <div class="mb-3" id="regionNameGroup" style="display: none;">
-                                <label asp-for="RegionName" class="form-label">
-                                    <i class="fas fa-map-marked-alt"></i> Regions-Name *
-                                </label>
-                                <input asp-for="RegionName" class="form-control" placeholder="z.B. Königreich Nord" />
-                                <span asp-validation-for="RegionName" class="text-danger"></span>
-                                <small class="text-muted">Der Name der Region, die diese Detail-Karte zeigt</small>
-                            </div>
-
-                            <!-- Parent Map (only for Detail Maps) -->
-                            <div class="mb-4" id="parentMapGroup" style="display: none;">
-                                <label asp-for="ParentMapId" class="form-label">
-                                    <i class="fas fa-sitemap"></i> Übergeordnete Weltkarte *
-                                </label>
-                                <select asp-for="ParentMapId" class="form-select">
-                                    <option value="">-- Weltkarte auswählen --</option>
-                                    @foreach (var worldMap in Model.WorldMaps)
-                                    {
-                                        <option value="@worldMap.Id">@worldMap.DisplayName</option>
-                                    }
-                                </select>
-                                <span asp-validation-for="ParentMapId" class="text-danger"></span>
-                                <small class="text-muted">Wähle die Weltkarte, zu der diese Detail-Karte gehört</small>
+                                <span asp-validation-for="IsWorldMap" class="text-danger"></span>
+                                <div id="detailMapWarning" class="alert alert-warning mt-2" style="display: none;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Achtung:</strong> Der ausgewählte Act hat noch keine Weltkarte. Bitte erstelle zuerst eine Weltkarte!
+                                </div>
                             </div>
 
                             <!-- Image Upload -->
@@ -138,32 +122,150 @@
     </div>
 </div>
 
+<!-- Help Slide-In Panel -->
+<div id="helpPanel" class="help-slide-panel">
+    <div class="help-panel-header">
+        <h4><i class="fas fa-question-circle"></i> Karten-Hierarchie Hilfe</h4>
+        <button type="button" class="btn-close btn-close-white" onclick="toggleHelpPanel()"></button>
+    </div>
+    <div class="help-panel-body">
+        <h5>📘 Konzept</h5>
+        <p>Das Karten-System unterstützt eine 2-Ebenen-Hierarchie:</p>
+
+        <div class="help-section">
+            <h6>🌍 Weltkarten (Ebene 1)</h6>
+            <ul>
+                <li>Zeigen die gesamte Welt eines Acts</li>
+                <li>Pro Act gibt es <strong>genau eine</strong> Weltkarte</li>
+                <li>Auf Weltkarten können Polygon-Regionen gezeichnet werden</li>
+                <li>Diese Regionen verlinken zu Detail-Karten</li>
+            </ul>
+        </div>
+
+        <div class="help-section">
+            <h6>🗺️ Detail-Karten (Ebene 2)</h6>
+            <ul>
+                <li>Zeigen eine spezifische Region im Detail</li>
+                <li>Werden automatisch der Weltkarte des Acts zugeordnet</li>
+                <li>Auf Detail-Karten können Quest-Marker gesetzt werden</li>
+                <li>Der Name ist gleichzeitig der Regions-Name</li>
+            </ul>
+        </div>
+
+        <h5 class="mt-4">🎯 Workflow</h5>
+        <ol>
+            <li><strong>Weltkarte erstellen:</strong> Wähle "Weltkarte" und lade das Weltkartenbild hoch</li>
+            <li><strong>Detail-Karten erstellen:</strong> Wähle "Detail-Karte" und gib den Regionsnamen ein (z.B. "Königreich Nord")</li>
+            <li><strong>Regionen zeichnen:</strong> Öffne "Karten verwalten" → 📋 "Regionen verwalten" und zeichne Polygone auf der Weltkarte</li>
+            <li><strong>Regionen verlinken:</strong> Verknüpfe jedes Polygon mit der passenden Detail-Karte</li>
+        </ol>
+
+        <div class="alert alert-info mt-3">
+            <strong>💡 Tipp:</strong> Der Name der Detail-Karte (z.B. "Nordreich-Karte") wird als Regions-Name verwendet. Wähle aussagekräftige Namen!
+        </div>
+    </div>
+</div>
+
+<style>
+.help-slide-panel {
+    position: fixed;
+    right: -500px;
+    top: 0;
+    width: 450px;
+    height: 100vh;
+    background: white;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    transition: right 0.3s ease-in-out;
+    overflow-y: auto;
+}
+
+.help-slide-panel.open {
+    right: 0;
+}
+
+.help-panel-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.help-panel-header h4 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.help-panel-body {
+    padding: 1.5rem;
+}
+
+.help-section {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #667eea;
+}
+
+.help-section h6 {
+    color: #667eea;
+    margin-bottom: 0.75rem;
+}
+
+.help-section ul {
+    margin-bottom: 0;
+    padding-left: 1.5rem;
+}
+
+.help-section li {
+    margin-bottom: 0.5rem;
+}
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        function toggleMapTypeFields() {
-            const isWorldMap = document.getElementById('isWorldMapTrue').checked;
-            const regionNameGroup = document.getElementById('regionNameGroup');
-            const parentMapGroup = document.getElementById('parentMapGroup');
-            const regionNameInput = document.querySelector('[name="RegionName"]');
-            const parentMapSelect = document.querySelector('[name="ParentMapId"]');
+        function toggleHelpPanel() {
+            const panel = document.getElementById('helpPanel');
+            panel.classList.toggle('open');
+        }
 
-            if (isWorldMap) {
-                // Weltkarte: RegionName und ParentMap ausblenden
-                regionNameGroup.style.display = 'none';
-                parentMapGroup.style.display = 'none';
-                regionNameInput.removeAttribute('required');
-                parentMapSelect.removeAttribute('required');
-                regionNameInput.value = '';
-                parentMapSelect.value = '';
+        // Lade Acts mit Weltkarten-Info
+        const actsWithWorldMaps = @Html.Raw(Json.Serialize(Model.Acts.Select(a => new {
+            Id = a.Id,
+            HasWorldMap = Model.WorldMaps.Any(wm => wm.DisplayName.StartsWith("Act " + a.ActNumber))
+        })));
+
+        function toggleMapTypeFields() {
+            const actId = parseInt(document.querySelector('[name="ActId"]').value);
+            const isDetailMap = document.getElementById('isWorldMapFalse').checked;
+            const warningDiv = document.getElementById('detailMapWarning');
+
+            if (isDetailMap && actId) {
+                const actInfo = actsWithWorldMaps.find(a => a.Id === actId);
+                if (actInfo && !actInfo.HasWorldMap) {
+                    warningDiv.style.display = 'block';
+                } else {
+                    warningDiv.style.display = 'none';
+                }
             } else {
-                // Detail-Karte: RegionName und ParentMap anzeigen
-                regionNameGroup.style.display = 'block';
-                parentMapGroup.style.display = 'block';
-                regionNameInput.setAttribute('required', 'required');
-                parentMapSelect.setAttribute('required', 'required');
+                warningDiv.style.display = 'none';
             }
         }
+
+        // Event-Listener für Act-Auswahl
+        document.addEventListener('DOMContentLoaded', function() {
+            const actSelect = document.querySelector('[name="ActId"]');
+            if (actSelect) {
+                actSelect.addEventListener('change', toggleMapTypeFields);
+            }
+        });
 
         function previewImage(event) {
             const preview = document.getElementById('preview');

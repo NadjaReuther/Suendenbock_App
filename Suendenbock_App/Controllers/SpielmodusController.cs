@@ -205,7 +205,6 @@ namespace Suendenbock_App.Controllers
                     Name = selectedMap.Name,
                     ImageUrl = selectedMap.ImageUrl,
                     IsWorldMap = selectedMap.IsWorldMap,
-                    RegionName = selectedMap.RegionName,
                     ParentMapId = selectedMap.ParentMapId,
                     ParentMapName = selectedMap.ParentMap?.Name,
                     ChildMaps = new List<ChildMapViewModel>(),
@@ -309,7 +308,6 @@ namespace Suendenbock_App.Controllers
                     {
                         Id = cm.Id,
                         Name = cm.Name,
-                        RegionName = cm.RegionName ?? cm.Name,
                         ImageUrl = cm.ImageUrl
                     })
                     .ToListAsync();
@@ -867,7 +865,6 @@ namespace Suendenbock_App.Controllers
         public int? ParentMapId { get; set; }
         public string? ParentMapName { get; set; }
         public bool IsWorldMap { get; set; }
-        public string? RegionName { get; set; }
         public List<MapRegionViewModel> Regions { get; set; } = new();
         public List<ChildMapViewModel> ChildMaps { get; set; } = new();
     }
@@ -876,7 +873,6 @@ namespace Suendenbock_App.Controllers
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string RegionName { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
     }
 

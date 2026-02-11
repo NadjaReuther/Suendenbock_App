@@ -113,14 +113,6 @@ namespace Suendenbock_App.Models
         /// </summary>
         public bool IsWorldMap { get; set; } = false;
 
-        /// <summary>
-        /// HIERARCHIE: Name der Region (nur für Detail-Karten)
-        /// z.B. "Königreich Nord", "Wüste Süd", "Gebirge Ost"
-        /// null bei Weltkarten
-        /// </summary>
-        [StringLength(200)]
-        public string? RegionName { get; set; }
-
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // ===== BEZIEHUNGEN =====

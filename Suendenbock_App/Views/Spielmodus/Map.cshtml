@@ -15,7 +15,7 @@
     <header class="map-header">
         <div class="map-header-content">
             <div>
-                <h1>@(Model.CurrentMap?.IsWorldMap == true ? "Weltkarte" : Model.CurrentMap?.RegionName ?? "Weltkarte")</h1>
+                <h1>@(Model.CurrentMap?.IsWorldMap == true ? "Weltkarte" : Model.CurrentMap?.Name ?? "Weltkarte")</h1>
                 <p class="subtitle">Die Pfade des Schicksals</p>
             </div>
         </div>
@@ -42,7 +42,7 @@
             </span>
             <span class="breadcrumb-item current">
                 <span class="material-symbols-outlined">map</span>
-                <span>@(Model.CurrentMap.RegionName ?? Model.CurrentMap.Name)</span>
+                <span>@Model.CurrentMap.Name</span>
             </span>
         </nav>
     }

@@ -448,14 +448,13 @@ namespace Suendenbock_App.Controllers
                 .Include(m => m.Markers)
                 .OrderBy(m => m.Act.ActNumber)
                 .ThenBy(m => m.IsWorldMap ? 0 : 1)
-                .ThenBy(m => m.RegionName)
+                .ThenBy(m => m.Name)
                 .Select(m => new
                 {
                     m.Id,
                     m.Name,
                     m.ImageUrl,
                     m.IsWorldMap,
-                    m.RegionName,
                     m.ActId,
                     ActNumber = m.Act.ActNumber,
                     ActName = m.Act.Name,
@@ -500,10 +499,18 @@ namespace Suendenbock_App.Controllers
                     ModelState.AddModelError("Name", "Kartenname ist erforderlich!");
                 }
 
-                // Wenn Detail-Karte (nicht IsWorldMap), dann muss RegionName vorhanden sein
-                if (!viewModel.IsWorldMap && string.IsNullOrEmpty(viewModel.RegionName))
+                // Prüfe ob Detail-Karte erstellt werden soll, aber keine Weltkarte für den Act existiert
+                if (!viewModel.IsWorldMap)
                 {
-                    ModelState.AddModelError("RegionName", "Regionsname ist bei Detail-Karten erforderlich!");
+                    var worldMapExists = await _context.Maps
+                        .AnyAsync(m => m.ActId == viewModel.ActId && m.IsWorldMap);
+
+                    if (!worldMapExists)
+                    {
+                        var act = await _context.Acts.FirstOrDefaultAsync(a => a.Id == viewModel.ActId);
+                        var actName = act != null ? $"Act {act.ActNumber}: {act.Name}" : "diesem Act";
+                        ModelState.AddModelError("IsWorldMap", $"Für {actName} existiert noch keine Weltkarte! Bitte erstelle zuerst eine Weltkarte, bevor du Detail-Karten anlegst.");
+                    }
                 }
 
                 // Bild-Upload Validierung
@@ -542,15 +549,24 @@ namespace Suendenbock_App.Controllers
 
                 var imageUrl = $"/images/maps/{uniqueFileName}";
 
-                // Create Map entity from ViewModel
+                int? parentMapId = viewModel.ParentMapId;
+                if (!viewModel.IsWorldMap && !parentMapId.HasValue)
+                {
+                    var worldMap = await _context.Maps
+                        .FirstOrDefaultAsync(m => m.ActId == viewModel.ActId && m.IsWorldMap);
+                    if (worldMap != null)
+                    {
+                        parentMapId = worldMap.Id;
+                    }
+                }
+
                 var map = new Models.Map
                 {
                     Name = viewModel.Name,
                     ImageUrl = imageUrl,
                     ActId = viewModel.ActId,
                     IsWorldMap = viewModel.IsWorldMap,
-                    RegionName = viewModel.RegionName,
-                    ParentMapId = viewModel.ParentMapId,
+                    ParentMapId = parentMapId,
                     CreatedAt = DateTime.Now
                 };
 
@@ -605,7 +621,6 @@ namespace Suendenbock_App.Controllers
                 ImageUrl = map.ImageUrl,
                 ActId = map.ActId,
                 IsWorldMap = map.IsWorldMap,
-                RegionName = map.RegionName,
                 ParentMapId = map.ParentMapId,
                 CreatedAt = map.CreatedAt,
                 ChildMaps = map.ChildMaps,
@@ -644,17 +659,10 @@ namespace Suendenbock_App.Controllers
                     return RedirectToAction("EditMap", new { id = viewModel.Id });
                 }
 
-                if (!viewModel.IsWorldMap && string.IsNullOrEmpty(viewModel.RegionName))
-                {
-                    TempData["Error"] = "Regionsname ist bei Detail-Karten erforderlich!";
-                    return RedirectToAction("EditMap", new { id = viewModel.Id });
-                }
-
                 // Update properties
                 existingMap.Name = viewModel.Name;
                 existingMap.ActId = viewModel.ActId;
                 existingMap.IsWorldMap = viewModel.IsWorldMap;
-                existingMap.RegionName = viewModel.RegionName;
                 existingMap.ParentMapId = viewModel.ParentMapId;
 
                 // Bild-Upload (optional bei Edit)
