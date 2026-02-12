@@ -84,7 +84,23 @@
                             <!-- Dropdowns werden hier via JS eingefügt -->
                         </div>
 
-                        <!-- Zusätzliche Teilnehmer -->
+                        <!-- Benutzerdefinierte Gegner -->
+                        <div class="mt-4 pt-4 border-t border-primary/20">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-cinzel tracking-wider text-text-main/70">Benutzerdefinierte Gegner</h3>
+                                <button type="button"
+                                        onclick="addCustomEnemy()"
+                                        class="flex items-center gap-1 px-3 py-1 bg-red-100 hover:bg-red-200 border border-red-400/50 rounded text-xs font-cinzel transition-colors text-red-700">
+                                    <span class="material-icons text-sm">add</span>
+                                    <span>Gegner hinzufügen</span>
+                                </button>
+                            </div>
+                            <div id="customEnemyContainer" class="space-y-3 mt-2">
+                                <!-- Wird via JS eingefügt -->
+                            </div>
+                        </div>
+
+                        <!-- Zusätzliche Teilnehmer (Neutrale) -->
                         <div class="mt-4 pt-4 border-t border-primary/20">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-sm font-cinzel tracking-wider text-text-main/70">Zusätzliche Teilnehmer</h3>
@@ -232,6 +248,8 @@
 
         let monsterCounter = 0;
         let selectedMonsters = {}; // { monsterId: { health: X, pokus: Y } }
+        let customEnemyCounter = 0;
+        let customEnemies = {}; // { enemyId: { name, health } }
         let extraParticipantCounter = 0;
         let extraParticipants = {}; // { extraId: { name, health } }
 
@@ -336,6 +354,65 @@
             }
         }
 
+        // ===== BENUTZERDEFINIERTE GEGNER =====
+
+        function addCustomEnemy() {
+            const container = document.getElementById('customEnemyContainer');
+            if (!container) return;
+
+            const enemyId = `enemy-${customEnemyCounter++}`;
+
+            const html = `
+                <div class="custom-enemy-item animate-fade-in bg-red-50/30 border border-red-300/40 rounded p-2" data-enemy-id="${enemyId}">
+                    <div class="flex items-center gap-2">
+                        <input type="text"
+                               class="enemy-name flex-1 bg-[#E8DCC0] border border-red-400/50 rounded px-3 py-2 text-text-main focus:ring-red-500 focus:border-red-500 focus:outline-none text-sm"
+                               placeholder="Gegner-Name (z.B. Bandit)"
+                               oninput="updateCustomEnemy('${enemyId}')">
+                        <input type="number"
+                               min="1"
+                               class="enemy-health w-24 bg-[#E8DCC0] border border-red-400/50 rounded px-2 py-2 text-text-main focus:ring-red-500 focus:border-red-500 focus:outline-none text-sm text-center"
+                               placeholder="HP"
+                               oninput="updateCustomEnemy('${enemyId}')">
+                        <button type="button"
+                                onclick="removeCustomEnemy('${enemyId}')"
+                                class="flex items-center justify-center w-9 h-9 bg-red-100 hover:bg-red-200 border border-red-300 rounded text-red-600 transition-colors">
+                            <span class="material-icons text-sm">close</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', html);
+            validateForm();
+        }
+
+        function updateCustomEnemy(enemyId) {
+            const item = document.querySelector(`[data-enemy-id="${enemyId}"]`);
+            const name = item.querySelector('.enemy-name').value.trim();
+            const health = item.querySelector('.enemy-health').value;
+
+            if (name && health) {
+                customEnemies[enemyId] = {
+                    name: name,
+                    health: parseInt(health)
+                };
+            } else {
+                delete customEnemies[enemyId];
+            }
+
+            validateForm();
+        }
+
+        function removeCustomEnemy(enemyId) {
+            const item = document.querySelector(`[data-enemy-id="${enemyId}"]`);
+            if (item) {
+                item.remove();
+                delete customEnemies[enemyId];
+                validateForm();
+            }
+        }
+
         // ===== EXTRA TEILNEHMER =====
 
         function addExtraParticipant() {
@@ -417,11 +494,13 @@
 
         function validateForm() {
             const hasMonsters = Object.keys(selectedMonsters).length > 0;
+            const hasCustomEnemies = Object.keys(customEnemies).length > 0;
             const hasCharacters = document.querySelectorAll('.character-checkbox:checked').length > 0;
 
             const continueBtn = document.getElementById('continueToInitiativeBtn');
             if (continueBtn) {
-                continueBtn.disabled = !(hasMonsters && hasCharacters);
+                // Mindestens ein Gegner (Monster ODER Custom Enemy) UND mindestens ein Character
+                continueBtn.disabled = !((hasMonsters || hasCustomEnemies) && hasCharacters);
             }
         }
 
@@ -476,6 +555,16 @@
                 }
             });
 
+            // Benutzerdefinierte Gegner hinzufügen
+            Object.values(customEnemies).forEach((enemy, index) => {
+                participants.push({
+                    id: `customEnemy-${index}`,
+                    name: enemy.name,
+                    type: 'customEnemy',
+                    health: enemy.health
+                });
+            });
+
             // Extra-Teilnehmer hinzufügen
             Object.values(extraParticipants).forEach((extra, index) => {
                 participants.push({
@@ -491,7 +580,7 @@
                 <div class="bg-[#E8DCC0]/70 border border-primary/30 p-4 rounded hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-2 mb-2">
                         <label class="text-[10px] uppercase tracking-widest font-bold flex-1 ${
-                            p.type === 'monster' ? 'text-red-600' : p.type === 'extra' ? 'text-primary' : p.isBegleiter ? 'text-primary' : 'text-secondary'
+                            p.type === 'monster' || p.type === 'customEnemy' ? 'text-red-600' : p.type === 'extra' ? 'text-primary' : p.isBegleiter ? 'text-primary' : 'text-secondary'
                         }">
                             ${p.name}
                         </label>
@@ -502,6 +591,8 @@
                             ) :
                             p.type === 'extra' ?
                             '<span class="px-2 py-0.5 bg-primary/20 border border-primary/40 rounded text-[8px] font-cinzel">Extra</span>' :
+                            p.type === 'customEnemy' ?
+                            '<span class="px-2 py-0.5 bg-red-600/20 border border-red-600/40 rounded text-[8px] font-cinzel">Gegner</span>' :
                             '<span class="px-2 py-0.5 bg-red-600/20 border border-red-600/40 rounded text-[8px] font-cinzel">Monster</span>'
                         }
                     </div>
@@ -541,6 +632,7 @@
 
             const setup = {
                 monsters: Object.values(selectedMonsters),
+                customEnemies: Object.values(customEnemies),
                 characterIds: selectedCharacterIds,
                 extraParticipants: Object.values(extraParticipants),
                 initiatives: initiatives

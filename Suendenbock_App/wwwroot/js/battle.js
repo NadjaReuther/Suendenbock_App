@@ -334,6 +334,37 @@ function buildParticipants(setup) {
         });
     });
 
+    // Benutzerdefinierte Gegner hinzufügen (wie Monster, aber mit eigenem Namen)
+    if (setup.customEnemies) {
+        setup.customEnemies.forEach((enemy, index) => {
+            const initKey = `customEnemy-${index}`;
+            const initiative = setup.initiatives[initKey] || 50;
+
+            participants.push({
+                id: `customEnemy-${index}`,
+                name: enemy.name,
+                baseName: enemy.name,
+                initiative: parseInt(initiative),
+                originalInitiative: parseInt(initiative),
+                type: 'enemy',
+                currentHealth: enemy.health,
+                maxHealth: enemy.health,
+                currentPokus: 0,
+                maxPokus: 0,
+                tempHealth: 0,
+                isDead: false,
+                isFallen: false,
+                activeConditions: [],
+                conditionCounters: {},
+                conditionLevels: {},
+                conditionStartRounds: {},
+                downedSaves: { Handeln: 'none', Wissen: 'none', Soziales: 'none' },
+                wounds: [],
+                readyToRevive: false
+            });
+        });
+    }
+
     // Extra-Teilnehmer hinzufügen (nur Name + HP, keine DB-Referenz, kein Pokus)
     if (setup.extraParticipants) {
         // Zähle Extra-Teilnehmer vom gleichen Namen für Nummerierung
