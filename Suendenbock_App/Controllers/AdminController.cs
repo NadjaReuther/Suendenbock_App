@@ -348,6 +348,129 @@ namespace Suendenbock_App.Controllers
             return RedirectToAction(nameof(ManageFeldEffekte));
         }
 
+        // ===== BIOM-VERWALTUNG =====
+
+        /// <summary>
+        /// Biom-Verwaltung nur für Gott - Übersicht aller Biome
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ManageBiome()
+        {
+            var biome = await _context.Biome
+                .Include(b => b.LightCard)
+                .OrderBy(b => b.Name)
+                .ToListAsync();
+
+            return View(biome);
+        }
+
+        /// <summary>
+        /// Formular zum Erstellen eines neuen Bioms
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> CreateBiom()
+        {
+            ViewBag.LightCards = await _context.LightCards
+                .OrderBy(lc => lc.Bezeichnung)
+                .ToListAsync();
+
+            return View(new Biom());
+        }
+
+        /// <summary>
+        /// Speichert ein neues Biom
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateBiom(Biom biom)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Biome.Add(biom);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Biom '{biom.Name}' wurde erfolgreich erstellt!";
+                return RedirectToAction(nameof(ManageBiome));
+            }
+
+            // Reload LightCards wenn Validierung fehlschlägt
+            ViewBag.LightCards = await _context.LightCards
+                .OrderBy(lc => lc.Bezeichnung)
+                .ToListAsync();
+
+            return View(biom);
+        }
+
+        /// <summary>
+        /// Formular zum Bearbeiten eines Bioms
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> EditBiom(int id)
+        {
+            var biom = await _context.Biome
+                .Include(b => b.LightCard)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (biom == null)
+            {
+                TempData["Error"] = "Biom nicht gefunden.";
+                return RedirectToAction(nameof(ManageBiome));
+            }
+
+            ViewBag.LightCards = await _context.LightCards
+                .OrderBy(lc => lc.Bezeichnung)
+                .ToListAsync();
+
+            return View(biom);
+        }
+
+        /// <summary>
+        /// Speichert ein bearbeitetes Biom
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditBiom(Biom biom)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Biome.Update(biom);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Biom '{biom.Name}' wurde erfolgreich aktualisiert!";
+                return RedirectToAction(nameof(ManageBiome));
+            }
+
+            // Reload LightCards wenn Validierung fehlschlägt
+            ViewBag.LightCards = await _context.LightCards
+                .OrderBy(lc => lc.Bezeichnung)
+                .ToListAsync();
+
+            return View(biom);
+        }
+
+        /// <summary>
+        /// Löscht ein Biom
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteBiom(int id)
+        {
+            var biom = await _context.Biome.FindAsync(id);
+            if (biom != null)
+            {
+                _context.Biome.Remove(biom);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = $"Biom '{biom.Name}' wurde erfolgreich gelöscht!";
+            }
+            else
+            {
+                TempData["Error"] = "Biom nicht gefunden.";
+            }
+
+            return RedirectToAction(nameof(ManageBiome));
+        }
+
         // ===== SESSION VORBEREITEN (GenerateSession) =====
 
         /// <summary>

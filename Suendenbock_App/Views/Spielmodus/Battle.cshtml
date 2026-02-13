@@ -42,6 +42,29 @@
                 }
             </header>
 
+            <!-- Biom Banner -->
+            <div id="biomBanner" class="hidden border border-white/20 rounded-lg shadow-2xl overflow-hidden mb-4">
+                <div class="p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">🌍</span>
+                            <div>
+                                <h3 class="text-white font-bold text-lg" id="activeBiomName">Aktuelles Biom</h3>
+                                <button onclick="openBiomDescriptionPanel()" class="text-white/60 hover:text-white text-xs underline transition-colors">
+                                    Beschreibung anzeigen
+                                </button>
+                            </div>
+                        </div>
+                        @if (Model.IsGod)
+                        {
+                            <button onclick="openEffectModal()" class="bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/50 px-4 py-2 rounded text-sm font-semibold transition-colors">
+                                Biom ändern
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
             <!-- Field Effects Banner -->
             <div id="fieldEffectsBanner" class="hidden bg-gradient-to-r border border-white/20 rounded-lg shadow-2xl overflow-hidden mb-6">
                 <div class="p-4">
@@ -52,8 +75,8 @@
                         </h3>
                         @if (Model.IsGod)
                         {
-                            <button onclick="openFieldEffectModal()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 px-4 py-2 rounded text-sm font-semibold transition-colors">
-                                + Feldeffekt hinzufügen
+                            <button onclick="openEffectModal()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 px-4 py-2 rounded text-sm font-semibold transition-colors">
+                                + Effekt hinzufügen
                             </button>
                         }
                     </div>
@@ -116,26 +139,36 @@
     </main>
 </div>
 
-<!-- Field Effect Modal (nur für Gott) -->
+<!-- Effect Modal (Feldeffekte & Biome - nur für Gott) -->
 @if (Model.IsGod)
 {
-    <div id="fieldEffectModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-900 border-2 border-amber-500/50 rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
+    <div id="effectModal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 border-2 border-amber-500/50 rounded-lg shadow-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold text-amber-300">Feldeffekt aktivieren</h3>
-                <button onclick="closeFieldEffectModal()" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+                <h3 class="text-2xl font-bold text-amber-300">Effekt auswählen</h3>
+                <button onclick="closeEffectModal()" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
             </div>
 
-            <div class="space-y-4">
-                <!-- Field Effect Selection -->
+            <!-- Tab Navigation -->
+            <div class="flex gap-2 mb-4 border-b border-gray-700">
+                <button onclick="switchEffectTab('fieldeffect')" id="tabFieldEffect" class="px-4 py-2 font-semibold transition-colors border-b-2 border-amber-500 text-amber-300">
+                    ⚡ Feldeffekte
+                </button>
+                <button onclick="switchEffectTab('biom')" id="tabBiom" class="px-4 py-2 font-semibold transition-colors border-b-2 border-transparent text-gray-400 hover:text-white">
+                    🌍 Biome
+                </button>
+            </div>
+
+            <!-- Field Effect Tab -->
+            <div id="fieldEffectTab" class="space-y-4">
                 <div>
                     <label class="block text-amber-300 font-semibold mb-2">Feldeffekt wählen</label>
                     <select id="fieldEffectSelect" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
                         <option value="">-- Bitte wählen --</option>
                         @foreach (var effect in Model.AllFieldEffects)
                         {
-                            <option value="@effect.Id" data-name="@effect.Name" data-color="@effect.ColorCode" data-description="@effect.Beschreibung">
-                                @effect.Name (@effect.LightCardName)
+                            <option value="@effect.Id" data-name="@effect.Name" data-schwere="@effect.Schwere" data-color="@effect.ColorCode" data-description="@effect.Beschreibung">
+                                @effect.Name (@effect.LightCardName) - @effect.Schwere
                             </option>
                         }
                     </select>
@@ -146,29 +179,44 @@
                     <p class="text-gray-300 text-sm italic" id="fieldEffectDescriptionText"></p>
                 </div>
 
-                <!-- Strength Selection -->
-                <div>
-                    <label class="block text-amber-300 font-semibold mb-2">Stärke</label>
-                    <div class="flex gap-2">
-                        <button type="button" onclick="selectStrength('einfach')" class="flex-1 bg-green-900/40 hover:bg-green-900/60 border-2 border-green-600/50 text-green-300 py-2 rounded font-semibold transition-colors strength-btn" data-strength="einfach">
-                            Einfach
-                        </button>
-                        <button type="button" onclick="selectStrength('mittel')" class="flex-1 bg-yellow-900/40 hover:bg-yellow-900/60 border-2 border-yellow-600/50 text-yellow-300 py-2 rounded font-semibold transition-colors strength-btn" data-strength="mittel">
-                            Mittel
-                        </button>
-                        <button type="button" onclick="selectStrength('schwer')" class="flex-1 bg-red-900/40 hover:bg-red-900/60 border-2 border-red-600/50 text-red-300 py-2 rounded font-semibold transition-colors strength-btn" data-strength="schwer">
-                            Schwer
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Action Buttons -->
                 <div class="flex gap-3 mt-6">
-                    <button onclick="closeFieldEffectModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded font-semibold transition-colors">
+                    <button onclick="closeEffectModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded font-semibold transition-colors">
                         Abbrechen
                     </button>
                     <button onclick="addFieldEffect()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-black py-2 rounded font-semibold transition-colors">
                         Aktivieren
+                    </button>
+                </div>
+            </div>
+
+            <!-- Biom Tab -->
+            <div id="biomTab" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-green-300 font-semibold mb-2">Biom wählen</label>
+                    <select id="biomSelect" class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+                        <option value="">-- Bitte wählen --</option>
+                        @foreach (var biom in Model.AllBiomes)
+                        {
+                            <option value="@biom.Id" data-name="@biom.Name" data-color="@biom.ColorCode" data-description="@biom.Beschreibung">
+                                @biom.Name (@biom.LightCardName)
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Description Display -->
+                <div id="biomDescription" class="hidden bg-gray-800/50 border border-gray-700 rounded p-3">
+                    <p class="text-gray-300 text-sm italic" id="biomDescriptionText"></p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeEffectModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded font-semibold transition-colors">
+                        Abbrechen
+                    </button>
+                    <button onclick="setBiom()" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded font-semibold transition-colors">
+                        Biom setzen
                     </button>
                 </div>
             </div>
@@ -255,6 +303,84 @@
 <!-- Overlay für Defeated Panel -->
 <div id="defeatedPanelOverlay" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity duration-300 opacity-0" onclick="toggleDefeatedPanel()"></div>
 
+<!-- Conditions Description Slide-in Panel (rechts) -->
+<div id="conditionsPanel" class="fixed top-0 right-0 h-full w-96 bg-gray-900 border-l-4 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50">
+    <div class="h-full flex flex-col">
+        <!-- Header -->
+        <div class="p-6 border-b border-amber-500/30 bg-gradient-to-r from-amber-900/50 to-amber-800/30">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-amber-400 text-3xl">psychology</span>
+                        <h3 class="text-2xl font-bold text-amber-300">Zustände</h3>
+                    </div>
+                    <p class="text-amber-400/70 text-sm">Alle verfügbaren Status-Effekte</p>
+                </div>
+                <button onclick="toggleConditionsPanel()" class="text-gray-400 hover:text-white text-4xl leading-none transition-colors ml-4">
+                    &times;
+                </button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div id="conditionsListContainer" class="space-y-3">
+                <!-- Conditions will be rendered here via JavaScript -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-6 border-t border-amber-500/30 bg-gray-800/50">
+            <button onclick="toggleConditionsPanel()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 rounded-lg transition-colors">
+                Schließen
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay für Conditions Panel -->
+<div id="conditionsPanelOverlay" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity duration-300 opacity-0" onclick="toggleConditionsPanel()"></div>
+
+<!-- Biom Description Slide-in Panel (rechts) -->
+<div id="biomPanel" class="fixed top-0 right-0 h-full w-96 bg-gray-900 border-l-4 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50">
+    <div class="h-full flex flex-col">
+        <!-- Header mit dynamischer Farbe -->
+        <div id="biomPanelHeader" class="p-6 border-b">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-3xl">🌍</span>
+                        <h3 id="biomPanelTitle" class="text-2xl font-bold text-white">Biom</h3>
+                    </div>
+                </div>
+                <button onclick="closeBiomPanel()" class="text-gray-400 hover:text-white text-4xl leading-none transition-colors ml-4">
+                    &times;
+                </button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-white/80 font-semibold mb-2 uppercase tracking-wider text-sm">Beschreibung</h4>
+                    <p id="biomPanelDescription" class="text-gray-300 leading-relaxed text-base"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-6 border-t border-gray-700 bg-gray-800/50">
+            <button onclick="closeBiomPanel()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition-colors">
+                Verstanden
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay für Biom Panel -->
+<div id="biomPanelOverlay" class="fixed inset-0 bg-black/60 z-40 hidden transition-opacity duration-300 opacity-0" onclick="closeBiomPanel()"></div>
+
 @section Scripts {
     <!-- SignalR Client Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
@@ -267,7 +393,8 @@
         const BATTLE_MODEL_DATA = {
             characters: @Html.Raw(Json.Serialize(Model.Characters)),
             monsters: @Html.Raw(Json.Serialize(Model.Monsters)),
-            allFieldEffects: @Html.Raw(Json.Serialize(Model.AllFieldEffects))
+            allFieldEffects: @Html.Raw(Json.Serialize(Model.AllFieldEffects)),
+            allBiomes: @Html.Raw(Json.Serialize(Model.AllBiomes))
         };
 
         // WICHTIG: Rollenbasierte Zugriffskontrolle
@@ -312,6 +439,22 @@
         }
 
         #defeatedPanelOverlay.overlay-active {
+            opacity: 1 !important;
+        }
+
+        #conditionsPanel.panel-open {
+            transform: translateX(0) !important;
+        }
+
+        #conditionsPanelOverlay.overlay-active {
+            opacity: 1 !important;
+        }
+
+        #biomPanel.panel-open {
+            transform: translateX(0) !important;
+        }
+
+        #biomPanelOverlay.overlay-active {
             opacity: 1 !important;
         }
 

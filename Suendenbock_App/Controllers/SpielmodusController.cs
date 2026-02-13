@@ -644,8 +644,22 @@ namespace Suendenbock_App.Controllers
                     Id = fe.Id,
                     Name = fe.Name,
                     Beschreibung = fe.Beschreibung,
+                    Schwere = fe.Schwere,
                     ColorCode = fe.LightCard != null ? fe.LightCard.Farbcode : "#ffffff",
                     LightCardName = fe.LightCard != null ? fe.LightCard.Bezeichnung : "Unbekannt"
+                })
+                .ToListAsync();
+
+            var biomes = await _context.Biome
+                .Include(b => b.LightCard)
+                .OrderBy(b => b.Name)
+                .Select(b => new BiomOption
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    Beschreibung = b.Beschreibung,
+                    ColorCode = b.LightCard != null ? b.LightCard.Farbcode : "#ffffff",
+                    LightCardName = b.LightCard != null ? b.LightCard.Bezeichnung : "Unbekannt"
                 })
                 .ToListAsync();
 
@@ -654,6 +668,7 @@ namespace Suendenbock_App.Controllers
                 Characters = characters,
                 Monsters = monsters,
                 AllFieldEffects = fieldEffects,
+                AllBiomes = biomes,
                 IsGod = isGod
             };
 
@@ -902,6 +917,7 @@ namespace Suendenbock_App.Controllers
         public List<BattleCharacterOption> Characters { get; set; } = new();
         public List<BattleMonsterOption> Monsters { get; set; } = new();
         public List<FeldEffektOption> AllFieldEffects { get; set; } = new();
+        public List<BiomOption> AllBiomes { get; set; } = new();
         public bool IsGod { get; set; }
     }
 
@@ -930,6 +946,16 @@ namespace Suendenbock_App.Controllers
     }
 
     public class FeldEffektOption
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Beschreibung { get; set; }
+        public string Schwere { get; set; } = string.Empty;
+        public string ColorCode { get; set; } = string.Empty;
+        public string LightCardName { get; set; } = string.Empty;
+    }
+
+    public class BiomOption
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

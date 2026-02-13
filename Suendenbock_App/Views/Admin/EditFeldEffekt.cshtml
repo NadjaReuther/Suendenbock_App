@@ -49,6 +49,23 @@
                             <span asp-validation-for="Beschreibung" class="text-danger"></span>
                         </div>
 
+                        <!-- Schwere -->
+                        <div class="mb-3">
+                            <label asp-for="Schwere" class="form-label">
+                                Schwere <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Schwere" class="form-select" required>
+                                <option value="">-- Schwere wählen --</option>
+                                <option value="einfach" selected="@(Model.Schwere == "einfach")">Einfach</option>
+                                <option value="mittel" selected="@(Model.Schwere == "mittel")">Mittel</option>
+                                <option value="schwer" selected="@(Model.Schwere == "schwer")">Schwer</option>
+                            </select>
+                            <div class="form-text">
+                                Bestimmt die Intensität des Feldeffekts im Kampf
+                            </div>
+                            <span asp-validation-for="Schwere" class="text-danger"></span>
+                        </div>
+
                         <!-- LightCard -->
                         <div class="mb-3">
                             <label asp-for="LightCardId" class="form-label">

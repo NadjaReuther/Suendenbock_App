@@ -2,26 +2,126 @@
 
 // ===== CONDITION CONFIGURATION =====
 const CONDITION_CONFIG = {
-    'Vergiftet': { color: 'bg-green-900/60', border: 'border-green-500', text: 'text-green-200' },
-    'Brennend': { color: 'bg-orange-900/60', border: 'border-orange-500', text: 'text-orange-200' },
-    'Liegend': { color: 'bg-amber-900/40', border: 'border-amber-700', text: 'text-amber-200' },
-    'Ohnmächtig': { color: 'bg-purple-950/60', border: 'border-purple-800', text: 'text-purple-300' },
-    'Verwirrt': { color: 'bg-fuchsia-900/40', border: 'border-fuchsia-700', text: 'text-fuchsia-200' },
-    'Erschöpft': { color: 'bg-zinc-700/40', border: 'border-zinc-500', text: 'text-zinc-300' },
-    'Sensibel': { color: 'bg-cyan-900/40', border: 'border-cyan-700', text: 'text-cyan-200' },
-    'Verängstigt': { color: 'bg-yellow-200/10', border: 'border-yellow-500/40', text: 'text-yellow-200' },
-    'Blutend': { color: 'bg-red-700/40', border: 'border-red-500', text: 'text-red-200' },
-    'Verwundbar': { color: 'bg-orange-700/40', border: 'border-orange-500', text: 'text-orange-200' },
-    'Übergebend': { color: 'bg-lime-900/40', border: 'border-lime-700', text: 'text-lime-200' },
-    'Ergriffen': { color: 'bg-stone-800/60', border: 'border-stone-600', text: 'text-stone-300' },
-    'Betrunken': { color: 'bg-amber-600/30', border: 'border-amber-500', text: 'text-amber-100' },
-    'Rasend': { color: 'bg-red-950/60', border: 'border-red-600', text: 'text-red-400' },
-    'Pokus fokussiert': { color: 'bg-teal-900/40', border: 'border-teal-600', text: 'text-teal-200' },
-    'Unsichtbar': { color: 'bg-sky-900/30', border: 'border-sky-400', text: 'text-sky-200' },
-    'Verflucht': { color: 'bg-indigo-950/60', border: 'border-indigo-700', text: 'text-indigo-300' },
-    'Gesegnet': { color: 'bg-yellow-600/30', border: 'border-yellow-500', text: 'text-yellow-200' },
-    'Taktisch': { color: 'bg-blue-900/40', border: 'border-blue-600', text: 'text-blue-200' },
-    'Heldenmut': { color: 'bg-white/10', border: 'border-white/60', text: 'text-white' }
+    'Vergiftet': {
+        color: 'bg-green-900/60',
+        border: 'border-green-500',
+        text: 'text-green-200',
+        description: 'Am Ende jedes Zuges erleidet der Charakter Schaden basierend auf der Stufe der Vergiftung. Heilung durch Antidot oder Medizin.'
+    },
+    'Brennend': {
+        color: 'bg-orange-900/60',
+        border: 'border-orange-500',
+        text: 'text-orange-200',
+        description: 'Der Charakter erleidet jede Runde Feuerschaden. Kann durch Wasser oder spezielle Aktionen gelöscht werden.'
+    },
+    'Liegend': {
+        color: 'bg-amber-900/40',
+        border: 'border-amber-700',
+        text: 'text-amber-200',
+        description: 'Der Charakter liegt am Boden. Angriffe gegen ihn haben Vorteil. Aufstehen kostet eine Bewegung.'
+    },
+    'Ohnmächtig': {
+        color: 'bg-purple-950/60',
+        border: 'border-purple-800',
+        text: 'text-purple-300',
+        description: 'Der Charakter ist bewusstlos und kann keine Aktionen ausführen. Automatisch liegend und wehrlos.'
+    },
+    'Verwirrt': {
+        color: 'bg-fuchsia-900/40',
+        border: 'border-fuchsia-700',
+        text: 'text-fuchsia-200',
+        description: 'Der Charakter hat Schwierigkeiten, Freund von Feind zu unterscheiden. Würfelt bei Aktionen für Ziel oder Richtung.'
+    },
+    'Erschöpft': {
+        color: 'bg-zinc-700/40',
+        border: 'border-zinc-500',
+        text: 'text-zinc-300',
+        description: 'Alle Aktionen haben Nachteil. Geschwindigkeit halbiert. Benötigt Rast zur Erholung.'
+    },
+    'Sensibel': {
+        color: 'bg-cyan-900/40',
+        border: 'border-cyan-700',
+        text: 'text-cyan-200',
+        description: 'Erhöhte Empfindlichkeit gegenüber Schaden. Erlittener Schaden wird erhöht.'
+    },
+    'Verängstigt': {
+        color: 'bg-yellow-200/10',
+        border: 'border-yellow-500/40',
+        text: 'text-yellow-200',
+        description: 'Der Charakter hat Nachteil auf Angriffs- und Attributswürfe, solange die Quelle der Angst sichtbar ist.'
+    },
+    'Blutend': {
+        color: 'bg-red-700/40',
+        border: 'border-red-500',
+        text: 'text-red-200',
+        description: 'Der Charakter verliert jede Runde HP durch Blutverlust. Kann durch Heilung oder Verbände gestoppt werden.'
+    },
+    'Verwundbar': {
+        color: 'bg-orange-700/40',
+        border: 'border-orange-500',
+        text: 'text-orange-200',
+        description: 'Rüstungsklasse verringert. Angreifer haben es leichter, kritische Treffer zu landen.'
+    },
+    'Übergebend': {
+        color: 'bg-lime-900/40',
+        border: 'border-lime-700',
+        text: 'text-lime-200',
+        description: 'Der Charakter erbricht sich wiederholt. Kann keine Konzentration aufrechterhalten. Zähler zeigt verbleibende Runden.'
+    },
+    'Ergriffen': {
+        color: 'bg-stone-800/60',
+        border: 'border-stone-600',
+        text: 'text-stone-300',
+        description: 'Der Charakter wird festgehalten und kann sich nicht bewegen. Angriffe und Würfe haben Nachteil.'
+    },
+    'Betrunken': {
+        color: 'bg-amber-600/30',
+        border: 'border-amber-500',
+        text: 'text-amber-100',
+        description: 'Beeinträchtigt Geschicklichkeit und Wahrnehmung. Würfe haben Nachteil, aber Charisma kann erhöht sein.'
+    },
+    'Rasend': {
+        color: 'bg-red-950/60',
+        border: 'border-red-600',
+        text: 'text-red-400',
+        description: 'Der Charakter greift unkontrolliert an. Erhöhter Schaden, aber verringerte Verteidigung und keine taktischen Manöver.'
+    },
+    'Pokus fokussiert': {
+        color: 'bg-teal-900/40',
+        border: 'border-teal-600',
+        text: 'text-teal-200',
+        description: 'Magische Konzentration erhöht. Zauber sind effektiver, aber Unterbrechung kann schädlich sein.'
+    },
+    'Unsichtbar': {
+        color: 'bg-sky-900/30',
+        border: 'border-sky-400',
+        text: 'text-sky-200',
+        description: 'Der Charakter ist unsichtbar. Angriffe gegen ihn haben Nachteil, seine Angriffe haben Vorteil.'
+    },
+    'Verflucht': {
+        color: 'bg-indigo-950/60',
+        border: 'border-indigo-700',
+        text: 'text-indigo-300',
+        description: 'Übernatürliche negative Effekte. Würfe haben Nachteil. Benötigt spezielle Magie zur Aufhebung.'
+    },
+    'Gesegnet': {
+        color: 'bg-yellow-600/30',
+        border: 'border-yellow-500',
+        text: 'text-yellow-200',
+        description: 'Göttliche Gunst gewährt Vorteil auf Rettungswürfe und zusätzlichen Schutz gegen negative Effekte.'
+    },
+    'Taktisch': {
+        color: 'bg-blue-900/40',
+        border: 'border-blue-600',
+        text: 'text-blue-200',
+        description: 'Erhöhtes taktisches Bewusstsein. Vorteil auf Initiative und Wahrnehmung. Kann Verbündeten helfen.'
+    },
+    'Heldenmut': {
+        color: 'bg-white/10',
+        border: 'border-white/60',
+        text: 'text-white',
+        description: 'Temporäre Tapferkeit gibt Immunität gegen Furcht und Bonus auf Angriffswürfe. Endet nach bestimmten Runden.'
+    }
 };
 
 const CONDITIONS = Object.keys(CONDITION_CONFIG);
@@ -35,7 +135,8 @@ let battleState = {
     isAnimating: false,
     expandedConditions: {},
     sessionId: null,
-    activeFieldEffects: [] // Array of { feldEffektId, name, colorCode, strength }
+    activeFieldEffects: [], // Array of { feldEffektId, name, colorCode, schwere }
+    activeBiom: null // Object { biomId, name, colorCode, description } - nur ein Biom gleichzeitig
 };
 
 // ===== ROLE-BASED ACCESS CONTROL =====
@@ -594,7 +695,7 @@ function renderParticipantCard(p, idx) {
                                 const cfg = CONDITION_CONFIG[c] || { color: 'bg-white/20', border: 'border-white/40', text: 'text-white' };
                                 const level = p.conditionLevels[c];
                                 return `
-                                    <span class="text-[10px] ${cfg.color} ${cfg.text} border ${cfg.border} px-2 py-1 rounded uppercase font-bold tracking-tighter flex items-center gap-1">
+                                    <span onclick="openConditionsPanel()" class="text-[10px] ${cfg.color} ${cfg.text} border ${cfg.border} px-2 py-1 rounded uppercase font-bold tracking-tighter flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
                                         ${c} ${level ? `(S${level})` : ''} ${c === 'Übergebend' ? `(${p.conditionCounters[c]})` : ''}
                                     </span>
                                 `;
@@ -609,8 +710,8 @@ function renderParticipantCard(p, idx) {
                 </div>
             </div>
 
-            <!-- Expanded Conditions -->
-            ${isExpanded && !isDowned && !p.isDead ? renderExpandedConditions(p, idx) : ''}
+            <!-- Expanded Conditions (nur für Gott) -->
+            ${isExpanded && !isDowned && !p.isDead && IS_GOTT_ROLE ? renderExpandedConditions(p, idx) : ''}
         </div>
     `;
 }
@@ -745,7 +846,7 @@ function renderNormalActions(p, idx, healthPercent, tempPercent) {
                 <button onclick="applyAction(${idx}, 'temp')" class="w-10 h-10 flex items-center justify-center rounded bg-sky-700/40 hover:bg-sky-600 text-white transition-all shadow-lg" title="Schild (tempLP)">
                     <span class="material-symbols-outlined text-base">shield_moon</span>
                 </button>
-                <button onclick="toggleConditionsPanel(${idx})" class="${battleState.expandedConditions[idx] ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40 hover:bg-white/20'} w-10 h-10 flex items-center justify-center rounded transition-all">
+                <button onclick="toggleConditionsSelection(${idx})" class="${battleState.expandedConditions[idx] ? 'bg-amber-500 text-black' : 'bg-white/10 text-white/40 hover:bg-white/20'} w-10 h-10 flex items-center justify-center rounded transition-all">
                     <span class="material-symbols-outlined text-base">settings_accessibility</span>
                 </button>
             </div>
@@ -970,7 +1071,7 @@ async function castMagic(index) {
     syncBattleState();
 }
 
-function toggleConditionsPanel(index) {
+function toggleConditionsSelection(index) {
     battleState.expandedConditions[index] = !battleState.expandedConditions[index];
     renderBattleGrid();
 }
@@ -1652,21 +1753,21 @@ function renderFieldEffects() {
             'schwer': 'bg-red-900/60 border-red-500 text-red-200'
         };
 
-        const colorClass = strengthColors[fe.strength] || 'bg-gray-700 border-gray-500 text-gray-200';
+        const colorClass = strengthColors[fe.schwere] || 'bg-gray-700 border-gray-500 text-gray-200';
 
         // Beschreibung für onclick vorbereiten (escapen)
         const escapedName = (fe.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         const escapedDescription = (fe.beschreibung || 'Keine Beschreibung verfügbar').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        const escapedStrength = (fe.strength || '').replace(/'/g, "\\'");
+        const escapedSchwere = (fe.schwere || '').replace(/'/g, "\\'");
         const escapedColorCode = (fe.colorCode || '').replace(/'/g, "\\'");
 
         return `
             <div class="flex items-center gap-2 ${colorClass} border-2 rounded-lg px-3 py-2 relative group">
-                <button onclick="showFieldEffectDescription('${escapedName}', '${escapedDescription}', '${escapedStrength}', '${escapedColorCode}')"
+                <button onclick="showFieldEffectDescription('${escapedName}', '${escapedDescription}', '${escapedSchwere}', '${escapedColorCode}')"
                         class="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer"
                         title="Klicken für Details">
                     <span class="font-bold">${fe.name}</span>
-                    <span class="text-sm opacity-80">(${fe.strength})</span>
+                    <span class="text-sm opacity-80">(${fe.schwere})</span>
                     <span class="text-xs opacity-60">ℹ️</span>
                 </button>
                 ${IS_GOTT_ROLE ? `
@@ -1759,18 +1860,9 @@ async function addFieldEffect() {
         return;
     }
 
-    if (!selectedStrength) {
-        await Swal.fire({
-            icon: 'warning',
-            title: 'Keine Stärke gewählt',
-            text: 'Bitte wähle eine Stärke für den Feldeffekt.',
-            confirmButtonColor: '#d97706'
-        });
-        return;
-    }
-
     const feldEffektId = parseInt(selectedOption.value);
     const name = selectedOption.getAttribute('data-name');
+    const schwere = selectedOption.getAttribute('data-schwere'); // Schwere aus Datenbank
     const colorCode = selectedOption.getAttribute('data-color');
     const beschreibung = selectedOption.getAttribute('data-description') || '';
 
@@ -1790,7 +1882,7 @@ async function addFieldEffect() {
         feldEffektId,
         name,
         colorCode,
-        strength: selectedStrength,
+        schwere: schwere,
         beschreibung: beschreibung
     });
 
@@ -1801,7 +1893,7 @@ async function addFieldEffect() {
     await syncBattleState();
 
     // Close modal
-    closeFieldEffectModal();
+    closeEffectModal();
 }
 
 // Remove field effect
@@ -1906,6 +1998,56 @@ function toggleDefeatedPanel() {
     }
 }
 
+// Open conditions panel and render all conditions
+function openConditionsPanel() {
+    renderConditionsList();
+    toggleConditionsPanel();
+}
+
+// Toggle conditions panel
+function toggleConditionsPanel() {
+    const panel = document.getElementById('conditionsPanel');
+    const overlay = document.getElementById('conditionsPanelOverlay');
+
+    if (!panel || !overlay) return;
+
+    const isOpen = panel.classList.contains('panel-open');
+
+    if (isOpen) {
+        // Panel schließen
+        panel.classList.remove('panel-open');
+        overlay.classList.remove('overlay-active');
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 300);
+    } else {
+        // Panel öffnen
+        overlay.classList.remove('hidden');
+        setTimeout(() => {
+            overlay.classList.add('overlay-active');
+        }, 10);
+        panel.classList.add('panel-open');
+    }
+}
+
+// Render all conditions with descriptions
+function renderConditionsList() {
+    const container = document.getElementById('conditionsListContainer');
+    if (!container) return;
+
+    const html = Object.entries(CONDITION_CONFIG).map(([name, config]) => `
+        <div class="${config.color} border-2 ${config.border} rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="${config.text} font-bold text-sm uppercase tracking-wide">${name}</span>
+                ${name === 'Vergiftet' || name === 'Brennend' ? '<span class="text-xs text-white/50">(Stufen 1-6)</span>' : ''}
+            </div>
+            <p class="text-gray-300 text-xs leading-relaxed">${config.description}</p>
+        </div>
+    `).join('');
+
+    container.innerHTML = html;
+}
+
 async function endBattle() {
     if (!IS_GOTT_ROLE) {
         await Swal.fire({
@@ -1941,4 +2083,204 @@ async function endBattle() {
 
     // Gott sieht auch den Result Screen
     await showResultScreen("aborted");
+}
+
+// ===== BIOM SYSTEM =====
+
+// Set active biom
+function setBiom() {
+    const select = document.getElementById('biomSelect');
+    const selectedOption = select.options[select.selectedIndex];
+    
+    if (!selectedOption || !selectedOption.value) {
+        alert('Bitte wähle ein Biom aus!');
+        return;
+    }
+
+    const biomId = parseInt(selectedOption.value);
+    const name = selectedOption.getAttribute('data-name');
+    const colorCode = selectedOption.getAttribute('data-color');
+    const description = selectedOption.getAttribute('data-description');
+
+    battleState.activeBiom = {
+        biomId: biomId,
+        name: name,
+        colorCode: colorCode,
+        description: description || ''
+    };
+
+    renderBiomDisplay();
+    applyBiomBackground();
+    closeEffectModal();
+    syncBattleState();
+}
+
+// Render biom display
+function renderBiomDisplay() {
+    const banner = document.getElementById('biomBanner');
+    const nameElement = document.getElementById('activeBiomName');
+
+    if (battleState.activeBiom) {
+        nameElement.textContent = battleState.activeBiom.name;
+        banner.classList.remove('hidden');
+        
+        // Setze Hintergrund-Gradient mit Biom-Farbe
+        banner.style.background = `linear-gradient(135deg, ${battleState.activeBiom.colorCode}40 0%, ${battleState.activeBiom.colorCode}20 100%)`;
+        banner.style.borderColor = `${battleState.activeBiom.colorCode}40`;
+    } else {
+        banner.classList.add('hidden');
+    }
+}
+
+// Apply biom background color to battle container
+function applyBiomBackground() {
+    const container = document.getElementById('battleContainer');
+    
+    if (battleState.activeBiom && battleState.activeBiom.colorCode) {
+        const color = battleState.activeBiom.colorCode;
+        // Erstelle einen subtilen Radial-Gradient mit der Biom-Farbe
+        container.style.background = `radial-gradient(circle at center, ${color}15 0%, #0a0a0a 60%)`;
+    } else {
+        // Zurück zum Standard
+        container.style.background = '';
+    }
+}
+
+// Open biom description panel
+function openBiomDescriptionPanel() {
+    if (!battleState.activeBiom) return;
+
+    const panel = document.getElementById('biomPanel');
+    const overlay = document.getElementById('biomPanelOverlay');
+    const header = document.getElementById('biomPanelHeader');
+    const title = document.getElementById('biomPanelTitle');
+    const description = document.getElementById('biomPanelDescription');
+
+    // Set content
+    title.textContent = battleState.activeBiom.name;
+    description.innerHTML = battleState.activeBiom.description || 'Keine Beschreibung verfügbar.';
+
+    // Set header color
+    if (battleState.activeBiom.colorCode) {
+        header.style.background = `linear-gradient(135deg, ${battleState.activeBiom.colorCode}80 0%, ${battleState.activeBiom.colorCode}60 100%)`;
+        header.style.borderBottomColor = battleState.activeBiom.colorCode;
+        header.style.borderBottomWidth = '3px';
+        panel.style.borderLeftColor = battleState.activeBiom.colorCode;
+    }
+
+    // Show panel
+    overlay.classList.remove('hidden');
+    setTimeout(() => {
+        overlay.classList.add('overlay-active');
+    }, 10);
+    panel.classList.add('panel-open');
+}
+
+// Close biom panel
+function closeBiomPanel() {
+    const panel = document.getElementById('biomPanel');
+    const overlay = document.getElementById('biomPanelOverlay');
+
+    if (!panel || !overlay) return;
+
+    panel.classList.remove('panel-open');
+    overlay.classList.remove('overlay-active');
+    setTimeout(() => {
+        overlay.classList.add('hidden');
+    }, 300);
+}
+
+// ===== EFFECT MODAL (FELDEFFEKTE & BIOME) =====
+
+// Open effect modal
+function openEffectModal() {
+    const modal = document.getElementById('effectModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Default tab: Feldeffekte
+        switchEffectTab('fieldeffect');
+    }
+}
+
+// Close effect modal
+function closeEffectModal() {
+    const modal = document.getElementById('effectModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Switch between tabs
+function switchEffectTab(tab) {
+    const fieldEffectTab = document.getElementById('fieldEffectTab');
+    const biomTab = document.getElementById('biomTab');
+    const fieldEffectBtn = document.getElementById('tabFieldEffect');
+    const biomBtn = document.getElementById('tabBiom');
+
+    if (tab === 'fieldeffect') {
+        fieldEffectTab.classList.remove('hidden');
+        biomTab.classList.add('hidden');
+        fieldEffectBtn.classList.add('border-amber-500', 'text-amber-300');
+        fieldEffectBtn.classList.remove('border-transparent', 'text-gray-400');
+        biomBtn.classList.add('border-transparent', 'text-gray-400');
+        biomBtn.classList.remove('border-green-500', 'text-green-300');
+    } else if (tab === 'biom') {
+        fieldEffectTab.classList.add('hidden');
+        biomTab.classList.remove('hidden');
+        fieldEffectBtn.classList.add('border-transparent', 'text-gray-400');
+        fieldEffectBtn.classList.remove('border-amber-500', 'text-amber-300');
+        biomBtn.classList.add('border-green-500', 'text-green-300');
+        biomBtn.classList.remove('border-transparent', 'text-gray-400');
+    }
+}
+
+// Update field effect selection UI
+document.addEventListener('DOMContentLoaded', function() {
+    const fieldEffectSelect = document.getElementById('fieldEffectSelect');
+    if (fieldEffectSelect) {
+        fieldEffectSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const description = selectedOption.getAttribute('data-description');
+            const descContainer = document.getElementById('fieldEffectDescription');
+            const descText = document.getElementById('fieldEffectDescriptionText');
+
+            if (description && description.trim()) {
+                descText.innerHTML = description;
+                descContainer.classList.remove('hidden');
+            } else {
+                descContainer.classList.add('hidden');
+            }
+        });
+    }
+
+    const biomSelect = document.getElementById('biomSelect');
+    if (biomSelect) {
+        biomSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const description = selectedOption.getAttribute('data-description');
+            const descContainer = document.getElementById('biomDescription');
+            const descText = document.getElementById('biomDescriptionText');
+
+            if (description && description.trim()) {
+                descText.innerHTML = description;
+                descContainer.classList.remove('hidden');
+            } else {
+                descContainer.classList.add('hidden');
+            }
+        });
+    }
+});
+
+// Initialize biom on page load (if exists in battleState)
+if (typeof window !== 'undefined') {
+    const oldOnload = window.onload;
+    window.onload = function() {
+        if (oldOnload) oldOnload();
+        
+        // Render biom if exists
+        if (battleState.activeBiom) {
+            renderBiomDisplay();
+            applyBiomBackground();
+        }
+    };
 }

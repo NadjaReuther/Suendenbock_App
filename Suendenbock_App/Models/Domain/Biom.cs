@@ -3,11 +3,12 @@ using System.ComponentModel.DataAnnotations;
 namespace Suendenbock_App.Models.Domain
 {
     /// <summary>
-    /// Feldeffekt-Masterdata für das Kampfsystem.
+    /// Biom-Masterdata für das Kampfsystem.
+    /// Repräsentiert Umgebungen wie Wüste, Wald, Sumpf, etc.
     /// Wird von Gott über das Admin-Dashboard verwaltet.
-    /// Aktive Feldeffekte werden in der CombatSession gespeichert.
+    /// Nur ein Biom kann gleichzeitig aktiv sein (im Gegensatz zu Feldeffekten).
     /// </summary>
-    public class FeldEffekt
+    public class Biom
     {
         public int Id { get; set; }
 
@@ -19,14 +20,8 @@ namespace Suendenbock_App.Models.Domain
         public string? Beschreibung { get; set; }
 
         /// <summary>
-        /// Schwere des Feldeffekts: "einfach", "mittel", "schwer"
-        /// </summary>
-        [Required(ErrorMessage = "Die Schwere ist erforderlich")]
-        [StringLength(50)]
-        public string Schwere { get; set; } = "mittel";
-
-        /// <summary>
-        /// Fremdschlüssel zur LightCard für Farbdarstellung
+        /// Fremdschlüssel zur LightCard für Farbdarstellung des Bioms
+        /// (Hintergrundfarbe im Combat)
         /// </summary>
         [Required]
         public int LightCardId { get; set; }

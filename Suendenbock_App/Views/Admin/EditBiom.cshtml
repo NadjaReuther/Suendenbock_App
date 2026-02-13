@@ -1,12 +1,12 @@
-@model Suendenbock_App.Models.Domain.FeldEffekt
+@model Suendenbock_App.Models.Domain.Biom
 @{
-    ViewData["Title"] = "Neuen Feldeffekt erstellen";
+    ViewData["Title"] = "Biom bearbeiten";
     var lightCards = ViewBag.LightCards as List<Suendenbock_App.Models.Domain.LightCard>;
 }
 
 <header class="antique-header">
     <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
-        Neuen Feldeffekt erstellen
+        Biom bearbeiten
     </h3>
 </header>
 
@@ -14,21 +14,22 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card shadow-lg" style="border: 2px solid #d4af37;">
-                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                    <h5 class="mb-0">⚡ Feldeffekt-Formular</h5>
+                <div class="card-header text-white text-center" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+                    <h5 class="mb-0">🌍 Biom bearbeiten</h5>
                 </div>
                 <div class="card-body">
-                    <form asp-action="CreateFeldEffekt" method="post">
+                    <form asp-action="EditBiom" method="post">
                         @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
 
                         <!-- Name -->
                         <div class="mb-3">
                             <label asp-for="Name" class="form-label">
                                 Name <span class="text-danger">*</span>
                             </label>
-                            <input asp-for="Name" class="form-control" placeholder="z.B. Giftiger Nebel" required />
+                            <input asp-for="Name" class="form-control" placeholder="z.B. Dunkler Wald" required />
                             <div class="form-text">
-                                Name des Feldeffekts
+                                Name des Bioms
                             </div>
                             <span asp-validation-for="Name" class="text-danger"></span>
                         </div>
@@ -38,31 +39,14 @@
                             <label asp-for="Beschreibung" class="form-label">
                                 Beschreibung
                             </label>
-                            <div id="editor-wrapper-feldeffekt">
-                                <textarea asp-for="Beschreibung" class="form-control d-none" id="feldeffektBeschreibung" placeholder="Beschreibe die Wirkung des Feldeffekts..."></textarea>
-                                <div id="wysiwyg-editor-feldeffekt"></div>
+                            <div id="editor-wrapper-biom">
+                                <textarea asp-for="Beschreibung" class="form-control d-none" id="biomBeschreibung" placeholder="Beschreibe das Biom und seine Umgebungseffekte..."></textarea>
+                                <div id="wysiwyg-editor-biom"></div>
                             </div>
                             <div class="form-text">
-                                Optionale Beschreibung des Feldeffekts (HTML-Formatierung möglich)
+                                Optionale Beschreibung des Bioms (HTML-Formatierung möglich)
                             </div>
                             <span asp-validation-for="Beschreibung" class="text-danger"></span>
-                        </div>
-
-                        <!-- Schwere -->
-                        <div class="mb-3">
-                            <label asp-for="Schwere" class="form-label">
-                                Schwere <span class="text-danger">*</span>
-                            </label>
-                            <select asp-for="Schwere" class="form-select" required>
-                                <option value="">-- Schwere wählen --</option>
-                                <option value="einfach">Einfach</option>
-                                <option value="mittel" selected>Mittel</option>
-                                <option value="schwer">Schwer</option>
-                            </select>
-                            <div class="form-text">
-                                Bestimmt die Intensität des Feldeffekts im Kampf
-                            </div>
-                            <span asp-validation-for="Schwere" class="text-danger"></span>
                         </div>
 
                         <!-- LightCard -->
@@ -76,31 +60,31 @@
                                 {
                                     foreach (var lightCard in lightCards)
                                     {
-                                        <option value="@lightCard.Id" data-color="@lightCard.Farbcode">
+                                        <option value="@lightCard.Id" data-color="@lightCard.Farbcode" selected="@(lightCard.Id == Model.LightCardId)">
                                             @lightCard.Bezeichnung
                                         </option>
                                     }
                                 }
                             </select>
                             <div class="form-text">
-                                Wähle die Farbe für die Darstellung im Kampf
+                                Wähle die Farbe für den Kampf-Hintergrund
                             </div>
                             <span asp-validation-for="LightCardId" class="text-danger"></span>
 
                             <!-- Color Preview -->
-                            <div id="colorPreview" class="mt-2" style="display: none;">
+                            <div id="colorPreview" class="mt-2" style="display: @(Model.LightCardId > 0 ? "block" : "none");">
                                 <strong>Vorschau:</strong>
-                                <div id="colorBox" style="width: 100px; height: 40px; border: 2px solid #333; border-radius: 4px; margin-top: 8px;"></div>
+                                <div id="colorBox" style="width: 100px; height: 40px; border: 2px solid #333; border-radius: 4px; margin-top: 8px; background-color: @(Model.LightCard?.Farbcode ?? "#fff");"></div>
                             </div>
                         </div>
 
                         <!-- Buttons -->
                         <div class="d-flex justify-content-between mt-4">
-                            <a asp-action="ManageFeldEffekte" class="btn btn-secondary btn-lg">
+                            <a asp-action="ManageBiome" class="btn btn-secondary btn-lg">
                                 ← Abbrechen
                             </a>
-                            <button type="submit" class="btn btn-success btn-lg">
-                                ✓ Feldeffekt erstellen
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                ✓ Änderungen speichern
                             </button>
                         </div>
                     </form>
@@ -120,7 +104,7 @@
     <script>
         // Initialize CKEditor for Beschreibung
         document.addEventListener('DOMContentLoaded', async function() {
-            const wikiEditor = new WikiWYSIWYGEditor('#feldeffektBeschreibung', '#wysiwyg-editor-feldeffekt');
+            const wikiEditor = new WikiWYSIWYGEditor('#biomBeschreibung', '#wysiwyg-editor-biom');
         });
 
         // Color Preview on LightCard Selection

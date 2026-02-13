@@ -94,6 +94,7 @@ namespace Suendenbock_App.Data
         // Combat-System
         public DbSet<CombatSession> CombatSessions { get; set; }
         public DbSet<FeldEffekt> FeldEffekte { get; set; }
+        public DbSet<Biom> Biome { get; set; }
 
         // Night Rest System
         public DbSet<NightRestRequest> NightRestRequests { get; set; }
