@@ -41,7 +41,7 @@ namespace Suendenbock_App.Controllers.Api
                         c.Nachname,
                         c.CurrentHealth,
                         c.BaseMaxHealth,
-                        c.CurrentPokus,
+                        c.CastedSpellsCount,
                         c.BaseMaxPokus,
                         HealthPercent = c.BaseMaxHealth > 0
                             ? (int)((double)c.CurrentHealth / c.BaseMaxHealth * 100)
@@ -90,7 +90,7 @@ namespace Suendenbock_App.Controllers.Api
                     );
 
                     // Zauber-Zähler zurücksetzen auf 0
-                    character.CurrentPokus = 0;
+                    character.CastedSpellsCount = 0;
 
                     // Zeitstempel
                     character.LastRestAt = DateTime.Now;
@@ -207,14 +207,14 @@ namespace Suendenbock_App.Controllers.Api
                     return NotFound(new { error = "Character nicht gefunden!" });
                 }
 
-                character.CurrentPokus++;
+                character.CastedSpellsCount++;
                 await _context.SaveChangesAsync();
 
                 return Ok(new
                 {
                     characterId = id,
                     characterName = character.Nachname,
-                    currentPokus = character.CurrentPokus
+                    currentPokus = character.CastedSpellsCount
                 });
             }
             catch (Exception ex)
@@ -1630,6 +1630,7 @@ namespace Suendenbock_App.Controllers.Api
                     LinkedMapId = request.LinkedMapId,
                     RegionName = request.RegionName,
                     PolygonPoints = request.PolygonPoints,
+                    BorderColor = request.BorderColor,
                     CreatedAt = DateTime.Now
                 };
 
@@ -1650,7 +1651,8 @@ namespace Suendenbock_App.Controllers.Api
                         region.Id,
                         region.RegionName,
                         region.PolygonPoints,
-                        region.LinkedMapId
+                        region.LinkedMapId,
+                        region.BorderColor
                     }
                 });
             }
@@ -1863,5 +1865,6 @@ namespace Suendenbock_App.Controllers.Api
         public int LinkedMapId { get; set; }
         public string RegionName { get; set; } = string.Empty;
         public string PolygonPoints { get; set; } = string.Empty;
+        public string? BorderColor { get; set; }
     }
 }

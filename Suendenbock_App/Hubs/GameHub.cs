@@ -135,7 +135,9 @@ namespace Suendenbock_App.Hubs
             {
                 id = c.Id,
                 name = $"{c.Vorname} {c.Nachname}".Trim(),
-                currentPokus = c.CurrentPokus,
+                currentPokus = c.CastedSpellsCount,
+                currentHealth = c.CurrentHealth,
+                maxHealth = c.BaseMaxHealth,
                 isCompanion = false
             }).ToList();
 
@@ -193,8 +195,9 @@ namespace Suendenbock_App.Hubs
 
             foreach (var character in characters)
             {
-                int spellCount = character.CurrentPokus;
+                int spellCount = character.CastedSpellsCount;
                 int extraPokus = extraPokusPerCharacter.TryGetValue(character.Id.ToString(), out var ep) ? ep : 0;
+                int totalPokus = spellCount + extraPokus;
 
                 // Hole individuelle Mahlzeit für diesen Charakter
                 var charFoodId = foodPerCharacter.TryGetValue(character.Id.ToString(), out var fid) ? fid : 0;
@@ -207,8 +210,8 @@ namespace Suendenbock_App.Hubs
                     character.BaseMaxHealth
                 );
 
-                // Zauber bleiben als Pokuspunkte + Extra von Gott
-                character.CurrentPokus = spellCount + extraPokus;
+                // WICHTIG: Zähler für gewirkte Zauber auf 0 zurücksetzen
+                character.CastedSpellsCount = 0;
                 character.LastRestAt = DateTime.Now;
 
                 characterResults.Add(new
@@ -217,7 +220,7 @@ namespace Suendenbock_App.Hubs
                     name = $"{character.Vorname} {character.Nachname}".Trim(),
                     spellCount,
                     extraPokus,
-                    totalPokus = character.CurrentPokus,
+                    totalPokus,
                     currentHealth = character.CurrentHealth,
                     maxHealth = character.BaseMaxHealth,
                     foodName = charFood?.Name ?? "Keine Mahlzeit",

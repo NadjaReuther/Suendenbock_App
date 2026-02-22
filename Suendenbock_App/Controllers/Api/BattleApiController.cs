@@ -267,7 +267,7 @@ namespace Suendenbock_App.Controllers.Api
 
                     // HP und Pokus aktualisieren
                     character.CurrentHealth = charData.CurrentHealth;
-                    character.CurrentPokus = charData.CurrentPokus;
+                    character.CastedSpellsCount = charData.CurrentPokus;
                 }
 
                 // Begleiter zurücksetzen (volle HP, 0 Pokus)
@@ -278,7 +278,7 @@ namespace Suendenbock_App.Controllers.Api
                 foreach (var companion in companions)
                 {
                     companion.CurrentHealth = companion.BaseMaxHealth;
-                    companion.CurrentPokus = 0;
+                    companion.CastedSpellsCount = 0;
                 }
 
                 await _context.SaveChangesAsync();

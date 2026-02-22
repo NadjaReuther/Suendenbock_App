@@ -369,3 +369,6 @@ FodyWeavers.xsd
 /docker-compose.override.yml
 /docker-compose.yml
 /Suendenbock_App/appsettings.Development..json
+
+# React/Capacitor Mobile App
+/Suendenbock_App/Angular-Beispiele/

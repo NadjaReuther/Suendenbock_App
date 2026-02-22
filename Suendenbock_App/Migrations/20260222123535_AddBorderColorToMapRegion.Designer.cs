@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260222123535_AddBorderColorToMapRegion")]
+    partial class AddBorderColorToMapRegion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -511,13 +514,13 @@ namespace Suendenbock_App.Migrations
                     b.Property<bool>("Beschraenkt")
                         .HasColumnType("bit");
 
-                    b.Property<int>("CastedSpellsCount")
-                        .HasColumnType("int");
-
                     b.Property<int>("CompletionLevel")
                         .HasColumnType("int");
 
                     b.Property<int>("CurrentHealth")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrentPokus")
                         .HasColumnType("int");
 
                     b.Property<int>("EindruckId")

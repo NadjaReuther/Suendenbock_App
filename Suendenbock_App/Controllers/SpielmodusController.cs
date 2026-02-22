@@ -57,7 +57,7 @@ namespace Suendenbock_App.Controllers
                     Name = c.Vorname,
                     CurrentHealth = c.CurrentHealth,
                     BaseMaxHealth = c.BaseMaxHealth,
-                    CurrentPokus = c.CurrentPokus,
+                    CurrentPokus = c.CastedSpellsCount,
                     HealthPercent = c.BaseMaxHealth > 0
                         ? (int)((double)c.CurrentHealth / c.BaseMaxHealth * 100)
                         : 0
@@ -295,7 +295,8 @@ namespace Suendenbock_App.Controllers
                         Id = r.Id,
                         RegionName = r.RegionName,
                         PolygonPoints = r.PolygonPoints,
-                        LinkedMapId = r.LinkedMapId
+                        LinkedMapId = r.LinkedMapId,
+                        BorderColor = r.BorderColor
                     })
                     .ToListAsync();
             }
@@ -610,7 +611,7 @@ namespace Suendenbock_App.Controllers
                     Name = $"{c.Vorname} {c.Nachname}",
                     CurrentHealth = c.CurrentHealth,
                     MaxHealth = c.BaseMaxHealth,
-                    CurrentPokus = c.CurrentPokus,
+                    CurrentPokus = c.CastedSpellsCount,
                     MaxPokus = c.BaseMaxPokus,
                     IsBegleiter = c.IsCompanion,
                     HealthPercent = c.BaseMaxHealth > 0
@@ -709,7 +710,7 @@ namespace Suendenbock_App.Controllers
                     Nachname = c.Nachname,
                     CurrentHealth = c.CurrentHealth,
                     MaxHealth = c.BaseMaxHealth,
-                    CurrentPokus = c.CurrentPokus,
+                    CurrentPokus = c.CastedSpellsCount,
                     IsBegleiter = false
                 })
                 .ToListAsync();
@@ -742,7 +743,7 @@ namespace Suendenbock_App.Controllers
                             Nachname = c.Nachname,
                             CurrentHealth = c.CurrentHealth,
                             MaxHealth = c.BaseMaxHealth,
-                            CurrentPokus = c.CurrentPokus,
+                            CurrentPokus = c.CastedSpellsCount,
                             IsBegleiter = true
                         })
                         .ToList();
@@ -1004,5 +1005,6 @@ namespace Suendenbock_App.Controllers
         public string RegionName { get; set; } = string.Empty;
         public string PolygonPoints { get; set; } = string.Empty;
         public int LinkedMapId { get; set; }
+        public string? BorderColor { get; set; }
     }
 }

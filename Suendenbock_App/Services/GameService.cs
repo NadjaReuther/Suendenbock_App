@@ -45,14 +45,14 @@ namespace Suendenbock_App.Services
         }
 
         /// <summary>
-        /// Pokus erhöhen (wenn Magie genutzt)
+        /// Zähler für gewirkte Zauber erhöhen
         /// </summary>
         public async Task IncrementPokusAsync(int characterId)
         {
             var character = await _context.Characters.FindAsync(characterId);
             if (character != null)
             {
-                character.CurrentPokus++;
+                character.CastedSpellsCount++;
                 await _context.SaveChangesAsync();
             }
         }
@@ -79,8 +79,8 @@ namespace Suendenbock_App.Services
                     character.BaseMaxHealth
                 );
 
-                // Pokus zurücksetzen
-                character.CurrentPokus = 0;
+                // Gewirkte Zauber zurücksetzen
+                character.CastedSpellsCount = 0;
 
                 // Zeitstempel
                 character.LastRestAt = DateTime.Now;

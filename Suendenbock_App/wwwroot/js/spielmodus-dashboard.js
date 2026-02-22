@@ -419,6 +419,7 @@ function openGodNightRestModal(data) {
             <thead>
                 <tr style="background: rgba(139, 115, 85, 0.3); border-bottom: 2px solid rgba(139, 115, 85, 0.5);">
                     <th style="padding: 0.5rem; text-align: left; color: var(--ink);">Charakter</th>
+                    <th style="padding: 0.5rem; text-align: center; color: var(--ink); width: 100px;">HP</th>
                     <th style="padding: 0.5rem; text-align: center; color: var(--ink); width: 80px;">Zauber</th>
                     <th style="padding: 0.5rem; text-align: left; color: var(--ink); width: 200px;">Essen</th>
                     <th style="padding: 0.5rem; text-align: center; color: var(--ink); width: 100px;">+ Pokus</th>
@@ -429,9 +430,13 @@ function openGodNightRestModal(data) {
 
     data.characters.forEach((char, idx) => {
         const bgColor = idx % 2 === 0 ? 'rgba(212, 175, 55, 0.05)' : 'rgba(212, 175, 55, 0.1)';
+        const hpPercent = char.maxHealth > 0 ? (char.currentHealth / char.maxHealth * 100) : 100;
+        const hpColor = hpPercent > 50 ? '#10b981' : hpPercent > 25 ? '#f59e0b' : '#ef4444';
+
         tableHtml += `
             <tr style="background: ${bgColor}; border-bottom: 1px solid rgba(139, 115, 85, 0.2);">
                 <td style="padding: 0.5rem; color: var(--ink); font-weight: bold;">${char.name}</td>
+                <td style="padding: 0.5rem; text-align: center; color: ${hpColor}; font-weight: bold;">${char.currentHealth || 0} / ${char.maxHealth || 0}</td>
                 <td style="padding: 0.5rem; text-align: center; color: var(--ink);">${char.currentPokus || 0}</td>
                 <td style="padding: 0.5rem;">
                     <select id="food-${char.id}" class="form-control" style="font-family: 'Cinzel', serif; font-size: 0.85rem; padding: 0.25rem;">

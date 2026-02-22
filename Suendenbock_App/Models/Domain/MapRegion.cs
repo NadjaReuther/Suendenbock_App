@@ -37,6 +37,12 @@ namespace Suendenbock_App.Models
         [Required]
         public string PolygonPoints { get; set; } = "[]";
 
+        /// <summary>
+        /// Farbe für Rand und Füllung des Polygons (z.B. "#B89E68" für Gold)
+        /// </summary>
+        [StringLength(50)]
+        public string? BorderColor { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }

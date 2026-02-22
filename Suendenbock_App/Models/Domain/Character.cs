@@ -64,9 +64,10 @@ namespace Suendenbock_App.Models.Domain
         public int CurrentHealth { get; set; } = 50;
 
         /// <summary>
-        /// Aktuelle Pokuspunkte - wird im Spiel angepasst
+        /// Anzahl der gewirkten Zauber seit dem letzten Nachtlager
+        /// Wird nach dem Nachtlager auf 0 zurückgesetzt
         /// </summary>
-        public int CurrentPokus { get; set; } = 0;
+        public int CastedSpellsCount { get; set; } = 0;
 
         /// <summary>
         /// Wann wurde zuletzt gerastet? (für Nachtlager-Tracking)

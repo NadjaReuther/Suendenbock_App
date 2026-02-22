@@ -179,15 +179,20 @@
                     <input type="hidden" id="drawerPolygonPoints" />
 
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Regionsname *</label>
                             <input type="text" id="regionName" class="form-control" placeholder="z.B. Königreich Nord" required />
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <label class="form-label">Verlinkte Detail-Karte *</label>
                             <select id="linkedMapId" class="form-select" required>
                                 <option value="">-- Detail-Karte auswählen --</option>
                             </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Randfarbe</label>
+                            <input type="color" id="borderColor" class="form-control form-control-color" value="#B89E68" title="Wähle eine Farbe für den Polygon-Rand" />
+                            <small class="form-text text-muted">Farbe für Rand & Füllung des Bereichs</small>
                         </div>
                     </div>
 
@@ -369,6 +374,11 @@
             img.onclick = function (e) {
                 addPolygonPoint(e);
             };
+
+            // Event Listener für Farbwechsel
+            document.getElementById('borderColor').addEventListener('input', function() {
+                updatePolygonPreview();
+            });
         }
 
         function addPolygonPoint(e) {
@@ -389,10 +399,15 @@
             const pointsGroup = document.getElementById('drawerPoints');
             const counter = document.getElementById('pointCounter');
             const saveBtn = document.getElementById('saveRegionBtn');
+            const borderColor = document.getElementById('borderColor').value;
 
             // Polygon-Punkte als SVG-Format
             const pointsString = currentPolygonPoints.map(p => `${p.x}%,${p.y}%`).join(' ');
             polygon.setAttribute('points', pointsString);
+
+            // Farbe des Polygons aktualisieren
+            polygon.setAttribute('fill', `${borderColor}40`); // 40 = 25% Transparenz in Hex
+            polygon.setAttribute('stroke', borderColor);
 
             // Punkt-Marker zeichnen
             pointsGroup.innerHTML = '';
@@ -462,6 +477,7 @@
 
             const regionName = document.getElementById('regionName').value;
             const linkedMapId = parseInt(document.getElementById('linkedMapId').value);
+            const borderColor = document.getElementById('borderColor').value;
 
             if (!regionName || !linkedMapId || currentPolygonPoints.length < 3) {
                 Swal.fire('Fehler', 'Bitte alle Felder ausfüllen und mindestens 3 Punkte setzen!', 'error');
@@ -479,7 +495,8 @@
                         mapId: currentMapId,
                         linkedMapId: linkedMapId,
                         regionName: regionName,
-                        polygonPoints: polygonJson
+                        polygonPoints: polygonJson,
+                        borderColor: borderColor
                     })
                 });
 

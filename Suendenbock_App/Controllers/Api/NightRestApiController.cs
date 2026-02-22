@@ -46,7 +46,9 @@ namespace Suendenbock_App.Controllers.Api
             {
                 id = c.Id,
                 name = $"{c.Vorname} {c.Nachname}".Trim(),
-                currentPokus = c.CurrentPokus,
+                currentPokus = c.CastedSpellsCount,
+                currentHealth = c.CurrentHealth,
+                maxHealth = c.BaseMaxHealth,
                 isCompanion = false
             }).ToList();
 

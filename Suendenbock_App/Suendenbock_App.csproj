@@ -13,6 +13,12 @@
     <Content Remove="wwwroot\images\religion\**" />
     <EmbeddedResource Remove="wwwroot\images\religion\**" />
     <None Remove="wwwroot\images\religion\**" />
+
+    <!-- Exclude Angular-Beispiele (React App) from .NET project -->
+    <Compile Remove="Angular-Beispiele\**" />
+    <Content Remove="Angular-Beispiele\**" />
+    <EmbeddedResource Remove="Angular-Beispiele\**" />
+    <None Remove="Angular-Beispiele\**" />
   </ItemGroup>
 
   <ItemGroup>

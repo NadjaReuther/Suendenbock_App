@@ -694,7 +694,7 @@ namespace Suendenbock_App.Controllers
             // HP und Pokus (nur für Gott)
             existingCharacter.CurrentHealth = newCharacter.CurrentHealth;
             existingCharacter.BaseMaxHealth = newCharacter.BaseMaxHealth;
-            existingCharacter.CurrentPokus = newCharacter.CurrentPokus;
+            existingCharacter.CastedSpellsCount = newCharacter.CastedSpellsCount;
             existingCharacter.BaseMaxPokus = newCharacter.BaseMaxPokus;
         }
         /// <summary>

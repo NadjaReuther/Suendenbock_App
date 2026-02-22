@@ -121,12 +121,14 @@
                         {
                             var points = System.Text.Json.JsonSerializer.Deserialize<List<System.Text.Json.JsonElement>>(region.PolygonPoints);
                             var pointsString = string.Join(" ", points.Select(p => $"{p.GetProperty("x").GetString()},{p.GetProperty("y").GetString()}"));
+                            var borderColor = region.BorderColor ?? "#B89E68"; // Default: Gold
 
                             <polygon class="clickable-region"
                                      points="@pointsString"
                                      data-region-id="@region.Id"
                                      data-region-name="@region.RegionName"
-                                     data-linked-map-id="@region.LinkedMapId">
+                                     data-linked-map-id="@region.LinkedMapId"
+                                     style="fill: @(borderColor)26; stroke: @borderColor;">
                                 <title>@region.RegionName</title>
                             </polygon>
                         }
