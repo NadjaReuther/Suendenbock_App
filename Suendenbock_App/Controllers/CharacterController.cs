@@ -312,7 +312,12 @@ namespace Suendenbock_App.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Fehler beim Speichern: {ex.Message}";
+                var errorMessage = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    errorMessage += $" | Inner: {ex.InnerException.Message}";
+                }
+                TempData["Error"] = $"Fehler beim Speichern: {errorMessage}";
                 LoadFormViewBagData();
                 return View("Form", character);
             }            
@@ -716,8 +721,10 @@ namespace Suendenbock_App.Controllers
                         MagicClassId = magicClassId
                     };
 
-                    // Spezialisierung hinzufügen (falls vorhanden)
-                    if (selectedSpecializations.ContainsKey(magicClassId))
+                    // Spezialisierung hinzufügen (falls vorhanden und gültig)
+                    if (selectedSpecializations != null &&
+                        selectedSpecializations.ContainsKey(magicClassId) &&
+                        selectedSpecializations[magicClassId] > 0)
                     {
                         characterMagicCLass.MagicClassSpecializationId = selectedSpecializations[magicClassId];
                     }

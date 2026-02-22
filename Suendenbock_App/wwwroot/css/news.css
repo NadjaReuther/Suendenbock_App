@@ -298,8 +298,16 @@
     font-size: 1rem;
     line-height: 1.6;
     color: rgba(45, 36, 30, 0.9);
-    text-align: justify;
-    text-indent: 2rem;
+    text-align: left;
+    padding-right: 3rem;
+}
+
+.article-paragraph p {
+    margin: 0 0 1rem 0;
+}
+
+.article-paragraph p:last-child {
+    margin-bottom: 0;
 }
 
 /* ==== ARTICLE FOOTER ==== */

@@ -545,7 +545,10 @@
         // WICHTIG: Rollenbasierte Zugriffskontrolle
         const IS_GOTT = @Json.Serialize(Model.IsGod);
     </script>
-    <script src="~/js/battle.js"></script>
+    <!-- Load global function stubs first (non-module, executes immediately) -->
+    <script src="~/js/battle-globals.js"></script>
+    <!-- Then load the actual module system (executes asynchronously) -->
+    <script type="module" src="~/js/battle-main.js"></script>
 
     <style>
         /* Custom Tailwind Colors */

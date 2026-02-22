@@ -83,6 +83,13 @@ function initMap() {
     });
 }
 
+// Globale Funktion für Region-Navigation (wird von Fähnchen aufgerufen)
+function navigateToRegion(linkedMapId) {
+    if (linkedMapId) {
+        window.location.href = `/Spielmodus/Map?mapId=${linkedMapId}`;
+    }
+}
+
 // ===== QUEST MARKER MODE =====
 
 function showQuestMarkerModeInfo() {

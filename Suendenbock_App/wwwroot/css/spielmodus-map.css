@@ -1352,11 +1352,120 @@
 .clickable-region {
     pointer-events: all;
     cursor: pointer;
-    transition: fill 0.3s ease;
-    fill: transparent; /* Unsichtbar im Normalzustand */
-    stroke: none; /* Kein Rand */
+    transition: fill 0.3s ease, stroke 0.3s ease;
+    fill: rgba(184, 158, 104, 0.15); /* Leicht sichtbar auch ohne Hover (für Touch-Geräte) */
+    stroke: rgba(184, 158, 104, 0.4); /* Goldener Rand */
+    stroke-width: 1;
 }
 
 .clickable-region:hover {
-    fill: rgba(0, 0, 0, 0.3) !important; /* Dunkle Overlay beim Hover */
+    fill: rgba(184, 158, 104, 0.4) !important; /* Stärker beim Hover */
+    stroke: rgba(184, 158, 104, 0.7) !important;
+    stroke-width: 2;
+}
+
+/* Touch-Feedback für Tablets */
+.clickable-region:active {
+    fill: rgba(184, 158, 104, 0.6) !important;
+    stroke: rgba(184, 158, 104, 0.9) !important;
+}
+
+/* ===== REGION FLAGS (Fähnchen für klickbare Regionen) ===== */
+.region-flags-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10; /* Above polygons and map */
+}
+
+.region-flag {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: all;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.region-flag:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    z-index: 20;
+}
+
+.flag-icon {
+    background: linear-gradient(135deg, #B89E68 0%, #D4AF37 100%);
+    border: 2px solid #8B7355;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: flagPulse 2s ease-in-out infinite;
+}
+
+.region-flag:hover .flag-icon {
+    animation: none;
+    box-shadow: 0 6px 16px rgba(184, 158, 104, 0.5);
+}
+
+.flag-icon .material-symbols-outlined {
+    font-size: 1.5rem;
+    color: white;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.flag-label {
+    background: rgba(45, 36, 30, 0.9);
+    color: #D4AF37;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    opacity: 0.9;
+}
+
+.region-flag:hover .flag-label {
+    background: rgba(45, 36, 30, 1);
+    color: #F5F2E9;
+    opacity: 1;
+}
+
+@keyframes flagPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* Responsive: Kleinere Fähnchen auf mobilen Geräten */
+@media (max-width: 768px) {
+    .flag-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .flag-icon .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+
+    .flag-label {
+        font-size: 0.625rem;
+        padding: 0.2rem 0.5rem;
+    }
 }

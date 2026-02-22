@@ -131,6 +131,30 @@
                             </polygon>
                         }
                     </svg>
+
+                    <!-- Region Flags/Labels -->
+                    <div class="region-flags-layer">
+                        @foreach (var region in Model.CurrentMap.Regions)
+                        {
+                            var points = System.Text.Json.JsonSerializer.Deserialize<List<System.Text.Json.JsonElement>>(region.PolygonPoints);
+                            // Berechne Zentrum des Polygons
+                            var xCoords = points.Select(p => double.Parse(p.GetProperty("x").GetString())).ToList();
+                            var yCoords = points.Select(p => double.Parse(p.GetProperty("y").GetString())).ToList();
+                            var centerX = xCoords.Average();
+                            var centerY = yCoords.Average();
+
+                            <div class="region-flag"
+                                 style="left: @(centerX.ToString(System.Globalization.CultureInfo.InvariantCulture))%; top: @(centerY.ToString(System.Globalization.CultureInfo.InvariantCulture))%;"
+                                 data-region-id="@region.Id"
+                                 data-linked-map-id="@region.LinkedMapId"
+                                 onclick="navigateToRegion(@region.LinkedMapId)">
+                                <div class="flag-icon">
+                                    <span class="material-symbols-outlined">flag</span>
+                                </div>
+                                <div class="flag-label">@region.RegionName</div>
+                            </div>
+                        }
+                    </div>
                 }
 
                 <div class="map-marker-layer"

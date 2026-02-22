@@ -717,6 +717,11 @@ function renderParticipantCard(p, idx) {
 }
 
 function renderDownedSaves(p, idx) {
+    // Nur Charaktere (type='player') haben downedSaves - Monster sterben direkt
+    if (p.type !== 'player' || !p.downedSaves) {
+        return ''; // Monster/Enemies haben keine Todesrettungswürfe
+    }
+
     return `
         <div class="flex items-center space-x-6 animate-in fade-in duration-500">
             <div class="flex flex-col items-end mr-2">

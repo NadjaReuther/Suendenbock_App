@@ -43,7 +43,7 @@
                                     </div>
                                     <div class="news-body">
                                         <h3>@news.Title</h3>
-                                        <p class="news-excerpt">@news.Excerpt</p>
+                                        <div class="news-excerpt">@Html.Raw(news.Excerpt)</div>
                                         <div class="news-footer">
                                             <span><span class="material-symbols-outlined">person</span> @news.Author</span>
                                             <span><span class="material-symbols-outlined">schedule</span> @news.Date</span>
