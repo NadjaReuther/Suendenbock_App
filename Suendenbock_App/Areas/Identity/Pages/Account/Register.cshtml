@@ -1,0 +1,12 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Registrierung deaktiviert";
+}
+
+<div class="text-center" style="margin-top: 100px;">
+    <h1 class="display-4 text-danger">Registrierung nicht verfügbar</h1>
+    <p class="lead">Die Registrierung ist für diese Anwendung deaktiviert.</p>
+    <p>Bitte wenden Sie sich an einen Administrator, um Zugang zu erhalten.</p>
+    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-primary">Zurück zum Login</a>
+</div>

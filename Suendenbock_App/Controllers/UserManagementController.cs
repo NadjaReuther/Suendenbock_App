@@ -165,5 +165,149 @@ namespace Suendenbock_App.Controllers
 
             return View(user);
         }
+
+        /// <summary>
+        /// Löscht einen Benutzer - funktioniert auch bei Benutzern ohne E-Mail/Namen
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Delete(string id)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if (user == null)
+                {
+                    TempData["Error"] = "Benutzer nicht gefunden.";
+                    return RedirectToAction("Index");
+                }
+
+                var displayName = !string.IsNullOrEmpty(user.Email) ? user.Email :
+                                 !string.IsNullOrEmpty(user.UserName) ? user.UserName :
+                                 $"Benutzer (ID: {id.Substring(0, 8)}...)";
+
+                // Setze UserId bei allen Characters auf NULL (verwaist sie)
+                var characters = await _context.Characters.Where(c => c.UserId == id).ToListAsync();
+                if (characters.Any())
+                {
+                    foreach (var character in characters)
+                    {
+                        character.UserId = null;
+                    }
+                    await _context.SaveChangesAsync();
+                }
+
+                // Lösche alle UserAchievements des Users
+                var userAchievements = await _context.UserAchievements.Where(ua => ua.UserId == id).ToListAsync();
+                if (userAchievements.Any())
+                {
+                    _context.UserAchievements.RemoveRange(userAchievements);
+                }
+
+                // Lösche alle TriggerPreferences des Users
+                var triggerPrefs = await _context.UserTriggerPreferences.Where(tp => tp.UserId == id).ToListAsync();
+                if (triggerPrefs.Any())
+                {
+                    _context.UserTriggerPreferences.RemoveRange(triggerPrefs);
+                }
+
+                // Lösche alle UserAdventChoices des Users
+                var adventChoices = await _context.UserAdventChoices.Where(uac => uac.UserId == id).ToListAsync();
+                if (adventChoices.Any())
+                {
+                    _context.UserAdventChoices.RemoveRange(adventChoices);
+                }
+
+                // Lösche alle PollVotes des Users
+                var pollVotes = await _context.PollVotes.Where(pv => pv.UserId == id).ToListAsync();
+                if (pollVotes.Any())
+                {
+                    _context.PollVotes.RemoveRange(pollVotes);
+                }
+
+                // Lösche alle EventRSVPs des Users
+                var eventRsvps = await _context.EventRSVPs.Where(er => er.UserId == id).ToListAsync();
+                if (eventRsvps.Any())
+                {
+                    _context.EventRSVPs.RemoveRange(eventRsvps);
+                }
+
+                // Setze CreatedByUserId bei MonthlyEvents auf NULL
+                // WICHTIG: Nutze direkt SQL, da die Datenbank möglicherweise noch CreatedById statt CreatedByUserId hat
+                await _context.Database.ExecuteSqlRawAsync(
+                    "UPDATE MonthlyEvents SET CreatedById = NULL WHERE CreatedById = {0}", id);
+
+                // Falls der Code CreatedByUserId verwendet:
+                var monthlyEvents = await _context.MonthlyEvents.Where(me => me.CreatedByUserId == id).ToListAsync();
+                if (monthlyEvents.Any())
+                {
+                    foreach (var evt in monthlyEvents)
+                    {
+                        evt.CreatedByUserId = null;
+                    }
+                }
+
+                // Setze AuthorUserId bei ForumThreads auf NULL
+                var forumThreads = await _context.ForumThreads.Where(ft => ft.AuthorUserId == id).ToListAsync();
+                if (forumThreads.Any())
+                {
+                    foreach (var thread in forumThreads)
+                    {
+                        thread.AuthorUserId = null;
+                    }
+                }
+
+                // Setze AuthorUserId bei ForumReplies auf NULL
+                var forumReplies = await _context.forumReplies.Where(fr => fr.AuthorUserId == id).ToListAsync();
+                if (forumReplies.Any())
+                {
+                    foreach (var reply in forumReplies)
+                    {
+                        reply.AuthorUserId = null;
+                    }
+                }
+
+                // Setze ReporterUserId und ResolvedByUserId bei Tickets auf NULL
+                var ticketsReporter = await _context.Tickets.Where(t => t.ReporterUserId == id).ToListAsync();
+                if (ticketsReporter.Any())
+                {
+                    foreach (var ticket in ticketsReporter)
+                    {
+                        ticket.ReporterUserId = null;
+                    }
+                }
+
+                var ticketsResolver = await _context.Tickets.Where(t => t.ResolvedByUserId == id).ToListAsync();
+                if (ticketsResolver.Any())
+                {
+                    foreach (var ticket in ticketsResolver)
+                    {
+                        ticket.ResolvedByUserId = null;
+                    }
+                }
+
+                // NewsComment hat keinen UserId - ignorieren
+
+                // Speichere alle Änderungen
+                await _context.SaveChangesAsync();
+
+                // Lösche den Benutzer
+                var result = await _userManager.DeleteAsync(user);
+                if (result.Succeeded)
+                {
+                    TempData["Success"] = $"Benutzer '{displayName}' wurde erfolgreich gelöscht.";
+                }
+                else
+                {
+                    TempData["Error"] = $"Fehler beim Löschen: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+                }
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Fehler beim Löschen: {ex.Message} | InnerException: {ex.InnerException?.Message}";
+                return RedirectToAction("Index");
+            }
+        }
     }
 }

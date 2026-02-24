@@ -24,18 +24,35 @@
         <tbody>
             @foreach (var user in Model)
             {
-                <tr>
-                    <td>@user.Email</td>
+                var displayEmail = string.IsNullOrEmpty(user.Email) ? "<span class='text-muted fst-italic'>(Keine E-Mail)</span>" : user.Email;
+                var deleteWarning = user.CharacterCount > 0 ? $"Achtung: Benutzer hat {user.CharacterCount} Character(e). Wirklich löschen?" :
+                                   "Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?";
+
+                <tr class="@(user.Role == "keine" && string.IsNullOrEmpty(user.Email) ? "table-warning" : "")">
+                    <td>@Html.Raw(displayEmail)</td>
                     <td>
-                        <span class="badge bg-@(user.Role == "Gott" ? "danger" : "primary")">
+                        <span class="badge bg-@(user.Role == "Gott" ? "danger" : user.Role == "keine" ? "secondary" : "primary")">
                             @user.Role
                         </span>
                     </td>
-                    <td>@user.CharacterCount</td>
                     <td>
-                        <a asp-action="ResetPassword" asp-route-id="@user.Id" class="btn btn-sm btn-warning">Passwort zurücksetzen</a>                        
-                        <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-danger btn-sm" 
-                           onclick="return confirm('Sind Sie sicher, dass Sie diesen Benutzer löschen möchten?');">Löschen</a>
+                        @user.CharacterCount
+                        @if (user.CharacterCount > 0)
+                        {
+                            <i class="fas fa-link text-warning" title="Benutzer hat verknüpfte Characters"></i>
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(user.Email))
+                        {
+                            <a asp-action="ResetPassword" asp-route-id="@user.Id" class="btn btn-sm btn-warning">
+                                <i class="fas fa-key"></i> Passwort zurücksetzen
+                            </a>
+                        }
+                        <a asp-action="Delete" asp-route-id="@user.Id" class="btn btn-danger btn-sm"
+                           onclick="return confirm('@deleteWarning');">
+                            <i class="fas fa-trash"></i> Löschen
+                        </a>
                     </td>
                 </tr>
             }
