@@ -1,6 +1,6 @@
-/* Responsive DataTables für Mobile */
-@media screen and (max-width: 768px) {
-    /* Verstecke die normale Tabellen-Ansicht auf kleinen Bildschirmen */
+/* Responsive DataTables für Tablet und Mobile */
+@media screen and (max-width: 992px) {
+    /* Verstecke die normale Tabellen-Ansicht auf Tablets und kleineren Bildschirmen */
     .medieval-table {
         display: none !important;
     }
@@ -18,11 +18,39 @@
         margin-bottom: 10px;
     }
 
+    /* Such- und Längen-Menü für Tablets optimieren */
+    .dataTables_wrapper .dataTables_filter input {
+        width: 100% !important;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        min-width: 150px;
+    }
+
     /* Mobile Karten-Container */
     .mobile-table-cards {
         display: block;
         width: 100%;
         padding: 0;
+    }
+
+    /* Pergament-Karte volle Breite auf Tablets */
+    .pergament-table-card {
+        margin-bottom: 25px;
+    }
+
+    /* Admin Container Padding anpassen */
+    .admin-container .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    /* Spalten auf Tablets stapeln */
+    .row.g-4 > div[class*="col-md-"],
+    .row > div[class*="col-md-"] {
+        margin-bottom: 20px;
     }
 
     /* Einzelne Karte */
@@ -199,24 +227,128 @@
 }
 
 /* Desktop: Verstecke Mobile Cards */
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 993px) {
     .mobile-table-cards {
         display: none !important;
     }
 }
 
-/* Responsive Anpassungen für Tablets */
-@media screen and (max-width: 992px) and (min-width: 769px) {
-    .pergament-table-card {
-        margin-bottom: 20px;
+/* Spezifische Anpassungen für verschiedene Tablet-Größen */
+@media screen and (max-width: 992px) and (min-width: 701px) {
+    /* Mittlere Tablets (iPad landscape, etc.) */
+    .mobile-card {
+        margin-bottom: 15px;
     }
 
-    .medieval-table {
+    .mobile-card-header {
+        font-size: 1rem;
+    }
+
+    .mobile-field {
+        padding: 8px 0;
+    }
+}
+
+@media screen and (max-width: 700px) and (min-width: 561px) {
+    /* Kleine Tablets (iPad portrait, etc.) */
+    .mobile-card {
+        margin-bottom: 12px;
+    }
+
+    .mobile-card-header {
+        font-size: 0.95rem;
+        padding: 12px;
+    }
+
+    .mobile-card-content {
+        padding: 12px;
+    }
+
+    .mobile-field {
+        padding: 7px 0;
+    }
+
+    .mobile-action-btn {
         font-size: 0.9rem;
+        padding: 8px;
+    }
+}
+
+@media screen and (max-width: 560px) {
+    /* Kleine Smartphones */
+    .mobile-card {
+        margin-bottom: 10px;
     }
 
-    .medieval-actions {
+    .mobile-card-header {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    .mobile-card-title img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .mobile-card-content {
+        padding: 10px;
+    }
+
+    .mobile-field {
+        flex-direction: column;
+        padding: 6px 0;
+        gap: 5px;
+    }
+
+    .mobile-field-label,
+    .mobile-field-value {
+        text-align: left;
+    }
+
+    .mobile-action-btn {
+        font-size: 0.85rem;
+        padding: 8px;
+    }
+
+    .mobile-card-actions {
+        flex-direction: column;
+    }
+
+    .mobile-action-btn {
+        width: 100%;
+    }
+
+    /* Quick Actions Buttons für kleine Bildschirme */
+    .admin-container .d-flex.gap-3 {
         flex-direction: column !important;
-        gap: 5px !important;
+    }
+
+    .admin-container .d-flex.gap-3 .btn {
+        width: 100%;
+    }
+}
+
+/* Zusätzliche Optimierungen für alle Tablet/Mobile Größen */
+@media screen and (max-width: 992px) {
+    /* Badges und Switches besser lesbar machen */
+    .mobile-field-value .badge {
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+    }
+
+    /* Form Switches größer für Touch */
+    .mobile-field-value .form-check-input {
+        width: 3em;
+        height: 1.5em;
+    }
+
+    /* Bessere Touch-Targets */
+    .mobile-card-header {
+        min-height: 60px;
+    }
+
+    .mobile-action-btn {
+        min-height: 44px;
+        touch-action: manipulation;
     }
 }

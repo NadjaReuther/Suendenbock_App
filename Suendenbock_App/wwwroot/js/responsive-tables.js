@@ -234,7 +234,7 @@
 
                 // Bei Draw-Event (Filterung, Pagination, etc.)
                 dataTable.on('draw', function() {
-                    if (window.innerWidth <= 768) {
+                    if (window.innerWidth <= 992) {
                         convertTableToMobileCards(tableId);
                     }
                 });
@@ -246,11 +246,18 @@
      * Prüft Bildschirmgröße und konvertiert Tabellen
      */
     function checkScreenSize() {
-        if (window.innerWidth <= 768) {
+        const isMobileView = window.innerWidth <= 992;
+
+        if (isMobileView) {
             Object.keys(tableConfigs).forEach(tableId => {
                 if ($('#' + tableId).length > 0) {
                     convertTableToMobileCards(tableId);
                 }
+            });
+        } else {
+            // Desktop-Ansicht: Entferne Mobile Cards wenn vorhanden
+            $('.mobile-table-cards').each(function() {
+                $(this).empty();
             });
         }
     }
@@ -265,12 +272,22 @@
             setupDataTableListeners();
         }, 500);
 
-        // Bei Fenstergrößen-Änderung
+        // Bei Fenstergrößen-Änderung (z.B. Tablet-Rotation)
         let resizeTimer;
-        $(window).on('resize', function() {
+        $(window).on('resize orientationchange', function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
                 checkScreenSize();
+
+                // Bei Tablets: DataTables neu zeichnen für bessere Darstellung
+                if (window.innerWidth <= 992) {
+                    Object.keys(tableConfigs).forEach(tableId => {
+                        const $table = $('#' + tableId);
+                        if ($table.length > 0) {
+                            $table.DataTable().draw(false);
+                        }
+                    });
+                }
             }, 250);
         });
     });
