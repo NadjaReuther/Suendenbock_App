@@ -74,7 +74,7 @@
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label for="entityType" class="form-label">Entitäts-Typ</label>
-                                    <select class="form-select" id="entityType" name="EntityType" onchange="loadEntities()">
+                                    <select class="form-select" id="entityType" name="EntityType" onchange="initEntitySelect()">
                                         <option value="">-- Typ wählen --</option>
                                         @foreach (var type in ViewBag.EntityTypes)
                                         {
@@ -83,21 +83,10 @@
                                     </select>
                                 </div>
                                 <div class="col-md-8 mb-3">
-                                    <label for="entitySearch" class="form-label">Entität suchen</label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" id="entitySearch" placeholder="Suchbegriff eingeben..." onkeyup="searchEntities()">
-                                        <button class="btn btn-outline-secondary" type="button" onclick="loadEntities()">
-                                            <i class="bi bi-arrow-clockwise"></i> Aktualisieren
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div id="entityResults" class="list-group" style="max-height: 300px; overflow-y: auto;">
-                                        <div class="text-muted text-center p-3">
-                                            Bitte wähle einen Entitäts-Typ
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="entityId" name="EntityId" asp-for="EntityId">
+                                    <label for="entityId" class="form-label">Entität auswählen</label>
+                                    <select class="form-select entity-select" id="entityId" name="EntityId" asp-for="EntityId" disabled>
+                                        <option value="">Erst Entitäts-Typ wählen...</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -196,83 +185,121 @@
 
             if (isFree) {
                 document.getElementById('entityType').value = '';
-                document.getElementById('entityId').value = '';
+                $('#entityId').val(null).trigger('change');
                 document.getElementById('title').required = true;
             } else {
                 document.getElementById('title').required = false;
             }
         }
 
-        // Lade Entitäten basierend auf Typ
-        function loadEntities() {
+        // Initialisiere Select2 für Entitäts-Auswahl basierend auf dem gewählten Typ
+        function initEntitySelect() {
             const entityType = document.getElementById('entityType').value;
+            const entitySelect = $('#entityId');
+
+            // Zerstöre vorherige Select2-Instanz falls vorhanden
+            if (entitySelect.hasClass('select2-hidden-accessible')) {
+                entitySelect.select2('destroy');
+            }
+
+            // Reset
+            entitySelect.empty().append('<option value="">-- Bitte wählen --</option>');
+
             if (!entityType) {
-                document.getElementById('entityResults').innerHTML = '<div class="text-muted text-center p-3">Bitte wähle einen Entitäts-Typ</div>';
+                entitySelect.prop('disabled', true);
                 return;
             }
 
-            document.getElementById('entityResults').innerHTML = '<div class="text-center p-3"><div class="spinner-border spinner-border-sm"></div> Laden...</div>';
+            // Spezialbehandlung für MagicClass (kann nicht direkt erstellt werden)
+            const canCreateNew = entityType !== 'MagicClass';
 
-            fetch(`@Url.Action("SearchEntities")?entityType=${entityType}`)
-                .then(response => response.json())
-                .then(data => {
-                    displayEntities(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('entityResults').innerHTML = '<div class="text-danger text-center p-3">Fehler beim Laden</div>';
-                });
-        }
+            // Initialisiere Select2 mit AJAX und Tags
+            entitySelect.select2({
+                ajax: {
+                    url: '@Url.Action("SearchEntities")',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            entityType: entityType,
+                            searchTerm: params.term || ''
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(item => ({
+                                id: item.id,
+                                text: item.name
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                tags: canCreateNew,
+                createTag: canCreateNew ? function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: 'new:' + term,
+                        text: term + ' (neu erstellen)',
+                        newTag: true
+                    };
+                } : undefined,
+                minimumInputLength: 0,
+                placeholder: canCreateNew ? 'Entität suchen oder neu erstellen...' : 'Entität suchen...',
+                allowClear: true
+            }).prop('disabled', false);
 
-        // Suche Entitäten
-        function searchEntities() {
-            const entityType = document.getElementById('entityType').value;
-            const searchTerm = document.getElementById('entitySearch').value;
+            // Event-Handler für Auswahl
+            entitySelect.on('select2:select', function (e) {
+                const selectedData = e.params.data;
+                const selectedText = selectedData.text.replace(' (neu erstellen)', '');
 
-            if (!entityType) return;
+                // Wenn es ein neuer Eintrag ist (ID beginnt mit "new:")
+                if (selectedData.newTag && selectedData.id.startsWith('new:')) {
+                    const newEntityName = selectedData.id.substring(4); // "new:" entfernen
 
-            fetch(`@Url.Action("SearchEntities")?entityType=${entityType}&searchTerm=${encodeURIComponent(searchTerm)}`)
-                .then(response => response.json())
-                .then(data => {
-                    displayEntities(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
+                    // Zeige Ladeanzeige
+                    entitySelect.prop('disabled', true);
 
-        // Zeige Entitäten an
-        function displayEntities(entities) {
-            const resultsDiv = document.getElementById('entityResults');
+                    // AJAX-Call zum Erstellen der neuen Entität
+                    $.ajax({
+                        url: '@Url.Action("CreateEntity")',
+                        method: 'POST',
+                        data: {
+                            entityType: entityType,
+                            name: newEntityName,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                // Ersetze die temporäre Option mit der echten ID
+                                const newOption = new Option(response.name, response.id, true, true);
+                                entitySelect.empty().append(newOption).trigger('change');
+                                entitySelect.prop('disabled', false);
 
-            if (entities.length === 0) {
-                resultsDiv.innerHTML = '<div class="text-muted text-center p-3">Keine Einträge gefunden</div>';
-                return;
-            }
+                                // Setze den Titel
+                                document.getElementById('title').value = response.name;
 
-            let html = '';
-            entities.forEach(entity => {
-                html += `<button type="button" class="list-group-item list-group-item-action" onclick="selectEntity(${entity.id}, '${entity.name}')">
-                    ${entity.name}
-                </button>`;
+                                // Erfolgs-Nachricht
+                                alert(`✅ "${response.name}" wurde erfolgreich erstellt!`);
+                            } else {
+                                alert('❌ Fehler beim Erstellen: ' + response.message);
+                                entitySelect.val(null).trigger('change').prop('disabled', false);
+                            }
+                        },
+                        error: function () {
+                            alert('❌ Fehler bei der Kommunikation mit dem Server');
+                            entitySelect.val(null).trigger('change').prop('disabled', false);
+                        }
+                    });
+                } else {
+                    // Bestehende Entität ausgewählt
+                    document.getElementById('title').value = selectedText;
+                }
             });
-
-            resultsDiv.innerHTML = html;
-        }
-
-        // Wähle eine Entität aus
-        function selectEntity(id, name) {
-            document.getElementById('entityId').value = id;
-            document.getElementById('title').value = name;
-
-            // Markiere ausgewähltes Element
-            const buttons = document.querySelectorAll('#entityResults .list-group-item');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Zeige Bestätigung
-            const entityType = document.getElementById('entityType').value;
-            alert(`Ausgewählt: ${name} (${entityType})`);
         }
 
         // Beim Laden der Seite
@@ -285,12 +312,16 @@
                 document.getElementById('linkedEntry').checked = true;
                 document.getElementById('entityType').value = '@ViewBag.SelectedEntityType';
                 toggleEntitySelection();
-                loadEntities();
+                initEntitySelect();
 
                 @if (ViewBag.SelectedEntityId != null)
                 {
                     <text>
-                    document.getElementById('entityId').value = '@ViewBag.SelectedEntityId';
+                    // Vorauswahl setzen
+                    setTimeout(function() {
+                        const entityId = '@ViewBag.SelectedEntityId';
+                        $('#entityId').val(entityId).trigger('change');
+                    }, 500);
                     </text>
                 }
                 </text>

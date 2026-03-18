@@ -166,6 +166,94 @@ namespace Suendenbock_App.Controllers
             return Json(results);
         }
 
+        // POST: Glossary/CreateEntity - Erstellt eine neue Entität (für AJAX, nur Gott)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> CreateEntity(string entityType, string name)
+        {
+            if (string.IsNullOrWhiteSpace(entityType) || string.IsNullOrWhiteSpace(name))
+            {
+                return Json(new { success = false, message = "Typ und Name sind erforderlich" });
+            }
+
+            try
+            {
+                int newId = 0;
+
+                switch (entityType)
+                {
+                    case "Rasse":
+                        var rasse = new Rasse { Name = name };
+                        _context.Rassen.Add(rasse);
+                        await _context.SaveChangesAsync();
+                        newId = rasse.Id;
+                        break;
+
+                    case "Obermagie":
+                        var obermagie = new Obermagie { Bezeichnung = name };
+                        _context.Obermagien.Add(obermagie);
+                        await _context.SaveChangesAsync();
+                        newId = obermagie.Id;
+                        break;
+
+                    case "Blutgruppe":
+                        var blutgruppe = new Blutgruppe { Name = name };
+                        _context.Blutgruppen.Add(blutgruppe);
+                        await _context.SaveChangesAsync();
+                        newId = blutgruppe.Id;
+                        break;
+
+                    case "Haus":
+                        var haus = new Haus { Name = name };
+                        _context.Haeuser.Add(haus);
+                        await _context.SaveChangesAsync();
+                        newId = haus.Id;
+                        break;
+
+                    case "Herkunftsland":
+                        var land = new Herkunftsland { Name = name };
+                        _context.Herkunftslaender.Add(land);
+                        await _context.SaveChangesAsync();
+                        newId = land.Id;
+                        break;
+
+                    case "Religion":
+                        var religion = new Religion { Type = name };
+                        _context.Religions.Add(religion);
+                        await _context.SaveChangesAsync();
+                        newId = religion.Id;
+                        break;
+
+                    case "Infanterierang":
+                        var rang = new Infanterierang { Name = name };
+                        _context.Infanterieraenge.Add(rang);
+                        await _context.SaveChangesAsync();
+                        newId = rang.Id;
+                        break;
+
+                    case "Stand":
+                        var stand = new Stand { Name = name };
+                        _context.Staende.Add(stand);
+                        await _context.SaveChangesAsync();
+                        newId = stand.Id;
+                        break;
+
+                    case "MagicClass":
+                        return Json(new { success = false, message = "MagicClass benötigt eine Obermagie und kann nicht direkt erstellt werden" });
+
+                    default:
+                        return Json(new { success = false, message = "Unbekannter Entitätstyp" });
+                }
+
+                return Json(new { success = true, id = newId, name = name });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Fehler beim Erstellen: {ex.Message}" });
+            }
+        }
+
         // GET: Glossary/Create (nur Gott)
         [Authorize(Roles = "Gott")]
         public IActionResult Create(string? entityType = null, int? entityId = null)

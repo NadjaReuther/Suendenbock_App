@@ -372,3 +372,8 @@ FodyWeavers.xsd
 
 # React/Capacitor Mobile App
 /Suendenbock_App/Angular-Beispiele/
+
+# Deploy Files
+/Suendenbock_App/deploy.ps1
+/Suendenbock_App/deploy-simple.ps1
+/Suendenbock_App/dockerold.txt

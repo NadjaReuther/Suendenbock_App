@@ -100,9 +100,14 @@
                                             </td>
                                             <td>
                                                 <small class="text-muted">
-                                                    @(entry.Description.Length > 100
-                                                        ? entry.Description.Substring(0, 100) + "..."
-                                                        : entry.Description)
+                                                    @{
+                                                        // HTML-Tags entfernen für die Anzeige
+                                                        var plainText = System.Text.RegularExpressions.Regex.Replace(entry.Description, "<.*?>", string.Empty);
+                                                        var displayText = plainText.Length > 100
+                                                            ? plainText.Substring(0, 100) + "..."
+                                                            : plainText;
+                                                    }
+                                                    @displayText
                                                 </small>
                                             </td>
                                             <td>
@@ -116,7 +121,7 @@
                                                     <button type="button"
                                                             class="btn btn-sm btn-outline-danger"
                                                             onclick="deleteEntry(@entry.Id, '@entry.Title')">
-                                                        <i class="bi bi-trash"></i>
+                                                        <i class="bi bi-trash"></i> Löschen
                                                     </button>
                                                 </div>
                                             </td>
