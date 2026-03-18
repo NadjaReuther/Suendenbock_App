@@ -1,0 +1,222 @@
+/* Responsive DataTables für Mobile */
+@media screen and (max-width: 768px) {
+    /* Verstecke die normale Tabellen-Ansicht auf kleinen Bildschirmen */
+    .medieval-table {
+        display: none !important;
+    }
+
+    /* DataTables Controls responsive machen */
+    .dataTables_wrapper .pergament-controls,
+    .dataTables_wrapper .pergament-footer {
+        flex-direction: column !important;
+    }
+
+    .dataTables_wrapper .pergament-controls > div,
+    .dataTables_wrapper .pergament-footer > div {
+        width: 100% !important;
+        text-align: center !important;
+        margin-bottom: 10px;
+    }
+
+    /* Mobile Karten-Container */
+    .mobile-table-cards {
+        display: block;
+        width: 100%;
+        padding: 0;
+    }
+
+    /* Einzelne Karte */
+    .mobile-card {
+        background: linear-gradient(135deg, #f5e6d3 0%, #e8d5b7 100%);
+        border: 2px solid #8b6f47;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-card:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        transform: translateY(-2px);
+    }
+
+    /* Karten-Header mit Plus/Minus */
+    .mobile-card-header {
+        background: linear-gradient(135deg, #8b6f47 0%, #6d5635 100%);
+        color: #f5e6d3;
+        padding: 15px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+    }
+
+    .mobile-card-header:active {
+        background: linear-gradient(135deg, #6d5635 0%, #5a4429 100%);
+    }
+
+    .mobile-card-title {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .mobile-card-title img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #f5e6d3;
+    }
+
+    .mobile-card-toggle {
+        font-size: 1.5rem;
+        transition: transform 0.3s ease;
+        color: #f5e6d3;
+    }
+
+    .mobile-card-toggle.expanded {
+        transform: rotate(45deg);
+    }
+
+    /* Karten-Body (zusammenklappbar) */
+    .mobile-card-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .mobile-card-body.expanded {
+        max-height: 2000px;
+    }
+
+    .mobile-card-content {
+        padding: 15px;
+    }
+
+    /* Einzelne Felder in der Karte */
+    .mobile-field {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #d4c4b0;
+    }
+
+    .mobile-field:last-child {
+        border-bottom: none;
+    }
+
+    .mobile-field-label {
+        font-weight: bold;
+        color: #5a4429;
+        flex-shrink: 0;
+        margin-right: 10px;
+    }
+
+    .mobile-field-value {
+        text-align: right;
+        color: #3a2a1a;
+        flex: 1;
+    }
+
+    /* Aktionen-Bereich */
+    .mobile-card-actions {
+        padding: 15px;
+        background: rgba(139, 111, 71, 0.1);
+        border-top: 1px solid #8b6f47;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .mobile-action-btn {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: none;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .mobile-action-edit {
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+    }
+
+    .mobile-action-edit:active {
+        background: linear-gradient(135deg, #357abd 0%, #2868a8 100%);
+    }
+
+    .mobile-action-delete {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+
+    .mobile-action-delete:active {
+        background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    }
+
+    /* Badges und Switches in Karten */
+    .mobile-field-value .badge {
+        display: inline-block;
+        margin: 2px;
+    }
+
+    .mobile-field-value .form-check-input {
+        transform: scale(1.2);
+    }
+
+    /* Leere Tabellen Nachricht */
+    .mobile-empty-message {
+        text-align: center;
+        padding: 40px 20px;
+        color: #8b6f47;
+        font-style: italic;
+    }
+
+    /* Pagination für Mobile */
+    .dataTables_wrapper .dataTables_paginate {
+        text-align: center !important;
+        margin-top: 20px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 5px 10px !important;
+        margin: 2px !important;
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Desktop: Verstecke Mobile Cards */
+@media screen and (min-width: 769px) {
+    .mobile-table-cards {
+        display: none !important;
+    }
+}
+
+/* Responsive Anpassungen für Tablets */
+@media screen and (max-width: 992px) and (min-width: 769px) {
+    .pergament-table-card {
+        margin-bottom: 20px;
+    }
+
+    .medieval-table {
+        font-size: 0.9rem;
+    }
+
+    .medieval-actions {
+        flex-direction: column !important;
+        gap: 5px !important;
+    }
+}

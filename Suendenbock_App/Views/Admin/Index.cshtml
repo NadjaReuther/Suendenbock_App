@@ -2,7 +2,12 @@
 @model AdminViewModel
 @{
     ViewData["Title"] = "Admin Dashboard";
-}   
+}
+
+@section Styles {
+    <link href="~/css/responsive-tables.css" rel="stylesheet" />
+}
+
 @if (TempData["Error"] != null)
 {
     <div class="alert alert-info alert-dismissible fade show">
@@ -390,6 +395,7 @@
 </div>
 @section Scripts {
     <script src="~/js/monster-toggle-validation.js"></script>
+    <script src="~/js/responsive-tables.js"></script>
     <script>
         $(document).ready(function () {
             const medievalTableConfig = {
