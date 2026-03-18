@@ -377,3 +377,4 @@ FodyWeavers.xsd
 /Suendenbock_App/deploy.ps1
 /Suendenbock_App/deploy-simple.ps1
 /Suendenbock_App/dockerold.txt
+/nul
