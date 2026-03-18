@@ -3,6 +3,13 @@
 @{
     ViewData["Title"] = "Glossar-Eintrag bearbeiten";
     var isLinked = !string.IsNullOrEmpty(Model.EntityType);
+
+    // Helper-Funktion für Display-Namen
+    string GetDisplayName(string entityType)
+    {
+        var entityTypes = (Dictionary<string, string>)ViewBag.EntityTypes;
+        return entityTypes.TryGetValue(entityType ?? "", out var displayName) ? displayName : entityType;
+    }
 }
 
 @section Styles {
@@ -45,7 +52,7 @@
                             @if (isLinked)
                             {
                                 <div class="alert alert-info mb-0">
-                                    <strong>Verknüpfter Eintrag</strong> - Dieser Eintrag ist mit <span class="badge bg-info">@Model.EntityType</span> verknüpft
+                                    <strong>Verknüpfter Eintrag</strong> - Dieser Eintrag ist mit <span class="badge bg-info">@GetDisplayName(Model.EntityType)</span> verknüpft
                                 </div>
                                 <input type="hidden" asp-for="EntityType" />
                                 <input type="hidden" asp-for="EntityId" />

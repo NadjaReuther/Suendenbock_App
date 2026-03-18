@@ -87,9 +87,9 @@
                                     <label for="entityType" class="form-label">Entitäts-Typ</label>
                                     <select class="form-select" id="entityType" name="EntityType" onchange="initEntitySelect()">
                                         <option value="">-- Typ wählen --</option>
-                                        @foreach (var type in ViewBag.EntityTypes)
+                                        @foreach (var typeEntry in (Dictionary<string, string>)ViewBag.EntityTypes)
                                         {
-                                            <option value="@type">@type</option>
+                                            <option value="@typeEntry.Key">@typeEntry.Value</option>
                                         }
                                     </select>
                                 </div>
@@ -222,9 +222,6 @@
                 return;
             }
 
-            // Spezialbehandlung für MagicClass (kann nicht direkt erstellt werden)
-            const canCreateNew = entityType !== 'MagicClass';
-
             // Initialisiere Select2 mit AJAX und Tags
             entitySelect.select2({
                 ajax: {
@@ -247,8 +244,8 @@
                     },
                     cache: true
                 },
-                tags: canCreateNew,
-                createTag: canCreateNew ? function (params) {
+                tags: true,
+                createTag: function (params) {
                     var term = $.trim(params.term);
                     if (term === '') {
                         return null;
@@ -258,9 +255,9 @@
                         text: term + ' (neu erstellen)',
                         newTag: true
                     };
-                } : undefined,
+                },
                 minimumInputLength: 0,
-                placeholder: canCreateNew ? 'Entität suchen oder neu erstellen...' : 'Entität suchen...',
+                placeholder: 'Entität suchen oder neu erstellen...',
                 allowClear: true
             }).prop('disabled', false);
 

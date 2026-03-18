@@ -2,6 +2,13 @@
 
 @{
     ViewData["Title"] = "Glossar";
+
+    // Helper-Funktion für Display-Namen
+    string GetDisplayName(string entityType)
+    {
+        var entityTypes = (Dictionary<string, string>)ViewBag.EntityTypes;
+        return entityTypes.TryGetValue(entityType ?? "", out var displayName) ? displayName : entityType;
+    }
 }
 
 <div class="container-fluid py-4">
@@ -34,9 +41,9 @@
                                     <option value="">Alle Typen</option>
                                     <option disabled>---</option>
                                     <option value="" selected="@(string.IsNullOrEmpty(ViewBag.EntityType) ? "selected" : null)">Freie Einträge</option>
-                                    @foreach (var type in ViewBag.EntityTypes)
+                                    @foreach (var typeEntry in (Dictionary<string, string>)ViewBag.EntityTypes)
                                     {
-                                        <option value="@type" selected="@(ViewBag.EntityType == type ? "selected" : null)">@type</option>
+                                        <option value="@typeEntry.Key" selected="@(ViewBag.EntityType == typeEntry.Key ? "selected" : null)">@typeEntry.Value</option>
                                     }
                                 </select>
                             </div>
@@ -104,7 +111,7 @@
                                             <td>
                                                 @if (!string.IsNullOrEmpty(entry.EntityType))
                                                 {
-                                                    <span class="badge bg-info">@entry.EntityType</span>
+                                                    <span class="badge bg-info">@GetDisplayName(entry.EntityType)</span>
                                                 }
                                                 else if (!string.IsNullOrEmpty(entry.Category))
                                                 {

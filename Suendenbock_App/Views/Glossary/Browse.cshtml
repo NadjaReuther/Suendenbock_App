@@ -2,6 +2,13 @@
 
 @{
     ViewData["Title"] = "Glossar";
+
+    // Helper-Funktion für Display-Namen
+    string GetDisplayName(string entityType)
+    {
+        var entityTypes = (Dictionary<string, string>)ViewBag.EntityTypes;
+        return entityTypes.TryGetValue(entityType ?? "", out var displayName) ? displayName : entityType;
+    }
 }
 
 @section Styles {
@@ -44,9 +51,9 @@
                     <select class="form-select" id="entityType" name="entityType">
                         <option value="">Alle Typen</option>
                         <option value="" selected="@(string.IsNullOrEmpty(ViewBag.EntityType) ? "selected" : null)">Freie Einträge</option>
-                        @foreach (var type in ViewBag.EntityTypes)
+                        @foreach (var typeEntry in (Dictionary<string, string>)ViewBag.EntityTypes)
                         {
-                            <option value="@type" selected="@(ViewBag.EntityType == type ? "selected" : null)">@type</option>
+                            <option value="@typeEntry.Key" selected="@(ViewBag.EntityType == typeEntry.Key ? "selected" : null)">@typeEntry.Value</option>
                         }
                     </select>
                 </div>
@@ -93,7 +100,7 @@
                 }
                 @if (!string.IsNullOrWhiteSpace(ViewBag.EntityType))
                 {
-                    <text> im Typ "<strong>@ViewBag.EntityType</strong>"</text>
+                    <text> im Typ "<strong>@GetDisplayName(ViewBag.EntityType)</strong>"</text>
                 }
                 @if (!string.IsNullOrWhiteSpace(ViewBag.Category))
                 {
@@ -127,7 +134,7 @@
                     <div class="glossary-card-type">
                         @if (isLinked)
                         {
-                            <span class="@badgeClass">@entry.EntityType</span>
+                            <span class="@badgeClass">@GetDisplayName(entry.EntityType)</span>
                         }
                         else if (!string.IsNullOrEmpty(entry.Category))
                         {
@@ -173,7 +180,6 @@
         return entityType switch
         {
             "Rasse" => "👥",
-            "MagicClass" => "✨",
             "Obermagie" => "🔮",
             "Blutgruppe" => "🩸",
             "Haus" => "🏰",

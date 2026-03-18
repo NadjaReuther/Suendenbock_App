@@ -49,7 +49,7 @@ namespace Suendenbock_App.Controllers
             ViewBag.SearchTerm = searchTerm;
             ViewBag.EntityType = entityType;
             ViewBag.Category = category;
-            ViewBag.EntityTypes = GetAvailableEntityTypes();
+            ViewBag.EntityTypes = GetAvailableEntityTypesWithDisplayNames();
             ViewBag.Categories = await _context.GlossaryEntries
                 .Where(g => !string.IsNullOrEmpty(g.Category))
                 .Select(g => g.Category)
@@ -90,7 +90,7 @@ namespace Suendenbock_App.Controllers
             ViewBag.SearchTerm = searchTerm;
             ViewBag.EntityType = entityType;
             ViewBag.Category = category;
-            ViewBag.EntityTypes = GetAvailableEntityTypes();
+            ViewBag.EntityTypes = GetAvailableEntityTypesWithDisplayNames();
             ViewBag.Categories = await _context.GlossaryEntries
                 .Where(g => !string.IsNullOrEmpty(g.Category))
                 .Select(g => g.Category)
@@ -137,15 +137,6 @@ namespace Suendenbock_App.Controllers
                         .Select(r => new { r.Id, r.Name })
                         .ToListAsync();
                     results = rassen.Cast<object>().ToList();
-                    break;
-
-                case "MagicClass":
-                    var magicClasses = await _context.MagicClasses
-                        .Include(mc => mc.Obermagie)
-                        .Where(mc => string.IsNullOrEmpty(searchTerm) || mc.Bezeichnung.ToLower().Contains(searchTerm.ToLower()))
-                        .Select(mc => new { mc.Id, Name = mc.Bezeichnung + " (" + mc.Obermagie.Bezeichnung + ")" })
-                        .ToListAsync();
-                    results = magicClasses.Cast<object>().ToList();
                     break;
 
                 case "Obermagie":
@@ -281,9 +272,6 @@ namespace Suendenbock_App.Controllers
                         newId = stand.Id;
                         break;
 
-                    case "MagicClass":
-                        return Json(new { success = false, message = "MagicClass benötigt eine Obermagie und kann nicht direkt erstellt werden" });
-
                     default:
                         return Json(new { success = false, message = "Unbekannter Entitätstyp" });
                 }
@@ -300,7 +288,7 @@ namespace Suendenbock_App.Controllers
         [Authorize(Roles = "Gott")]
         public IActionResult Create(string? entityType = null, int? entityId = null)
         {
-            ViewBag.EntityTypes = GetAvailableEntityTypes();
+            ViewBag.EntityTypes = GetAvailableEntityTypesWithDisplayNames();
             ViewBag.SelectedEntityType = entityType;
             ViewBag.SelectedEntityId = entityId;
 
@@ -358,7 +346,7 @@ namespace Suendenbock_App.Controllers
                 return NotFound();
             }
 
-            ViewBag.EntityTypes = GetAvailableEntityTypes();
+            ViewBag.EntityTypes = GetAvailableEntityTypesWithDisplayNames();
             return View(entry);
         }
 
@@ -432,6 +420,7 @@ namespace Suendenbock_App.Controllers
                 return NotFound();
             }
 
+            ViewBag.EntityTypes = GetAvailableEntityTypesWithDisplayNames();
             return View(entry);
         }
 
@@ -455,12 +444,39 @@ namespace Suendenbock_App.Controllers
         }
 
         // Helper Methods
+
+        // Mapping von internen Namen (DB) zu Anzeigenamen (Frontend)
+        private static readonly Dictionary<string, string> EntityTypeDisplayNames = new Dictionary<string, string>
+        {
+            { "Rasse", "Volk" },
+            { "Obermagie", "Kreislauf" },
+            { "Blutgruppe", "Profession" },
+            { "Infanterierang", "Militär" },
+            { "Haus", "Haus" },
+            { "Herkunftsland", "Herkunftsland" },
+            { "Religion", "Religion" },
+            { "Stand", "Stand" }
+        };
+
+        // Reverse Mapping für die Rückkonvertierung
+        private static readonly Dictionary<string, string> DisplayNameToEntityType = EntityTypeDisplayNames
+            .ToDictionary(kvp => kvp.Value, kvp => kvp.Key);
+
+        private string GetDisplayName(string entityType)
+        {
+            return EntityTypeDisplayNames.TryGetValue(entityType, out var displayName) ? displayName : entityType;
+        }
+
+        private string GetEntityTypeFromDisplayName(string displayName)
+        {
+            return DisplayNameToEntityType.TryGetValue(displayName, out var entityType) ? entityType : displayName;
+        }
+
         private List<string> GetAvailableEntityTypes()
         {
             return new List<string>
             {
                 "Rasse",
-                "MagicClass",
                 "Obermagie",
                 "Blutgruppe",
                 "Haus",
@@ -471,12 +487,18 @@ namespace Suendenbock_App.Controllers
             };
         }
 
+        // Gibt die Display-Namen für das Frontend zurück
+        private Dictionary<string, string> GetAvailableEntityTypesWithDisplayNames()
+        {
+            return GetAvailableEntityTypes()
+                .ToDictionary(type => type, type => GetDisplayName(type));
+        }
+
         private async Task<string> GetEntityNameAsync(string entityType, int entityId)
         {
             return entityType switch
             {
                 "Rasse" => (await _context.Rassen.FindAsync(entityId))?.Name ?? "",
-                "MagicClass" => (await _context.MagicClasses.Include(mc => mc.Obermagie).FirstOrDefaultAsync(mc => mc.Id == entityId))?.Bezeichnung ?? "",
                 "Obermagie" => (await _context.Obermagien.FindAsync(entityId))?.Bezeichnung ?? "",
                 "Blutgruppe" => (await _context.Blutgruppen.FindAsync(entityId))?.Name ?? "",
                 "Haus" => (await _context.Haeuser.FindAsync(entityId))?.Name ?? "",

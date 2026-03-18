@@ -5,6 +5,13 @@
     var isLinked = !string.IsNullOrEmpty(Model.EntityType);
     var dataType = isLinked ? Model.EntityType : "free";
     var badgeClass = isLinked ? $"badge type-{Model.EntityType}" : "badge type-free";
+
+    // Helper-Funktion für Display-Namen
+    string GetDisplayName(string entityType)
+    {
+        var entityTypes = (Dictionary<string, string>)ViewBag.EntityTypes;
+        return entityTypes.TryGetValue(entityType ?? "", out var displayName) ? displayName : entityType;
+    }
 }
 
 @section Styles {
@@ -30,7 +37,7 @@
             <p class="wiki-subtitle">
                 @if (isLinked)
                 {
-                    <span class="@badgeClass">@Model.EntityType</span>
+                    <span class="@badgeClass">@GetDisplayName(Model.EntityType)</span>
                 }
                 else if (!string.IsNullOrEmpty(Model.Category))
                 {
@@ -83,7 +90,7 @@
 
                 @if (isLinked)
                 {
-                    <p><strong>Typ:</strong> @Model.EntityType</p>
+                    <p><strong>Typ:</strong> @GetDisplayName(Model.EntityType)</p>
                 }
                 else if (!string.IsNullOrEmpty(Model.Category))
                 {
@@ -104,7 +111,7 @@
                     @if (isLinked)
                     {
                         <a asp-action="Browse" asp-route-entityType="@Model.EntityType" class="btn btn-sm btn-outline-info">
-                            <i class="bi bi-filter"></i> Alle @Model.EntityType
+                            <i class="bi bi-filter"></i> Alle @GetDisplayName(Model.EntityType)
                         </a>
                     }
                     @if (!string.IsNullOrEmpty(Model.Category))
