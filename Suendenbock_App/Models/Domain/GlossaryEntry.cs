@@ -7,6 +7,9 @@ namespace Suendenbock_App.Models.Domain
         // Titel für freie Einträge oder Anzeigename
         public string Title { get; set; } = string.Empty;
 
+        // Kategorie für freie Einträge (z.B. "Geschichte", "Geografie", "Kultur")
+        public string? Category { get; set; }
+
         // Polymorphe Beziehung zu verschiedenen Entitäten
         public string? EntityType { get; set; } // z.B. "Rasse", "MagicClass", "Obermagie", "Blutgruppe", etc.
         public int? EntityId { get; set; } // ID der verknüpften Entität

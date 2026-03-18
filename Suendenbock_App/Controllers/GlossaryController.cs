@@ -21,7 +21,7 @@ namespace Suendenbock_App.Controllers
 
         // GET: Glossary/Browse - Öffentliche Übersicht
         [AllowAnonymous]
-        public async Task<IActionResult> Browse(string searchTerm = "", string entityType = "")
+        public async Task<IActionResult> Browse(string searchTerm = "", string entityType = "", string category = "")
         {
             var query = _context.GlossaryEntries.AsQueryable();
 
@@ -38,18 +38,31 @@ namespace Suendenbock_App.Controllers
                 query = query.Where(g => g.EntityType == entityType);
             }
 
+            // Kategorie Filter
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                query = query.Where(g => g.Category == category);
+            }
+
             var entries = await query.OrderBy(g => g.Title).ToListAsync();
 
             ViewBag.SearchTerm = searchTerm;
             ViewBag.EntityType = entityType;
+            ViewBag.Category = category;
             ViewBag.EntityTypes = GetAvailableEntityTypes();
+            ViewBag.Categories = await _context.GlossaryEntries
+                .Where(g => !string.IsNullOrEmpty(g.Category))
+                .Select(g => g.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToListAsync();
 
             return View(entries);
         }
 
         // GET: Glossary/Index - Verwaltung (nur Gott)
         [Authorize(Roles = "Gott")]
-        public async Task<IActionResult> Index(string searchTerm = "", string entityType = "")
+        public async Task<IActionResult> Index(string searchTerm = "", string entityType = "", string category = "")
         {
             var query = _context.GlossaryEntries.AsQueryable();
 
@@ -66,13 +79,42 @@ namespace Suendenbock_App.Controllers
                 query = query.Where(g => g.EntityType == entityType);
             }
 
+            // Kategorie Filter
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                query = query.Where(g => g.Category == category);
+            }
+
             var entries = await query.OrderBy(g => g.Title).ToListAsync();
 
             ViewBag.SearchTerm = searchTerm;
             ViewBag.EntityType = entityType;
+            ViewBag.Category = category;
             ViewBag.EntityTypes = GetAvailableEntityTypes();
+            ViewBag.Categories = await _context.GlossaryEntries
+                .Where(g => !string.IsNullOrEmpty(g.Category))
+                .Select(g => g.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToListAsync();
 
             return View(entries);
+        }
+
+        // GET: Glossary/GetCategories - Lade alle Kategorien (für AJAX, nur Gott)
+        [HttpGet]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> GetCategories(string searchTerm = "")
+        {
+            var categories = await _context.GlossaryEntries
+                .Where(g => !string.IsNullOrEmpty(g.Category) &&
+                           (string.IsNullOrEmpty(searchTerm) || g.Category.ToLower().Contains(searchTerm.ToLower())))
+                .Select(g => g.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToListAsync();
+
+            return Json(categories);
         }
 
         // GET: Glossary/SearchEntities - Suche nach Entitäten (für AJAX, nur Gott)

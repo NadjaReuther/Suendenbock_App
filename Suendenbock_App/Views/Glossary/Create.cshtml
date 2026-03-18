@@ -64,6 +64,17 @@
                     </div>
                 </div>
 
+                <!-- Kategorie (für freie Einträge) -->
+                <div class="col-md-6" id="categorySection">
+                    <div class="form-group mb-3">
+                        <label for="category" class="form-label">Kategorie (optional)</label>
+                        <select class="form-select category-select" id="category" name="Category" asp-for="Category">
+                            <option value="">-- Keine Kategorie --</option>
+                        </select>
+                        <small class="form-text text-muted">Wähle eine Kategorie oder erstelle eine neue durch Eingabe</small>
+                    </div>
+                </div>
+
                 <!-- Entitäts-Auswahl (für verknüpfte Einträge) -->
                 <div class="col-12" id="entitySection" style="display: none;">
                     <div class="card mb-4">
@@ -181,6 +192,7 @@
         function toggleEntitySelection() {
             const isFree = document.getElementById('freeEntry').checked;
             document.getElementById('titleSection').style.display = isFree ? 'block' : 'none';
+            document.getElementById('categorySection').style.display = isFree ? 'block' : 'none';
             document.getElementById('entitySection').style.display = isFree ? 'none' : 'block';
 
             if (isFree) {
@@ -302,9 +314,50 @@
             });
         }
 
+        // Initialisiere Kategorie-Select mit Tags (zum Erstellen neuer Kategorien)
+        function initCategorySelect() {
+            $('.category-select').select2({
+                ajax: {
+                    url: '@Url.Action("GetCategories")',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            searchTerm: params.term || ''
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(item => ({
+                                id: item,
+                                text: item
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                tags: true,
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    };
+                },
+                minimumInputLength: 0,
+                placeholder: 'Kategorie wählen oder neu erstellen...',
+                allowClear: true
+            });
+        }
+
         // Beim Laden der Seite
         document.addEventListener('DOMContentLoaded', function() {
             toggleEntitySelection();
+            initCategorySelect();
 
             @if (!string.IsNullOrEmpty(ViewBag.SelectedEntityType))
             {

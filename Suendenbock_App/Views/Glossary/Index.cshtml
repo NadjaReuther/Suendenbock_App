@@ -19,7 +19,7 @@
                 <div class="card-body">
                     <form asp-action="Index" method="get">
                         <div class="row g-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="searchTerm" class="form-label">Suchbegriff</label>
                                 <input type="text"
                                        class="form-control"
@@ -28,7 +28,7 @@
                                        value="@ViewBag.SearchTerm"
                                        placeholder="Titel oder Beschreibung durchsuchen...">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="entityType" class="form-label">Typ filtern</label>
                                 <select class="form-select" id="entityType" name="entityType">
                                     <option value="">Alle Typen</option>
@@ -37,6 +37,19 @@
                                     @foreach (var type in ViewBag.EntityTypes)
                                     {
                                         <option value="@type" selected="@(ViewBag.EntityType == type ? "selected" : null)">@type</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="category" class="form-label">Kategorie filtern</label>
+                                <select class="form-select" id="category" name="category">
+                                    <option value="">Alle Kategorien</option>
+                                    @if (ViewBag.Categories != null)
+                                    {
+                                        @foreach (var cat in ViewBag.Categories)
+                                        {
+                                            <option value="@cat" selected="@(ViewBag.Category == cat ? "selected" : null)">@cat</option>
+                                        }
                                     }
                                 </select>
                             </div>
@@ -76,7 +89,7 @@
                                 <thead>
                                     <tr>
                                         <th>Titel</th>
-                                        <th>Typ</th>
+                                        <th>Typ / Kategorie</th>
                                         <th>Beschreibung</th>
                                         <th style="width: 200px;">Aktionen</th>
                                     </tr>
@@ -89,13 +102,17 @@
                                                 <strong>@entry.Title</strong>
                                             </td>
                                             <td>
-                                                @if (string.IsNullOrEmpty(entry.EntityType))
+                                                @if (!string.IsNullOrEmpty(entry.EntityType))
                                                 {
-                                                    <span class="badge bg-secondary">Frei</span>
+                                                    <span class="badge bg-info">@entry.EntityType</span>
+                                                }
+                                                else if (!string.IsNullOrEmpty(entry.Category))
+                                                {
+                                                    <span class="badge bg-success">@entry.Category</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-info">@entry.EntityType</span>
+                                                    <span class="badge bg-secondary">Frei</span>
                                                 }
                                             </td>
                                             <td>

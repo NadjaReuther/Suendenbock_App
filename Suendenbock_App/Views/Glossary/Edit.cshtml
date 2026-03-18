@@ -78,6 +78,27 @@
                     </div>
                 </div>
 
+                <!-- Kategorie (nur für freie Einträge) -->
+                @if (!isLinked)
+                {
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="category" class="form-label">Kategorie (optional)</label>
+                            <select class="form-select category-select" id="category" name="Category" asp-for="Category">
+                                @if (!string.IsNullOrEmpty(Model.Category))
+                                {
+                                    <option value="@Model.Category" selected>@Model.Category</option>
+                                }
+                                else
+                                {
+                                    <option value="">-- Keine Kategorie --</option>
+                                }
+                            </select>
+                            <small class="form-text text-muted">Wähle eine Kategorie oder erstelle eine neue durch Eingabe</small>
+                        </div>
+                    </div>
+                }
+
                 <!-- Bild-Upload -->
                 <div class="col-12">
                     <div class="card mb-4">
@@ -144,6 +165,53 @@
     <script src="~/js/entity-mentions.js"></script>
     <script>
         let editor;
+
+        // Initialisiere Kategorie-Select mit Tags (zum Erstellen neuer Kategorien)
+        function initCategorySelect() {
+            $('.category-select').select2({
+                ajax: {
+                    url: '@Url.Action("GetCategories")',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            searchTerm: params.term || ''
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.map(item => ({
+                                id: item,
+                                text: item
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                tags: true,
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    };
+                },
+                minimumInputLength: 0,
+                placeholder: 'Kategorie wählen oder neu erstellen...',
+                allowClear: true
+            });
+        }
+
+        // Kategorie-Select beim Laden initialisieren
+        $(document).ready(function() {
+            if ($('.category-select').length > 0) {
+                initCategorySelect();
+            }
+        });
 
         // WYSIWYG Editor initialisieren
         ClassicEditor

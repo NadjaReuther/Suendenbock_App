@@ -27,18 +27,20 @@
 
         <div>
             <h1 class="wiki-title">@Model.Title</h1>
-            @if (isLinked)
-            {
-                <p class="wiki-subtitle">
+            <p class="wiki-subtitle">
+                @if (isLinked)
+                {
                     <span class="@badgeClass">@Model.EntityType</span>
-                </p>
-            }
-            else
-            {
-                <p class="wiki-subtitle">
+                }
+                else if (!string.IsNullOrEmpty(Model.Category))
+                {
+                    <span class="badge bg-success">@Model.Category</span>
+                }
+                else
+                {
                     <span class="badge type-free">Freier Eintrag</span>
-                </p>
-            }
+                }
+            </p>
         </div>
     </div>
 
@@ -83,6 +85,10 @@
                 {
                     <p><strong>Typ:</strong> @Model.EntityType</p>
                 }
+                else if (!string.IsNullOrEmpty(Model.Category))
+                {
+                    <p><strong>Kategorie:</strong> @Model.Category</p>
+                }
                 else
                 {
                     <p><strong>Typ:</strong> Freier Eintrag</p>
@@ -99,6 +105,12 @@
                     {
                         <a asp-action="Browse" asp-route-entityType="@Model.EntityType" class="btn btn-sm btn-outline-info">
                             <i class="bi bi-filter"></i> Alle @Model.EntityType
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Category))
+                    {
+                        <a asp-action="Browse" asp-route-category="@Model.Category" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-tag"></i> Alle @Model.Category
                         </a>
                     }
                 </div>
