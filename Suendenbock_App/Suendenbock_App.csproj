@@ -22,6 +22,29 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="metadata - Kopieren.json" />
+    <Content Remove="metadata.json" />
+    <Content Remove="package-lock.json" />
+    <Content Remove="package.json" />
+    <Content Remove="tsconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".env.local" />
+    <None Remove=".gitignore" />
+    <None Remove="App.tsx" />
+    <None Remove="capacitor.config.ts" />
+    <None Remove="dockerold.txt" />
+    <None Remove="index - Kopieren.html" />
+    <None Remove="index - Kopieren.tsx" />
+    <None Remove="index.html" />
+    <None Remove="index.tsx" />
+    <None Remove="README.md" />
+    <None Remove="types.ts" />
+    <None Remove="vite.config.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.15" />
