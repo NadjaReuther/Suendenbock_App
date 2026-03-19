@@ -1,96 +1,118 @@
 ﻿@model Suendenbock_App.Models.ViewModels.ThreadDetailViewModel
+@using System.Security.Claims
 @{
     ViewData["Title"] = Model.Title;
 }
 
 <div class="thread-detail-container">
-    <a asp-action="Forum" class="back-link">
-        <span class="material-symbols-outlined">arrow_back</span>
-        <span>Zurück zum Forum</span>
-    </a>
 
-    <article class="thread-post main-post">
-        <div class="thread-post-header">
-            <div class="post-meta">
-                <span class="thread-badge">
-                    <span class="material-symbols-outlined">@Model.CategoryIcon</span>
-                    @Model.CategoryName
-                </span>
-                <span class="post-time">@Model.CreatedAt</span>
-                @if (Model.IsPinned)
-                {
-                    <span class="thread-pin-badge">
-                        <span class="material-symbols-outlined">push_pin</span> Angepinnt
+    <a asp-action="Forum" class="td-back-link">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Zurück zum Forum
+    </a>
+    <div class="td-main-post">
+        <div class="td-post-accent"></div>
+
+        <div class="td-post-inner">
+            <div class="td-post-meta">
+                <div class="td-meta-left">
+                    <span class="td-category-badge">
+                        <span class="material-symbols-outlined">@Model.CategoryIcon</span>
+                        @Model.CategoryName
                     </span>
+                    <span class="td-meta-time">
+                        <span class="material-symbols-outlined">schedule</span>
+                        @Model.CreatedAt
+                    </span>
+                    <span class="td-meta-author">
+                        <span class="material-symbols-outlined">person</span>
+                        @Model.AuthorName
+                    </span>
+                    @if (Model.IsPinned)
+                    {
+                        <span class="td-pin-badge">
+                            <span class="material-symbols-outlined">push_pin</span>
+                            Angepinnt
+                        </span>
+                    }
+                </div>
+
+                @if (Model.CanDelete)
+                {
+                    <form asp-action="DeleteThread" asp-route-id="@Model.Id" method="post" class="td-delete-form">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="td-btn-delete"
+                                onclick="return confirm('Thread wirklich archivieren?')"
+                                title="Thread löschen">
+                            <span class="material-symbols-outlined">delete</span>
+                            Löschen
+                        </button>
+                    </form>
                 }
             </div>
-            @if (Model.CanDelete)
-            {
-                <form asp-action="DeleteThread" asp-route-id="@Model.Id" method="post">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="btn-icon-danger"
-                            onclick="return confirm('Thread wirklich archivieren?')">
-                        <span class="material-symbols-outlined">delete</span>
-                    </button>
-                </form>
-            }
+
+            <h1 class="td-title">@Model.Title</h1>
+            <div class="td-content-box">
+                <div class="td-content wiki-content">
+                    @Html.Raw(Model.Content)
+                </div>
+            </div>
         </div>
+    </div>
 
-        <h1 class="thread-title">@Model.Title</h1>
-        <p class="post-author">
-            <span class="material-symbols-outlined">person</span>
-            @Model.AuthorName
-        </p>
-
-        <div class="post-content wiki-content">
-            @Html.Raw(Model.Content)
+    <div class="td-replies-section">
+        <div class="td-replies-header">
+            <h3 class="td-replies-title">Antworten (@Model.Replies.Count)</h3>
+            <span class="material-symbols-outlined td-replies-icon">chat_bubble_outline</span>
         </div>
-    </article>
-
-    <section class="replies-section">
-        <h3 class="replies-title">
-            <span class="material-symbols-outlined">chat_bubble_outline</span>
-            Antworten (@Model.Replies.Count)
-        </h3>
 
         @if (!Model.Replies.Any())
         {
-            <div class="empty-state small">
+            <div class="td-empty-replies">
                 <span class="material-symbols-outlined">history_edu</span>
                 <p>Stille herrscht in diesem Saal. Erhebt Eure Stimme!</p>
             </div>
         }
-
-        @foreach (var reply in Model.Replies)
+        else
         {
-            <div class="thread-post reply-post">
-                <div class="thread-post-header">
-                    <div class="post-author-info">
-                        <span class="material-symbols-outlined">person</span>
-                        <strong>@reply.AuthorName</strong>
-                        <span class="post-time">@reply.CreatedAt</span>
+            @foreach (var reply in Model.Replies)
+            {
+                <div class="td-reply-card">
+                    <div class="td-reply-header">
+                        <div class="td-reply-author">
+                            <div class="td-avatar">
+                                <span class="material-symbols-outlined">person</span>
+                            </div>
+                            <span class="td-reply-name">@reply.AuthorName</span>
+                        </div>
+                        <div class="td-reply-actions">
+                            <span class="td-reply-time">@reply.CreatedAt</span>
+                            @if (reply.CanDelete)
+                            {
+                                <form asp-action="DeleteReply"
+                                      asp-route-id="@reply.Id"
+                                      asp-route-threadId="@Model.Id"
+                                      method="post" class="td-inline-form">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="td-btn-icon-delete"
+                                            onclick="return confirm('Antwort löschen?')"
+                                            title="Antwort löschen">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </form>
+                            }
+                        </div>
                     </div>
-                    @if (reply.CanDelete)
-                    {
-                        <form asp-action="DeleteReply"
-                              asp-route-id="@reply.Id"
-                              asp-route-threadId="@Model.Id"
-                              method="post">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn-icon-danger"
-                                    onclick="return confirm('Antwort löschen?')">
-                                <span class="material-symbols-outlined">delete</span>
-                            </button>
-                        </form>
-                    }
+                    <div class="td-reply-content">
+                        @reply.Content
+                    </div>
                 </div>
-                <div class="post-content">@reply.Content</div>
-            </div>
+            }
         }
-    </section>
+    </div>
 
-    <div class="reply-form-card">
-        <h4 class="reply-form-title">
+    <div class="td-reply-form-card">
+        <h4 class="td-reply-form-title">
             <span class="material-symbols-outlined">edit_note</span>
             Eure Replik verfassen
         </h4>
@@ -98,14 +120,19 @@
             @Html.AntiForgeryToken()
             <input type="hidden" name="threadId" value="@Model.Id" />
             <textarea name="content" rows="4" required
-                      class="reply-textarea"
-                      placeholder="Was habt Ihr zu sagen?"></textarea>
-            <div class="reply-form-footer">
-                <button type="submit" class="btn-primary">
+                      class="td-reply-textarea"
+                      placeholder="Was habt Ihr zu dieser Kunde zu sagen?"></textarea>
+            <div class="td-reply-form-footer">
+                <button type="submit" class="td-btn-send">
                     <span class="material-symbols-outlined">send</span>
                     Absenden
                 </button>
             </div>
         </form>
     </div>
+
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/thread-detail.css" />
+}

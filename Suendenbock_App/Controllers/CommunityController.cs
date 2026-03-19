@@ -171,7 +171,7 @@ namespace Suendenbock_App.Controllers
                 .Include(t => t.ReporterCharacter)
                 .Include(t => t.ReporterUser)
                 .OrderByDescending(t => t.CreatedAt)
-                .Take(5)
+                .Take(2)
                 .Select(t => new TicketPreview
                 {
                     Id = t.Id,
@@ -363,9 +363,14 @@ namespace Suendenbock_App.Controllers
             var isAdmin = User.IsInRole("Gott");
 
             var thread = await _context.ForumThreads
-                .Include(t => t.Category)
-                .Include(t => t.Replies.Where(r => !r.IsArchived))
-                .FirstOrDefaultAsync(t => t.Id == id && !t.IsArchived);
+             .Include(t => t.Category)
+             .Include(t => t.AuthorUser)              // ← NEU
+             .Include(t => t.AuthorCharacter)         // ← NEU
+             .Include(t => t.Replies.Where(r => !r.IsArchived))
+                 .ThenInclude(r => r.AuthorUser)      // ← NEU
+             .Include(t => t.Replies.Where(r => !r.IsArchived))
+                 .ThenInclude(r => r.AuthorCharacter) // ← NEU
+             .FirstOrDefaultAsync(t => t.Id == id && !t.IsArchived);
 
             if (thread == null) return NotFound();
 
