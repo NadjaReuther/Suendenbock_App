@@ -90,7 +90,7 @@
                               onclick="event.stopPropagation()">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="fp-btn-delete"
-                                    onclick="return confirm('Thread wirklich archivieren?')"
+                                    data-delete-form="true" data-delete-message="Thread wirklich archivieren?"
                                     title="Thema löschen">
                                 <span class="material-symbols-outlined">delete</span>
                             </button>

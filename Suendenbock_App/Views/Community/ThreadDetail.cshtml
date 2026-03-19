@@ -50,7 +50,7 @@
                         <form asp-action="DeleteThread" asp-route-id="@Model.Id" method="post" class="td-delete-form">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="td-btn-delete"
-                                    onclick="return confirm('Thread wirklich archivieren?')">
+                                    data-delete-form="true" data-delete-message="Thread wirklich archivieren?">
                                 <span class="material-symbols-outlined">delete</span>
                                 Löschen
                             </button>
@@ -111,7 +111,7 @@
                                       method="post" class="td-inline-form">
                                     @Html.AntiForgeryToken()
                                     <button type="submit" class="td-btn-icon-delete"
-                                            onclick="return confirm('Antwort löschen?')">
+                                            data-delete-form="true" data-delete-message="Antwort löschen?">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </form>
