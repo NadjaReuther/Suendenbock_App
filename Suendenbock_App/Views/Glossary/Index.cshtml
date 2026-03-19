@@ -179,11 +179,24 @@
 @section Scripts {
     <script>
         function deleteEntry(id, title) {
-            if (confirm(`Möchtest du den Eintrag "${title}" wirklich löschen?`)) {
-                var form = document.getElementById('deleteForm');
-                form.action = '@Url.Action("Delete", "Glossary")/' + id;
-                form.submit();
-            }
+            Swal.fire({
+                title: 'Seid Ihr sicher?',
+                text: `Der Eintrag "${title}" wird unwiderruflich gelöscht.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#B89E68',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ja, löschen',
+                cancelButtonText: 'Abbrechen',
+                background: '#FFFCF7',
+                color: '#2D241E'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = document.getElementById('deleteForm');
+                    form.action = '@Url.Action("Delete", "Glossary")/' + id;
+                    form.submit();
+                }
+            });
         }
     </script>
 }
