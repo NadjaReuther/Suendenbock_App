@@ -1,0 +1,259 @@
+﻿/* ================================================
+   FORUM-FORM.CSS
+   Formular für Erstellen und Bearbeiten von Threads
+   Gleiches Design-Muster wie tickets.css / news.css
+   ================================================ */
+
+.forum-form-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* ==== HEADER – identisch zu news-header / tickets-header ==== */
+.forum-form-header {
+    margin-bottom: 2.5rem;
+}
+
+/* .back-link, .page-title, .page-subtitle kommen aus tickets.css / news.css
+   Da diese Klassen bereits in anderen CSS-Dateien definiert sind,
+   müssen wir nur sicherstellen dass tickets.css oder eine gemeinsame
+   Datei geladen ist – oder wir wiederholen sie hier: */
+
+.forum-form-container .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #B89E68;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+    .forum-form-container .back-link:hover {
+        color: #a08850;
+    }
+
+        .forum-form-container .back-link:hover .material-symbols-outlined {
+            transform: translateX(-0.25rem);
+        }
+
+    .forum-form-container .back-link .material-symbols-outlined {
+        font-size: 1.25rem;
+        transition: transform 0.3s ease;
+    }
+
+.forum-form-container .page-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    color: #B89E68;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: 0.05em;
+}
+
+.forum-form-container .page-subtitle {
+    font-size: 0.875rem;
+    color: rgba(45, 36, 30, 0.6);
+    font-style: italic;
+    margin: 0;
+}
+
+/* ==== FORMULAR-KARTE ==== */
+.forum-form-card {
+    background: #FFFCF7;
+    border: 1px solid #DCCEB0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+}
+
+    .forum-form-card:hover {
+        box-shadow: 0 0 15px rgba(184, 158, 104, 0.25);
+    }
+
+/* goldener Akzentstreifen oben – wie bei main-post in ThreadDetail */
+.forum-form-accent {
+    height: 4px;
+    background: linear-gradient(to right, #B89E68, rgba(184, 158, 104, 0.2));
+}
+
+.forum-form-body {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ==== ZEILE: Kategorie + Titel nebeneinander ==== */
+.forum-form-row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.forum-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+/* Label mit Icon */
+.forum-form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.6875rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(45, 36, 30, 0.55);
+}
+
+    .forum-form-label .material-symbols-outlined {
+        font-size: 1rem;
+        color: rgba(184, 158, 104, 0.6);
+    }
+
+/* Eingabefelder */
+.forum-form-input,
+.forum-form-select,
+.forum-form-textarea {
+    background: #F5F2E9;
+    border: 1px solid #DCCEB0;
+    border-radius: 0.5rem;
+    padding: 0.7rem 0.875rem;
+    font-size: 0.9375rem;
+    color: #2D241E;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+    .forum-form-input:focus,
+    .forum-form-select:focus,
+    .forum-form-textarea:focus {
+        outline: none;
+        border-color: #B89E68;
+        box-shadow: 0 0 0 3px rgba(184, 158, 104, 0.15);
+    }
+
+.forum-form-select {
+    cursor: pointer;
+    appearance: none; /* entfernt Browser-Standard-Pfeil */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23B89E68' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+}
+
+.forum-form-textarea {
+    resize: vertical;
+    min-height: 200px;
+    line-height: 1.6;
+}
+
+.forum-form-error {
+    font-size: 0.75rem;
+    color: #b91c1c;
+    font-style: italic;
+}
+
+/* ==== AKTIONS-BUTTONS ==== */
+.forum-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(184, 158, 104, 0.15);
+    margin-top: 0.5rem;
+}
+
+.forum-form-btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.7rem 1.5rem;
+    background: transparent;
+    color: rgba(45, 36, 30, 0.6);
+    border: 1px solid #DCCEB0;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .forum-form-btn-cancel:hover {
+        background: rgba(245, 242, 233, 0.8);
+        border-color: #B89E68;
+        color: #2D241E;
+    }
+
+.forum-form-btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 2rem;
+    background: #B89E68;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(184, 158, 104, 0.3);
+    transition: all 0.3s ease;
+}
+
+    .forum-form-btn-submit:hover {
+        background: #a08850;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(184, 158, 104, 0.4);
+    }
+
+    .forum-form-btn-submit:active {
+        transform: scale(0.97);
+    }
+
+    .forum-form-btn-submit .material-symbols-outlined {
+        font-size: 1rem;
+    }
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 640px) {
+    .forum-form-container {
+        padding: 1.25rem 1rem;
+    }
+
+    /* Kategorie und Titel untereinander auf Mobile */
+    .forum-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .forum-form-container .page-title {
+        font-size: 1.75rem;
+    }
+
+    .forum-form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .forum-form-btn-cancel,
+    .forum-form-btn-submit {
+        justify-content: center;
+        text-align: center;
+    }
+}

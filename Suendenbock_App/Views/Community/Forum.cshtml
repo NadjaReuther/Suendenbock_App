@@ -3,38 +3,36 @@
     ViewData["Title"] = "Halle der Absprachen";
 }
 
-<div class="forum-container">
-    <div class="forum-page-header">
-        <div class="header-content">
-            <a asp-action="Index" class="back-link">
+<div class="fp-container">
+    <div class="fp-header">
+        <div>
+            <a asp-action="Index" class="fp-back-link">
                 <span class="material-symbols-outlined">arrow_back</span>
-                <span>Zurück zur Halle</span>
+                Zurück zur Halle
             </a>
-            <h1 class="page-title">Halle der Absprachen</h1>
-            <p class="page-subtitle">Versammlungsort für Absprachen, Lore und Getratsche.</p>
+            <h1 class="fp-title">Halle der Absprachen</h1>
         </div>
-        <a asp-action="CreateThread" class="btn-primary">
+        <a asp-action="CreateThread" class="fp-btn-new">
             <span class="material-symbols-outlined">add_comment</span>
             Thema eröffnen
         </a>
     </div>
-
-    <div class="forum-layout">
-        <aside class="forum-sidebar">
-            <div class="sidebar-card">
-                <form method="get" asp-action="Forum">
-                    <div class="search-wrapper">
-                        <span class="material-symbols-outlined search-icon">search</span>
+    <div class="fp-grid">
+        <aside class="fp-sidebar">
+            <div class="fp-sidebar-card">
+                <p class="fp-sidebar-label">Suche</p>
+                <form method="get" asp-action="Forum" class="fp-search-form">
+                    <div class="fp-search-wrapper">
+                        <span class="material-symbols-outlined fp-search-icon">search</span>
                         <input name="suche" value="@Model.Suche"
-                               class="forum-search" placeholder="Schlagwort..." />
+                               class="fp-search-input" placeholder="Schlagwort..." />
                     </div>
                     <input type="hidden" name="kategorie" value="@Model.AktiveKategorie" />
                 </form>
-
-                <h4 class="sidebar-title">Kategorien</h4>
-                <nav class="category-list">
+                <p class="fp-sidebar-label">Kategorien</p>
+                <nav class="fp-category-nav">
                     <a asp-action="Forum" asp-route-suche="@Model.Suche"
-                       class="category-item @(Model.AktiveKategorie == null ? "active" : "")">
+                       class="fp-cat-item @(Model.AktiveKategorie == null ? "active" : "")">
                         <span class="material-symbols-outlined">apps</span>
                         Alle
                     </a>
@@ -43,20 +41,18 @@
                         <a asp-action="Forum"
                            asp-route-suche="@Model.Suche"
                            asp-route-kategorie="@cat.Name"
-                           class="category-item @(Model.AktiveKategorie == cat.Name ? "active" : "")">
+                           class="fp-cat-item @(Model.AktiveKategorie == cat.Name ? "active" : "")">
                             <span class="material-symbols-outlined">@cat.Icon</span>
                             @cat.Name
-                            <span class="category-count">@cat.ThreadCount</span>
                         </a>
                     }
                 </nav>
             </div>
         </aside>
-
-        <main class="forum-main">
+        <main class="fp-threads">
             @if (!Model.Threads.Any())
             {
-                <div class="empty-state">
+                <div class="fp-empty">
                     <span class="material-symbols-outlined">history_edu</span>
                     <p>Keine Themen gefunden.</p>
                 </div>
@@ -64,36 +60,38 @@
             @foreach (var thread in Model.Threads)
             {
                 <a asp-action="ThreadDetail" asp-route-id="@thread.Id"
-                   class="forum-thread-card @(thread.IsPinned ? "pinned" : "")">
-                    <div class="thread-card-icon">
+                   class="fp-thread-card @(thread.IsPinned ? "pinned" : "")">
+                    <div class="fp-thread-icon">
                         <span class="material-symbols-outlined">@thread.CategoryIcon</span>
                     </div>
-                    <div class="thread-card-body">
-                        <div class="thread-card-meta">
-                            <span class="thread-badge">@thread.CategoryName</span>
-                            <span class="thread-time">@thread.CreatedAt</span>
+                    <div class="fp-thread-body">
+                        <div class="fp-thread-meta">
+                            <span class="fp-thread-badge">@thread.CategoryName</span>
+                            <span class="fp-thread-time">@thread.CreatedAt</span>
                             @if (thread.IsPinned)
                             {
-                                <span class="thread-pin-badge">
+                                <span class="fp-pin-badge">
                                     <span class="material-symbols-outlined">push_pin</span>
                                     Angepinnt
                                 </span>
                             }
                         </div>
-                        <h3 class="thread-card-title">@thread.Title</h3>
-                        <p class="thread-card-footer">
-                            @thread.AuthorName &nbsp;•&nbsp; @thread.ReplyCount Antworten
-                        </p>
+                        <h2 class="fp-thread-title">@thread.Title</h2>
+                        <div class="fp-thread-footer">
+                            <span>@thread.AuthorName</span>
+                            <span>•</span>
+                            <span>@thread.ReplyCount Antworten</span>
+                        </div>
                     </div>
                     @if (thread.CanDelete)
                     {
                         <form asp-action="DeleteThread" asp-route-id="@thread.Id"
-                              method="post" class="thread-delete-form"
+                              method="post" class="fp-delete-form"
                               onclick="event.stopPropagation()">
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="btn-icon-danger"
+                            <button type="submit" class="fp-btn-delete"
                                     onclick="return confirm('Thread wirklich archivieren?')"
-                                    title="Thread löschen">
+                                    title="Thema löschen">
                                 <span class="material-symbols-outlined">delete</span>
                             </button>
                         </form>
@@ -103,6 +101,7 @@
         </main>
     </div>
 </div>
+
 @section Styles {
-    <link rel="stylesheet" href="~/css/forum.css" />
+    <link rel="stylesheet" href="~/css/forum-page.css" />
 }

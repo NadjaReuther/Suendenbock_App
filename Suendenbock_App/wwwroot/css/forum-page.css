@@ -1,0 +1,428 @@
+﻿/* ================================================
+   FORUM-PAGE.CSS  –  Halle der Absprachen
+   1:1 Nachbau von ForumPage.tsx
+   ================================================ */
+
+.fp-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+/* ==== HEADER ==== */
+.fp-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+@media (min-width: 768px) {
+    .fp-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.fp-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #B89E68;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    transition: all 0.2s ease;
+}
+
+    .fp-back-link:hover {
+        color: #2D241E;
+    }
+
+    .fp-back-link .material-symbols-outlined {
+        font-size: 1.25rem;
+        transition: transform 0.2s ease;
+    }
+
+    .fp-back-link:hover .material-symbols-outlined {
+        transform: translateX(-3px);
+    }
+
+.fp-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.25rem;
+    color: #B89E68;
+    margin: 0;
+    letter-spacing: 0.05em;
+}
+
+/* "Thema eröffnen"-Button – gold, wie Angular bg-primary */
+.fp-btn-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #B89E68;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(184, 158, 104, 0.35);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+    .fp-btn-new:hover {
+        background: #a08850;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(184, 158, 104, 0.45);
+    }
+
+    .fp-btn-new:active {
+        transform: scale(0.97);
+    }
+
+    .fp-btn-new .material-symbols-outlined {
+        font-size: 1.1rem;
+    }
+
+/* ==== 4-SPALTEN-GRID ==== */
+/* Sidebar: 1 Teil, Threads: 3 Teile – wie lg:grid-cols-4 / lg:col-span-3 */
+.fp-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .fp-grid {
+        grid-template-columns: 1fr 3fr;
+    }
+}
+
+/* ==== SIDEBAR ==== */
+.fp-sidebar {
+    position: sticky;
+    top: 1rem;
+}
+
+.fp-sidebar-card {
+    background: #FFFCF7;
+    border: 1px solid #DCCEB0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06);
+}
+
+.fp-sidebar-label {
+    font-size: 0.6875rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(45, 36, 30, 0.45);
+    margin: 0 0 0.75rem 0;
+}
+
+/* Suche */
+.fp-search-form {
+    margin-bottom: 1.5rem;
+}
+
+.fp-search-wrapper {
+    position: relative;
+}
+
+.fp-search-input {
+    width: 100%;
+    background: #F5F2E9;
+    border: 1px solid #DCCEB0;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    font-size: 0.875rem;
+    color: #2D241E;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+    .fp-search-input:focus {
+        outline: none;
+        border-color: #B89E68;
+        box-shadow: 0 0 0 3px rgba(184, 158, 104, 0.15);
+    }
+
+.fp-search-icon {
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(45, 36, 30, 0.3);
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+/* Kategorie-Navigation */
+.fp-category-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.fp-cat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: rgba(45, 36, 30, 0.6);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+    .fp-cat-item:hover {
+        background: rgba(184, 158, 104, 0.1);
+        color: #B89E68;
+        opacity: 1;
+    }
+
+    /* Aktive Kategorie – gold ausgefüllt wie im Angular-Original */
+    .fp-cat-item.active {
+        background: #B89E68;
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(184, 158, 104, 0.3);
+    }
+
+    .fp-cat-item .material-symbols-outlined {
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+/* ==== THREAD-LISTE ==== */
+.fp-threads {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Leerzustand */
+.fp-empty {
+    text-align: center;
+    padding: 5rem 1rem;
+    color: rgba(45, 36, 30, 0.35);
+    border: 2px dashed rgba(184, 158, 104, 0.25);
+    border-radius: 0.75rem;
+}
+
+    .fp-empty .material-symbols-outlined {
+        font-size: 4rem;
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .fp-empty p {
+        font-family: 'Cinzel', serif;
+        font-size: 1.5rem;
+        margin: 0;
+    }
+
+/* ==== THREAD-KARTE ==== */
+/* <a>-Tag, ganze Karte ist klickbar */
+.fp-thread-card {
+    position: relative;
+    display: flex;
+    align-items: flex-start; /* items-start wie im Angular-Original */
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background: #FFFCF7;
+    border: 1px solid #DCCEB0;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.25s ease;
+}
+
+    .fp-thread-card:hover {
+        box-shadow: 0 0 16px rgba(184, 158, 104, 0.3);
+        border-color: #B89E68;
+        color: inherit;
+    }
+
+    /* Angepinnte Karten haben goldenen linken Rand */
+    .fp-thread-card.pinned {
+        border-left: 3px solid #B89E68;
+        background: rgba(184, 158, 104, 0.03);
+    }
+
+/* Icon-Kasten links – rounded-xl, p-4, text-3xl wie im Angular */
+.fp-thread-icon {
+    background: rgba(184, 158, 104, 0.06);
+    color: #B89E68;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.fp-thread-card:hover .fp-thread-icon {
+    transform: scale(1.05);
+}
+
+.fp-thread-icon .material-symbols-outlined {
+    font-size: 1.875rem; /* text-3xl */
+    display: block;
+}
+
+/* Textbereich */
+.fp-thread-body {
+    flex: 1;
+    min-width: 0;
+    padding-right: 2.5rem; /* Platz für Löschen-Button */
+}
+
+.fp-thread-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.fp-thread-badge {
+    background: rgba(184, 158, 104, 0.1);
+    border: 1px solid rgba(184, 158, 104, 0.2);
+    color: #B89E68;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.5625rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.fp-thread-time {
+    font-size: 0.625rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: rgba(45, 36, 30, 0.4);
+}
+
+.fp-pin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: rgba(127, 29, 29, 0.08);
+    border: 1px solid rgba(127, 29, 29, 0.15);
+    color: #7f1d1d;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+    .fp-pin-badge .material-symbols-outlined {
+        font-size: 0.75rem;
+    }
+
+/* Titel – font-display text-2xl wie im Angular */
+.fp-thread-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.375rem;
+    font-weight: bold;
+    color: #2D241E;
+    margin: 0 0 0.5rem 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s ease;
+    line-height: 1.3;
+}
+
+.fp-thread-card:hover .fp-thread-title {
+    color: #B89E68;
+}
+
+.fp-thread-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgba(45, 36, 30, 0.5);
+}
+
+/* Löschen-Button – absolut rechts mittig positioniert */
+/* opacity-40 standard, opacity-100 beim Hover der Karte */
+.fp-delete-form {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.fp-btn-delete {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: rgba(239, 68, 68, 0.5);
+    padding: 0.625rem;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+}
+
+.fp-thread-card:hover .fp-btn-delete {
+    opacity: 1;
+}
+
+.fp-btn-delete:hover {
+    background: rgba(254, 226, 226, 0.8);
+    color: #dc2626;
+}
+
+.fp-btn-delete .material-symbols-outlined {
+    font-size: 1.25rem;
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 1024px) {
+    .fp-sidebar {
+        position: static;
+    }
+
+    .fp-category-nav {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 640px) {
+    .fp-container {
+        padding: 1.5rem 1rem;
+    }
+
+    .fp-title {
+        font-size: 1.75rem;
+    }
+
+    .fp-thread-title {
+        white-space: normal;
+    }
+}
+

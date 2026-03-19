@@ -48,6 +48,7 @@ namespace Suendenbock_App.Models.ViewModels
         public string CreatedAt { get; set; } = string.Empty;
         public bool IsPinned { get; set; }
         public bool CanDelete { get; set; }
+        public bool CanEdit { get; set; }
         public List<ReplyViewModel> Replies { get; set; } = new();
     }
 
@@ -59,11 +60,14 @@ namespace Suendenbock_App.Models.ViewModels
         public string AuthorUserId { get; set; } = string.Empty;
         public string CreatedAt { get; set; } = string.Empty;
         public bool CanDelete { get; set; }
+        public bool CanEdit { get; set; }
     }
 
     // Für das "Neues Thema"-Formular
     public class CreateThreadViewModel
     {
+        public int? Id { get; set; }   
+
         [Required(ErrorMessage = "Titel ist erforderlich")]
         [StringLength(200)]
         public string Title { get; set; } = string.Empty;
@@ -74,7 +78,6 @@ namespace Suendenbock_App.Models.ViewModels
         [Required]
         public int CategoryId { get; set; }
 
-        // Für das Dropdown im Formular
         public List<ForumCategoryViewModel> Categories { get; set; } = new();
     }
 }

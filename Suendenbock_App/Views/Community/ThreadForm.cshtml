@@ -1,0 +1,106 @@
+﻿@model Suendenbock_App.Models.ViewModels.CreateThreadViewModel
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Thema bearbeiten" : "Neues Thema";
+}
+
+<div class="forum-form-container">
+    <div class="forum-form-header">
+        <div class="header-content">
+            @if (isEdit)
+            {
+                <a asp-action="ThreadDetail" asp-route-id="@Model.Id" class="back-link">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    <span>Zurück zum Thema</span>
+                </a>
+                <h1 class="page-title">Thema bearbeiten</h1>
+                <p class="page-subtitle">Ändere Titel, Kategorie oder Inhalt deines Beitrags.</p>
+            }
+            else
+            {
+                <a asp-action="Forum" class="back-link">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    <span>Zurück zum Forum</span>
+                </a>
+                <h1 class="page-title">Neues Thema eröffnen</h1>
+                <p class="page-subtitle">Teile deine Gedanken mit der Versammlung.</p>
+            }
+        </div>
+    </div>
+    <div class="forum-form-card">
+        <div class="forum-form-accent"></div>
+
+        <form asp-action="@(isEdit ? "EditThread" : "CreateThread")"
+              asp-route-id="@Model.Id"
+              method="post"
+              class="forum-form-body">
+
+            @Html.AntiForgeryToken()
+            <div class="forum-form-row">
+                <div class="forum-form-group">
+                    <label class="forum-form-label">
+                        <span class="material-symbols-outlined">category</span>
+                        Kategorie
+                    </label>
+                    <select asp-for="CategoryId" class="forum-form-select"
+                            asp-items="@(new SelectList(Model.Categories, "Id", "Name"))">
+                        <option value="">Kategorie wählen...</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="forum-form-error"></span>
+                </div>
+
+                <div class="forum-form-group forum-form-group--wide">
+                    <label class="forum-form-label">
+                        <span class="material-symbols-outlined">title</span>
+                        Titel
+                    </label>
+                    <input asp-for="Title" class="forum-form-input"
+                           placeholder="Worum geht es?" />
+                    <span asp-validation-for="Title" class="forum-form-error"></span>
+                </div>
+            </div>
+            <div class="forum-form-group">
+                <label class="forum-form-label">
+                    <span class="material-symbols-outlined">edit_note</span>
+                    Nachricht
+                </label>
+                <textarea asp-for="Content" id="forumEditor" rows="12"
+                          class="forum-form-textarea"></textarea>
+                <span asp-validation-for="Content" class="forum-form-error"></span>
+            </div>
+            <div class="forum-form-actions">
+                @if (isEdit)
+                {
+                    <a asp-action="ThreadDetail" asp-route-id="@Model.Id"
+                       class="forum-form-btn-cancel">
+                        Abbrechen
+                    </a>
+                    <button type="submit" class="forum-form-btn-submit">
+                        <span class="material-symbols-outlined">save</span>
+                        Änderungen speichern
+                    </button>
+                }
+                else
+                {
+                    <a asp-action="Forum" class="forum-form-btn-cancel">
+                        Abbrechen
+                    </a>
+                    <button type="submit" class="forum-form-btn-submit">
+                        <span class="material-symbols-outlined">send</span>
+                        Verkünden
+                    </button>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/forum-form.css" />
+}
+
+@section Scripts {
+    <script>
+        ClassicEditor.create(document.querySelector('#forumEditor')).catch(console.error);
+    </script>
+}
