@@ -1,0 +1,314 @@
+﻿/* ================================================
+   FORUM.CSS – Halle der Absprachen
+   Passend zu community-overview.css
+   Farben: Gold #B89E68 | Pergament #F5F2E9 | Text #2D241E
+   ================================================ */
+
+/* ==== GEMEINSAME BAUSTEINE ==== */
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #B89E68;
+    text-decoration: none;
+    font-size: 0.625rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+    .back-link:hover {
+        color: #2D241E;
+        gap: 0.75rem; /* Pfeil bewegt sich beim Hover leicht nach links */
+    }
+
+    .back-link .material-symbols-outlined {
+        font-size: 1.25rem;
+        transition: transform 0.2s ease;
+    }
+
+    .back-link:hover .material-symbols-outlined {
+        transform: translateX(-3px);
+    }
+
+.page-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    color: #B89E68;
+    margin: 0 0 0.5rem 0;
+}
+
+.page-subtitle {
+    font-size: 1rem;
+    font-style: italic;
+    color: rgba(45, 36, 30, 0.6);
+    margin: 0;
+}
+
+/* Gold-Button (Primär) */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background: #B89E68;
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.625rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(184, 158, 104, 0.4);
+    transition: all 0.3s ease;
+}
+
+    .btn-primary:hover {
+        background: #a08850;
+        box-shadow: 0 4px 14px rgba(184, 158, 104, 0.5);
+        transform: translateY(-1px);
+        color: #ffffff;
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+/* Sekundär-Button (Rahmen ohne Füllung) */
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background: transparent;
+    color: #B89E68;
+    border: 1px solid #B89E68;
+    border-radius: 0.5rem;
+    font-size: 0.625rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .btn-secondary:hover {
+        background: rgba(184, 158, 104, 0.1);
+        color: #B89E68;
+    }
+
+/* Löschen-Icon-Button (rot, klein) */
+.btn-icon-danger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem;
+    background: transparent;
+    color: rgba(185, 28, 28, 0.5);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+    .btn-icon-danger:hover {
+        background: rgba(254, 226, 226, 0.8);
+        color: #b91c1c;
+    }
+
+    .btn-icon-danger .material-symbols-outlined {
+        font-size: 1.25rem;
+    }
+
+/* Leerzustand */
+.empty-state {
+    text-align: center;
+    padding: 5rem 1rem;
+    color: rgba(45, 36, 30, 0.35);
+    border: 2px dashed rgba(184, 158, 104, 0.25);
+    border-radius: 0.75rem;
+}
+
+    .empty-state .material-symbols-outlined {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .empty-state p {
+        font-family: 'Cinzel', serif;
+        font-size: 1.25rem;
+        margin: 0;
+        font-style: italic;
+    }
+
+    /* Kleinere Variante des Leerzustands (innerhalb der Antworten-Liste) */
+    .empty-state.small {
+        padding: 2.5rem 1rem;
+    }
+
+        .empty-state.small .material-symbols-outlined {
+            font-size: 2.5rem;
+        }
+
+        .empty-state.small p {
+            font-size: 1rem;
+        }
+
+/* Badge (Kategorie-Pille) */
+.thread-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: rgba(184, 158, 104, 0.15);
+    border: 1px solid rgba(184, 158, 104, 0.3);
+    color: #B89E68;
+    padding: 0.125rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.5625rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+    .thread-badge .material-symbols-outlined {
+        font-size: 0.875rem;
+    }
+
+/* Angepinnt-Badge */
+.thread-pin-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: rgba(127, 29, 29, 0.1);
+    border: 1px solid rgba(127, 29, 29, 0.2);
+    color: #7f1d1d;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.5rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+    .thread-pin-badge .material-symbols-outlined {
+        font-size: 0.75rem;
+    }
+
+/* ==== FORUM-ÜBERSICHT (Forum.cshtml) ==== */
+
+.forum-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+.forum-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+}
+
+/* Zweispaltiges Layout: Sidebar links, Threads rechts */
+.forum-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* ==== SIDEBAR ==== */
+
+.forum-sidebar {
+    position: sticky;
+    top: 1rem; /* bleibt beim Scrollen sichtbar */
+}
+
+.sidebar-card {
+    background: #FFFCF7;
+    border: 1px solid #DCCEB0;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+}
+
+/* Suchfeld */
+.search-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.forum-search {
+    width: 100%;
+    background: #F5F2E9;
+    border: 1px solid #DCCEB0;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    font-size: 0.875rem;
+    color: #2D241E;
+    transition: border-color 0.2s ease;
+    box-sizing: border-box;
+}
+
+    .forum-search:focus {
+        outline: none;
+        border-color: #B89E68;
+        box-shadow: 0 0 0 3px rgba(184, 158, 104, 0.15);
+    }
+
+.search-icon {
+    position: absolute;
+    left: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(45, 36, 30, 0.35);
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.sidebar-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6875rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(45, 36, 30, 0.5);
+    margin: 0 0 0.75rem 0;
+}
+
+/* Kategorie-Navigationsliste */
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: bold;
+    color: rgba(45, 36, 30, 0.65);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+    .category-item:hover {
+        background: rgba(184, 158, 104, 0.1);
+        color: #B89E68;
+    }
+
+/* Aktive Kategorie ist gold hinterlegt */
+.

@@ -1,0 +1,108 @@
+﻿@model Suendenbock_App.Models.ViewModels.ForumPageViewModel
+@{
+    ViewData["Title"] = "Halle der Absprachen";
+}
+
+<div class="forum-container">
+    <div class="forum-page-header">
+        <div class="header-content">
+            <a asp-action="Index" class="back-link">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span>Zurück zur Halle</span>
+            </a>
+            <h1 class="page-title">Halle der Absprachen</h1>
+            <p class="page-subtitle">Versammlungsort für Absprachen, Lore und Getratsche.</p>
+        </div>
+        <a asp-action="CreateThread" class="btn-primary">
+            <span class="material-symbols-outlined">add_comment</span>
+            Thema eröffnen
+        </a>
+    </div>
+
+    <div class="forum-layout">
+        <aside class="forum-sidebar">
+            <div class="sidebar-card">
+                <form method="get" asp-action="Forum">
+                    <div class="search-wrapper">
+                        <span class="material-symbols-outlined search-icon">search</span>
+                        <input name="suche" value="@Model.Suche"
+                               class="forum-search" placeholder="Schlagwort..." />
+                    </div>
+                    <input type="hidden" name="kategorie" value="@Model.AktiveKategorie" />
+                </form>
+
+                <h4 class="sidebar-title">Kategorien</h4>
+                <nav class="category-list">
+                    <a asp-action="Forum" asp-route-suche="@Model.Suche"
+                       class="category-item @(Model.AktiveKategorie == null ? "active" : "")">
+                        <span class="material-symbols-outlined">apps</span>
+                        Alle
+                    </a>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <a asp-action="Forum"
+                           asp-route-suche="@Model.Suche"
+                           asp-route-kategorie="@cat.Name"
+                           class="category-item @(Model.AktiveKategorie == cat.Name ? "active" : "")">
+                            <span class="material-symbols-outlined">@cat.Icon</span>
+                            @cat.Name
+                            <span class="category-count">@cat.ThreadCount</span>
+                        </a>
+                    }
+                </nav>
+            </div>
+        </aside>
+
+        <main class="forum-main">
+            @if (!Model.Threads.Any())
+            {
+                <div class="empty-state">
+                    <span class="material-symbols-outlined">history_edu</span>
+                    <p>Keine Themen gefunden.</p>
+                </div>
+            }
+            @foreach (var thread in Model.Threads)
+            {
+                <a asp-action="ThreadDetail" asp-route-id="@thread.Id"
+                   class="forum-thread-card @(thread.IsPinned ? "pinned" : "")">
+                    <div class="thread-card-icon">
+                        <span class="material-symbols-outlined">@thread.CategoryIcon</span>
+                    </div>
+                    <div class="thread-card-body">
+                        <div class="thread-card-meta">
+                            <span class="thread-badge">@thread.CategoryName</span>
+                            <span class="thread-time">@thread.CreatedAt</span>
+                            @if (thread.IsPinned)
+                            {
+                                <span class="thread-pin-badge">
+                                    <span class="material-symbols-outlined">push_pin</span>
+                                    Angepinnt
+                                </span>
+                            }
+                        </div>
+                        <h3 class="thread-card-title">@thread.Title</h3>
+                        <p class="thread-card-footer">
+                            @thread.AuthorName &nbsp;•&nbsp; @thread.ReplyCount Antworten
+                        </p>
+                    </div>
+                    @if (thread.CanDelete)
+                    {
+                        <form asp-action="DeleteThread" asp-route-id="@thread.Id"
+                              method="post" class="thread-delete-form"
+                              onclick="event.stopPropagation()">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-icon-danger"
+                                    onclick="return confirm('Thread wirklich archivieren?')"
+                                    title="Thread löschen">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </form>
+                    }
+                </a>
+            }
+        </main>
+    </div>
+</div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/forum.css" />
+}

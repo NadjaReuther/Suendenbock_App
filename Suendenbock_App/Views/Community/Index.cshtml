@@ -280,16 +280,16 @@
                 <div class="forum-grid">
                     @foreach (var thread in Model.RecentThreads.Take(6))
                     {
-                        <div class="thread-card">
+                        <a asp-action="ThreadDetail" asp-route-id="@thread.Id" class="thread-card">
                             <div class="thread-icon">
-                                <span class="material-symbols-outlined">auto_stories</span>
+                                <span class="material-symbols-outlined">@thread.CategoryIcon</span>
                             </div>
                             <div class="thread-content">
                                 <div class="thread-meta">
                                     <span class="thread-category">@thread.CategoryName</span>
                                     <span class="thread-time">@thread.CreatedAt.ToString("dd.MM.yyyy")</span>
                                 </div>
-                                <h4 class="thread-title">@thread.Title</h4>
+                                <p class="thread-title">@thread.Title</p>
                                 <p class="thread-author">Von @thread.AuthorName • @thread.ReplyCount Antw.</p>
                             </div>
                             @if (thread.IsPinned)
@@ -298,7 +298,7 @@
                                     <span class="material-symbols-outlined">push_pin</span>
                                 </span>
                             }
-                        </div>
+                        </a>
                     }
                 </div>
             }

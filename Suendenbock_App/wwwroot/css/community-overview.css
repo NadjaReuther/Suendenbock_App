@@ -992,7 +992,10 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
 }
-
+a.thread-card {
+    text-decoration: none;
+    color: inherit;
+}
 .thread-card {
     position: relative;
     display: flex;

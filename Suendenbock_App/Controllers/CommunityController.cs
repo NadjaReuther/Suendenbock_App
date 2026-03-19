@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Models.ViewModels;
 using System.Security.Claims;
 
@@ -110,20 +111,23 @@ namespace Suendenbock_App.Controllers
             var recentThreads = await _context.ForumThreads
                 .Include(t => t.Category)
                 .Include(t => t.Replies)
-                .Include(t => t.AuthorCharacter)
-                .Include(t => t.AuthorUser)
                 .Where(t => !t.IsArchived)
                 .OrderByDescending(t => t.IsPinned)
                 .ThenByDescending(t => t.CreatedAt)
-                .Take(5)
+                .Take(6)
                 .Select(t => new ForumThreadPreview
                 {
                     Id = t.Id,
                     Title = t.Title,
                     CategoryName = t.Category.Name,
-                    AuthorName = t.AuthorCharacter != null ? t.AuthorCharacter.Vorname : (t.AuthorUser != null ? t.AuthorUser.UserName : "Unbekannt"),
+                    CategoryIcon = t.Category.Icon,         
+                    AuthorName = t.AuthorCharacter != null   
+                    ? t.AuthorCharacter.Vorname
+                    : t.AuthorUser != null
+                        ? t.AuthorUser.UserName
+                        : "Unbekannt",
                     CreatedAt = t.CreatedAt,
-                    ReplyCount = t.Replies.Count,
+                    ReplyCount = t.Replies.Count(r => !r.IsArchived),
                     IsPinned = t.IsPinned
                 })
                 .ToListAsync();
@@ -291,10 +295,208 @@ namespace Suendenbock_App.Controllers
         }
 
         // ==== FORUM ====
-        public async Task<IActionResult> Forum()
+        public async Task<IActionResult> Forum(string? suche, string? kategorie)
         {
-            // TODO: Implementierung folgt
-            return View();
+            var userId = GetUserId();
+            var isAdmin = User.IsInRole("Gott");
+
+            // Alle Kategorien für die Sidebar laden
+            var categories = await _context.ForumCategories
+                .OrderBy(c => c.SortOrder)
+                .Select(c => new ForumCategoryViewModel
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Icon = c.Icon,
+                    ThreadCount = c.Threads.Count(t => !t.IsArchived)
+                })
+                .ToListAsync();
+
+            // Threads mit Kategorie und Antworten laden, filter anwenden
+            var query = _context.ForumThreads
+                .Include(t => t.Category)
+                .Include(t => t.Replies)
+                .Where(t => !t.IsArchived)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(suche))
+                query = query.Where(t => EF.Functions.Like(t.Title, $"%{suche}%")
+                                      || EF.Functions.Like(t.AuthorName, $"%{suche}%"));
+
+            if (!string.IsNullOrEmpty(kategorie))
+                query = query.Where(t => t.Category.Name == kategorie);
+
+            // Gepinnte Threads zuerst, dann nach Datum absteigend
+            var threads = await query
+                .OrderByDescending(t => t.IsPinned)
+                .ThenByDescending(t => t.CreatedAt)
+                .ToListAsync();
+
+            var viewModel = new ForumPageViewModel
+            {
+                Threads = threads.Select(t => new ForumThreadItemViewModel
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    CategoryName = t.Category.Name,
+                    CategoryIcon = t.Category.Icon,
+                    AuthorName = t.AuthorName,
+                    AuthorUserId = t.AuthorUserId ?? string.Empty,
+                    CreatedAt = t.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
+                    ReplyCount = t.Replies.Count(r => !r.IsArchived),
+                    IsPinned = t.IsPinned,
+                    CanDelete = t.AuthorUserId == userId || isAdmin
+                }).ToList(),
+                Categories = categories,
+                AktiveKategorie = kategorie,
+                Suche = suche,
+                IsAdmin = isAdmin
+            };
+
+            return View(viewModel);
+        }
+
+        // GET: /Community/ThreadDetail/5
+        public async Task<IActionResult> ThreadDetail(int id)
+        {
+            var userId = GetUserId();
+            var isAdmin = User.IsInRole("Gott");
+
+            var thread = await _context.ForumThreads
+                .Include(t => t.Category)
+                .Include(t => t.Replies.Where(r => !r.IsArchived))
+                .FirstOrDefaultAsync(t => t.Id == id && !t.IsArchived);
+
+            if (thread == null) return NotFound();
+
+            var viewModel = new ThreadDetailViewModel
+            {
+                Id = thread.Id,
+                Title = thread.Title,
+                Content = thread.Content,
+                CategoryName = thread.Category.Name,
+                CategoryIcon = thread.Category.Icon,
+                AuthorName = thread.AuthorName,
+                AuthorUserId = thread.AuthorUserId ?? string.Empty,
+                CreatedAt = thread.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
+                IsPinned = thread.IsPinned,
+                CanDelete = thread.AuthorUserId == userId || isAdmin,
+                Replies = thread.Replies
+                    .OrderBy(r => r.CreatedAt)
+                    .Select(r => new ReplyViewModel
+                    {
+                        Id = r.Id,
+                        Content = r.Content,
+                        AuthorName = r.AuthorName,
+                        AuthorUserId = r.AuthorUserId ?? string.Empty,
+                        CreatedAt = r.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
+                        CanDelete = r.AuthorUserId == userId || isAdmin
+                    }).ToList()
+            };
+
+            return View(viewModel);
+        }
+
+        // GET: /Community/CreateThread
+        public async Task<IActionResult> CreateThread()
+        {
+            var categories = await _context.ForumCategories
+                .OrderBy(c => c.SortOrder)
+                .Select(c => new ForumCategoryViewModel
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Icon = c.Icon
+                })
+                .ToListAsync();
+
+            return View(new CreateThreadViewModel { Categories = categories });
+        }
+
+        // POST: /Community/CreateThread
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateThread(CreateThreadViewModel vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Kategorien neu laden, da sie beim POST nicht mitgeschickt werden
+                vm.Categories = await _context.ForumCategories
+                    .OrderBy(c => c.SortOrder)
+                    .Select(c => new ForumCategoryViewModel { Id = c.Id, Name = c.Name, Icon = c.Icon })
+                    .ToListAsync();
+                return View(vm);
+            }
+
+            var thread = new ForumThread
+            {
+                Title = vm.Title,
+                Content = vm.Content,
+                CategoryId = vm.CategoryId,
+                AuthorUserId = GetUserId(),
+                CreatedAt = DateTime.Now
+            };
+
+            _context.ForumThreads.Add(thread);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(ThreadDetail), new { id = thread.Id });
+        }
+
+        // POST: /Community/PostReply
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> PostReply(int threadId, string content)
+        {
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                var reply = new ForumReply
+                {
+                    ThreadId = threadId,
+                    Content = content,
+                    AuthorUserId = GetUserId(),
+                    CreatedAt = DateTime.Now
+                };
+                _context.forumReplies.Add(reply);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(ThreadDetail), new { id = threadId });
+        }
+
+        // POST: /Community/DeleteThread/5
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteThread(int id)
+        {
+            var thread = await _context.ForumThreads.FindAsync(id);
+            if (thread == null) return NotFound();
+
+            var userId = GetUserId();
+            if (thread.AuthorUserId != userId && !User.IsInRole("Gott"))
+                return Forbid();
+
+            // Soft-Delete: nur archivieren, nicht wirklich löschen
+            thread.IsArchived = true;
+            thread.UpdatedAt = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Forum));
+        }
+
+        // POST: /Community/DeleteReply/5
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteReply(int id, int threadId)
+        {
+            var reply = await _context.forumReplies.FindAsync(id);
+            if (reply == null) return NotFound();
+
+            var userId = GetUserId();
+            if (reply.AuthorUserId != userId && !User.IsInRole("Gott"))
+                return Forbid();
+
+            reply.IsArchived = true;
+            reply.UpdatedAt = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(ThreadDetail), new { id = threadId });
         }
 
         // ==== POLLS ====

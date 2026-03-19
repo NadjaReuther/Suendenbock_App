@@ -1,0 +1,111 @@
+﻿@model Suendenbock_App.Models.ViewModels.ThreadDetailViewModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="thread-detail-container">
+    <a asp-action="Forum" class="back-link">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>Zurück zum Forum</span>
+    </a>
+
+    <article class="thread-post main-post">
+        <div class="thread-post-header">
+            <div class="post-meta">
+                <span class="thread-badge">
+                    <span class="material-symbols-outlined">@Model.CategoryIcon</span>
+                    @Model.CategoryName
+                </span>
+                <span class="post-time">@Model.CreatedAt</span>
+                @if (Model.IsPinned)
+                {
+                    <span class="thread-pin-badge">
+                        <span class="material-symbols-outlined">push_pin</span> Angepinnt
+                    </span>
+                }
+            </div>
+            @if (Model.CanDelete)
+            {
+                <form asp-action="DeleteThread" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-icon-danger"
+                            onclick="return confirm('Thread wirklich archivieren?')">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                </form>
+            }
+        </div>
+
+        <h1 class="thread-title">@Model.Title</h1>
+        <p class="post-author">
+            <span class="material-symbols-outlined">person</span>
+            @Model.AuthorName
+        </p>
+
+        <div class="post-content wiki-content">
+            @Html.Raw(Model.Content)
+        </div>
+    </article>
+
+    <section class="replies-section">
+        <h3 class="replies-title">
+            <span class="material-symbols-outlined">chat_bubble_outline</span>
+            Antworten (@Model.Replies.Count)
+        </h3>
+
+        @if (!Model.Replies.Any())
+        {
+            <div class="empty-state small">
+                <span class="material-symbols-outlined">history_edu</span>
+                <p>Stille herrscht in diesem Saal. Erhebt Eure Stimme!</p>
+            </div>
+        }
+
+        @foreach (var reply in Model.Replies)
+        {
+            <div class="thread-post reply-post">
+                <div class="thread-post-header">
+                    <div class="post-author-info">
+                        <span class="material-symbols-outlined">person</span>
+                        <strong>@reply.AuthorName</strong>
+                        <span class="post-time">@reply.CreatedAt</span>
+                    </div>
+                    @if (reply.CanDelete)
+                    {
+                        <form asp-action="DeleteReply"
+                              asp-route-id="@reply.Id"
+                              asp-route-threadId="@Model.Id"
+                              method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-icon-danger"
+                                    onclick="return confirm('Antwort löschen?')">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </form>
+                    }
+                </div>
+                <div class="post-content">@reply.Content</div>
+            </div>
+        }
+    </section>
+
+    <div class="reply-form-card">
+        <h4 class="reply-form-title">
+            <span class="material-symbols-outlined">edit_note</span>
+            Eure Replik verfassen
+        </h4>
+        <form asp-action="PostReply" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="threadId" value="@Model.Id" />
+            <textarea name="content" rows="4" required
+                      class="reply-textarea"
+                      placeholder="Was habt Ihr zu sagen?"></textarea>
+            <div class="reply-form-footer">
+                <button type="submit" class="btn-primary">
+                    <span class="material-symbols-outlined">send</span>
+                    Absenden
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
