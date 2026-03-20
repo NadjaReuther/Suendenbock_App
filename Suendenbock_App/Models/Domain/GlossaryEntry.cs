@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Suendenbock_App.Models.Domain
 {
     public class GlossaryEntry
@@ -21,15 +23,15 @@ namespace Suendenbock_App.Models.Domain
         public string? ImagePath { get; set; }
 
         // Navigation Properties für polymorphe Beziehungen
-        // Diese werden nicht direkt in der DB gemappt, sondern zur Laufzeit geladen
-        public Rasse? Rasse { get; set; }
-        public MagicClass? MagicClass { get; set; }
-        public Obermagie? Obermagie { get; set; }
-        public Blutgruppe? Blutgruppe { get; set; }
-        public Haus? Haus { get; set; }
-        public Herkunftsland? Herkunftsland { get; set; }
-        public Religion? Religion { get; set; }
-        public Infanterierang? Infanterierang { get; set; }
-        public Stand? Stand { get; set; }
+        // [NotMapped] verhindert, dass EF Core FK-Spalten dafür anlegt
+        [NotMapped] public Rasse? Rasse { get; set; }
+        [NotMapped] public MagicClass? MagicClass { get; set; }
+        [NotMapped] public Obermagie? Obermagie { get; set; }
+        [NotMapped] public Blutgruppe? Blutgruppe { get; set; }
+        [NotMapped] public Haus? Haus { get; set; }
+        [NotMapped] public Herkunftsland? Herkunftsland { get; set; }
+        [NotMapped] public Religion? Religion { get; set; }
+        [NotMapped] public Infanterierang? Infanterierang { get; set; }
+        [NotMapped] public Stand? Stand { get; set; }
     }
 }
