@@ -146,19 +146,22 @@ function openVoteModal(pollId) {
 
         // Add click handler
         optionDiv.addEventListener('click', function(e) {
-            if (e.target.tagName !== 'INPUT') {
-                const input = this.querySelector('input');
-
-                if (allowMultiple) {
-                    input.checked = !input.checked;
-                } else {
-                    // Uncheck all others
-                    optionsList.querySelectorAll('input').forEach(i => i.checked = false);
-                    input.checked = true;
-                }
-
-                updateVoteOptionStyles();
+            // Prevent default label behavior if clicking on label
+            if (e.target.tagName === 'LABEL') {
+                e.preventDefault();
             }
+
+            const input = this.querySelector('input');
+
+            if (allowMultiple) {
+                input.checked = !input.checked;
+            } else {
+                // Uncheck all others
+                optionsList.querySelectorAll('input').forEach(i => i.checked = false);
+                input.checked = true;
+            }
+
+            updateVoteOptionStyles();
         });
 
         // Add input change handler for icon updates
