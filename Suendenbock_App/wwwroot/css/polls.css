@@ -418,8 +418,6 @@
     text-transform: uppercase;
     letter-spacing: 0.15em;
     cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 0.25rem;
     transition: color 0.3s ease;
 }
 
