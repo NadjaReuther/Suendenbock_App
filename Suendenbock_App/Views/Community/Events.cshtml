@@ -147,8 +147,11 @@
                                 {
                                     var isSpecial = Suendenbock_App.Models.Domain.ChoreNames.Special.Contains(choreName);
                                     var assignedTo = evt.Chores.ContainsKey(choreName) ? evt.Chores[choreName] : "Offen";
+                                    var descriptions = Suendenbock_App.Models.Domain.ChoreNames.Descriptions.ContainsKey(choreName)
+                                        ? Suendenbock_App.Models.Domain.ChoreNames.Descriptions[choreName]
+                                        : new string[0];
 
-                                    <div class="chore-item @(isSpecial ? "special" : "")">
+                                    <div class="chore-item @(isSpecial ? "special" : "") chore-tooltip-container">
                                         <div class="chore-name">
                                             @if(isSpecial)
                                             {
@@ -156,10 +159,25 @@
                                             }
                                             @choreName
                                             <span class="chore-label">Aufgabe</span>
+                                            @if(descriptions.Any())
+                                            {
+                                                <span class="material-symbols-outlined chore-info-icon">info</span>
+                                            }
                                         </div>
                                         <span class="chore-assigned @(assignedTo != "Offen" ? "filled" : "")">
                                             @assignedTo
                                         </span>
+                                        @if(descriptions.Any())
+                                        {
+                                            <div class="chore-tooltip">
+                                                <ul>
+                                                    @foreach(var desc in descriptions)
+                                                    {
+                                                        <li>@desc</li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        }
                                     </div>
                                 }
                             </div>
@@ -244,19 +262,37 @@
                         @foreach(var choreName in Suendenbock_App.Models.Domain.ChoreNames.All)
                         {
                             var isSpecial = Suendenbock_App.Models.Domain.ChoreNames.Special.Contains(choreName);
-                            <div class="chore-assignment-item @(isSpecial ? "special" : "")">
+                            var descriptions = Suendenbock_App.Models.Domain.ChoreNames.Descriptions.ContainsKey(choreName)
+                                ? Suendenbock_App.Models.Domain.ChoreNames.Descriptions[choreName]
+                                : new string[0];
+                            <div class="chore-assignment-item @(isSpecial ? "special" : "") chore-tooltip-container">
                                 <label for="chore_@choreName.Replace(" ", "_")">
                                     @if(isSpecial)
                                     {
                                         <span class="material-symbols-outlined">priority_high</span>
                                     }
                                     @choreName
+                                    @if(descriptions.Any())
+                                    {
+                                        <span class="material-symbols-outlined chore-info-icon">info</span>
+                                    }
                                 </label>
                                 <input type="text"
                                        id="chore_@choreName.Replace(" ", "_")"
                                        name="chore_@choreName"
                                        placeholder="Name oder 'Offen'"
                                        class="form-control chore-input">
+                                @if(descriptions.Any())
+                                {
+                                    <div class="chore-tooltip">
+                                        <ul>
+                                            @foreach(var desc in descriptions)
+                                            {
+                                                <li>@desc</li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
                             </div>
                         }
                     </div>

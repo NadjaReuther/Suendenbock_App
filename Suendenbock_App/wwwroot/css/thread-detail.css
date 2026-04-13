@@ -181,6 +181,7 @@
 }
 
 .td-content {
+    font-family: Georgia, serif;
     font-size: 1rem;
     line-height: 1.75;
     color: rgba(45, 36, 30, 0.88);
@@ -362,7 +363,8 @@
 
 /* Antwort-Text mit goldenem linken Balken – wie im Angular-Original */
 .td-reply-content {
-    font-size: 0.9375rem;
+    font-family: Georgia, serif;
+    font-size: 1rem;
     line-height: 1.6;
     color: rgba(45, 36, 30, 0.85);
     border-left: 2px solid rgba(184, 158, 104, 0.2);

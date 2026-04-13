@@ -127,7 +127,7 @@ namespace Suendenbock_App.Areas.Identity.Pages.Account
                     }
                     else if (roles.Contains("Spieler"))
                     {
-                        return RedirectToAction("Index", "Player");
+                        return RedirectToAction("Index", "Community");
                     }
 
                     return LocalRedirect(returnUrl);
