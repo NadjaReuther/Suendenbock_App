@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Models.ViewModels;
+using Suendenbock_App.Services;
 using System.Security.Claims;
 
 namespace Suendenbock_App.Controllers
@@ -11,8 +12,11 @@ namespace Suendenbock_App.Controllers
     [Authorize]
     public class CommunityController : BaseController
     {
-        public CommunityController(ApplicationDbContext context) : base(context)
+        private readonly IPushNotificationService _pushService;
+
+        public CommunityController(ApplicationDbContext context, IPushNotificationService pushService) : base(context)
         {
+            _pushService = pushService;
         }
 
         // ==== INDEX / OVERVIEW ====
@@ -452,6 +456,19 @@ namespace Suendenbock_App.Controllers
             _context.ForumThreads.Add(thread);
             await _context.SaveChangesAsync();
 
+            // Push-Benachrichtigung versenden
+            _ = Task.Run(async () =>
+            {
+                var category = await _context.ForumCategories.FindAsync(vm.CategoryId);
+                await _pushService.SendNotificationAsync(
+                    "ForumThread",
+                    $"📝 Neuer Forumsbeitrag: {thread.Title}",
+                    $"In {category?.Name ?? "Forum"}: {thread.Title}",
+                    $"/Community/ThreadDetail/{thread.Id}",
+                    GetUserId()
+                );
+            });
+
             return RedirectToAction(nameof(ThreadDetail), new { id = thread.Id });
         }
 
@@ -470,6 +487,22 @@ namespace Suendenbock_App.Controllers
                 };
                 _context.forumReplies.Add(reply);
                 await _context.SaveChangesAsync();
+
+                // Push-Benachrichtigung versenden
+                _ = Task.Run(async () =>
+                {
+                    var thread = await _context.ForumThreads.FindAsync(threadId);
+                    if (thread != null)
+                    {
+                        await _pushService.SendNotificationAsync(
+                            "ForumReply",
+                            $"💬 Neue Antwort: {thread.Title}",
+                            $"Jemand hat auf \"{thread.Title}\" geantwortet",
+                            $"/Community/ThreadDetail/{threadId}",
+                            GetUserId()
+                        );
+                    }
+                });
             }
 
             return RedirectToAction(nameof(ThreadDetail), new { id = threadId });
@@ -756,6 +789,12 @@ namespace Suendenbock_App.Controllers
             }
 
             return RedirectToAction(nameof(ThreadDetail), new { id = threadId });
+        }
+
+        // ==== NOTIFICATION SETTINGS ====
+        public IActionResult NotificationSettings()
+        {
+            return View();
         }
     }
 }

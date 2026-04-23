@@ -1,0 +1,264 @@
+@{
+    ViewData["Title"] = "Benachrichtigungseinstellungen";
+}
+
+<div class="notification-settings-container">
+    <div class="settings-header">
+        <h2>
+            <span class="material-symbols-outlined">notifications</span>
+            Push-Benachrichtigungen
+        </h2>
+        <p class="settings-description">
+            Erhalte Benachrichtigungen auf deinem Smartphone, auch wenn die App geschlossen ist.
+        </p>
+    </div>
+
+    <!-- Status-Anzeige -->
+    <div class="notification-status" id="notificationStatus">
+        <div class="status-icon">
+            <span class="material-symbols-outlined" id="statusIcon">notifications_off</span>
+        </div>
+        <div class="status-text">
+            <strong id="statusTitle">Benachrichtigungen deaktiviert</strong>
+            <p id="statusDescription">Aktiviere Push-Benachrichtigungen um auf dem Laufenden zu bleiben.</p>
+        </div>
+        <button type="button" class="btn-activate" id="toggleNotificationsBtn">
+            <span class="material-symbols-outlined">notifications_active</span>
+            Aktivieren
+        </button>
+    </div>
+
+    <!-- Einstellungen -->
+    <div class="notification-preferences" id="notificationPreferences" style="display: none;">
+        <h3>Was möchtest du erhalten?</h3>
+
+        <div class="preference-item">
+            <div class="preference-info">
+                <span class="material-symbols-outlined">forum</span>
+                <div>
+                    <strong>Neue Forumsbeiträge</strong>
+                    <p>Benachrichtigung wenn ein neuer Beitrag im Forum erstellt wird</p>
+                </div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="notifyForumThreads" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-item">
+            <div class="preference-info">
+                <span class="material-symbols-outlined">comment</span>
+                <div>
+                    <strong>Neue Kommentare im Forum</strong>
+                    <p>Benachrichtigung bei neuen Antworten in Forum-Threads</p>
+                </div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="notifyForumReplies" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-item">
+            <div class="preference-info">
+                <span class="material-symbols-outlined">article</span>
+                <div>
+                    <strong>Neue News-Artikel</strong>
+                    <p>Benachrichtigung wenn neue Nachrichten veröffentlicht werden</p>
+                </div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="notifyNews" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-item">
+            <div class="preference-info">
+                <span class="material-symbols-outlined">poll</span>
+                <div>
+                    <strong>Neue Umfragen</strong>
+                    <p>Benachrichtigung bei neuen Abstimmungen</p>
+                </div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="notifyPolls" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-actions">
+            <button type="button" class="btn-save" id="savePreferencesBtn">
+                <span class="material-symbols-outlined">save</span>
+                Einstellungen speichern
+            </button>
+            <button type="button" class="btn-test" id="sendTestBtn">
+                <span class="material-symbols-outlined">send</span>
+                Test-Benachrichtigung senden
+            </button>
+        </div>
+    </div>
+
+    <!-- Info-Box -->
+    <div class="info-box">
+        <span class="material-symbols-outlined">info</span>
+        <div>
+            <strong>Hinweis:</strong>
+            <p>
+                Push-Benachrichtigungen funktionieren auf Android-Geräten (Chrome, Firefox)
+                und auf iOS 16.4+ (Safari). Stelle sicher, dass Benachrichtigungen für diese
+                Website in deinen Browser-Einstellungen erlaubt sind.
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/notification-settings.css" />
+}
+
+@section Scripts {
+    <script>
+        const statusEl = document.getElementById('notificationStatus');
+        const statusIcon = document.getElementById('statusIcon');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusDescription = document.getElementById('statusDescription');
+        const toggleBtn = document.getElementById('toggleNotificationsBtn');
+        const preferencesEl = document.getElementById('notificationPreferences');
+        const saveBtn = document.getElementById('savePreferencesBtn');
+        const testBtn = document.getElementById('sendTestBtn');
+
+        // Warte bis pushManager initialisiert ist
+        async function initPage() {
+            await window.pushManager.init();
+            await updateUI();
+            await loadPreferences();
+        }
+
+        async function updateUI() {
+            const isSubscribed = window.pushManager.isSubscribed;
+
+            if (isSubscribed) {
+                statusIcon.textContent = 'notifications_active';
+                statusTitle.textContent = 'Benachrichtigungen aktiviert';
+                statusDescription.textContent = 'Du erhältst Push-Benachrichtigungen auf diesem Gerät.';
+                toggleBtn.innerHTML = '<span class="material-symbols-outlined">notifications_off</span> Deaktivieren';
+                toggleBtn.classList.add('btn-deactivate');
+                toggleBtn.classList.remove('btn-activate');
+                preferencesEl.style.display = 'block';
+            } else {
+                statusIcon.textContent = 'notifications_off';
+                statusTitle.textContent = 'Benachrichtigungen deaktiviert';
+                statusDescription.textContent = 'Aktiviere Push-Benachrichtigungen um auf dem Laufenden zu bleiben.';
+                toggleBtn.innerHTML = '<span class="material-symbols-outlined">notifications_active</span> Aktivieren';
+                toggleBtn.classList.add('btn-activate');
+                toggleBtn.classList.remove('btn-deactivate');
+                preferencesEl.style.display = 'none';
+            }
+        }
+
+        async function loadPreferences() {
+            try {
+                const prefs = await window.pushManager.getPreferences();
+                document.getElementById('notifyForumThreads').checked = prefs.notifyForumThreads;
+                document.getElementById('notifyForumReplies').checked = prefs.notifyForumReplies;
+                document.getElementById('notifyNews').checked = prefs.notifyNews;
+                document.getElementById('notifyPolls').checked = prefs.notifyPolls;
+            } catch (error) {
+                console.error('Fehler beim Laden der Einstellungen:', error);
+            }
+        }
+
+        toggleBtn.addEventListener('click', async () => {
+            const isSubscribed = window.pushManager.isSubscribed;
+
+            if (isSubscribed) {
+                // Deaktivieren
+                const result = await window.pushManager.unsubscribe();
+                if (result.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Deaktiviert',
+                        text: result.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    await updateUI();
+                }
+            } else {
+                // Aktivieren
+                const result = await window.pushManager.subscribe();
+                if (result.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Aktiviert!',
+                        text: result.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    await updateUI();
+                    await loadPreferences();
+                } else {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Fehler',
+                        text: result.message
+                    });
+                }
+            }
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            const preferences = {
+                notifyForumThreads: document.getElementById('notifyForumThreads').checked,
+                notifyForumReplies: document.getElementById('notifyForumReplies').checked,
+                notifyNews: document.getElementById('notifyNews').checked,
+                notifyPolls: document.getElementById('notifyPolls').checked
+            };
+
+            try {
+                const result = await window.pushManager.updatePreferences(preferences);
+                if (result.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Gespeichert!',
+                        text: result.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            } catch (error) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: 'Fehler beim Speichern der Einstellungen'
+                });
+            }
+        });
+
+        testBtn.addEventListener('click', async () => {
+            try {
+                const result = await window.pushManager.sendTestNotification();
+                if (result.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Gesendet!',
+                        text: result.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            } catch (error) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Fehler',
+                    text: 'Fehler beim Senden der Test-Benachrichtigung'
+                });
+            }
+        });
+
+        // Initialisiere Seite
+        initPage();
+    </script>
+}

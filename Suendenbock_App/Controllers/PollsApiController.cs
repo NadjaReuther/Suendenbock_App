@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
+using Suendenbock_App.Services;
 using System.Security.Claims;
 
 namespace Suendenbock_App.Controllers
@@ -13,10 +14,12 @@ namespace Suendenbock_App.Controllers
     public class PollsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPushNotificationService _pushService;
 
-        public PollsApiController(ApplicationDbContext context)
+        public PollsApiController(ApplicationDbContext context, IPushNotificationService pushService)
         {
             _context = context;
+            _pushService = pushService;
         }
 
         // POST: api/polls
@@ -58,6 +61,18 @@ namespace Suendenbock_App.Controllers
 
             _context.Polls.Add(poll);
             await _context.SaveChangesAsync();
+
+            // Push-Benachrichtigung versenden
+            _ = Task.Run(async () =>
+            {
+                await _pushService.SendNotificationAsync(
+                    "Poll",
+                    $"📊 Neue Umfrage: {poll.Question}",
+                    "Stimme jetzt ab und gib deine Meinung ab!",
+                    "/Community/Polls",
+                    userId
+                );
+            });
 
             return Ok(new { id = poll.Id });
         }

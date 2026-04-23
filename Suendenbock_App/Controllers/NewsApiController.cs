@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
+using Suendenbock_App.Services;
 using System.Security.Claims;
 
 namespace Suendenbock_App.Controllers
@@ -13,10 +14,12 @@ namespace Suendenbock_App.Controllers
     public class NewsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPushNotificationService _pushService;
 
-        public NewsApiController(ApplicationDbContext context)
+        public NewsApiController(ApplicationDbContext context, IPushNotificationService pushService)
         {
             _context = context;
+            _pushService = pushService;
         }
 
         // POST: api/news - Create News
@@ -59,6 +62,18 @@ namespace Suendenbock_App.Controllers
 
             _context.NewsItems.Add(newsItem);
             await _context.SaveChangesAsync();
+
+            // Push-Benachrichtigung versenden
+            _ = Task.Run(async () =>
+            {
+                await _pushService.SendNotificationAsync(
+                    "News",
+                    $"📰 Neue Nachricht: {newsItem.Title}",
+                    newsItem.Excerpt,
+                    $"/Community/News",
+                    User.FindFirstValue(ClaimTypes.NameIdentifier)
+                );
+            });
 
             return Ok(new { id = newsItem.Id, message = "Neuigkeit erfolgreich erstellt." });
         }

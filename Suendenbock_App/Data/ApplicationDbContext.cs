@@ -99,6 +99,10 @@ namespace Suendenbock_App.Data
         // Night Rest System
         public DbSet<NightRestRequest> NightRestRequests { get; set; }
 
+        // Push Notification System
+        public DbSet<PushSubscription> PushSubscriptions { get; set; }
+        public DbSet<NotificationPreference> NotificationPreferences { get; set; }
+
         // Versammlungsort System
         public DbSet<ForumCategory> ForumCategories { get; set; }
         public DbSet<ForumThread> ForumThreads { get; set; }
@@ -729,6 +733,37 @@ namespace Suendenbock_App.Data
                 .WithMany()
                 .HasForeignKey(mr => mr.LinkedMapId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ===== PUSH NOTIFICATION SYSTEM BEZIEHUNGEN =====
+
+            // PushSubscription -> ApplicationUser (CASCADE)
+            // Wenn User gelöscht wird, alle seine Subscriptions auch
+            builder.Entity<PushSubscription>()
+                .HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(ps => ps.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // NotificationPreference -> ApplicationUser (CASCADE)
+            // Wenn User gelöscht wird, seine Preferences auch
+            builder.Entity<NotificationPreference>()
+                .HasOne<ApplicationUser>()
+                .WithMany()
+                .HasForeignKey(np => np.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique Constraint: Ein User kann nur eine NotificationPreference haben
+            builder.Entity<NotificationPreference>()
+                .HasIndex(np => np.UserId)
+                .IsUnique();
+
+            // Index für schnelle Subscription-Suche nach User
+            builder.Entity<PushSubscription>()
+                .HasIndex(ps => ps.UserId);
+
+            // Index für aktive Subscriptions
+            builder.Entity<PushSubscription>()
+                .HasIndex(ps => ps.IsActive);
         }
     }
 }

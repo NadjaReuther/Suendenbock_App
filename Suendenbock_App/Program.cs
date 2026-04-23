@@ -45,6 +45,8 @@ builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IAchievementService, AchievementService>();
 // Game Service
 builder.Services.AddScoped<GameService>();
+// Push Notification Service
+builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 
 // SignalR für Real-time Combat
 builder.Services.AddSignalR();
