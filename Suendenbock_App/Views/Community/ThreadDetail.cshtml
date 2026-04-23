@@ -119,14 +119,14 @@
                         </div>
                     </div>
 
-                    <div class="td-reply-content" id="reply-text-@reply.Id">@reply.Content</div>
+                    <div class="td-reply-content" id="reply-text-@reply.Id">@Html.Raw(reply.Content)</div>
 
                     <form asp-action="EditReply" method="post"
                           id="reply-edit-form-@reply.Id" style="display:none;" class="td-edit-reply-form">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="id" value="@reply.Id" />
                         <input type="hidden" name="threadId" value="@Model.Id" />
-                        <textarea name="content" rows="3" class="td-reply-textarea">@reply.Content</textarea>
+                        <textarea name="content" rows="3" class="td-reply-textarea" id="reply-editor-@reply.Id">@reply.Content</textarea>
                         <div class="td-edit-reply-actions">
                             <button type="button" class="td-btn-icon-cancel"
                                     onclick="toggleReplyEdit(@reply.Id)">
@@ -152,7 +152,7 @@
             @Html.AntiForgeryToken()
             <input type="hidden" name="threadId" value="@Model.Id" />
             <textarea name="content" rows="4" required
-                      class="td-reply-textarea"
+                      class="td-reply-textarea" id="newReplyEditor"
                       placeholder="Was habt Ihr zu dieser Kunde zu sagen?"></textarea>
             <div class="td-reply-form-footer">
                 <button type="submit" class="td-btn-send">
@@ -170,14 +170,40 @@
 }
 @section Scripts {
     <script>
+        // CKEditor-Instanzen für Bearbeitungsformulare speichern
+        const replyEditors = {};
+
+        // CKEditor für neues Kommentarfeld initialisieren
+        document.addEventListener('DOMContentLoaded', function() {
+            ClassicEditor.create(document.querySelector('#newReplyEditor'))
+                .catch(console.error);
+        });
+
         // Wechselt zwischen Anzeigetext und Bearbeitungsformular
-        function toggleReplyEdit(replyId) {
+        async function toggleReplyEdit(replyId) {
             const text = document.getElementById('reply-text-' + replyId);
             const form = document.getElementById('reply-edit-form-' + replyId);
             const isEditing = form.style.display !== 'none';
 
-            text.style.display = isEditing ? 'block' : 'none';
-            form.style.display = isEditing ? 'none' : 'block';
+            if (isEditing) {
+                // Bearbeitungsmodus verlassen - Editor zerstören
+                if (replyEditors[replyId]) {
+                    await replyEditors[replyId].destroy();
+                    delete replyEditors[replyId];
+                }
+                text.style.display = 'block';
+                form.style.display = 'none';
+            } else {
+                // Bearbeitungsmodus aktivieren - Editor initialisieren
+                text.style.display = 'none';
+                form.style.display = 'block';
+
+                if (!replyEditors[replyId]) {
+                    const editorElement = document.querySelector('#reply-editor-' + replyId);
+                    replyEditors[replyId] = await ClassicEditor.create(editorElement)
+                        .catch(console.error);
+                }
+            }
         }
     </script>
 }
