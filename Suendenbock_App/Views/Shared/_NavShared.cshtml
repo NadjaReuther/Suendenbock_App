@@ -1,0 +1,62 @@
+﻿@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+}
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-users"></i> Wiki
+    </a>
+    <ul class="dropdown-menu">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Glossary" asp-action="Browse">
+                📚 Glossar
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Monster" asp-action="Overview">
+                👹 Bestiarium
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Character" asp-action="Overview">
+                👤 Charaktere
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Guild" asp-action="Overview">
+                🏰 Gilden
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Infanterie" asp-action="Overview">
+                ⚔️ Infanterien
+            </a>
+        </li>
+    </ul>
+</li>
+
+<li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-users"></i> Event
+    </a>
+    <ul class="dropdown-menu">
+        <li class="nav-item">
+            <a class="nav-link" asp-controller="Glossary" asp-action="Browse">
+                Weihnachten
+            </a>
+        </li>
+    </ul>
+</li>
+<li class="nav-item">
+    <a class="nav-link" asp-controller="Community" asp-action="Index">
+        Erfolge
+    </a>
+</li>
+
+@if (controller != "Community")
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Community" asp-action="Index">
+            ⛪ Versammlungshalle
+        </a>
+    </li>
+}
