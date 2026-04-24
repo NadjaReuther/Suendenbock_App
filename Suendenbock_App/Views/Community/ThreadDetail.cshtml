@@ -148,10 +148,10 @@
             <span class="material-symbols-outlined">edit_note</span>
             Eure Replik verfassen
         </h4>
-        <form asp-action="PostReply" method="post">
+        <form asp-action="PostReply" method="post" id="newReplyForm">
             @Html.AntiForgeryToken()
             <input type="hidden" name="threadId" value="@Model.Id" />
-            <textarea name="content" rows="4" required
+            <textarea name="content" rows="4"
                       class="td-reply-textarea" id="newReplyEditor"
                       placeholder="Was habt Ihr zu dieser Kunde zu sagen?"></textarea>
             <div class="td-reply-form-footer">
@@ -172,11 +172,28 @@
     <script>
         // CKEditor-Instanzen für Bearbeitungsformulare speichern
         const replyEditors = {};
+        let newReplyEditor = null;
 
         // CKEditor für neues Kommentarfeld initialisieren
         document.addEventListener('DOMContentLoaded', function() {
             ClassicEditor.create(document.querySelector('#newReplyEditor'))
+                .then(editor => {
+                    newReplyEditor = editor;
+                })
                 .catch(console.error);
+
+            // Form-Validierung für neuen Kommentar
+            const newReplyForm = document.getElementById('newReplyForm');
+            newReplyForm.addEventListener('submit', function(e) {
+                if (newReplyEditor) {
+                    const content = newReplyEditor.getData().trim();
+                    if (!content || content === '') {
+                        e.preventDefault();
+                        alert('Bitte gib einen Kommentar ein.');
+                        return false;
+                    }
+                }
+            });
         });
 
         // Wechselt zwischen Anzeigetext und Bearbeitungsformular

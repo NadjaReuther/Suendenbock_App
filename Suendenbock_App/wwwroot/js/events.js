@@ -335,7 +335,10 @@ async function saveEvent(e) {
         if (response.ok) {
             const result = await response.json();
 
-            // Unterschiedliche Meldung für Create vs. Edit
+            // ERST Modal schließen
+            closeEventModal();
+
+            // DANN Erfolgsmeldung anzeigen
             const successMessage = isEdit
                 ? `Termin erfolgreich aktualisiert! ID: ${eventId}`
                 : `Termin erfolgreich verkündet! ID: ${result.eventId}`;
@@ -347,8 +350,7 @@ async function saveEvent(e) {
                 confirmButtonColor: '#d97706'
             });
 
-            // Erfolg - Modal schließen und Seite neu laden
-            closeEventModal();
+            // Seite neu laden
             setTimeout(() => location.reload(), 500);
         } else {
             const error = await response.json();

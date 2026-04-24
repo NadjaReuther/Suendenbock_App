@@ -1,0 +1,234 @@
+<!-- First-Visit Notification Banner -->
+<div class="notification-first-visit-banner" id="notificationFirstVisitBanner" style="display: none;">
+    <div class="banner-content">
+        <div class="banner-icon">
+            <span class="material-symbols-outlined">notifications_active</span>
+        </div>
+        <div class="banner-text">
+            <h4>📱 Bleib auf dem Laufenden!</h4>
+            <p>Aktiviere Push-Benachrichtigungen und verpasse keine neuen Beiträge, News oder Umfragen mehr.</p>
+        </div>
+        <div class="banner-actions">
+            <button type="button" class="btn-banner-activate" id="bannerActivateBtn">
+                <span class="material-symbols-outlined">notifications_active</span>
+                Jetzt aktivieren
+            </button>
+            <button type="button" class="btn-banner-later" id="bannerLaterBtn">
+                Später
+            </button>
+        </div>
+        <button type="button" class="btn-banner-close" id="bannerCloseBtn">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+</div>
+
+<style>
+.notification-first-visit-banner {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    max-width: 600px;
+    width: 90%;
+    animation: slideDown 0.4s ease-out;
+}
+
+@@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.banner-content {
+    background: linear-gradient(135deg, #2a2216 0%, #1a1410 100%);
+    border: 2px solid #d4c4a8;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+}
+
+.banner-icon {
+    background: rgba(212, 196, 168, 0.1);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.banner-icon .material-symbols-outlined {
+    font-size: 32px;
+    color: #d4c4a8;
+    animation: ringBell 2s ease-in-out infinite;
+}
+
+@@keyframes ringBell {
+    0%, 100% { transform: rotate(0deg); }
+    10%, 30% { transform: rotate(-15deg); }
+    20%, 40% { transform: rotate(15deg); }
+    50% { transform: rotate(0deg); }
+}
+
+.banner-text {
+    flex: 1;
+}
+
+.banner-text h4 {
+    font-family: 'Cinzel', serif;
+    color: #d4c4a8;
+    font-size: 1.2rem;
+    margin: 0 0 5px 0;
+}
+
+.banner-text p {
+    color: #8a7a5f;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.banner-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.btn-banner-activate,
+.btn-banner-later {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Cinzel', serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-banner-activate {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+}
+
+.btn-banner-activate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.btn-banner-later {
+    background: rgba(212, 196, 168, 0.1);
+    color: #d4c4a8;
+    border: 1px solid rgba(212, 196, 168, 0.3);
+}
+
+.btn-banner-later:hover {
+    background: rgba(212, 196, 168, 0.2);
+}
+
+.btn-banner-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #8a7a5f;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+    transition: color 0.3s ease;
+}
+
+.btn-banner-close:hover {
+    color: #d4c4a8;
+}
+
+.btn-banner-close .material-symbols-outlined {
+    font-size: 20px;
+}
+
+/* Responsive */
+@@media (max-width: 768px) {
+    .notification-first-visit-banner {
+        top: 70px;
+    }
+
+    .banner-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .banner-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .btn-banner-activate,
+    .btn-banner-later {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const banner = document.getElementById('notificationFirstVisitBanner');
+    const activateBtn = document.getElementById('bannerActivateBtn');
+    const laterBtn = document.getElementById('bannerLaterBtn');
+    const closeBtn = document.getElementById('bannerCloseBtn');
+
+    // Prüfe ob Banner permanent geschlossen wurde (X geklickt)
+    const bannerDismissed = localStorage.getItem('notificationBannerDismissed');
+
+    // Zeige Banner NICHT auf der NotificationSettings-Seite (Benutzer ist ja schon dort!)
+    const isOnSettingsPage = window.location.pathname.includes('/NotificationSettings');
+
+    // Zeige Banner nur wenn nicht dismissed, nicht auf Settings-Seite und Push Manager verfügbar
+    if (!bannerDismissed && !isOnSettingsPage && window.pushManager) {
+        // Warte 2 Sekunden bevor Banner erscheint (damit nicht sofort nervt)
+        setTimeout(async () => {
+            // Prüfe ob bereits abonniert
+            await window.pushManager.init();
+            if (!window.pushManager.isSubscribed) {
+                banner.style.display = 'block';
+            }
+        }, 2000);
+    }
+
+    // Aktivieren Button
+    activateBtn.addEventListener('click', async () => {
+        banner.style.display = 'none';
+        // Banner wird erst permanent versteckt wenn Benutzer tatsächlich aktiviert hat
+        // Das passiert in der NotificationSettings Seite nach erfolgreicher Aktivierung
+
+        // Führe zur Einstellungsseite
+        window.location.href = '/Community/NotificationSettings';
+    });
+
+    // Später Button - Banner kommt beim nächsten Besuch wieder
+    laterBtn.addEventListener('click', () => {
+        banner.style.display = 'none';
+        // KEIN localStorage setzen - Banner erscheint beim nächsten Besuch wieder
+    });
+
+    // Schließen Button - Banner verschwindet für immer
+    closeBtn.addEventListener('click', () => {
+        banner.style.display = 'none';
+        localStorage.setItem('notificationBannerDismissed', 'true');
+    });
+});
+</script>

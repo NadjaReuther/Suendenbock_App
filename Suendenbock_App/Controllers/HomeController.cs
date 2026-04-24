@@ -98,18 +98,7 @@ namespace Suendenbock_App.Controllers
 
             var glossar = _context.GlossaryEntries.ToList();
 
-            // Achievement-Statistiken
-            var totalUserAchievements = _context.Achievements.Count(a => a.Scope == AchievementScope.User);
-            var totalGuildAchievements = _context.Achievements.Count(a => a.Scope == AchievementScope.Guild);
-            var unlockedUserAchievements = _context.UserAchievements.Select(ua => ua.AchievementId).Distinct().Count();
-            var unlockedGuildAchievements = _context.GuildAchievements.Select(ga => ga.AchievementId).Distinct().Count();
-            var totalAchievementPoints = _context.UserAchievements
-                .Include(ua => ua.Achievement)
-                .Sum(ua => ua.Achievement.Points) +
-                _context.GuildAchievements
-                .Include(ga => ga.Achievement)
-                .Sum(ga => ga.Achievement.Points);
-
+           
             // ViewModel erstellen
             var viewModel = new HomeViewModel
             {
@@ -125,12 +114,7 @@ namespace Suendenbock_App.Controllers
                 PlayerCharacters = playerCharacters,
                 CompanionCharacters = companionCharacters,
                 Monsters = monsters,
-                glossaryEntries = glossar,
-                TotalUserAchievements = totalUserAchievements,
-                TotalGuildAchievements = totalGuildAchievements,
-                UnlockedUserAchievements = unlockedUserAchievements,
-                UnlockedGuildAchievements = unlockedGuildAchievements,
-                TotalAchievementPoints = totalAchievementPoints
+                glossaryEntries = glossar
             };
 
             return View(viewModel);

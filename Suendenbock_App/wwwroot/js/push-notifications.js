@@ -80,6 +80,15 @@ class PushNotificationManager {
      */
     async subscribe() {
         try {
+            // Prüfe ob Public Key geladen wurde
+            if (!this.publicKey || this.publicKey === 'GENERATE_ME') {
+                console.error('VAPID Public Key nicht konfiguriert');
+                return {
+                    success: false,
+                    message: 'Server-Konfigurationsfehler: VAPID-Keys fehlen. Bitte informiere den Administrator.'
+                };
+            }
+
             // Fordere Berechtigung an
             const permission = await Notification.requestPermission();
 
@@ -106,7 +115,10 @@ class PushNotificationManager {
             return result;
         } catch (error) {
             console.error('Fehler beim Abonnieren:', error);
-            return { success: false, message: 'Fehler beim Aktivieren der Benachrichtigungen' };
+            return {
+                success: false,
+                message: 'Fehler beim Aktivieren: ' + (error.message || 'Unbekannter Fehler')
+            };
         }
     }
 
@@ -156,10 +168,22 @@ class PushNotificationManager {
                 })
             });
 
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Server-Fehler:', response.status, errorText);
+                return {
+                    success: false,
+                    message: `Server-Fehler (${response.status}): ${errorText}`
+                };
+            }
+
             return await response.json();
         } catch (error) {
             console.error('Fehler beim Senden der Subscription:', error);
-            throw error;
+            return {
+                success: false,
+                message: 'Netzwerkfehler: ' + error.message
+            };
         }
     }
 

@@ -38,6 +38,18 @@ namespace Suendenbock_App.Controllers
         public IActionResult GetVapidPublicKey()
         {
             var publicKey = _configuration["PushNotification:PublicKey"];
+
+            _logger.LogInformation($"VAPID Public Key requested: {publicKey ?? "NULL"}");
+
+            if (string.IsNullOrEmpty(publicKey) || publicKey == "GENERATE_ME")
+            {
+                _logger.LogError("VAPID Public Key not configured properly");
+                return BadRequest(new {
+                    error = "VAPID-Keys sind nicht konfiguriert. Bitte prüfe appsettings.json",
+                    publicKey = publicKey
+                });
+            }
+
             return Ok(new { publicKey });
         }
 

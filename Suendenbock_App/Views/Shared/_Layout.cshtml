@@ -11,6 +11,7 @@
     <link href="/css/animations.css" rel="stylesheet" />
     <link href="/css/antique-theme.css" rel="stylesheet" />
     <link href="~/css/wysiwyg-editor.css" rel="stylesheet" />
+    <link href="~/css/notification-bell.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Uncial+Antiqua&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
     <!-- Material Symbols Icons -->
@@ -51,6 +52,13 @@
             </div>
         </nav>
     </header>
+
+    <!-- Notification Banner (First Visit) -->
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        @await Html.PartialAsync("_NotificationBanner")
+    }
+
     <div class="container-fluid">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -93,6 +101,7 @@
         <script src="~/js/global-signalr.js" asp-append-version="true"></script>
         <!-- Push Notifications -->
         <script src="~/js/push-notifications.js" asp-append-version="true"></script>
+        <script src="~/js/notification-bell-status.js" asp-append-version="true"></script>
     }
 
     <!-- Bildvergrößerungs-Script -->

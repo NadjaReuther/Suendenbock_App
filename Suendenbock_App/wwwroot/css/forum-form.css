@@ -232,28 +232,153 @@
     }
 
 /* ==== RESPONSIVE ==== */
-@media (max-width: 640px) {
+
+/* Basis-Fixes für alle Bildschirmgrößen - verhindert horizontales Scrollen */
+.forum-form-container,
+.forum-form-card,
+.forum-form-body,
+.forum-form-input,
+.forum-form-select,
+.forum-form-textarea {
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.forum-form-container .page-title,
+.forum-form-container .page-subtitle {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* CKEditor Content - verhindert Overflow bei Bildern und Tabellen */
+.forum-form-textarea,
+#forumEditor {
+    max-width: 100%;
+}
+
+.ck-editor__editable {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+}
+
+.ck-editor__editable img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.ck-editor__editable table {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    display: block !important;
+}
+
+/* Tablet und darunter - 768px */
+@media (max-width: 768px) {
     .forum-form-container {
-        padding: 1.25rem 1rem;
+        padding: 1.5rem 1rem;
     }
 
-    /* Kategorie und Titel untereinander auf Mobile */
+    .forum-form-container .page-title {
+        font-size: 2rem;
+    }
+
+    .forum-form-body {
+        padding: 1.5rem;
+        gap: 1.25rem;
+    }
+
     .forum-form-row {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .forum-form-input,
+    .forum-form-select,
+    .forum-form-textarea {
+        font-size: 0.875rem;
+        padding: 0.625rem 0.75rem;
+    }
+
+    .forum-form-btn-cancel,
+    .forum-form-btn-submit {
+        padding: 0.625rem 1.25rem;
+    }
+}
+
+/* Smartphone - 640px und darunter */
+@media (max-width: 640px) {
+    .forum-form-container {
+        padding: 1.25rem 0.75rem;
     }
 
     .forum-form-container .page-title {
         font-size: 1.75rem;
     }
 
+    .forum-form-container .page-subtitle {
+        font-size: 0.8125rem;
+    }
+
+    .forum-form-body {
+        padding: 1.25rem;
+    }
+
     .forum-form-actions {
         flex-direction: column-reverse;
         align-items: stretch;
+        gap: 0.625rem;
     }
 
     .forum-form-btn-cancel,
     .forum-form-btn-submit {
         justify-content: center;
         text-align: center;
+        width: 100%;
+    }
+}
+
+/* Extra kleine Smartphones - 480px und darunter */
+@media (max-width: 480px) {
+    .forum-form-container {
+        padding: 1rem 0.5rem;
+    }
+
+    .forum-form-container .page-title {
+        font-size: 1.5rem;
+    }
+
+    .forum-form-container .page-subtitle {
+        font-size: 0.75rem;
+    }
+
+    .forum-form-container .back-link {
+        font-size: 0.6875rem;
+    }
+
+    .forum-form-body {
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .forum-form-label {
+        font-size: 0.625rem;
+    }
+
+    .forum-form-input,
+    .forum-form-select,
+    .forum-form-textarea {
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.625rem;
+    }
+
+    .forum-form-textarea {
+        min-height: 150px;
+    }
+
+    .forum-form-btn-cancel,
+    .forum-form-btn-submit {
+        padding: 0.5rem 1rem;
+        font-size: 0.6875rem;
     }
 }

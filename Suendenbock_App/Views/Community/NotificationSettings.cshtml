@@ -190,6 +190,9 @@
                 // Aktivieren
                 const result = await window.pushManager.subscribe();
                 if (result.success) {
+                    // Banner permanent verstecken nach erfolgreicher Aktivierung
+                    localStorage.setItem('notificationBannerDismissed', 'true');
+
                     await Swal.fire({
                         icon: 'success',
                         title: 'Aktiviert!',

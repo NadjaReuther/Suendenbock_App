@@ -1,5 +1,6 @@
 ﻿@{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
 }
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -47,12 +48,12 @@
     </ul>
 </li>
 <li class="nav-item">
-    <a class="nav-link" asp-controller="Community" asp-action="Index">
+    <a class="nav-link" asp-controller="Achievement" asp-action="Index">
         Erfolge
     </a>
 </li>
 
-@if (controller != "Community")
+@if (controller != "Community" || action == "NotificationSettings")
 {
     <li class="nav-item">
         <a class="nav-link" asp-controller="Community" asp-action="Index">
