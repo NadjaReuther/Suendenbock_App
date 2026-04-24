@@ -36,8 +36,12 @@ namespace Suendenbock_App.Services
         {
             try
             {
+                _logger.LogInformation($"SendNotificationAsync called: Type={notificationType}, ExcludeUser={excludeUserId ?? "none"}");
+
                 // 1. Hole alle Benutzer die für diese Art von Benachrichtigung abonniert sind
                 var userIds = await GetSubscribedUserIdsAsync(notificationType, excludeUserId);
+
+                _logger.LogInformation($"Found {userIds.Count} subscribed users for {notificationType}");
 
                 if (!userIds.Any())
                 {

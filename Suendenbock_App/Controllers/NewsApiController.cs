@@ -15,11 +15,13 @@ namespace Suendenbock_App.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IPushNotificationService _pushService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public NewsApiController(ApplicationDbContext context, IPushNotificationService pushService)
+        public NewsApiController(ApplicationDbContext context, IPushNotificationService pushService, IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
             _pushService = pushService;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         // POST: api/news - Create News
@@ -63,16 +65,32 @@ namespace Suendenbock_App.Controllers
             _context.NewsItems.Add(newsItem);
             await _context.SaveChangesAsync();
 
-            // Push-Benachrichtigung versenden
+            // Push-Benachrichtigung versenden mit eigenem Scope
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var newsTitle = newsItem.Title;
+            var newsExcerpt = newsItem.Excerpt;
+
             _ = Task.Run(async () =>
             {
-                await _pushService.SendNotificationAsync(
-                    "News",
-                    $"📰 Neue Nachricht: {newsItem.Title}",
-                    newsItem.Excerpt,
-                    $"/Community/News",
-                    User.FindFirstValue(ClaimTypes.NameIdentifier)
-                );
+                try
+                {
+                    // Erstelle einen neuen Scope mit eigenem DbContext
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var pushService = scope.ServiceProvider.GetRequiredService<IPushNotificationService>();
+
+                    await pushService.SendNotificationAsync(
+                        "News",
+                        $"📰 Neue Nachricht: {newsTitle}",
+                        newsExcerpt,
+                        $"/Community/News",
+                        currentUserId
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log the error (you might want to inject ILogger)
+                    Console.WriteLine($"Error sending News push notification: {ex.Message}");
+                }
             });
 
             return Ok(new { id = newsItem.Id, message = "Neuigkeit erfolgreich erstellt." });

@@ -13,10 +13,18 @@ namespace Suendenbock_App.Controllers
     public class CommunityController : BaseController
     {
         private readonly IPushNotificationService _pushService;
+        private readonly ILogger<CommunityController> _logger;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public CommunityController(ApplicationDbContext context, IPushNotificationService pushService) : base(context)
+        public CommunityController(
+            ApplicationDbContext context,
+            IPushNotificationService pushService,
+            ILogger<CommunityController> logger,
+            IServiceScopeFactory serviceScopeFactory) : base(context)
         {
             _pushService = pushService;
+            _logger = logger;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         // ==== INDEX / OVERVIEW ====
@@ -456,17 +464,35 @@ namespace Suendenbock_App.Controllers
             _context.ForumThreads.Add(thread);
             await _context.SaveChangesAsync();
 
-            // Push-Benachrichtigung versenden
+            // Push-Benachrichtigung versenden mit eigenem Scope
+            var currentUserId = GetUserId();
+            var threadId = thread.Id;
+            var threadTitle = thread.Title;
+            var categoryId = vm.CategoryId;
+
             _ = Task.Run(async () =>
             {
-                var category = await _context.ForumCategories.FindAsync(vm.CategoryId);
-                await _pushService.SendNotificationAsync(
-                    "ForumThread",
-                    $"📝 Neuer Forumsbeitrag: {thread.Title}",
-                    $"In {category?.Name ?? "Forum"}: {thread.Title}",
-                    $"/Community/ThreadDetail/{thread.Id}",
-                    GetUserId()
-                );
+                try
+                {
+                    // Erstelle einen neuen Scope mit eigenem DbContext
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    var pushService = scope.ServiceProvider.GetRequiredService<IPushNotificationService>();
+
+                    var category = await context.ForumCategories.FindAsync(categoryId);
+
+                    await pushService.SendNotificationAsync(
+                        "ForumThread",
+                        $"📝 Neuer Forumsbeitrag: {threadTitle}",
+                        $"In {category?.Name ?? "Forum"}: {threadTitle}",
+                        $"/Community/ThreadDetail/{threadId}",
+                        currentUserId
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error sending ForumThread push notification");
+                }
             });
 
             return RedirectToAction(nameof(ThreadDetail), new { id = thread.Id });
@@ -488,21 +514,37 @@ namespace Suendenbock_App.Controllers
                 _context.forumReplies.Add(reply);
                 await _context.SaveChangesAsync();
 
-                // Push-Benachrichtigung versenden
-                _ = Task.Run(async () =>
+                // Push-Benachrichtigung versenden mit eigenem Scope
+                var currentUserId = GetUserId();
+                var threadTitle = await _context.ForumThreads
+                    .Where(t => t.Id == threadId)
+                    .Select(t => t.Title)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrEmpty(threadTitle))
                 {
-                    var thread = await _context.ForumThreads.FindAsync(threadId);
-                    if (thread != null)
+                    _ = Task.Run(async () =>
                     {
-                        await _pushService.SendNotificationAsync(
-                            "ForumReply",
-                            $"💬 Neue Antwort: {thread.Title}",
-                            $"Jemand hat auf \"{thread.Title}\" geantwortet",
-                            $"/Community/ThreadDetail/{threadId}",
-                            GetUserId()
-                        );
-                    }
-                });
+                        try
+                        {
+                            // Erstelle einen neuen Scope mit eigenem DbContext
+                            using var scope = _serviceScopeFactory.CreateScope();
+                            var pushService = scope.ServiceProvider.GetRequiredService<IPushNotificationService>();
+
+                            await pushService.SendNotificationAsync(
+                                "ForumReply",
+                                $"💬 Neue Antwort: {threadTitle}",
+                                $"Jemand hat auf \"{threadTitle}\" geantwortet",
+                                $"/Community/ThreadDetail/{threadId}",
+                                currentUserId
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error sending ForumReply push notification");
+                        }
+                    });
+                }
             }
 
             return RedirectToAction(nameof(ThreadDetail), new { id = threadId });

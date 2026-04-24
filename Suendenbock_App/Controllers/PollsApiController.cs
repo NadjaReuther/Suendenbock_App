@@ -15,11 +15,13 @@ namespace Suendenbock_App.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IPushNotificationService _pushService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public PollsApiController(ApplicationDbContext context, IPushNotificationService pushService)
+        public PollsApiController(ApplicationDbContext context, IPushNotificationService pushService, IServiceScopeFactory serviceScopeFactory)
         {
             _context = context;
             _pushService = pushService;
+            _serviceScopeFactory = serviceScopeFactory;
         }
 
         // POST: api/polls
@@ -62,16 +64,31 @@ namespace Suendenbock_App.Controllers
             _context.Polls.Add(poll);
             await _context.SaveChangesAsync();
 
-            // Push-Benachrichtigung versenden
+            // Push-Benachrichtigung versenden mit eigenem Scope
+            var currentUserId = userId;
+            var pollQuestion = poll.Question;
+
             _ = Task.Run(async () =>
             {
-                await _pushService.SendNotificationAsync(
-                    "Poll",
-                    $"📊 Neue Umfrage: {poll.Question}",
-                    "Stimme jetzt ab und gib deine Meinung ab!",
-                    "/Community/Polls",
-                    userId
-                );
+                try
+                {
+                    // Erstelle einen neuen Scope mit eigenem DbContext
+                    using var scope = _serviceScopeFactory.CreateScope();
+                    var pushService = scope.ServiceProvider.GetRequiredService<IPushNotificationService>();
+
+                    await pushService.SendNotificationAsync(
+                        "Poll",
+                        $"📊 Neue Umfrage: {pollQuestion}",
+                        "Stimme jetzt ab und gib deine Meinung ab!",
+                        "/Community/Polls",
+                        currentUserId
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log the error (you might want to inject ILogger)
+                    Console.WriteLine($"Error sending Poll push notification: {ex.Message}");
+                }
             });
 
             return Ok(new { id = poll.Id });
