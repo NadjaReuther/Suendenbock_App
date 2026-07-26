@@ -22,15 +22,107 @@ namespace Suendenbock_App.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPayments([FromQuery] int? year, [FromQuery] int? month)
         {
-            var targetYear = year ?? DateTime.Now.Year;
-            var targetMonth = month ?? DateTime.Now.Month;
+            // Berechne Zielmonat: Stichtag ist der 20.
+            DateTime targetDate;
+            if (year.HasValue && month.HasValue)
+            {
+                // Wenn explizit angegeben, verwende diese Werte
+                targetDate = new DateTime(year.Value, month.Value, 1);
+            }
+            else
+            {
+                var now = DateTime.Now;
+                // Bis 19. → aktueller Monat, ab 20. → nächster Monat
+                if (now.Day < 20)
+                {
+                    targetDate = now; // aktueller Monat
+                }
+                else
+                {
+                    targetDate = now.AddMonths(1); // nächster Monat
+                }
+            }
 
-            var payments = await _context.MonthlyPayments
+            var targetYear = targetDate.Year;
+            var targetMonth = targetDate.Month;
+
+            // Lade alle existierenden Payments für diesen Monat
+            var existingPayments = await _context.MonthlyPayments
                 .Where(mp => mp.Year == targetYear && mp.Month == targetMonth)
+                .ToListAsync();
+
+            // Lade alle User und filtere: NUR Rolle "Spieler", OHNE "Mamoschka"
+            var allUsers = await _context.Users
+                .OrderBy(u => u.UserName)
+                .ToListAsync();
+
+            var userManager = HttpContext.RequestServices.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>();
+            var filteredUsers = new List<ApplicationUser>();
+
+            foreach (var user in allUsers)
+            {
+                var userName = user.UserName ?? "";
+
+                // Skip Mamoschka
+                if (userName.Contains("Mamoschka", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Skip Biene
+                if (userName.Contains("Biene", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                // Skip User mit Rolle "Gott" (nur Spieler nehmen)
+                var roles = await userManager.GetRolesAsync(user);
+                if (roles.Contains("Gott"))
+                    continue;
+
+                // Alle anderen User hinzufügen
+                filteredUsers.Add(user);
+            }
+
+            allUsers = filteredUsers;
+
+            // Für jeden User: Prüfe ob Payment existiert, wenn nicht -> erstelle eines
+            var newPayments = new List<MonthlyPayment>();
+            foreach (var user in allUsers)
+            {
+                var userName = user.UserName ?? "Unbekannt";
+
+                // Prüfe ob Payment bereits existiert
+                var paymentExists = existingPayments.Any(p => p.PlayerName == userName);
+
+                if (!paymentExists)
+                {
+                    // Erstelle neues Payment mit Status "unpaid"
+                    var newPayment = new MonthlyPayment
+                    {
+                        PlayerName = userName,
+                        Year = targetYear,
+                        Month = targetMonth,
+                        Status = "unpaid",
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now
+                    };
+
+                    newPayments.Add(newPayment);
+                }
+            }
+
+            // Speichere neue Payments in der Datenbank
+            if (newPayments.Any())
+            {
+                _context.MonthlyPayments.AddRange(newPayments);
+                await _context.SaveChangesAsync();
+            }
+
+            // Gib nur Payments für die gefilterten User zurück (keine Mamoschka, keine Götter)
+            var allowedUserNames = allUsers.Select(u => u.UserName ?? "").ToList();
+            var filteredPayments = await _context.MonthlyPayments
+                .Where(mp => mp.Year == targetYear && mp.Month == targetMonth && allowedUserNames.Contains(mp.PlayerName))
                 .OrderBy(mp => mp.PlayerName)
                 .ToListAsync();
 
-            return Ok(payments);
+            return Ok(filteredPayments);
         }
 
         // POST: api/payments

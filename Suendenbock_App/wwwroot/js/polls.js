@@ -16,6 +16,14 @@ document.querySelectorAll('.vote-btn').forEach(btn => {
     });
 });
 
+// Withdraw Vote Buttons
+document.querySelectorAll('.withdraw-vote-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const pollId = this.dataset.pollId;
+        await withdrawVoteDirectly(pollId);
+    });
+});
+
 // Edit Poll Buttons
 document.querySelectorAll('.edit-poll-btn').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -55,11 +63,7 @@ if (addOptionBtn) {
     addOptionBtn.addEventListener('click', addPollOption);
 }
 
-// Cast Vote Button
-const castVoteBtn = document.getElementById('castVoteBtn');
-if (castVoteBtn) {
-    castVoteBtn.addEventListener('click', castVote);
-}
+// Note: castVote() and withdrawVote() are called via onclick in HTML
 
 // Toggle Voters Buttons
 document.querySelectorAll('.toggle-voters-btn').forEach(btn => {
@@ -171,6 +175,9 @@ function openVoteModal(pollId) {
         optionsList.appendChild(optionDiv);
     });
 
+    // Update styles for pre-selected options
+    updateVoteOptionStyles();
+
     // Show modal
     document.getElementById('voteModal').style.display = 'flex';
 }
@@ -203,6 +210,58 @@ function closeVoteModal() {
     currentPollData = null;
 }
 
+async function withdrawVoteDirectly(pollId) {
+    const result = await Swal.fire({
+        title: 'Stimme zurückziehen?',
+        text: 'Möchtest du deine Stimme wirklich zurückziehen?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#d97706',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Zurückziehen',
+        cancelButtonText: 'Abbrechen'
+    });
+
+    if (!result.isConfirmed) {
+        return;
+    }
+
+    const data = {
+        pollId: pollId,
+        optionIds: [],  // Leere Liste = Stimme zurückziehen
+        withdraw: true  // Flag für Backend
+    };
+
+    try {
+        const response = await fetch('/api/polls/vote', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const error = await response.text();
+            await Swal.fire({
+                icon: 'error',
+                title: 'Fehler',
+                text: error || 'Fehler beim Zurückziehen der Stimme',
+                confirmButtonColor: '#d97706'
+            });
+        }
+    } catch (error) {
+        await Swal.fire({
+            icon: 'error',
+            title: 'Fehler',
+            text: 'Ein Fehler ist aufgetreten.',
+            confirmButtonColor: '#d97706'
+        });
+    }
+}
+
 async function castVote() {
     if (!currentPollData) return;
 
@@ -222,7 +281,8 @@ async function castVote() {
 
     const data = {
         pollId: currentPollData.pollId,
-        optionIds: selectedOptionIds
+        optionIds: selectedOptionIds,
+        withdraw: false
     };
 
     try {

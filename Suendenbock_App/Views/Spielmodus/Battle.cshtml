@@ -544,6 +544,9 @@
 
         // WICHTIG: Rollenbasierte Zugriffskontrolle
         const IS_GOTT = @Json.Serialize(Model.IsGod);
+
+        // Session ID vom Server (für automatische Weiterleitung)
+        const SESSION_ID = @Json.Serialize(Model.SessionId);
     </script>
     <!-- Load global function stubs first (non-module, executes immediately) -->
     <script src="~/js/battle-globals.js"></script>

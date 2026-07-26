@@ -98,11 +98,6 @@ namespace Suendenbock_App.Controllers
         [HttpPost("vote")]
         public async Task<IActionResult> Vote([FromBody] VoteRequest request)
         {
-            if (request.OptionIds == null || request.OptionIds.Count == 0)
-            {
-                return BadRequest("Mindestens eine Option erforderlich.");
-            }
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             // Load poll with options
@@ -121,6 +116,38 @@ namespace Suendenbock_App.Controllers
                 return BadRequest("Diese Umfrage ist nicht mehr aktiv.");
             }
 
+            // Remove existing votes from this user for this poll
+            var existingVotes = poll.Votes.Where(v => v.UserId == userId).ToList();
+            _context.PollVotes.RemoveRange(existingVotes);
+
+            // Wenn Stimme zurückgezogen wird
+            if (request.Withdraw)
+            {
+                // Erstelle einen withdrawn Vote (verwende erste Option als Placeholder)
+                var firstOption = poll.Options.FirstOrDefault();
+                if (firstOption != null)
+                {
+                    var withdrawnVote = new PollVote
+                    {
+                        PollId = poll.Id,
+                        PollOptionId = firstOption.Id,  // Placeholder
+                        UserId = userId,
+                        VotedAt = DateTime.Now,
+                        IsWithdrawn = true
+                    };
+                    _context.PollVotes.Add(withdrawnVote);
+                }
+
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+
+            // Normale Abstimmung: Validierung
+            if (request.OptionIds == null || request.OptionIds.Count == 0)
+            {
+                return BadRequest("Mindestens eine Option erforderlich.");
+            }
+
             // Validate option IDs
             var validOptionIds = poll.Options.Select(o => o.Id).ToList();
             if (!request.OptionIds.All(id => validOptionIds.Contains(id)))
@@ -133,10 +160,6 @@ namespace Suendenbock_App.Controllers
             {
                 return BadRequest("Nur eine Option erlaubt.");
             }
-
-            // Remove existing votes from this user for this poll
-            var existingVotes = poll.Votes.Where(v => v.UserId == userId).ToList();
-            _context.PollVotes.RemoveRange(existingVotes);
 
             // Add new votes
             foreach (var optionId in request.OptionIds)
@@ -274,5 +297,6 @@ namespace Suendenbock_App.Controllers
     {
         public int PollId { get; set; }
         public List<int> OptionIds { get; set; } = new();
+        public bool Withdraw { get; set; } = false;
     }
 }

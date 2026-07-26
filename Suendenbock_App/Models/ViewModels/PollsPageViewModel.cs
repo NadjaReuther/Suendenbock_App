@@ -17,6 +17,7 @@ namespace Suendenbock_App.Models.ViewModels
         public List<PollOptionViewModel> Options { get; set; } = new();
         public List<int> UserVotedOptionIds { get; set; } = new();
         public List<string> VoterNames { get; set; } = new();
+        public List<string> WithdrawnVoterNames { get; set; } = new();
         public bool CanEdit { get; set; }
     }
 
@@ -26,5 +27,12 @@ namespace Suendenbock_App.Models.ViewModels
         public string Text { get; set; } = string.Empty;
         public int Votes { get; set; }
         public double Percentage { get; set; }
+        public List<PollVoterViewModel> Voters { get; set; } = new();
+    }
+
+    public class PollVoterViewModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? Color { get; set; }
     }
 }

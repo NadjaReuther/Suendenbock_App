@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using System.Security.Claims;
 
 namespace Suendenbock_App.Controllers
 {
@@ -16,6 +17,14 @@ namespace Suendenbock_App.Controllers
         public BaseController(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        /// <summary>
+        /// Helper: Get Current User ID
+        /// </summary>
+        protected string GetUserId()
+        {
+            return User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         }
 
         /// <summary>

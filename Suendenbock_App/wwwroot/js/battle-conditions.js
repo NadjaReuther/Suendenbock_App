@@ -76,9 +76,9 @@ export function toggleCondition(pIdx, condition) {
         if (condition === 'Liegend' && pIdx === battleState.currentTurnIndex && !p.isFallen) autoEndTurn = true;
         if (condition === 'Ohnmächtig' && pIdx === battleState.currentTurnIndex) autoEndTurn = true;
 
-        // Unsichtbar aktiviert → auf Position 1 setzen (Initiative = 0)
+        // Unsichtbar aktiviert → auf Position 1 setzen (Initiative = -1, IMMER vor allen anderen)
         if (condition === 'Unsichtbar') {
-            p.initiative = 0;
+            p.initiative = -1;
         }
     }
 

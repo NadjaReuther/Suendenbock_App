@@ -17,29 +17,27 @@
     {
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-users"></i> Profil
+                    <span class="user-avatar">@User?.Identity?.Name?.Substring(0, 1)</span>
                 </a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu dropdown-menu-end">
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Glossary" asp-action="Browse">
-                            @User?.Identity?.Name
+                        <a class="dropdown-item" asp-controller="Player" asp-action="Index">
+                            <i class="fas fa-user"></i> @User?.Identity?.Name
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Glossary" asp-action="Browse">
-                            Triggerpunkte
+                        <a class="dropdown-item" asp-controller="Player" asp-action="MeineDaten">
+                            <i class="fas fa-id-card"></i> Meine Daten
                         </a>
                     </li>
-                    <li>
-                        <a class="dropdown-item" asp-area="Identity"
-                           asp-page="/Account/Manage/Index">
-                            Profil
+                    <li class="nav-item">
+                        <a class="dropdown-item" asp-controller="Player" asp-action="Triggerpunkte">
+                            <i class="fas fa-exclamation-triangle"></i> Triggerpunkte
                         </a>
                     </li>
-                    <li>
-                        <a class="dropdown-item" asp-area="Identity"
-                           asp-page="/Account/Manage/ChangePassword">
-                            Passwort ändern
+                    <li class="nav-item">
+                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">
+                            <i class="fas fa-key"></i> Passwort ändern
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
@@ -48,26 +46,19 @@
                               asp-route-returnUrl="@Url.Action("Index", "Home")"
                               method="post">
                             <button type="submit" class="dropdown-item">
-                                Logout
+                                <i class="fas fa-sign-out-alt"></i> Logout
                             </button>
                         </form>
                     </li>
                 </ul>
             </li>
     }
-
     <!-- Notification Bell Icon -->
     <li class="nav-item">
         <a class="nav-link notification-bell-link" asp-controller="Community" asp-action="NotificationSettings" id="notificationBellIcon" title="Benachrichtigungen">
             <span class="material-symbols-outlined" id="bellIcon">notifications_off</span>
             <span class="notification-badge" id="notificationBadge" style="display: none;">!</span>
         </a>
-    </li>
-
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
     </li>
 }
 else

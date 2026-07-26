@@ -77,6 +77,18 @@
                             <div class="option-progress-bar">
                                 <div class="option-progress-fill @(poll.Status == "closed" ? "inactive" : "")" style="width: @Math.Min(100, option.Percentage)%"></div>
                             </div>
+                            @if (Model.IsAdmin && option.Voters.Any())
+                            {
+                                <div class="option-voters-admin">
+                                    <span class="voters-label">Abgestimmt:</span>
+                                    @foreach (var voter in option.Voters)
+                                    {
+                                        var displayName = voter.Name.Replace("@suendenbock.lore", "");
+                                        var bgColor = !string.IsNullOrEmpty(voter.Color) ? voter.Color : "#FFFCF7";
+                                        <span class="voter-badge-small" style="background-color: @bgColor !important;">@displayName</span>
+                                    }
+                                </div>
+                            }
                         </div>
                     }
                 </div>
@@ -104,13 +116,35 @@
                                 }
                             </div>
                         }
+                        @if (Model.IsAdmin && poll.WithdrawnVoterNames.Any())
+                        {
+                            <div class="poll-withdrawn-section">
+                                <span class="withdrawn-label">
+                                    <span class="material-symbols-outlined">block</span>
+                                    Zurückgezogen:
+                                </span>
+                                @foreach (var voterName in poll.WithdrawnVoterNames)
+                                {
+                                    <span class="voter-badge-withdrawn">@voterName</span>
+                                }
+                            </div>
+                        }
                     </div>
                     @if (poll.Status == "active")
                     {
-                        <button class="vote-btn" data-poll-id="@poll.Id">
-                            <span class="material-symbols-outlined">how_to_vote</span>
-                            @(poll.UserVotedOptionIds.Any() ? "Stimme ändern" : "Stimme abgeben")
-                        </button>
+                        <div class="poll-action-buttons">
+                            <button class="vote-btn" data-poll-id="@poll.Id">
+                                <span class="material-symbols-outlined">how_to_vote</span>
+                                @(poll.UserVotedOptionIds.Any() ? "Stimme ändern" : "Stimme abgeben")
+                            </button>
+                            @if (poll.UserVotedOptionIds.Any())
+                            {
+                                <button class="withdraw-vote-btn" data-poll-id="@poll.Id">
+                                    <span class="material-symbols-outlined">block</span>
+                                    Zurückziehen
+                                </button>
+                            }
+                        </div>
                     }
                 </div>
             </div>
@@ -141,7 +175,7 @@
             <button type="button" class="btn-secondary" onclick="closeVoteModal()">
                 Abbrechen
             </button>
-            <button type="button" class="btn-primary" id="castVoteBtn">
+            <button type="button" class="btn-primary" onclick="castVote()">
                 Wahl besiegeln
             </button>
         </div>

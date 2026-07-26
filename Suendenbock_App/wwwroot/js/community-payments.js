@@ -57,9 +57,25 @@ function closeAddPlayerModal() {
 // === API FUNCTIONS ===
 
 async function loadPayments() {
+    // Berechne Zielmonat: Bis 19. → aktueller Monat, ab 20. → nächster Monat
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
+    let targetDate = new Date(now);
+
+    if (now.getDate() >= 20) {
+        // Ab 20. → nächster Monat
+        targetDate.setMonth(targetDate.getMonth() + 1);
+    }
+
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth() + 1;
+
+    // Update Modal-Überschrift
+    const monthNames = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+                        'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+    const modalHeader = document.querySelector('#paymentsModal .payments-header h3');
+    if (modalHeader) {
+        modalHeader.textContent = `${monthNames[month - 1]} ${year}`;
+    }
 
     try {
         const response = await fetch(`/api/payments?year=${year}&month=${month}`);
@@ -87,7 +103,22 @@ async function loadPayments() {
 function renderPayments(payments) {
     const paymentsList = document.getElementById('paymentsList');
 
-    if (payments.length === 0) {
+    // Filtere: KEIN Mamoschka, KEINE Biene, KEINE Götter (nur Spieler)
+    const filteredPayments = payments.filter(payment => {
+        const playerName = payment.playerName || "";
+        // Kein Mamoschka
+        if (playerName.toLowerCase().includes("mamoschka")) {
+            return false;
+        }
+        // Keine Biene
+        if (playerName.toLowerCase().includes("biene")) {
+            return false;
+        }
+        // Hier könnten wir auch Götter filtern, aber das macht das Backend bereits
+        return true;
+    });
+
+    if (filteredPayments.length === 0) {
         paymentsList.innerHTML = `
             <div class="empty-payments">
                 <span class="material-symbols-outlined">payments</span>
@@ -97,11 +128,15 @@ function renderPayments(payments) {
         return;
     }
 
-    paymentsList.innerHTML = payments.map(payment => `
+    paymentsList.innerHTML = filteredPayments.map(payment => {
+        // Entferne @suendenbock.lore vom Namen
+        const displayName = (payment.playerName || "").replace("@suendenbock.lore", "");
+
+        return `
         <div class="payment-management-item" data-payment-id="${payment.id}">
             <div class="payment-player">
                 <div class="payment-status-indicator ${payment.status}"></div>
-                <span class="payment-player-name">${payment.playerName}</span>
+                <span class="payment-player-name">${displayName}</span>
             </div>
             <div class="payment-controls">
                 <select class="payment-method-select" data-payment-id="${payment.id}" ${payment.status !== 'paid' ? 'disabled' : ''}>
@@ -121,7 +156,8 @@ function renderPayments(payments) {
                 </button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 
     // Add event listeners for payment method selects
     document.querySelectorAll('.payment-method-select').forEach(select => {

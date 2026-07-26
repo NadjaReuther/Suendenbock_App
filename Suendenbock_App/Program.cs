@@ -49,7 +49,16 @@ builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
 
 // SignalR für Real-time Combat
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    // Timeout-Einstellungen für bessere Performance
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(60);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(30);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+
+    // Größere Message Size für Battle State (falls nötig)
+    options.MaximumReceiveMessageSize = 1024 * 1024; // 1MB
+});
 
 var app = builder.Build();
 
@@ -121,6 +130,7 @@ app.MapRazorPages();
 
 // SignalR Hub Endpoints
 app.MapHub<Suendenbock_App.Hubs.BattleHub>("/battlehub");
+app.MapHub<Suendenbock_App.Hubs.BattleHubV2>("/battlehubv2"); // Neues Kampfsystem
 app.MapHub<Suendenbock_App.Hubs.GameHub>("/gamehub");
 
 app.Run();

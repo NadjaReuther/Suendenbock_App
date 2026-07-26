@@ -15,6 +15,7 @@ namespace Suendenbock_App.Models.Domain
         public string? UserId { get; set; }
         [Required]
         public DateTime VotedAt { get; set; }
+        public bool IsWithdrawn { get; set; } = false;
 
         //Navigation Properties
         public Poll Poll {  get; set; } = null!;

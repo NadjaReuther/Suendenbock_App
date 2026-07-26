@@ -138,7 +138,7 @@
                     }
 
                     <p class="quest-description">
-                        @(string.IsNullOrEmpty(quest.Description) ? "Keine Beschreibung hinterlegt." : quest.Description)
+                        @Html.Raw(string.IsNullOrEmpty(quest.Description) ? "Keine Beschreibung hinterlegt." : quest.Description)
                     </p>
 
                     <!-- Previous Quest Info -->

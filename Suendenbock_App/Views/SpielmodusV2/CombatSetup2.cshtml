@@ -1,0 +1,210 @@
+@model Suendenbock_App.Controllers.CombatSetupV2ViewModel
+@{
+    ViewData["Title"] = "Kampf Setup V2";
+}
+
+@section Styles {
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+}
+
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white p-8 font-['Inter']">
+    <div class="container mx-auto max-w-6xl">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="bg-gradient-to-r from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-2xl">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-4xl text-white">settings</span>
+                    </div>
+                    <div>
+                        <h1 class="text-4xl font-['Orbitron'] font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">
+                            KAMPF SETUP V2
+                        </h1>
+                        <p class="text-purple-300 text-sm font-medium">Neues Kampfsystem konfigurieren</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Setup Form -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left Column: Characters -->
+            <div class="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-2 mb-4">
+                    <span class="material-symbols-outlined text-blue-400 text-2xl">group</span>
+                    <h2 class="text-2xl font-bold text-blue-400">Teilnehmer</h2>
+                </div>
+
+                <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                    @foreach (var character in Model.Characters)
+                    {
+                        <div class="bg-slate-950/50 border border-purple-500/20 rounded-xl p-4 hover:border-purple-500/50 transition-all cursor-pointer"
+                             onclick="toggleCharacterSelectionV2(@character.Id)">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" id="char-@character.Id" class="w-5 h-5 rounded border-purple-500/50 bg-slate-800 text-purple-500 focus:ring-purple-500" />
+                                    <div>
+                                        <div class="font-bold text-white">@character.Name</div>
+                                        <div class="text-sm text-gray-400">
+                                            HP: @character.CurrentHealth/@character.MaxHealth
+                                            @if (character.IsBegleiter)
+                                            {
+                                                <span class="ml-2 text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">Begleiter</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-xs text-gray-400">Initiative:</label>
+                                    <input type="number" id="init-char-@character.Id" value="50" class="w-16 bg-slate-800 border border-purple-500/30 rounded px-2 py-1 text-sm text-white" />
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Right Column: Monsters -->
+            <div class="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl border border-purple-500/30 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center space-x-2 mb-4">
+                    <span class="material-symbols-outlined text-red-400 text-2xl">pets</span>
+                    <h2 class="text-2xl font-bold text-red-400">Monster</h2>
+                </div>
+
+                <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                    @foreach (var monster in Model.Monsters)
+                    {
+                        <div class="bg-slate-950/50 border border-purple-500/20 rounded-xl p-4 hover:border-purple-500/50 transition-all cursor-pointer"
+                             onclick="toggleMonsterSelectionV2(@monster.Id)">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" id="mon-@monster.Id" class="w-5 h-5 rounded border-purple-500/50 bg-slate-800 text-red-500 focus:ring-red-500" />
+                                    @if (!string.IsNullOrEmpty(monster.ImagePath))
+                                    {
+                                        <img src="@monster.ImagePath" alt="@monster.Name" class="w-12 h-12 rounded-lg object-cover border border-red-500/30" />
+                                    }
+                                    <div>
+                                        <div class="font-bold text-white">@monster.Name</div>
+                                        <div class="text-sm text-gray-400">
+                                            @monster.MonstertypName • HP: @monster.Lebenspunkte
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-xs text-gray-400">Anzahl:</label>
+                                    <input type="number" id="count-mon-@monster.Id" value="1" min="1" max="10" class="w-16 bg-slate-800 border border-purple-500/30 rounded px-2 py-1 text-sm text-white" />
+                                    <label class="text-xs text-gray-400 ml-2">Init:</label>
+                                    <input type="number" id="init-mon-@monster.Id" value="50" class="w-16 bg-slate-800 border border-purple-500/30 rounded px-2 py-1 text-sm text-white" />
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-8 flex justify-center space-x-4">
+            <a href="/Spielmodus/Dashboard" class="bg-slate-700 hover:bg-slate-600 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all hover:scale-105">
+                Abbrechen
+            </a>
+            <button onclick="startCombatV2()" class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-12 py-4 rounded-xl font-bold text-xl transition-all hover:scale-105 shadow-lg hover:shadow-purple-500/50">
+                Kampf starten
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const SETUP_V2_DATA = {
+            actId: @Model.ActId,
+            characters: @Html.Raw(Json.Serialize(Model.Characters)),
+            monsters: @Html.Raw(Json.Serialize(Model.Monsters))
+        };
+
+        function toggleCharacterSelectionV2(id) {
+            const checkbox = document.getElementById(`char-${id}`);
+            checkbox.checked = !checkbox.checked;
+        }
+
+        function toggleMonsterSelectionV2(id) {
+            const checkbox = document.getElementById(`mon-${id}`);
+            checkbox.checked = !checkbox.checked;
+        }
+
+        async function startCombatV2() {
+            // Sammle ausgewählte Charaktere
+            const selectedCharacters = SETUP_V2_DATA.characters
+                .filter(c => document.getElementById(`char-${c.Id}`).checked)
+                .map(c => ({
+                    characterId: c.Id,
+                    name: c.Name,
+                    initiative: parseInt(document.getElementById(`init-char-${c.Id}`).value) || 50,
+                    currentHealth: c.CurrentHealth,
+                    maxHealth: c.MaxHealth
+                }));
+
+            // Sammle ausgewählte Monster
+            const selectedMonsters = [];
+            for (const monster of SETUP_V2_DATA.monsters) {
+                const checkbox = document.getElementById(`mon-${monster.Id}`);
+                if (checkbox.checked) {
+                    const count = parseInt(document.getElementById(`count-mon-${monster.Id}`).value) || 1;
+                    const initiative = parseInt(document.getElementById(`init-mon-${monster.Id}`).value) || 50;
+
+                    for (let i = 0; i < count; i++) {
+                        selectedMonsters.push({
+                            monsterId: monster.Id,
+                            name: count > 1 ? `${monster.Name} ${i + 1}` : monster.Name,
+                            initiative: initiative,
+                            health: monster.Lebenspunkte,
+                            imagePath: monster.ImagePath
+                        });
+                    }
+                }
+            }
+
+            if (selectedCharacters.length === 0 && selectedMonsters.length === 0) {
+                alert('Bitte wähle mindestens einen Teilnehmer aus!');
+                return;
+            }
+
+            // TODO: API Call to create CombatSession
+            console.log('Starting Combat V2 with:', {
+                actId: SETUP_V2_DATA.actId,
+                characters: selectedCharacters,
+                monsters: selectedMonsters
+            });
+
+            // Placeholder: Redirect to Battle2
+            // In production: Make API call first, then redirect with sessionId
+            alert('Combat Setup wird in einem späteren Schritt implementiert. Dies ist die Basis-Struktur.');
+            // window.location.href = '/SpielmodusV2/Battle2?sessionId=' + sessionId;
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #a855f7, #3b82f6);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #9333ea, #2563eb);
+        }
+    </style>
+}

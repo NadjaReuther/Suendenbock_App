@@ -14,6 +14,7 @@ namespace Suendenbock_App.Models.ViewModels
         public int TotalPolls { get; set; }
         public int PendingTicketsCount { get; set; }
         public bool IsAdmin { get; set; }
+        public string PaymentMonthDisplay { get; set; } = string.Empty;
     }
 
     // Preview Models für die Übersicht

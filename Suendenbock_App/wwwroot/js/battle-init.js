@@ -60,10 +60,15 @@ async function loadBattleStateFromServer(sessionId) {
 export async function initBattle() {
     // WICHTIG: SessionId aus URL-Query lesen (Spieler werden mit ?sessionId=123 weitergeleitet)
     const urlParams = new URLSearchParams(window.location.search);
-    const sessionIdFromUrl = urlParams.get('sessionId');
+    let sessionIdFromUrl = urlParams.get('sessionId');
+
+    // Fallback: SessionId aus Server-Daten (wenn vom Controller gesetzt)
+    if (!sessionIdFromUrl && window.SESSION_ID) {
+        sessionIdFromUrl = window.SESSION_ID;
+    }
 
     if (sessionIdFromUrl) {
-        // Spieler kommt via Broadcast-Redirect → SessionId aus URL verwenden
+        // Spieler kommt via Redirect → SessionId verwenden
         battleState.sessionId = parseInt(sessionIdFromUrl);
 
         // Battle State von Server laden

@@ -598,9 +598,57 @@ namespace Suendenbock_App.Controllers
         /// Kampf-Seite
         /// Route: /Spielmodus/Battle
         /// </summary>
-        public async Task<IActionResult> Battle()
+        public async Task<IActionResult> Battle(int? sessionId = null)
         {
             var isGod = User.IsInRole("Gott");
+
+            // ===== FÜR SPIELER: Automatische Weiterleitung zur aktiven Combat Session =====
+            if (!isGod)
+            {
+                // Suche aktive Combat Session für den aktiven Act
+                var userId = GetUserId();
+                var character = await _context.Characters.FirstOrDefaultAsync(c => c.UserId == userId);
+
+                if (character != null)
+                {
+                    // Finde den aktuell aktiven Act
+                    var activeAct = await _context.Acts.FirstOrDefaultAsync(a => a.IsActive);
+
+                    if (activeAct != null)
+                    {
+                        var activeSession = await _context.CombatSessions
+                            .Where(cs => cs.IsActive && cs.ActId == activeAct.Id)
+                            .OrderByDescending(cs => cs.StartedAt)
+                            .FirstOrDefaultAsync();
+
+                        if (activeSession != null)
+                        {
+                            // Wenn Spieler eine falsche/alte sessionId hat, zur aktiven umleiten
+                            if (!sessionId.HasValue || sessionId.Value != activeSession.Id)
+                            {
+                                return RedirectToAction("Battle", new { sessionId = activeSession.Id });
+                            }
+                        }
+                        else
+                        {
+                            // Keine aktive Session → zurück zum Dashboard
+                            TempData["ErrorMessage"] = "Aktuell läuft kein Kampf.";
+                            return RedirectToAction("Dashboard");
+                        }
+                    }
+                }
+            }
+
+            // ===== FÜR GOTT: Prüfen ob alte Session noch aktiv ist =====
+            if (isGod && sessionId.HasValue)
+            {
+                var session = await _context.CombatSessions.FindAsync(sessionId.Value);
+                if (session == null || !session.IsActive)
+                {
+                    TempData["ErrorMessage"] = "Diese Combat Session ist nicht mehr aktiv.";
+                    return RedirectToAction("CombatSetup");
+                }
+            }
 
             var characters = await _context.Characters
                 .Where(c => c.UserId != null || c.IsCompanion)
@@ -670,8 +718,12 @@ namespace Suendenbock_App.Controllers
                 Monsters = monsters,
                 AllFieldEffects = fieldEffects,
                 AllBiomes = biomes,
-                IsGod = isGod
+                IsGod = isGod,
+                SessionId = sessionId // Für Spieler: die aktive Session, für Gott: optional
             };
+
+            // SessionId auch im ViewBag für JavaScript
+            ViewBag.SessionId = sessionId;
 
             return View(viewModel);
         }
@@ -920,6 +972,7 @@ namespace Suendenbock_App.Controllers
         public List<FeldEffektOption> AllFieldEffects { get; set; } = new();
         public List<BiomOption> AllBiomes { get; set; } = new();
         public bool IsGod { get; set; }
+        public int? SessionId { get; set; }  // Die aktive Combat Session ID
     }
 
     public class BattleCharacterOption

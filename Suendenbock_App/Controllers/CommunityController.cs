@@ -123,6 +123,8 @@ namespace Suendenbock_App.Controllers
             var recentThreads = await _context.ForumThreads
                 .Include(t => t.Category)
                 .Include(t => t.Replies)
+                .Include(t => t.AuthorUser)
+                .Include(t => t.AuthorCharacter)
                 .Where(t => !t.IsArchived)
                 .OrderByDescending(t => t.IsPinned)
                 .ThenByDescending(t => t.CreatedAt)
@@ -155,23 +157,31 @@ namespace Suendenbock_App.Controllers
                     Id = p.Id,
                     Question = p.Question,
                     Category = p.Category,
-                    TotalVotes = p.Votes.Select(v => v.CharacterId ?? v.UserId.GetHashCode()).Distinct().Count(),
+                    TotalVotes = p.Votes.Where(v => !v.IsWithdrawn).Select(v => v.CharacterId ?? v.UserId.GetHashCode()).Distinct().Count(),
                     CreatedAt = p.CreatedAt,
                     Status = p.Status
                 })
                 .ToListAsync();
 
-            // Lade Monatsbeiträge für den aktuellen Monat
-            var currentYear = DateTime.Now.Year;
-            var currentMonth = DateTime.Now.Month;
+            // Berechne Zielmonat: Bis 19. → aktueller Monat, ab 20. → nächster Monat
+            var now = DateTime.Now;
+            var paymentDate = now.Day < 20 ? now : now.AddMonths(1);
+            var paymentYear = paymentDate.Year;
+            var paymentMonth = paymentDate.Month;
 
+            // Monatsnamen auf Deutsch
+            var monthNames = new[] { "Januar", "Februar", "März", "April", "Mai", "Juni",
+                                     "Juli", "August", "September", "Oktober", "November", "Dezember" };
+            var paymentMonthDisplay = $"{monthNames[paymentMonth - 1]} {paymentYear}";
+
+            // Lade Monatsbeiträge
             var monthlyPayments = await _context.MonthlyPayments
-                .Where(mp => mp.Year == currentYear && mp.Month == currentMonth)
+                .Where(mp => mp.Year == paymentYear && mp.Month == paymentMonth)
                 .OrderBy(mp => mp.PlayerName)
                 .Select(mp => new MonthlyPaymentViewModel
                 {
                     Id = mp.Id,
-                    PlayerName = mp.PlayerName,
+                    PlayerName = mp.PlayerName.Replace("@suendenbock.lore", ""),
                     Status = mp.Status,
                     PaymentMethod = mp.PaymentMethod,
                     PaidAtDisplay = mp.PaidAt.HasValue ? mp.PaidAt.Value.ToString("dd.MM.yyyy") : null
@@ -208,7 +218,8 @@ namespace Suendenbock_App.Controllers
                 TotalThreads = await _context.ForumThreads.Where(t => !t.IsArchived).CountAsync(),
                 TotalPolls = await _context.Polls.Where(p => p.Status == "active").CountAsync(),
                 PendingTicketsCount = await _context.Tickets.Where(t => t.Status == "Pending").CountAsync(),
-                IsAdmin = User.IsInRole("Gott")
+                IsAdmin = User.IsInRole("Gott"),
+                PaymentMonthDisplay = paymentMonthDisplay
             };
 
             return View(viewModel);
@@ -591,6 +602,7 @@ namespace Suendenbock_App.Controllers
         public async Task<IActionResult> Polls()
         {
             var userId = GetUserId();
+            var isAdmin = User.IsInRole("Gott");
 
             // Lade alle Polls mit Options und Votes
             var polls = await _context.Polls
@@ -608,37 +620,78 @@ namespace Suendenbock_App.Controllers
                 .ThenByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
+            // Für Admins: Lade alle Characters mit UserColor (für Farbanzeige)
+            Dictionary<string, string?> userIdToColor = new();
+            if (isAdmin)
+            {
+                userIdToColor = await _context.Characters
+                    .Where(c => c.UserId != null)
+                    .ToDictionaryAsync(c => c.UserId!, c => c.UserColor);
+            }
+
             // Konvertiere zu ViewModels
             var pollViewModels = polls.Select(p =>
             {
-                // Finde die Optionen, für die der User gestimmt hat
+                // Finde die Optionen, für die der User gestimmt hat (ohne withdrawn)
                 var userVotedOptionIds = p.Votes
-                    .Where(v => v.UserId == userId)
+                    .Where(v => v.UserId == userId && !v.IsWithdrawn)
                     .Select(v => v.PollOptionId)
                     .ToList();
 
-                // Berechne Prozentsätze für jede Option
-                var totalVoters = p.TotalVoters;
+                // Berechne Prozentsätze für jede Option (ohne withdrawn votes)
+                var totalVoters = p.Votes.Where(v => !v.IsWithdrawn).Select(v => v.UserId).Distinct().Count();
                 var options = p.Options.OrderBy(o => o.SortOrder).Select(o =>
                 {
-                    var voteCount = o.Votes.Count;
+                    var voteCount = o.Votes.Count(v => !v.IsWithdrawn);
                     var percentage = totalVoters > 0 ? (double)voteCount / totalVoters * 100 : 0;
+
+                    // Für Admins: Sammle die Namen und Farben der Wähler für diese Option (ohne withdrawn)
+                    var votersForOption = isAdmin
+                        ? o.Votes.Where(v => !v.IsWithdrawn).Select(v =>
+                        {
+                            // Hole Farbe aus Dictionary (Character) oder fallback zu User
+                            string? color = null;
+                            if (v.UserId != null && userIdToColor.ContainsKey(v.UserId))
+                            {
+                                color = userIdToColor[v.UserId];
+                            }
+                            color ??= v.User?.Farbcode;
+
+                            return new PollVoterViewModel
+                            {
+                                Name = v.VoterName,
+                                Color = color
+                            };
+                        }).OrderBy(voter => voter.Name).ToList()
+                        : new List<PollVoterViewModel>();
 
                     return new PollOptionViewModel
                     {
                         Id = o.Id,
                         Text = o.Text,
                         Votes = voteCount,
-                        Percentage = percentage
+                        Percentage = percentage,
+                        Voters = votersForOption
                     };
                 }).ToList();
 
-                // Sammle alle Wähler (unique)
+                // Sammle alle Wähler (unique, ohne withdrawn)
                 var voterNames = p.Votes
+                    .Where(v => !v.IsWithdrawn)
                     .GroupBy(v => v.UserId ?? v.CharacterId?.ToString() ?? "unknown")
                     .Select(g => g.First().VoterName)
                     .OrderBy(name => name)
                     .ToList();
+
+                // Sammle zurückgezogene Wähler (nur für Admins)
+                var withdrawnVoterNames = isAdmin
+                    ? p.Votes
+                        .Where(v => v.IsWithdrawn)
+                        .Select(v => v.VoterName)
+                        .Distinct()
+                        .OrderBy(name => name)
+                        .ToList()
+                    : new List<string>();
 
                 return new PollViewModel
                 {
@@ -651,6 +704,7 @@ namespace Suendenbock_App.Controllers
                     Options = options,
                     UserVotedOptionIds = userVotedOptionIds,
                     VoterNames = voterNames,
+                    WithdrawnVoterNames = withdrawnVoterNames,
                     CanEdit = p.CreatedByUserId == userId || User.IsInRole("Gott")
                 };
             }).ToList();
@@ -658,7 +712,7 @@ namespace Suendenbock_App.Controllers
             var viewModel = new PollsPageViewModel
             {
                 Polls = pollViewModels,
-                IsAdmin = User.IsInRole("Gott")
+                IsAdmin = isAdmin
             };
 
             return View(viewModel);
@@ -753,12 +807,6 @@ namespace Suendenbock_App.Controllers
             };
 
             return View(viewModel);
-        }
-
-        // Helper: Get Current User ID
-        private string GetUserId()
-        {
-            return User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         }
 
         // GET: /Community/EditThread/5

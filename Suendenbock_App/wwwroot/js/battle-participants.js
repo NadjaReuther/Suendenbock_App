@@ -72,10 +72,10 @@ export async function addCharacterToBattle() {
         return;
     }
 
-    if (!initiative || initiative < 0) {
+    if (isNaN(initiative) || initiative < 0) {
         await Swal.fire({
             title: 'Fehler',
-            text: 'Bitte gib eine gültige Initiative ein.',
+            text: 'Bitte gib eine gültige Initiative (0-99) ein.',
             icon: 'error'
         });
         return;
@@ -158,10 +158,10 @@ export async function addMonsterToBattle() {
         return;
     }
 
-    if (!initiative || initiative < 0) {
+    if (isNaN(initiative) || initiative < 0) {
         await Swal.fire({
             title: 'Fehler',
-            text: 'Bitte gib eine gültige Initiative ein.',
+            text: 'Bitte gib eine gültige Initiative (0-99) ein.',
             icon: 'error'
         });
         return;
@@ -263,10 +263,10 @@ export async function addCustomParticipantToBattle() {
         return;
     }
 
-    if (!initiative || initiative < 0) {
+    if (isNaN(initiative) || initiative < 0) {
         await Swal.fire({
             title: 'Fehler',
-            text: 'Bitte gib eine gültige Initiative ein.',
+            text: 'Bitte gib eine gültige Initiative (0-99) ein.',
             icon: 'error'
         });
         return;
