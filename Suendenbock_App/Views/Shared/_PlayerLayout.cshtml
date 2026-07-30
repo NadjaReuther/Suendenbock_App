@@ -72,6 +72,13 @@
                                 </li>
                             </ul>
                         </li>
+                        <!-- Messages Icon -->
+                        <li class="nav-item">
+                            <a class="nav-link notification-bell-link" asp-controller="Messages" asp-action="Inbox" id="messagesIcon" title="Nachrichten">
+                                <span class="material-symbols-outlined">mail</span>
+                                <span class="notification-badge" id="messagesBadge" style="display: none;">0</span>
+                            </a>
+                        </li>
                         <!-- Notification Bell Icon -->
                         <li class="nav-item">
                             <a class="nav-link notification-bell-link" asp-controller="Community" asp-action="NotificationSettings" id="notificationBellIcon" title="Benachrichtigungen">
@@ -101,8 +108,10 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/advent-calendar.js" asp-append-version="true"></script>
+    <script src="~/js/messages-notification.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

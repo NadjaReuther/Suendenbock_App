@@ -53,6 +53,13 @@
                 </ul>
             </li>
     }
+    <!-- Messages Icon -->
+    <li class="nav-item">
+        <a class="nav-link notification-bell-link" asp-controller="Messages" asp-action="Inbox" id="messagesIcon" title="Nachrichten">
+            <span class="material-symbols-outlined">mail</span>
+            <span class="notification-badge" id="messagesBadge" style="display: none;">0</span>
+        </a>
+    </li>
     <!-- Notification Bell Icon -->
     <li class="nav-item">
         <a class="nav-link notification-bell-link" asp-controller="Community" asp-action="NotificationSettings" id="notificationBellIcon" title="Benachrichtigungen">

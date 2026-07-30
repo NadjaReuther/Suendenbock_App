@@ -110,6 +110,7 @@ namespace Suendenbock_App.Data
         public DbSet<Poll> Polls { get; set; }
         public DbSet<PollOption> PollOptions { get; set; }
         public DbSet<PollVote> PollVotes { get; set; }
+        public DbSet<Message> Messages { get; set; }
         public DbSet<MonthlyEvent> MonthlyEvents { get; set; }
         public DbSet<EventChore> EventChores { get; set; }
         public DbSet<EventRSVP> EventRSVPs { get; set; }
@@ -764,6 +765,53 @@ namespace Suendenbock_App.Data
             // Index für aktive Subscriptions
             builder.Entity<PushSubscription>()
                 .HasIndex(ps => ps.IsActive);
+
+            // ===============================
+            // MESSAGE BEZIEHUNGEN
+            // ===============================
+
+            // Message -> SenderCharacter (OPTIONAL, NO CASCADE)
+            // Nur wenn SenderType = Character
+            builder.Entity<Message>()
+                .HasOne(m => m.SenderCharacter)
+                .WithMany()
+                .HasForeignKey(m => m.SenderCharacterId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // Message -> ReceiverCharacter (OPTIONAL, NO CASCADE)
+            // Optional, weil Empfänger auch Gott/Moderator sein kann
+            builder.Entity<Message>()
+                .HasOne(m => m.ReceiverCharacter)
+                .WithMany()
+                .HasForeignKey(m => m.ReceiverCharacterId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // Indices für schnelle Message-Suche
+            builder.Entity<Message>()
+                .HasIndex(m => m.ReceiverCharacterId);
+
+            builder.Entity<Message>()
+                .HasIndex(m => m.SenderCharacterId);
+
+            builder.Entity<Message>()
+                .HasIndex(m => m.IsRead);
+
+            builder.Entity<Message>()
+                .HasIndex(m => m.SenderType);
+
+            builder.Entity<Message>()
+                .HasIndex(m => m.SenderUserId);
+
+            builder.Entity<Message>()
+                .HasIndex(m => m.ReceiverUserId);
+
+            builder.Entity<Message>()
+                .HasIndex(m => m.ThreadId);
+
+            builder.Entity<Message>()
+                .HasIndex(m => m.ParentMessageId);
         }
     }
 }

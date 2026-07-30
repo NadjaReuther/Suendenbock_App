@@ -1,0 +1,72 @@
+@model Suendenbock_App.Models.ViewModels.MessagesSentViewModel
+@{
+    ViewData["Title"] = "Gesendete Nachrichten";
+}
+
+<div class="messages-container">
+    <div class="messages-header">
+        <h1>
+            <span class="material-symbols-outlined">send</span>
+            Gesendete Nachrichten
+        </h1>
+        <a href="@Url.Action("Compose", "Messages")" class="compose-btn">
+            <span class="material-symbols-outlined">edit</span>
+            Neue Nachricht
+        </a>
+    </div>
+
+    @if (!Model.Messages.Any())
+    {
+        <div class="messages-empty">
+            <span class="material-symbols-outlined">send</span>
+            <p>Keine gesendeten Nachrichten</p>
+        </div>
+    }
+    else
+    {
+        <div class="messages-list">
+            @foreach (var message in Model.Messages)
+            {
+                <div class="message-item sent @(message.MessageCount > 1 ? "has-thread" : "")" onclick="location.href='@Url.Action("Read", "Messages", new { id = message.Id })'">
+                    <div class="message-sender">
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                        <span class="sender-name">An: @message.OtherCharacterName</span>
+                        @if (message.MessageCount > 1)
+                        {
+                            <span class="thread-count">
+                                <span class="material-symbols-outlined">forum</span>
+                                @message.MessageCount
+                            </span>
+                        }
+                    </div>
+                    <div class="message-subject">@message.Subject</div>
+                    <div class="message-preview">@message.ContentPreview</div>
+                    <div class="message-date">
+                        @if (message.SentAt.Date == DateTime.Today)
+                        {
+                            <span>Heute, @message.SentAt.ToString("HH:mm")</span>
+                        }
+                        else if (message.SentAt.Date == DateTime.Today.AddDays(-1))
+                        {
+                            <span>Gestern, @message.SentAt.ToString("HH:mm")</span>
+                        }
+                        else
+                        {
+                            <span>@message.SentAt.ToString("dd.MM.yyyy, HH:mm")</span>
+                        }
+                        @if (message.IsRead)
+                        {
+                            <span class="read-indicator" title="Gelesen">
+                                <span class="material-symbols-outlined">done_all</span>
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/messages.css" />
+}

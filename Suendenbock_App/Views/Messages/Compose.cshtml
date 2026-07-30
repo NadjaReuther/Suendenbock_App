@@ -1,0 +1,131 @@
+@model Suendenbock_App.Models.ViewModels.ComposeMessageViewModel
+@{
+    ViewData["Title"] = "Neue Nachricht";
+    var replyToValue = ViewBag.ReplyToValue as string;
+    var replyToSubject = ViewBag.ReplyToSubject as string;
+}
+
+<div class="compose-container">
+    <div class="compose-header">
+        <h1>
+            <span class="material-symbols-outlined">edit</span>
+            Neue Nachricht
+        </h1>
+        <a href="@Url.Action("Inbox", "Messages")" class="back-btn">
+            <span class="material-symbols-outlined">close</span>
+            Abbrechen
+        </a>
+    </div>
+
+    <form id="composeForm" class="compose-form">
+        <input type="hidden" id="canSendGroupMessage" value="@Model.CanSendGroupMessage.ToString().ToLower()" />
+
+        @if (!string.IsNullOrEmpty(replyToValue))
+        {
+            <!-- Bei Antwort: Empfänger ist fix und nicht änderbar -->
+            <input type="hidden" id="receiverId" name="receiverId" value="@replyToValue" />
+
+            <div class="form-group">
+                <label>
+                    <span class="material-symbols-outlined">person</span>
+                    Empfänger
+                </label>
+                <div class="receiver-readonly">
+                    @{
+                        var replyReceiver = Model.AvailableReceivers.FirstOrDefault(r =>
+                            (r.Type == "Character" && replyToValue == $"char:{r.CharacterId}") ||
+                            (r.Type != "Character" && replyToValue == $"user:{r.UserId}:{r.Type}"));
+                    }
+                    @if (replyReceiver != null)
+                    {
+                        <span class="receiver-name">@replyReceiver.DisplayName</span>
+                    }
+                </div>
+                <small class="form-text text-muted">Der Empfänger kann bei Antworten nicht geändert werden</small>
+            </div>
+        }
+        else
+        {
+            <!-- Neue Nachricht: Empfänger auswählbar -->
+            <div class="form-group">
+                <label for="receiverId">
+                    <span class="material-symbols-outlined">person</span>
+                    Empfänger @if (Model.CanSendGroupMessage) { <span class="group-hint">(Mehrfachauswahl möglich)</span> }
+                </label>
+                @if (Model.CanSendGroupMessage)
+                {
+                    <!-- Multiselect für Gott/Moderator -->
+                    <select id="receiverId" name="receiverId" class="form-control" multiple required>
+                        @foreach (var receiver in Model.AvailableReceivers)
+                        {
+                            var value = receiver.Type == "Character"
+                                ? $"char:{receiver.CharacterId}"
+                                : $"user:{receiver.UserId}:{receiver.Type}";
+                            <!option value="@value">
+                                @receiver.DisplayName
+                            </!option>
+                        }
+                    </select>
+                    <small class="form-text text-muted">Halte Strg (Windows) oder Cmd (Mac) gedrückt, um mehrere Empfänger auszuwählen</small>
+                }
+                else
+                {
+                    <!-- Single Select für Spieler -->
+                    <select id="receiverId" name="receiverId" class="form-control" required>
+                        <!option value="">-- Empfänger wählen --</!option>
+                        @foreach (var receiver in Model.AvailableReceivers)
+                        {
+                            var value = receiver.Type == "Character"
+                                ? $"char:{receiver.CharacterId}"
+                                : $"user:{receiver.UserId}:{receiver.Type}";
+                            <!option value="@value">
+                                @receiver.DisplayName
+                            </!option>
+                        }
+                    </select>
+                }
+            </div>
+        }
+
+        <div class="form-group">
+            <label for="subject">
+                <span class="material-symbols-outlined">subject</span>
+                Betreff
+            </label>
+            <input type="text"
+                   id="subject"
+                   name="subject"
+                   class="form-control"
+                   value="@(replyToSubject ?? "")"
+                   placeholder="Betreff der Nachricht"
+                   maxlength="200"
+                   required />
+        </div>
+
+        <div class="form-group">
+            <label for="content">
+                <span class="material-symbols-outlined">description</span>
+                Nachricht
+            </label>
+            <textarea id="content"
+                      name="content"
+                      class="form-control"
+                      rows="12"
+                      placeholder="Deine Nachricht..."
+                      required></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="send-btn">
+                <span class="material-symbols-outlined">send</span>
+                Senden
+            </button>
+            <a href="@Url.Action("Inbox", "Messages")" class="cancel-btn">Abbrechen</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/messages.css" />
+    <script src="~/js/message-compose.js"></script>
+}

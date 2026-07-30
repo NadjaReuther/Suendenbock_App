@@ -1,0 +1,77 @@
+@model Suendenbock_App.Models.ViewModels.MessagesInboxViewModel
+@{
+    ViewData["Title"] = "Posteingang";
+}
+
+<div class="messages-container">
+    <div class="messages-header">
+        <h1>
+            <span class="material-symbols-outlined">inbox</span>
+            Posteingang
+        </h1>
+        @if (Model.UnreadCount > 0)
+        {
+            <span class="unread-badge">@Model.UnreadCount ungelesen</span>
+        }
+        <a href="@Url.Action("Compose", "Messages")" class="compose-btn">
+            <span class="material-symbols-outlined">edit</span>
+            Neue Nachricht
+        </a>
+    </div>
+
+    @if (!Model.Messages.Any())
+    {
+        <div class="messages-empty">
+            <span class="material-symbols-outlined">inbox</span>
+            <p>Keine Nachrichten im Posteingang</p>
+        </div>
+    }
+    else
+    {
+        <div class="messages-list">
+            @foreach (var message in Model.Messages)
+            {
+                <div class="message-item @(message.IsRead ? "read" : "unread") @(message.MessageCount > 1 ? "has-thread" : "")" onclick="location.href='@Url.Action("Read", "Messages", new { id = message.Id })'">
+                    <div class="message-sender">
+                        @if (!message.IsRead || message.UnreadCount > 0)
+                        {
+                            <span class="unread-indicator"></span>
+                        }
+                        <span class="sender-name">@message.OtherCharacterName</span>
+                        @if (message.MessageCount > 1)
+                        {
+                            <span class="thread-count">
+                                <span class="material-symbols-outlined">forum</span>
+                                @message.MessageCount
+                                @if (message.UnreadCount > 0)
+                                {
+                                    <span class="thread-unread">(@message.UnreadCount ungelesen)</span>
+                                }
+                            </span>
+                        }
+                    </div>
+                    <div class="message-subject">@message.Subject</div>
+                    <div class="message-preview">@message.ContentPreview</div>
+                    <div class="message-date">
+                        @if (message.SentAt.Date == DateTime.Today)
+                        {
+                            <span>Heute, @message.SentAt.ToString("HH:mm")</span>
+                        }
+                        else if (message.SentAt.Date == DateTime.Today.AddDays(-1))
+                        {
+                            <span>Gestern, @message.SentAt.ToString("HH:mm")</span>
+                        }
+                        else
+                        {
+                            <span>@message.SentAt.ToString("dd.MM.yyyy, HH:mm")</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/messages.css" />
+}

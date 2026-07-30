@@ -1,0 +1,77 @@
+@model Suendenbock_App.Models.ViewModels.MessageDetailViewModel
+@{
+    ViewData["Title"] = Model.Subject;
+}
+
+<div class="message-detail-container">
+    <div class="message-detail-header">
+        <a href="@Url.Action(Model.IsSender ? "Sent" : "Inbox", "Messages")" class="back-btn">
+            <span class="material-symbols-outlined">arrow_back</span>
+            Zurück
+        </a>
+        <div class="message-actions">
+            @if (!Model.IsSender)
+            {
+                <a href="@Url.Action("Compose", "Messages", new { replyTo = Model.Id })" class="reply-btn">
+                    <span class="material-symbols-outlined">reply</span>
+                    Antworten
+                </a>
+            }
+            <button class="delete-btn" data-message-id="@Model.Id">
+                <span class="material-symbols-outlined">delete</span>
+                Löschen
+            </button>
+        </div>
+    </div>
+
+    <div class="message-detail-content">
+        <h2 class="message-subject">@Model.Subject</h2>
+
+        <!-- Thread-Ansicht: Alle Nachrichten chronologisch -->
+        <div class="thread-messages">
+            @foreach (var threadMsg in Model.ThreadMessages)
+            {
+                <div class="thread-message @(threadMsg.IsSender ? "sent-by-me" : "received")">
+                    <div class="thread-message-header">
+                        <span class="thread-sender @(threadMsg.SenderType != "Character" ? "system-sender" : "")">
+                            @if (threadMsg.SenderType == "Gott")
+                            {
+                                <span class="sender-badge sender-gott">⚡ Gott</span>
+                            }
+                            else if (threadMsg.SenderType == "Moderator")
+                            {
+                                <span class="sender-badge sender-moderator">🛡️ Moderator</span>
+                            }
+                            else
+                            {
+                                @threadMsg.SenderName
+                            }
+                        </span>
+                        <span class="thread-timestamp">
+                            @if (threadMsg.SentAt.Date == DateTime.Today)
+                            {
+                                <span>Heute, @threadMsg.SentAt.ToString("HH:mm")</span>
+                            }
+                            else if (threadMsg.SentAt.Date == DateTime.Today.AddDays(-1))
+                            {
+                                <span>Gestern, @threadMsg.SentAt.ToString("HH:mm")</span>
+                            }
+                            else
+                            {
+                                <span>@threadMsg.SentAt.ToString("dd.MM.yyyy, HH:mm")</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="thread-message-body">
+                        @Html.Raw(threadMsg.Content.Replace("\n", "<br/>"))
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/messages.css" />
+    <script src="~/js/message-detail.js"></script>
+}

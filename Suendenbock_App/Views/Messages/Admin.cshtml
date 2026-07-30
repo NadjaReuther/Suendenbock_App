@@ -1,0 +1,178 @@
+@model Suendenbock_App.Models.ViewModels.MessagesAdminViewModel
+@{
+    ViewData["Title"] = "Nachrichten - Admin Dashboard";
+}
+
+<div class="messages-admin-container">
+    <div class="admin-header">
+        <h1>
+            <span class="material-symbols-outlined">admin_panel_settings</span>
+            Nachrichten-Verwaltung
+        </h1>
+        <div class="total-count">
+            Gesamt: <strong>@Model.TotalMessages</strong> Nachrichten
+        </div>
+    </div>
+
+    <div class="admin-filters">
+        <form method="get" asp-action="Admin" class="filters-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="senderName">Absender</label>
+                    <input type="text"
+                           id="senderName"
+                           name="filters.SenderName"
+                           value="@Model.Filters.SenderName"
+                           placeholder="Absender-Name"
+                           class="form-control" />
+                </div>
+
+                <div class="filter-group">
+                    <label for="receiverName">Empfänger</label>
+                    <input type="text"
+                           id="receiverName"
+                           name="filters.ReceiverName"
+                           value="@Model.Filters.ReceiverName"
+                           placeholder="Empfänger-Name"
+                           class="form-control" />
+                </div>
+
+                <div class="filter-group">
+                    <label for="subject">Betreff</label>
+                    <input type="text"
+                           id="subject"
+                           name="filters.Subject"
+                           value="@Model.Filters.Subject"
+                           placeholder="Betreff"
+                           class="form-control" />
+                </div>
+            </div>
+
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="dateFrom">Von Datum</label>
+                    <input type="date"
+                           id="dateFrom"
+                           name="filters.DateFrom"
+                           value="@(Model.Filters.DateFrom?.ToString("yyyy-MM-dd"))"
+                           class="form-control" />
+                </div>
+
+                <div class="filter-group">
+                    <label for="dateTo">Bis Datum</label>
+                    <input type="date"
+                           id="dateTo"
+                           name="filters.DateTo"
+                           value="@(Model.Filters.DateTo?.ToString("yyyy-MM-dd"))"
+                           class="form-control" />
+                </div>
+
+                <div class="filter-group">
+                    <label for="isRead">Status</label>
+                    <select id="isRead" name="filters.IsRead" class="form-control">
+                        <!option value="">Alle</!option>
+                        <!option value="true" @(Model.Filters.IsRead == true ? "selected" : "")>Gelesen</!option>
+                        <!option value="false" @(Model.Filters.IsRead == false ? "selected" : "")>Ungelesen</!option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="isDeleted">Gelöscht</label>
+                    <select id="isDeleted" name="filters.IsDeleted" class="form-control">
+                        <!option value="">Alle</!option>
+                        <!option value="true" @(Model.Filters.IsDeleted == true ? "selected" : "")>Gelöscht</!option>
+                        <!option value="false" @(Model.Filters.IsDeleted == false ? "selected" : "")>Nicht gelöscht</!option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="apply-btn">
+                    <span class="material-symbols-outlined">filter_list</span>
+                    Filter anwenden
+                </button>
+                <a href="@Url.Action("Admin", "Messages")" class="reset-btn">
+                    <span class="material-symbols-outlined">refresh</span>
+                    Zurücksetzen
+                </a>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Messages.Any())
+    {
+        <div class="messages-empty">
+            <span class="material-symbols-outlined">inbox</span>
+            <p>Keine Nachrichten gefunden</p>
+        </div>
+    }
+    else
+    {
+        <div class="admin-messages-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Absender</th>
+                        <th>Empfänger</th>
+                        <th>Betreff</th>
+                        <th>Vorschau</th>
+                        <th>Datum</th>
+                        <th>Status</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var message in Model.Messages)
+                    {
+                        <tr class="@(message.IsDeletedBySender || message.IsDeletedByReceiver ? "deleted-row" : "")">
+                            <td>@message.Id</td>
+                            <td>
+                                @message.SenderCharacterName
+                                @if (message.IsDeletedBySender)
+                                {
+                                    <span class="deleted-tag" title="Vom Absender gelöscht">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                @message.ReceiverCharacterName
+                                @if (message.IsDeletedByReceiver)
+                                {
+                                    <span class="deleted-tag" title="Vom Empfänger gelöscht">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </span>
+                                }
+                            </td>
+                            <td class="subject-col">@message.Subject</td>
+                            <td class="preview-col">@message.ContentPreview</td>
+                            <td class="date-col">@message.SentAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td class="status-col">
+                                @if (message.IsRead)
+                                {
+                                    <span class="status-badge read">Gelesen</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge unread">Ungelesen</span>
+                                }
+                            </td>
+                            <td class="actions-col">
+                                <a href="@Url.Action("Read", "Messages", new { id = message.Id })"
+                                   class="view-btn"
+                                   title="Ansehen">
+                                    <span class="material-symbols-outlined">visibility</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="~/css/messages.css" />
+}

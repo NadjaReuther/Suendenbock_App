@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726170016_addPMSystem")]
+    partial class addPMSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1356,29 +1359,11 @@ namespace Suendenbock_App.Migrations
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("ParentMessageId")
+                    b.Property<int>("ReceiverCharacterId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ReceiverCharacterId")
+                    b.Property<int>("SenderCharacterId")
                         .HasColumnType("int");
-
-                    b.Property<int?>("ReceiverType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ReceiverUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int?>("SenderCharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SenderDisplayName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SenderType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SenderUserId")
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("SentAt")
                         .HasColumnType("datetime2");
@@ -1388,26 +1373,13 @@ namespace Suendenbock_App.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("ThreadId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("IsRead");
 
-                    b.HasIndex("ParentMessageId");
-
                     b.HasIndex("ReceiverCharacterId");
 
-                    b.HasIndex("ReceiverUserId");
-
                     b.HasIndex("SenderCharacterId");
-
-                    b.HasIndex("SenderType");
-
-                    b.HasIndex("SenderUserId");
-
-                    b.HasIndex("ThreadId");
 
                     b.ToTable("Messages");
                 });
@@ -3189,12 +3161,14 @@ namespace Suendenbock_App.Migrations
                     b.HasOne("Suendenbock_App.Models.Domain.Character", "ReceiverCharacter")
                         .WithMany()
                         .HasForeignKey("ReceiverCharacterId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("Suendenbock_App.Models.Domain.Character", "SenderCharacter")
                         .WithMany()
                         .HasForeignKey("SenderCharacterId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("ReceiverCharacter");
 

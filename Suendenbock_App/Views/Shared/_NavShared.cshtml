@@ -1,7 +1,13 @@
 ﻿@{
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
     var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var isGast = User.IsInRole("Gast");
+    var isSpieler = User.IsInRole("Spieler");
+    var isModerator = User.IsInRole("Moderator");
+    var isGott = User.IsInRole("Gott");
 }
+
+<!-- Wiki-Bereich: Für ALLE sichtbar (inkl. Gäste) -->
 <li class="nav-item dropdown">
     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
         <i class="fas fa-users"></i> Wiki
@@ -35,35 +41,85 @@
     </ul>
 </li>
 
-<li class="nav-item dropdown">
-    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-        <i class="fas fa-users"></i> Event
-    </a>
-    <ul class="dropdown-menu">
-        <li class="nav-item">
-            <a class="dropdown-item" asp-controller="Player" asp-action="Weihnachtenuebersicht">
-                Weihnachten
-            </a>
-        </li>
-    </ul>
-</li>
-<li class="nav-item">
-    <a class="nav-link" asp-controller="Achievement" asp-action="Index">
-        Erfolge
-    </a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" asp-controller="Spielmodus" asp-action="Dashboard">
-        aktueller Akt
-    </a>
-</li>
+<!-- Event, Erfolge, Spielmodus: Nur für Spieler, Moderatoren und Götter (NICHT für Gäste) -->
+@if (!isGast)
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <i class="fas fa-users"></i> Event
+        </a>
+        <ul class="dropdown-menu">
+            <li class="nav-item">
+                <a class="dropdown-item" asp-controller="Player" asp-action="Weihnachtenuebersicht">
+                    Weihnachten
+                </a>
+            </li>
+        </ul>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Achievement" asp-action="Index">
+            Erfolge
+        </a>
+    </li>
+}
+
+<!-- Spielmodus: Nur für Spieler und Götter (NICHT für Gäste und Moderatoren) -->
+@if (isSpieler || isGott)
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Spielmodus" asp-action="Dashboard">
+            aktueller Akt
+        </a>
+    </li>
+}
 
 
-@if (controller != "Community" || action == "NotificationSettings")
+<!-- Versammlungshalle: Für alle außer Gäste -->
+@if (!isGast && (controller != "Community" || action == "NotificationSettings"))
 {
     <li class="nav-item">
         <a class="nav-link" asp-controller="Community" asp-action="Index">
             ⛪ Versammlungshalle
         </a>
+    </li>
+}
+
+<!-- Nachrichten: Nur für Spieler, Moderatoren und Götter (NICHT für Gäste) -->
+@if (!isGast)
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+            <span class="material-symbols-outlined" style="vertical-align: middle;">mail</span> Nachrichten
+        </a>
+        <ul class="dropdown-menu">
+            @if (isSpieler)
+            {
+                <!-- Spieler: Normaler Posteingang -->
+                <li class="nav-item">
+                    <a class="dropdown-item" asp-controller="Messages" asp-action="Inbox">
+                        <span class="material-symbols-outlined">inbox</span> Posteingang
+                    </a>
+                </li>
+            }
+            <li class="nav-item">
+                <a class="dropdown-item" asp-controller="Messages" asp-action="Sent">
+                    <span class="material-symbols-outlined">send</span> Gesendet
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="dropdown-item" asp-controller="Messages" asp-action="Compose">
+                    <span class="material-symbols-outlined">edit</span> @(isSpieler ? "Neue Nachricht" : "Ankündigung senden")
+                </a>
+            </li>
+            @if (isGott)
+            {
+                <li><hr class="dropdown-divider"></li>
+                <li class="nav-item">
+                    <a class="dropdown-item" asp-controller="Messages" asp-action="Admin">
+                        <span class="material-symbols-outlined">admin_panel_settings</span> Admin-Dashboard
+                    </a>
+                </li>
+            }
+        </ul>
     </li>
 }

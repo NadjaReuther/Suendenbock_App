@@ -19,7 +19,7 @@ namespace Suendenbock_App.Controllers
     /// - Angepasste Kampfmechaniken
     /// - Komplett neues UI/UX
     /// </summary>
-    [Authorize]
+    [Authorize(Roles = "Spieler,Moderator,Gott")] // Nur Spieler, Moderatoren und Götter - KEINE Gäste
     public class SpielmodusV2Controller : BaseController
     {
         public SpielmodusV2Controller(ApplicationDbContext context) : base(context)

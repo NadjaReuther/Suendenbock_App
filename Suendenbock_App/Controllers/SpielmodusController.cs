@@ -8,7 +8,7 @@ using Suendenbock_App.Controllers.Api;
 
 namespace Suendenbock_App.Controllers
 {
-    [Authorize] // Nur eingeloggte Benutzer können auf Spielmodus zugreifen
+    [Authorize(Roles = "Spieler,Moderator,Gott")] // Nur Spieler, Moderatoren und Götter - KEINE Gäste
     public class SpielmodusController : BaseController
     {
         public SpielmodusController(ApplicationDbContext context) : base(context)

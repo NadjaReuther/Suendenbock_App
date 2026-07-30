@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Suendenbock_App.Data;
 
@@ -11,9 +12,11 @@ using Suendenbock_App.Data;
 namespace Suendenbock_App.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260730072407_addRoleSystem")]
+    partial class addRoleSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1356,9 +1359,6 @@ namespace Suendenbock_App.Migrations
                     b.Property<bool>("IsRead")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("ParentMessageId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ReceiverCharacterId")
                         .HasColumnType("int");
 
@@ -1388,14 +1388,9 @@ namespace Suendenbock_App.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int>("ThreadId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("IsRead");
-
-                    b.HasIndex("ParentMessageId");
 
                     b.HasIndex("ReceiverCharacterId");
 
@@ -1406,8 +1401,6 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("SenderType");
 
                     b.HasIndex("SenderUserId");
-
-                    b.HasIndex("ThreadId");
 
                     b.ToTable("Messages");
                 });
