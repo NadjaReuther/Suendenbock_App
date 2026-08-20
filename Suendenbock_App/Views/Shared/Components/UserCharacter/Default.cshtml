@@ -1,0 +1,56 @@
+@model Suendenbock_App.ViewComponents.UserCharacterViewModel
+
+<li class="nav-item dropdown user-avatar-item">
+    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+        @if (!string.IsNullOrEmpty(Model.CharacterImagePath))
+        {
+            <img src="@Model.CharacterImagePath" alt="Character Avatar" class="user-avatar-image" />
+        }
+        else
+        {
+            <span class="user-avatar">@Model.UserInitial</span>
+        }
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end">
+        @if (Model.CharacterId.HasValue)
+        {
+            <li class="nav-item">
+                <a class="dropdown-item" asp-controller="Character" asp-action="Form" asp-route-id="@Model.CharacterId">
+                    📜 Dein Charakter
+                </a>
+            </li>
+        }
+        <li><hr /></li>
+        <li class="nav-item">
+            <a class="dropdown-item" asp-controller="Player" asp-action="Triggerpunkte">
+                ⚠ Triggerpunkte
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">
+                <i class="fas fa-key"></i> Passwort ändern
+            </a>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <div style="display:flex; flex-direction:row; align-items:center;">
+                <div>
+                    <form asp-area="Identity" asp-page="/Account/Logout"
+                          asp-route-returnUrl="@Url.Action("Index", "Home")"
+                          method="post">
+                        <button type="submit" class="dropdown-item" style="font-size:20px;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+                </div>
+                <div>
+                    <!-- Notification Bell Icon -->
+                    <a class="nav-link notification-bell-link" asp-controller="Community" asp-action="NotificationSettings" id="notificationBellIcon" title="Benachrichtigungen">
+                        <span class="material-symbols-outlined" id="bellIcon">notifications_off</span>
+                        <span class="notification-badge" id="notificationBadge" style="display: none;">!</span>
+                    </a>
+                </div>
+            </div>
+        </li>
+    </ul>
+</li>

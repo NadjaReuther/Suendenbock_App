@@ -11,17 +11,17 @@ namespace Suendenbock_App.Services
     /// </summary>
     public class PushNotificationService : IPushNotificationService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly IConfiguration _configuration;
         private readonly ILogger<PushNotificationService> _logger;
         private readonly WebPushClient _webPushClient;
 
         public PushNotificationService(
-            ApplicationDbContext context,
+            IServiceScopeFactory scopeFactory,
             IConfiguration configuration,
             ILogger<PushNotificationService> logger)
         {
-            _context = context;
+            _scopeFactory = scopeFactory;
             _configuration = configuration;
             _logger = logger;
             _webPushClient = new WebPushClient();
@@ -34,12 +34,16 @@ namespace Suendenbock_App.Services
             string url,
             string? excludeUserId = null)
         {
+
+            using var scope = _scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
             try
             {
                 _logger.LogInformation($"SendNotificationAsync called: Type={notificationType}, ExcludeUser={excludeUserId ?? "none"}");
 
                 // 1. Hole alle Benutzer die für diese Art von Benachrichtigung abonniert sind
-                var userIds = await GetSubscribedUserIdsAsync(notificationType, excludeUserId);
+                var userIds = await GetSubscribedUserIdsAsync(context, notificationType, excludeUserId);
 
                 _logger.LogInformation($"Found {userIds.Count} subscribed users for {notificationType}");
 
@@ -50,7 +54,7 @@ namespace Suendenbock_App.Services
                 }
 
                 // 2. Hole alle aktiven Push-Subscriptions für diese Benutzer
-                var subscriptions = await _context.PushSubscriptions
+                var subscriptions = await context.PushSubscriptions
                     .Where(ps => userIds.Contains(ps.UserId) && ps.IsActive)
                     .ToListAsync();
 
@@ -121,7 +125,7 @@ namespace Suendenbock_App.Services
                     }
                 }
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 _logger.LogInformation(
                     $"Push notification '{title}' sent: {successCount} success, {failureCount} failures");
@@ -146,9 +150,9 @@ namespace Suendenbock_App.Services
         /// <summary>
         /// Ermittelt alle UserIds die für einen Benachrichtigungstyp abonniert sind
         /// </summary>
-        private async Task<List<string>> GetSubscribedUserIdsAsync(string notificationType, string? excludeUserId)
+        private async Task<List<string>> GetSubscribedUserIdsAsync(ApplicationDbContext context, string notificationType, string? excludeUserId)
         {
-            var query = _context.NotificationPreferences.AsQueryable();
+            var query = context.NotificationPreferences.AsQueryable();
 
             // Filter nach Benachrichtigungstyp
             query = notificationType switch

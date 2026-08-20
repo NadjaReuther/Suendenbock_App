@@ -28,33 +28,6 @@ namespace Suendenbock_App.Controllers
             _achievementService = achievementService;
         }
 
-        /// <summary>
-        /// Displays the main view for the current user's character.
-        /// </summary>
-        /// <remarks>This method retrieves the character associated with the currently logged-in user,
-        /// including related magic classes and their associated details, and returns a view displaying this
-        /// information.</remarks>
-        /// <returns>An <see cref="IActionResult"/> that renders the view for the user's character.</returns>
-        public async Task<IActionResult> Index()
-        {
-            var userId = _userManager.GetUserId(User);
-            var character = await _context.Characters
-                .Where(c => c.UserId == userId)
-                .Include(c => c.CharacterMagicClasses)
-                    .ThenInclude(cm => cm.MagicClass)
-                    .ThenInclude(o => o.Obermagie)
-                    .ThenInclude(l => l.LightCard)
-                .FirstOrDefaultAsync();
-
-            // WICHTIG: CurrentActId für SignalR setzen (verwendet ActNumber statt Id)
-            var activeAct = await _context.Acts.FirstOrDefaultAsync(a => a.IsActive);
-            if (activeAct != null)
-            {
-                ViewBag.CurrentActId = activeAct.ActNumber;
-            }
-
-            return View(character);
-        }
         public async Task<IActionResult> Adventskalender()
         {
             var userId =  _userManager.GetUserId(User);
@@ -84,15 +57,6 @@ namespace Suendenbock_App.Controllers
             return View();
         }
         /// <summary>
-        /// Übersichtsseite "Meine Daten bearbeiten"
-        /// </summary>
-        [HttpGet]
-        public IActionResult MeineDaten()
-        {
-            return View();
-        }
-
-        /// <summary>
         /// Zeigt Formular nur für Geburtstag
         /// </summary>
         [HttpGet]
@@ -102,25 +66,6 @@ namespace Suendenbock_App.Controllers
             return View(user);
         }
 
-        /// <summary>
-        /// Speichert nur den Geburtstag
-        /// </summary>
-        [HttpPost]
-        public async Task<IActionResult> Geburtstag(DateTime? birthday)
-        {
-            var user = await _userManager.GetUserAsync(User);
-
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            user.Birthday = birthday;
-            await _userManager.UpdateAsync(user);
-
-            TempData["Success"] = "Dein Geburtstag wurde erfolgreich gespeichert!";
-            return RedirectToAction("MeineDaten");
-        }
         // ===============================
         // TRIGGERPUNKTE VERWALTUNG
         // ===============================

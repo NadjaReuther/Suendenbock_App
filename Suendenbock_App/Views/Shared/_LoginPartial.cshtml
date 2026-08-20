@@ -5,31 +5,105 @@
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
+        <!-- Messages Dropdown -->
+        @if (User.IsInRole("Spieler") || User.IsInRole("Gott") || User.IsInRole("Moderator"))
+        {
+            <li class="nav-item dropdown mailbutton">
+                <a class="nav-link notification-bell-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" id="messagesDropdown" title="Nachrichten">
+                    <span class="material-symbols-outlined">mail</span>
+                    <span class="notification-badge" id="messagesBadge" style="display: none;">0</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Messages" asp-action="Inbox">
+                            <span class="material-symbols-outlined">inbox</span> Posteingang
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Messages" asp-action="Sent">
+                            <span class="material-symbols-outlined">send</span> Gesendet
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" asp-controller="Messages" asp-action="Compose">
+                            <span class="material-symbols-outlined">edit</span> @(User.IsInRole("Spieler") ? "Neue Nachricht" : "Ankündigung senden")
+                        </a>
+                    </li>
+                    @if (User.IsInRole("Gott"))
+                    {
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" asp-controller="Messages" asp-action="Admin">
+                                <span class="material-symbols-outlined">admin_panel_settings</span> Admin-Dashboard
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </li>
+        }
     @if(User.IsInRole("Gott"))
     {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Admin" asp-action="Index">
-                Götter-Bereich
-            </a>
-        </li>
+            <li class="nav-item dropdown user-avatar-item">
+                <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
+                    <span class="user-avatar">@User?.Identity?.Name?.Substring(0, 1)</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">⚙️ Datenbank</a></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageFeldEffekte">⚡ Umweltbank</a></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="GenerateSession">🎮 Aktverwaltung</a></li>
+                    <li><a class="dropdown-item" asp-controller="UserManagement" asp-action="Index">👥 Benutzerverwaltung</a></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageAchievements">🏆 Achievementverwaltung</a></li>
+                    @* <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageBiome">🌍 Biome</a></li> *@
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageMaps">🗺️ Kartenverwaltung</a></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="QRGenerator">📱 QR-Generator</a></li>
+                    <li><a class="dropdown-item" asp-controller="AdventCalendar" asp-action="AdminDashboard">🎄 Eventverwaltung</a></li>
+                    <li><hr /></li>
+                    <li>
+                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">
+                            <i class="fas fa-key"></i> Passwort ändern
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <div style="display:flex; flex-direction:row; align-items:center;">
+                            <div>
+                                <form asp-area="Identity" asp-page="/Account/Logout"
+                                      asp-route-returnUrl="@Url.Action("Index", "Home")"
+                                      method="post">
+                                    <button type="submit" class="dropdown-item" style="font-size:20px;">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </form>
+                            </div>
+                            <div>
+                                <!-- Notification Bell Icon -->
+                                <a class="nav-link notification-bell-link" asp-controller="Community" asp-action="NotificationSettings" id="notificationBellIcon" title="Benachrichtigungen">
+                                    <span class="material-symbols-outlined" id="bellIcon">notifications_off</span>
+                                    <span class="notification-badge" id="notificationBadge" style="display: none;">!</span>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </li>
     }
     @if(User.IsInRole("Spieler"))
     {
-            <li class="nav-item dropdown">
+        @await Component.InvokeAsync("UserCharacter")
+    }
+    @if(false) @* Original code for reference *@
+    {
+            <li class="nav-item dropdown user-avatar-item">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                     <span class="user-avatar">@User?.Identity?.Name?.Substring(0, 1)</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li class="nav-item">
-                        <a class="dropdown-item" asp-controller="Player" asp-action="Index">
-                            <i class="fas fa-user"></i> @User?.Identity?.Name
+                        <a class="dropdown-item" asp-controller="Character" asp-action="Form" asp-route-id="@User?.Identity?.Name">
+                            📜 Dein Charakter
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="dropdown-item" asp-controller="Player" asp-action="MeineDaten">
-                            <i class="fas fa-id-card"></i> Meine Daten
-                        </a>
-                    </li>
+                    <li><hr /></li>
                     <li class="nav-item">
                         <a class="dropdown-item" asp-controller="Player" asp-action="Triggerpunkte">
                             <i class="fas fa-exclamation-triangle"></i> Triggerpunkte
@@ -37,36 +111,33 @@
                     </li>
                     <li class="nav-item">
                         <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">
-                            <i class="fas fa-key"></i> Passwort ändern
+                            ⚠ Passwort ändern
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <form asp-area="Identity" asp-page="/Account/Logout"
-                              asp-route-returnUrl="@Url.Action("Index", "Home")"
-                              method="post">
-                            <button type="submit" class="dropdown-item">
-                                <i class="fas fa-sign-out-alt"></i> Logout
-                            </button>
-                        </form>
+                        <div style="display:flex; flex-direction:row; align-items:center;">
+                            <div>
+                                <form asp-area="Identity" asp-page="/Account/Logout"
+                                  asp-route-returnUrl="@Url.Action("Index", "Home")"
+                                  method="post">
+                                    <button type="submit" class="dropdown-item" style="font-size:20px;">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </form>
+                            </div>
+                            <div>
+                                <!-- Notification Bell Icon -->
+                                <a class="nav-link notification-bell-link" asp-controller="Community" asp-action="NotificationSettings" id="notificationBellIcon" title="Benachrichtigungen">
+                                    <span class="material-symbols-outlined" id="bellIcon">notifications_off</span>
+                                    <span class="notification-badge" id="notificationBadge" style="display: none;">!</span>
+                                </a>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </li>
     }
-    <!-- Messages Icon -->
-    <li class="nav-item">
-        <a class="nav-link notification-bell-link" asp-controller="Messages" asp-action="Inbox" id="messagesIcon" title="Nachrichten">
-            <span class="material-symbols-outlined">mail</span>
-            <span class="notification-badge" id="messagesBadge" style="display: none;">0</span>
-        </a>
-    </li>
-    <!-- Notification Bell Icon -->
-    <li class="nav-item">
-        <a class="nav-link notification-bell-link" asp-controller="Community" asp-action="NotificationSettings" id="notificationBellIcon" title="Benachrichtigungen">
-            <span class="material-symbols-outlined" id="bellIcon">notifications_off</span>
-            <span class="notification-badge" id="notificationBadge" style="display: none;">!</span>
-        </a>
-    </li>
 }
 else
 {

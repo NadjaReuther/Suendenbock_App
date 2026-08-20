@@ -909,8 +909,8 @@ body {
 
 /* User Avatar Circle */
 .user-avatar {
-    width: 35px;
-    height: 35px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -918,7 +918,7 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 36px;
     text-transform: uppercase;
     border: 2px solid #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -928,4 +928,78 @@ body {
 .user-avatar:hover {
     transform: scale(1.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* User Avatar Image */
+.user-avatar-image {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.user-avatar-image:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* User Avatar Position - überlappend über Navbar */
+.navbar-nav {
+    position: relative;
+}
+
+.mailbutton {
+    margin-right: 140px !important;
+}
+
+.user-avatar-item {
+    position: absolute !important;
+    right: 0px !important;
+    top: -8px !important;
+    z-index: 1050 !important;
+}
+
+.user-avatar-item .nav-link {
+    padding: 0.5rem 1rem !important;
+}
+
+.user-avatar-item .dropdown-toggle::after {
+    display: none !important;
+}
+
+/* Fixed Navbar */
+.navbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 1040 !important;
+}
+
+body {
+    padding-top: 70px;
+}
+
+/* Dropdown Hover-Funktionalität und Pfeile ausblenden */
+.navbar-nav .dropdown-toggle::after {
+    display: none !important;
+}
+
+.navbar-nav .dropdown:hover > .dropdown-menu {
+    display: block;
+}
+
+.navbar-nav .dropdown-menu {
+    margin-top: 0;
+}
+
+/* Dropdown-Menüs für Mailbutton und User-Avatar nach links ausrichten */
+.mailbutton .dropdown-menu,
+.user-avatar-item .dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
 }
