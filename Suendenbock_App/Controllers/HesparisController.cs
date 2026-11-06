@@ -568,6 +568,10 @@ namespace Suendenbock_App.Controllers
             }
 
             var userId = GetUserId();
+
+            // Characters, die schon der Spielwelt einer Kampagne zugeordnet sind, automatisch einschreiben
+            await FehlendeFigurenAnlegenAsync(userId);
+
             var eigene = await _context.Spielfiguren
                 .Where(f => f.Character.UserId == userId)
                 .Select(f => new { f.KampagneId, f.CharacterId })
@@ -587,6 +591,47 @@ namespace Suendenbock_App.Controllers
             }
 
             return await _context.Kampagnen.Include(k => k.GameWorld).FirstOrDefaultAsync(k => k.Id == gewaehlt);
+        }
+
+        /// <summary>
+        /// Sync zwischen Tenant-System und Hesparis: Ist ein Character des Benutzers einer Spielwelt zugeordnet,
+        /// in der es eine Hesparis-Kampagne gibt, bekommt er dort automatisch eine (leere) Spielfigur.
+        /// So reicht die Zuordnung über die Spielwelt-Verwaltung, ohne zusätzlich einzuschreiben.
+        /// </summary>
+        private async Task FehlendeFigurenAnlegenAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId)) return;
+
+            var fehlend = await (
+                from cgw in _context.CharacterGameWorlds
+                join k in _context.Kampagnen on cgw.GameWorldId equals k.GameWorldId
+                where cgw.Character.UserId == userId
+                      && !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
+                select new { KampagneId = k.Id, cgw.CharacterId }
+            ).ToListAsync();
+            if (fehlend.Count == 0) return;
+
+            // Nächste freie Position je Kampagne
+            var naechstePosition = new Dictionary<int, int>();
+            foreach (var eintrag in fehlend)
+            {
+                if (!naechstePosition.ContainsKey(eintrag.KampagneId))
+                {
+                    int? hoechste = await _context.Spielfiguren
+                        .Where(f => f.KampagneId == eintrag.KampagneId)
+                        .Select(f => (int?)f.Position)
+                        .MaxAsync();
+                    naechstePosition[eintrag.KampagneId] = (hoechste ?? -1) + 1;
+                }
+
+                _context.Spielfiguren.Add(new Spielfigur
+                {
+                    KampagneId = eintrag.KampagneId,
+                    CharacterId = eintrag.CharacterId,
+                    Position = naechstePosition[eintrag.KampagneId]++,
+                });
+            }
+            await _context.SaveChangesAsync();
         }
 
         /// <summary>
