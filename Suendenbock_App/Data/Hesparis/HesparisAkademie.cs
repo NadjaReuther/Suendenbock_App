@@ -16,7 +16,6 @@ public static class HesparisAkademie
     /// <summary>
     /// Die Spielfiguren der Akademie, wie in der hesparis.html (Klassenliste, Reihenfolge = Spielerposition).
     /// Nur diese Characters werden automatisch eingeschrieben; alle anderen Characters der Welt nicht.
-    /// Weitere Figuren kann Gott unter "Spielleitung" von Hand einschreiben.
     /// </summary>
     public static readonly string[] Spielfiguren =
     {

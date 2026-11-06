@@ -1,8 +1,7 @@
 @{
-    // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche", "Spielleitung"
+    // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche"
     var bereich = ViewData["Bereich"] as string ?? "";
     var figurId = ViewData["FigurId"] as int?;
-    var istGott = User.IsInRole("Gott");
 
     string Aktiv(string name)
     {
@@ -32,10 +31,6 @@
             <a class="@Aktiv("Talente")" asp-controller="Hesparis" asp-action="Talente" asp-route-id="@figurId"><span class="glyph">✧</span>Talente</a>
             <a class="@Aktiv("Zeugnis")" asp-controller="Hesparis" asp-action="Zeugnis" asp-route-id="@figurId"><span class="glyph">✎</span>Zeugnis</a>
             <a class="@Aktiv("Tasche")" asp-controller="Hesparis" asp-action="Tasche" asp-route-id="@figurId"><span class="glyph">◍</span>Tasche</a>
-            @if (istGott)
-            {
-                <a class="@Aktiv("Spielleitung")" asp-controller="HesparisSpielleitung" asp-action="Index"><span class="glyph">⚜</span>Spielleitung</a>
-            }
         </div>
         <span class="topbar-section">@ViewData["Title"]</span>
         <a class="topbar-back" asp-controller="Home" asp-action="Index">← Sündenbock</a>

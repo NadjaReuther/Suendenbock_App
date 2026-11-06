@@ -80,6 +80,27 @@ namespace Suendenbock_App.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Spieltag und Schuljahr der Akademie. Nur Gott. Vom Spieltag hängt ab, wann Wirkungen ablaufen.
+        /// (Später übernimmt das der Kalender aus dem Bereich "Alltag".)
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> Akademie(int kampagneId, DateOnly spieltag, int schuljahr)
+        {
+            var kampagne = await _context.Kampagnen.FirstOrDefaultAsync(k => k.Id == kampagneId);
+            if (kampagne == null) return NotFound();
+
+            kampagne.Spieltag = spieltag;
+            kampagne.Kalenderjahr = spieltag.Month >= 8 ? spieltag.Year : spieltag.Year - 1;
+            kampagne.Schuljahr = Math.Max(1, schuljahr);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Spieltag und Schuljahr gespeichert.";
+            return RedirectToAction(nameof(Index));
+        }
+
         /// <summary>Lebenspunkte ändern (eigene Figur oder Gott).</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -604,6 +625,28 @@ namespace Suendenbock_App.Controllers
         /// </summary>
         private async Task FehlendeFigurenAnlegenAsync()
         {
+            // Aufräumen: leere Figuren von Characters, die nicht zu Hesparis gehören
+            // (sind durch eine frühere Version hineingerutscht). Figuren mit Daten bleiben stehen.
+            var vorhandene = await _context.Spielfiguren
+                .Include(f => f.Character)
+                .Include(f => f.Talente)
+                .Include(f => f.Noten)
+                .Include(f => f.FachStufen)
+                .Include(f => f.Gegenstaende)
+                .Include(f => f.Wirkungen)
+                .Include(f => f.Geldbuchungen)
+                .AsSplitQuery()
+                .ToListAsync();
+            var fremdeLeere = vorhandene.Where(f =>
+                HesparisAkademie.PositionVon(f.Character) == null &&
+                f.Geld == 0 && f.Talente.Count == 0 && f.Noten.Count == 0 && f.FachStufen.Count == 0 &&
+                f.Gegenstaende.Count == 0 && f.Wirkungen.Count == 0 && f.Geldbuchungen.Count == 0).ToList();
+            if (fremdeLeere.Count > 0)
+            {
+                _context.Spielfiguren.RemoveRange(fremdeLeere);
+                await _context.SaveChangesAsync();
+            }
+
             // Characters der Spielwelt, die noch keine Figur in der Akademie haben
             var kandidaten = await (
                 from cgw in _context.CharacterGameWorlds

@@ -13,6 +13,20 @@
     <p class="armory-sub">Spieltag: @spieltag</p>
 </div>
 
+@if (Model.Kopf.IstSpielleitung)
+{
+    <form asp-action="Akademie" method="post" class="a-panel hes-form-row" style="padding:14px 20px;margin:0 auto 22px;max-width:720px">
+        <input type="hidden" name="kampagneId" value="@kampagne.Id" />
+        <label class="hes-field"><span>Spieltag</span>
+            <input class="hes-input" type="date" name="spieltag" value="@kampagne.Spieltag.ToString("yyyy-MM-dd")" />
+        </label>
+        <label class="hes-field" style="flex:0 1 110px"><span>Schuljahr</span>
+            <input class="hes-input" type="number" min="1" name="schuljahr" value="@kampagne.Schuljahr" />
+        </label>
+        <button type="submit" class="hes-btn ghost">Speichern</button>
+    </form>
+}
+
 <div class="home-grid">
     @foreach (var karte in Model.Karten)
     {
