@@ -44,7 +44,7 @@ namespace Suendenbock_App.Controllers
             if (figuren.Count == 0)
                 return View("KeineKampagne");
 
-            var start = StandardFigur(figuren);
+            var start = await StandardFigurAsync(figuren);
             var kopf = KopfErstellen(kampagne, figuren, start, "Index");
 
             var model = new HesparisIndexViewModel { Kopf = kopf };
@@ -619,16 +619,16 @@ namespace Suendenbock_App.Controllers
         }
 
         /// <summary>
-        /// Sync zwischen Tenant-System und Hesparis: Ist eine der Hesparis-Spielfiguren (HesparisAkademie.Spielfiguren) einer Spielwelt zugeordnet,
-        /// in der es eine Hesparis-Kampagne gibt, bekommt er dort automatisch eine (leere) Spielfigur.
-        /// So reicht die Zuordnung über die Spielwelt-Verwaltung, ohne zusätzlich einzuschreiben.
+        /// Sync zwischen Tenant-System und Hesparis: Die Zuordnung in der Spielwelt-Verwaltung entscheidet.
+        /// Jeder Character, der der Welt der Akademie zugeordnet ist, bekommt automatisch eine (leere) Spielfigur.
+        /// Wird ein Character aus der Welt entfernt, verschwindet seine Figur, solange sie noch leer ist.
         /// </summary>
         private async Task FehlendeFigurenAnlegenAsync()
         {
-            // Aufräumen: leere Figuren von Characters, die nicht zu Hesparis gehören
-            // (sind durch eine frühere Version hineingerutscht). Figuren mit Daten bleiben stehen.
+            // Aufräumen: leere Figuren von Characters, die nicht (mehr) in der Welt der Akademie sind.
+            // Figuren mit Daten (Talente, Noten, Tasche …) bleiben sicherheitshalber stehen.
             var vorhandene = await _context.Spielfiguren
-                .Include(f => f.Character)
+                .Include(f => f.Kampagne)
                 .Include(f => f.Talente)
                 .Include(f => f.Noten)
                 .Include(f => f.FachStufen)
@@ -637,8 +637,12 @@ namespace Suendenbock_App.Controllers
                 .Include(f => f.Geldbuchungen)
                 .AsSplitQuery()
                 .ToListAsync();
+            var zuordnungen = await _context.CharacterGameWorlds
+                .Select(cgw => new { cgw.CharacterId, cgw.GameWorldId })
+                .ToListAsync();
+
             var fremdeLeere = vorhandene.Where(f =>
-                HesparisAkademie.PositionVon(f.Character) == null &&
+                !zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.GameWorldId == f.Kampagne.GameWorldId) &&
                 f.Geld == 0 && f.Talente.Count == 0 && f.Noten.Count == 0 && f.FachStufen.Count == 0 &&
                 f.Gegenstaende.Count == 0 && f.Wirkungen.Count == 0 && f.Geldbuchungen.Count == 0).ToList();
             if (fremdeLeere.Count > 0)
@@ -648,23 +652,16 @@ namespace Suendenbock_App.Controllers
             }
 
             // Characters der Spielwelt, die noch keine Figur in der Akademie haben
-            var kandidaten = await (
+            var fehlend = await (
                 from cgw in _context.CharacterGameWorlds
                 join k in _context.Kampagnen on cgw.GameWorldId equals k.GameWorldId
                 where !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
                 select new { KampagneId = k.Id, cgw.Character }
             ).ToListAsync();
+            if (fehlend.Count == 0) return;
 
-            // Nur die fünf Spielfiguren aus der hesparis.html, nicht jeder Character der Welt
-            var passende = kandidaten
-                .Select(x => new { x.KampagneId, x.Character, Position = HesparisAkademie.PositionVon(x.Character) })
-                .Where(x => x.Position.HasValue)
-                .ToList();
-            if (passende.Count == 0) return;
-
-            foreach (var eintrag in passende)
+            foreach (var eintrag in fehlend)
             {
-                // Möglichst die Position aus der HTML (Elma 0, Levi 1 …), sonst die nächste freie
                 var belegt = await _context.Spielfiguren
                     .Where(f => f.KampagneId == eintrag.KampagneId)
                     .Select(f => f.Position)
@@ -673,7 +670,8 @@ namespace Suendenbock_App.Controllers
                     .Where(e => e.State == EntityState.Added && e.Entity.KampagneId == eintrag.KampagneId)
                     .Select(e => e.Entity.Position));
 
-                int position = eintrag.Position!.Value;
+                // Die fünf aus der hesparis.html bekommen ihren alten Platz (Elma 0, Levi 1 …), alle anderen kommen dahinter
+                int position = HesparisAkademie.PositionVon(eintrag.Character) ?? HesparisAkademie.Spielfiguren.Length;
                 while (belegt.Contains(position))
                 {
                     position++;
@@ -701,9 +699,12 @@ namespace Suendenbock_App.Controllers
                 if (kampagne == null) return null;
 
                 var userId = GetUserId();
+                var aktiv = await GetCurrentCharacterAsync();
+                int aktivId = aktiv?.Id ?? 0;
                 id = await _context.Spielfiguren
                     .Where(f => f.KampagneId == kampagne.Id)
-                    .OrderByDescending(f => f.Character.UserId == userId)
+                    .OrderByDescending(f => f.CharacterId == aktivId)
+                    .ThenByDescending(f => f.Character.UserId == userId)
                     .ThenBy(f => f.Position)
                     .Select(f => (int?)f.Id)
                     .FirstOrDefaultAsync();
@@ -818,8 +819,15 @@ namespace Suendenbock_App.Controllers
         /// <summary>Bearbeiten: eigene Figur (Character.UserId) oder Gott. Nutzt die Regel aus dem BaseController.</summary>
         private async Task<bool> DarfBearbeitenAsync(Spielfigur figur) => await CanEditCharacterAsync(figur.CharacterId);
 
-        private Spielfigur StandardFigur(List<Spielfigur> figuren)
+        private async Task<Spielfigur> StandardFigurAsync(List<Spielfigur> figuren)
         {
+            // Zuerst der gerade aktive Character, dann irgendeine eigene Figur, sonst die erste
+            var aktiv = await GetCurrentCharacterAsync();
+            if (aktiv != null)
+            {
+                var aktiveFigur = figuren.FirstOrDefault(f => f.CharacterId == aktiv.Id);
+                if (aktiveFigur != null) return aktiveFigur;
+            }
             var userId = GetUserId();
             return figuren.FirstOrDefault(f => f.Character.UserId == userId) ?? figuren[0];
         }

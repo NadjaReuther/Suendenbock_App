@@ -177,8 +177,12 @@
             const data = await response.json();
 
             if (data.success) {
-                // Erfolg → Seite neu laden
-                window.location.reload();
+                // Hesparis-Character → direkt in die Akademie, sonst Seite neu laden
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else {
+                    window.location.reload();
+                }
             } else {
                 alert(data.message || 'Fehler beim Wechseln des Characters');
             }

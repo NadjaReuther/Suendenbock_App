@@ -265,8 +265,10 @@ namespace Suendenbock_App.Controllers
         /// Switch to a different character (AJAX endpoint)
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> SwitchCharacter(int characterId)
+        public async Task<IActionResult> SwitchCharacter([FromBody] CharakterWechselAnfrage anfrage)
         {
+            // Das Skript schickt JSON ({ characterId: 5 }); ein einfacher int-Parameter liest den Body nicht
+            int characterId = anfrage?.CharacterId ?? 0;
             var success = await SwitchCharacterAsync(characterId);
 
             if (!success)
@@ -281,14 +283,35 @@ namespace Suendenbock_App.Controllers
 
             var gameWorld = character?.CharacterGameWorlds.FirstOrDefault()?.GameWorld;
 
+            // Hesparis-Character (in der Welt Hesparis, aber nicht in der Originalwelt) → direkt in die Akademie
+            string? weiterleitung = null;
+            if (character != null)
+            {
+                var welten = character.CharacterGameWorlds.Select(cgw => cgw.GameWorld).ToList();
+                bool inHesparis = welten.Any(w => w.Name.Contains(Data.Hesparis.HesparisAkademie.WeltName));
+                bool inOriginalwelt = welten.Any(w => w.IsOriginWorld);
+                if (inHesparis && !inOriginalwelt)
+                {
+                    weiterleitung = Url.Action("Index", "Hesparis");
+                    gameWorld = welten.First(w => w.Name.Contains(Data.Hesparis.HesparisAkademie.WeltName));
+                }
+            }
+
             return Json(new
             {
                 success = true,
                 message = $"Du spielst jetzt als {character?.Vorname} {character?.Nachname} in {gameWorld?.Name}",
                 characterName = $"{character?.Vorname} {character?.Nachname}",
                 gameWorldName = gameWorld?.Name,
-                gameWorldColor = gameWorld?.ColorCode
+                gameWorldColor = gameWorld?.ColorCode,
+                redirectUrl = weiterleitung
             });
+        }
+
+        /// <summary>Body von /Player/SwitchCharacter.</summary>
+        public class CharakterWechselAnfrage
+        {
+            public int CharacterId { get; set; }
         }
     }
 }
