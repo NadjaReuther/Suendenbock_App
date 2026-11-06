@@ -49,16 +49,16 @@ public static class HesparisAkademie
         return null;
     }
 
-    /// <summary>Liefert die Akademie und legt sie (und notfalls die Spielwelt) beim ersten Aufruf an.</summary>
+    /// <summary>
+    /// Liefert die Akademie und legt sie (und notfalls die Spielwelt) beim ersten Aufruf an.
+    /// Die Akademie hängt immer an der Spielwelt "Hesparis". Zeigt eine früher angelegte Kampagne
+    /// auf eine andere Welt (z. B. "Sündenbock 1618"), wird sie auf Hesparis umgestellt.
+    /// </summary>
     public static async Task<Kampagne> HolenOderAnlegenAsync(ApplicationDbContext context)
     {
-        var akademie = await context.Kampagnen
-            .Include(k => k.GameWorld)
-            .OrderBy(k => k.Id)
-            .FirstOrDefaultAsync();
-        if (akademie != null) return akademie;
-
-        var welt = await context.GameWorlds.FirstOrDefaultAsync(w => w.Name.Contains(WeltName));
+        // 1. Die Spielwelt Hesparis: genauer Name zuerst, sonst eine Welt, die "Hesparis" im Namen trägt
+        var welt = await context.GameWorlds.FirstOrDefaultAsync(w => w.Name == WeltName)
+                   ?? await context.GameWorlds.FirstOrDefaultAsync(w => w.Name.Contains(WeltName));
         if (welt == null)
         {
             welt = new GameWorld
@@ -69,12 +69,36 @@ public static class HesparisAkademie
                 SortOrder = 3,
             };
             context.GameWorlds.Add(welt);
+            await context.SaveChangesAsync();
         }
 
+        // 2. Die Akademie dieser Welt
+        var akademie = await context.Kampagnen
+            .Include(k => k.GameWorld)
+            .Where(k => k.GameWorldId == welt.Id)
+            .OrderBy(k => k.Id)
+            .FirstOrDefaultAsync();
+        if (akademie != null) return akademie;
+
+        // 3. Ältere Kampagne an einer anderen Welt? Dann auf Hesparis umstellen statt eine zweite anzulegen
+        akademie = await context.Kampagnen
+            .Include(k => k.GameWorld)
+            .OrderBy(k => k.Id)
+            .FirstOrDefaultAsync();
+        if (akademie != null)
+        {
+            akademie.GameWorldId = welt.Id;
+            akademie.GameWorld = welt;
+            await context.SaveChangesAsync();
+            return akademie;
+        }
+
+        // 4. Noch gar keine: neu anlegen
         var heute = DateOnly.FromDateTime(DateTime.Today);
         akademie = new Kampagne
         {
             Name = "Akademie Hesparis",
+            GameWorldId = welt.Id,
             GameWorld = welt,
             Spieltag = heute,
             // Schuljahr beginnt im August

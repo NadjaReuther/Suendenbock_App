@@ -582,7 +582,7 @@ namespace Suendenbock_App.Controllers
         private async Task<Kampagne?> KampagneFuerBenutzerAsync(int? kampagneId)
         {
             // Die Akademie gibt es immer: beim allerersten Aufruf wird sie automatisch angelegt
-            await HesparisAkademie.HolenOderAnlegenAsync(_context);
+            var akademie = await HesparisAkademie.HolenOderAnlegenAsync(_context);
 
             // Alle Spieler-Characters der Spielwelt automatisch einschreiben (auch für die Ansicht von Gott)
             await FehlendeFigurenAnlegenAsync();
@@ -592,7 +592,7 @@ namespace Suendenbock_App.Controllers
                 var alle = _context.Kampagnen.Include(k => k.GameWorld);
                 if (kampagneId.HasValue)
                     return await alle.FirstOrDefaultAsync(k => k.Id == kampagneId.Value);
-                return await alle.OrderByDescending(k => k.Id).FirstOrDefaultAsync();
+                return await alle.FirstOrDefaultAsync(k => k.Id == akademie.Id);
             }
 
             var userId = GetUserId();
