@@ -598,39 +598,49 @@ namespace Suendenbock_App.Controllers
         }
 
         /// <summary>
-        /// Sync zwischen Tenant-System und Hesparis: Ist ein Spieler-Character (mit UserId) einer Spielwelt zugeordnet,
+        /// Sync zwischen Tenant-System und Hesparis: Ist eine der Hesparis-Spielfiguren (HesparisAkademie.Spielfiguren) einer Spielwelt zugeordnet,
         /// in der es eine Hesparis-Kampagne gibt, bekommt er dort automatisch eine (leere) Spielfigur.
         /// So reicht die Zuordnung über die Spielwelt-Verwaltung, ohne zusätzlich einzuschreiben.
         /// </summary>
         private async Task FehlendeFigurenAnlegenAsync()
         {
-            var fehlend = await (
+            // Characters der Spielwelt, die noch keine Figur in der Akademie haben
+            var kandidaten = await (
                 from cgw in _context.CharacterGameWorlds
                 join k in _context.Kampagnen on cgw.GameWorldId equals k.GameWorldId
-                where cgw.Character.UserId != null
-                      && !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
-                select new { KampagneId = k.Id, cgw.CharacterId }
+                where !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
+                select new { KampagneId = k.Id, cgw.Character }
             ).ToListAsync();
-            if (fehlend.Count == 0) return;
 
-            // Nächste freie Position je Kampagne
-            var naechstePosition = new Dictionary<int, int>();
-            foreach (var eintrag in fehlend)
+            // Nur die fünf Spielfiguren aus der hesparis.html, nicht jeder Character der Welt
+            var passende = kandidaten
+                .Select(x => new { x.KampagneId, x.Character, Position = HesparisAkademie.PositionVon(x.Character) })
+                .Where(x => x.Position.HasValue)
+                .ToList();
+            if (passende.Count == 0) return;
+
+            foreach (var eintrag in passende)
             {
-                if (!naechstePosition.ContainsKey(eintrag.KampagneId))
+                // Möglichst die Position aus der HTML (Elma 0, Levi 1 …), sonst die nächste freie
+                var belegt = await _context.Spielfiguren
+                    .Where(f => f.KampagneId == eintrag.KampagneId)
+                    .Select(f => f.Position)
+                    .ToListAsync();
+                belegt.AddRange(_context.ChangeTracker.Entries<Spielfigur>()
+                    .Where(e => e.State == EntityState.Added && e.Entity.KampagneId == eintrag.KampagneId)
+                    .Select(e => e.Entity.Position));
+
+                int position = eintrag.Position!.Value;
+                while (belegt.Contains(position))
                 {
-                    int? hoechste = await _context.Spielfiguren
-                        .Where(f => f.KampagneId == eintrag.KampagneId)
-                        .Select(f => (int?)f.Position)
-                        .MaxAsync();
-                    naechstePosition[eintrag.KampagneId] = (hoechste ?? -1) + 1;
+                    position++;
                 }
 
                 _context.Spielfiguren.Add(new Spielfigur
                 {
                     KampagneId = eintrag.KampagneId,
-                    CharacterId = eintrag.CharacterId,
-                    Position = naechstePosition[eintrag.KampagneId]++,
+                    CharacterId = eintrag.Character.Id,
+                    Position = position,
                 });
             }
             await _context.SaveChangesAsync();

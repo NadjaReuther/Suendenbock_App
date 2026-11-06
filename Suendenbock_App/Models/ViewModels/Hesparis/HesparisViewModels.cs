@@ -221,6 +221,9 @@ public class SpielleitungFigurZeile
     public Spielfigur Figur { get; set; } = null!;
     public string Name { get; set; } = "";
     public string? Spieler { get; set; }
+
+    /// <summary>Gehört der Character zu den Spielfiguren aus der hesparis.html?</summary>
+    public bool IstHesparisFigur { get; set; }
 }
 
 public class CharacterAuswahl

@@ -109,6 +109,7 @@ namespace Suendenbock_App.Controllers
                     Figur = f,
                     Name = f.Character.Vorname + " " + f.Character.Nachname,
                     Spieler = f.Character.UserId != null ? benutzer.GetValueOrDefault(f.Character.UserId) : null,
+                    IstHesparisFigur = HesparisAkademie.PositionVon(f.Character) != null,
                 }).ToList(),
                 Verfuegbar = characters
                     .Select(c => new CharacterAuswahl
@@ -219,6 +220,49 @@ namespace Suendenbock_App.Controllers
             catch (DbUpdateException)
             {
                 TempData["Error"] = "Die Figur hängt noch an anderen Einträgen (z. B. Nachsitzen, Klassenarbeiten) und kann nicht entfernt werden.";
+            }
+            return RedirectToAction(nameof(Figuren), new { id });
+        }
+
+        /// <summary>
+        /// Entfernt Figuren, deren Character nicht zu den Hesparis-Spielfiguren gehört und die noch leer sind
+        /// (keine Talente, Noten, Magiestufen, Gegenstände, Wirkungen, Buchungen und kein Geld).
+        /// Figuren mit Daten bleiben stehen und können einzeln über ✕ entfernt werden.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Aufraeumen(int id)
+        {
+            var figuren = await _context.Spielfiguren
+                .Where(f => f.KampagneId == id)
+                .Include(f => f.Character)
+                .Include(f => f.Talente)
+                .Include(f => f.Noten)
+                .Include(f => f.FachStufen)
+                .Include(f => f.Gegenstaende)
+                .Include(f => f.Wirkungen)
+                .Include(f => f.Geldbuchungen)
+                .AsSplitQuery()
+                .ToListAsync();
+
+            var fremde = figuren.Where(f => HesparisAkademie.PositionVon(f.Character) == null).ToList();
+            var leere = fremde.Where(f =>
+                f.Geld == 0 && f.Talente.Count == 0 && f.Noten.Count == 0 && f.FachStufen.Count == 0 &&
+                f.Gegenstaende.Count == 0 && f.Wirkungen.Count == 0 && f.Geldbuchungen.Count == 0).ToList();
+
+            _context.Spielfiguren.RemoveRange(leere);
+            try
+            {
+                await _context.SaveChangesAsync();
+                int behalten = fremde.Count - leere.Count;
+                if (behalten > 0)
+                    TempData["Success"] = $"{leere.Count} Figur(en) entfernt. {behalten} fremde Figur(en) haben schon Daten und bleiben stehen.";
+                else
+                    TempData["Success"] = $"{leere.Count} Figur(en) entfernt, die nicht zu Hesparis gehören.";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["Error"] = "Mindestens eine Figur hängt noch an anderen Einträgen und konnte nicht entfernt werden.";
             }
             return RedirectToAction(nameof(Figuren), new { id });
         }

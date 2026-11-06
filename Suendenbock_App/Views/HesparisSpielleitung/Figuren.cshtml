@@ -63,7 +63,13 @@
                 {
                     <tr>
                         <td>@(z.Figur.Position + 1)</td>
-                        <td>@z.Name</td>
+                        <td>
+                            @z.Name
+                            @if (!z.IstHesparisFigur)
+                            {
+                                <span class="sl-tag">nicht aus Hesparis</span>
+                            }
+                        </td>
                         <td>
                             @if (z.Spieler != null)
                             {
@@ -101,6 +107,14 @@
                 }
             </tbody>
         </table>
+        @if (Model.Figuren.Any(f => !f.IstHesparisFigur))
+        {
+            <form asp-action="Aufraeumen" method="post" style="margin-top:14px"
+                  onsubmit="return confirm('Alle leeren Figuren entfernen, die nicht zu Hesparis gehören? Die Characters selbst bleiben erhalten.')">
+                <input type="hidden" name="id" value="@k.Id" />
+                <button type="submit" class="hes-btn ghost">Fremde leere Figuren entfernen</button>
+            </form>
+        }
     }
 </section>
 
