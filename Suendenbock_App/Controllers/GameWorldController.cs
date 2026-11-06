@@ -119,7 +119,7 @@ namespace Suendenbock_App.Controllers
         // POST: GameWorld/AddCharacter
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddCharacter(int gameWorldId, int characterId, bool isOriginWorld = false)
+        public async Task<IActionResult> AddCharacter(int gameWorldId, int characterId)
         {
             // Prüfe ob bereits zugeordnet
             var existingMapping = await _context.CharacterGameWorlds
@@ -135,7 +135,6 @@ namespace Suendenbock_App.Controllers
             {
                 GameWorldId = gameWorldId,
                 CharacterId = characterId,
-                IsOriginWorld = isOriginWorld,
                 AddedAt = DateTime.UtcNow
             };
 
@@ -167,6 +166,30 @@ namespace Suendenbock_App.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Success"] = $"Character '{characterName}' wurde aus der Spielwelt entfernt.";
+            return RedirectToAction(nameof(ManageCharacters), new { id = gameWorldId });
+        }
+
+        // POST: GameWorld/RemoveCharacters
+        // Mehrere Zuordnungen auf einmal entfernen (Checkboxen in ManageCharacters)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveCharacters(int gameWorldId, List<int> ids)
+        {
+            if (ids == null || ids.Count == 0)
+            {
+                TempData["Error"] = "Keine Characters ausgewählt.";
+                return RedirectToAction(nameof(ManageCharacters), new { id = gameWorldId });
+            }
+
+            // Nur Zuordnungen dieser Spielwelt, falls jemand fremde Ids mitschickt
+            var zuordnungen = await _context.CharacterGameWorlds
+                .Where(cgw => cgw.GameWorldId == gameWorldId && ids.Contains(cgw.Id))
+                .ToListAsync();
+
+            _context.CharacterGameWorlds.RemoveRange(zuordnungen);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"{zuordnungen.Count} Character(s) wurden aus der Spielwelt entfernt.";
             return RedirectToAction(nameof(ManageCharacters), new { id = gameWorldId });
         }
 

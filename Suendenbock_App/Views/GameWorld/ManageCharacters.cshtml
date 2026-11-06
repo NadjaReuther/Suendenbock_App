@@ -64,13 +64,6 @@
                                 </select>
                             </div>
 
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" name="isOriginWorld" class="form-check-input" id="isOriginWorld" />
-                                <label class="form-check-label" for="isOriginWorld">
-                                    Origin World (Character wurde hier erstellt)
-                                </label>
-                            </div>
-
                             <button type="submit" class="btn btn-primary w-100">Character hinzufügen</button>
                         </form>
                     }
@@ -90,14 +83,24 @@
 
                     @if (Model.Any())
                     {
+                        <!-- Sammel-Formular: die Checkboxen in der Tabelle gehören über form="mehrereEntfernen" dazu -->
+                        <form id="mehrereEntfernen" asp-action="RemoveCharacters" method="post" class="d-flex align-items-center gap-3 mb-3"
+                              onsubmit="return auswahlBestaetigen();">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="gameWorldId" value="@gameWorld.Id" />
+                            <button type="submit" class="btn btn-danger" id="auswahlButton" disabled>
+                                Auswahl entfernen (<span id="auswahlAnzahl">0</span>)
+                            </button>
+                        </form>
+
                         <div class="table-responsive">
                             <table class="medieval-table w-100">
                                 <thead>
                                     <tr>
+                                        <th><input type="checkbox" class="form-check-input" id="alleAuswaehlen" aria-label="Alle auswählen" /></th>
                                         <th>Rufname</th>
                                         <th>Vorname</th>
                                         <th>Nachname</th>
-                                        <th>Origin World</th>
                                         <th>Hinzugefügt am</th>
                                         <th>Aktionen</th>
                                     </tr>
@@ -106,19 +109,13 @@
                                     @foreach (var cgw in Model)
                                     {
                                         <tr>
+                                            <td>
+                                                <input type="checkbox" class="form-check-input auswahl" form="mehrereEntfernen"
+                                                       name="ids" value="@cgw.Id" aria-label="@cgw.Character.Vorname @cgw.Character.Nachname auswählen" />
+                                            </td>
                                             <td>@cgw.Character.Rufname</td>
                                             <td>@cgw.Character.Vorname</td>
                                             <td>@cgw.Character.Nachname</td>
-                                            <td>
-                                                @if (cgw.IsOriginWorld)
-                                                {
-                                                    <span class="badge bg-success">Ja</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge bg-secondary">Nein</span>
-                                                }
-                                            </td>
                                             <td>@cgw.AddedAt.ToLocalTime().ToString("dd.MM.yyyy")</td>
                                             <td>
                                                 <form asp-action="RemoveCharacter" asp-route-id="@cgw.Id" method="post"
@@ -147,3 +144,34 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Mehrfachauswahl: "alle auswählen" und Anzahl im Button
+        (function () {
+            const alle = document.getElementById('alleAuswaehlen');
+            const button = document.getElementById('auswahlButton');
+            const anzahl = document.getElementById('auswahlAnzahl');
+            if (!alle || !button) return;
+            const boxen = Array.from(document.querySelectorAll('.auswahl'));
+
+            function aktualisieren() {
+                const n = boxen.filter(b => b.checked).length;
+                anzahl.textContent = n;
+                button.disabled = n === 0;
+                alle.checked = n === boxen.length;
+                alle.indeterminate = n > 0 && n < boxen.length;
+            }
+            alle.addEventListener('change', function () {
+                boxen.forEach(b => b.checked = alle.checked);
+                aktualisieren();
+            });
+            boxen.forEach(b => b.addEventListener('change', aktualisieren));
+        })();
+
+        function auswahlBestaetigen() {
+            const n = document.querySelectorAll('.auswahl:checked').length;
+            return confirm(n + ' Character(s) aus dieser Spielwelt entfernen? Die Characters selbst bleiben erhalten.');
+        }
+    </script>
+}
