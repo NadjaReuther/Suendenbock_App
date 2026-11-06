@@ -620,8 +620,9 @@ namespace Suendenbock_App.Controllers
 
         /// <summary>
         /// Sync zwischen Tenant-System und Hesparis: Die Zuordnung in der Spielwelt-Verwaltung entscheidet.
-        /// Jeder Character, der der Welt der Akademie zugeordnet ist, bekommt automatisch eine (leere) Spielfigur.
-        /// Wird ein Character aus der Welt entfernt, verschwindet seine Figur, solange sie noch leer ist.
+        /// Jeder Character mit Spieler (UserId), der der Welt der Akademie zugeordnet ist, bekommt automatisch
+        /// eine (leere) Spielfigur. Characters ohne Spieler sind Lehrkräfte oder Mitschüler und werden keine Figur.
+        /// Wird ein Character aus der Welt entfernt oder verliert seinen Spieler, verschwindet seine Figur, solange sie noch leer ist.
         /// </summary>
         private async Task FehlendeFigurenAnlegenAsync()
         {
@@ -629,6 +630,7 @@ namespace Suendenbock_App.Controllers
             // Figuren mit Daten (Talente, Noten, Tasche …) bleiben sicherheitshalber stehen.
             var vorhandene = await _context.Spielfiguren
                 .Include(f => f.Kampagne)
+                .Include(f => f.Character)
                 .Include(f => f.Talente)
                 .Include(f => f.Noten)
                 .Include(f => f.FachStufen)
@@ -642,7 +644,8 @@ namespace Suendenbock_App.Controllers
                 .ToListAsync();
 
             var fremdeLeere = vorhandene.Where(f =>
-                !zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.GameWorldId == f.Kampagne.GameWorldId) &&
+                (f.Character.UserId == null ||
+                 !zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.GameWorldId == f.Kampagne.GameWorldId)) &&
                 f.Geld == 0 && f.Talente.Count == 0 && f.Noten.Count == 0 && f.FachStufen.Count == 0 &&
                 f.Gegenstaende.Count == 0 && f.Wirkungen.Count == 0 && f.Geldbuchungen.Count == 0).ToList();
             if (fremdeLeere.Count > 0)
@@ -655,7 +658,8 @@ namespace Suendenbock_App.Controllers
             var fehlend = await (
                 from cgw in _context.CharacterGameWorlds
                 join k in _context.Kampagnen on cgw.GameWorldId equals k.GameWorldId
-                where !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
+                where cgw.Character.UserId != null
+                      && !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
                 select new { KampagneId = k.Id, cgw.Character }
             ).ToListAsync();
             if (fehlend.Count == 0) return;
