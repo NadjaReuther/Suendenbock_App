@@ -1,0 +1,336 @@
+@model TascheViewModel
+@{
+    var kopf = Model.Kopf;
+    ViewData["Title"] = "Tasche";
+    ViewData["Bereich"] = "Tasche";
+    ViewData["FigurId"] = kopf.AktiveFigurId;
+    var form = Model.Formular;
+
+    // Münzfarben wie in der HTML (Hiro gold, Nimbus silbern, Lumen kupfern, Kerze wachsgelb)
+    var muenzFarbe = new Dictionary<string, string>
+    {
+        ["Hiro"] = "#e7c56a",
+        ["Nimbus"] = "#c9d3e6",
+        ["Lumen"] = "#d08a52",
+        ["Kerze"] = "#f3e2a6",
+    };
+
+    string EffektText(Effekt fx)
+    {
+        if (fx.Art == EffektArt.Talent && fx.TalentCode != null)
+        {
+            var name = fx.TalentCode;
+            if (Model.TalentNamen.TryGetValue(fx.TalentCode, out var n))
+            {
+                name = n;
+            }
+            var vz = "+";
+            if (fx.Wert < 0)
+            {
+                vz = "−";
+            }
+            return vz + Math.Abs(fx.Wert ?? 0) + " " + name;
+        }
+        if (fx.Art == EffektArt.Vorteil)
+        {
+            return "Vorteil auf " + fx.VorteilAuf;
+        }
+        return "";
+    }
+
+    string DauerText(Effekt fx)
+    {
+        if (fx.DauerArt == EffektDauerArt.Tage)
+        {
+            return fx.DauerAnzahl + " Tag(e)";
+        }
+        if (fx.DauerArt == EffektDauerArt.Anwendungen)
+        {
+            return fx.DauerAnzahl + " Anwendung(en)";
+        }
+        return fx.DauerText ?? "";
+    }
+}
+
+<div class="armory-head">
+    <div class="armory-eyebrow">Tasche</div>
+    <h1 class="armory-title">Was @kopf.Aktiv.Name dabeihat</h1>
+    <p class="armory-sub">
+        Bücher, Ausrüstung und Sonstiges wirken, solange man sie dabeihat.
+        Tränke, Süßes und Zutaten wirken erst, wenn man sie benutzt.
+    </p>
+</div>
+
+<partial name="_FigurKopf" model="kopf" />
+
+<div class="ts-grid">
+    <!-- Geldbeutel -->
+    <section class="a-panel ts-purse">
+        <div class="col-label">Geldbeutel <span>@HesparisRegeln.GeldText(Model.Geld)</span></div>
+        <div class="coins">
+            @foreach (var m in Model.Muenzen)
+            {
+                <div class="coin" style="--cc:@muenzFarbe[m.Name]">
+                    <i>@m.Anzahl</i>
+                    <span>@m.Name</span>
+                </div>
+            }
+        </div>
+
+        @if (kopf.DarfBearbeiten)
+        {
+            <form asp-action="Geld" asp-route-id="@kopf.AktiveFigurId" method="post" class="hes-field" style="gap:8px">
+                <span>Buchen (1 Hiro = 10 Nimbus = 100 Lumen = 1000 Kerzen)</span>
+                <div class="coin-form">
+                    <input class="hes-input" type="number" min="0" name="Hiro" placeholder="Hiro" aria-label="Hiro" />
+                    <input class="hes-input" type="number" min="0" name="Nimbus" placeholder="Nimbus" aria-label="Nimbus" />
+                    <input class="hes-input" type="number" min="0" name="Lumen" placeholder="Lumen" aria-label="Lumen" />
+                    <input class="hes-input" type="number" min="0" name="Kerze" placeholder="Kerze" aria-label="Kerzen" />
+                </div>
+                <input class="hes-input" name="Grund" maxlength="200" placeholder="Wofür?" aria-label="Grund" />
+                <div class="hes-form-row">
+                    <button type="submit" name="Einnahme" value="true" class="hes-btn ghost">+ einnehmen</button>
+                    <button type="submit" name="Einnahme" value="false" class="hes-btn ghost">− ausgeben</button>
+                </div>
+            </form>
+        }
+
+        <div>
+            <div class="col-label">Letzte Bewegungen</div>
+            @if (Model.Buchungen.Count == 0)
+            {
+                <p class="empty-state">Noch nichts gebucht.</p>
+            }
+            else
+            {
+                <ul class="purse-log">
+                    @foreach (var b in Model.Buchungen)
+                    {
+                        <li>
+                            <span>@b.Grund</span>
+                            @if (b.Betrag >= 0)
+                            {
+                                <span class="plus">+@HesparisRegeln.GeldText(b.Betrag)</span>
+                            }
+                            else
+                            {
+                                <span class="minus">@HesparisRegeln.GeldText(b.Betrag)</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+
+        @if (Model.Wirkungen.Count > 0)
+        {
+            <div>
+                <div class="col-label">Wirkt gerade</div>
+                @foreach (var (w, rest) in Model.Wirkungen)
+                {
+                    <div class="ts-item">
+                        <div class="nm">@w.Name<small>@EffektText(w.Effekt) · @rest</small></div>
+                        @if (kopf.DarfBearbeiten)
+                        {
+                            <div class="acts">
+                                @if (w.Effekt.DauerArt == EffektDauerArt.Anwendungen)
+                                {
+                                    <form asp-action="WirkungAnwenden" asp-route-id="@kopf.AktiveFigurId" method="post">
+                                        <input type="hidden" name="wirkungId" value="@w.Id" />
+                                        <button type="submit" class="icon-btn">1× angewendet</button>
+                                    </form>
+                                }
+                                <form asp-action="WirkungBeenden" asp-route-id="@kopf.AktiveFigurId" method="post">
+                                    <input type="hidden" name="wirkungId" value="@w.Id" />
+                                    <button type="submit" class="icon-btn">beenden</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </section>
+
+    <!-- Inventar -->
+    <section class="a-panel ts-items">
+        <div class="col-label">Inventar</div>
+        @if (Model.Gruppen.Count == 0)
+        {
+            <p class="empty-state">Die Tasche ist leer.</p>
+        }
+        @foreach (var (kategorie, gegenstaende) in Model.Gruppen)
+        {
+            var passiv = HesparisRegeln.PassiveKategorien.Contains(kategorie);
+            <div class="ts-group">
+                <h4>@kategorie</h4>
+                @foreach (var g in gegenstaende)
+                {
+                    var fxText = EffektText(g.Effekt);
+                    <div class="ts-item">
+                        <span class="qty">@(g.Menge)×</span>
+                        <div class="nm">
+                            @g.Name
+                            @if (g.Neu)
+                            {
+                                <span class="neu">NEU</span>
+                            }
+                            @if (!string.IsNullOrEmpty(g.Notiz))
+                            {
+                                <small>@g.Notiz</small>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(fxText))
+                        {
+                            <span class="fx" title="@DauerText(g.Effekt)">@fxText</span>
+                        }
+                        @if (kopf.DarfBearbeiten)
+                        {
+                            <div class="acts">
+                                @if (!passiv)
+                                {
+                                    <form asp-action="GegenstandBenutzen" asp-route-id="@kopf.AktiveFigurId" method="post">
+                                        <input type="hidden" name="gegenstandId" value="@g.Id" />
+                                        <button type="submit" class="icon-btn">benutzen</button>
+                                    </form>
+                                }
+                                <a class="icon-btn" style="display:inline-flex;align-items:center;text-decoration:none"
+                                   asp-action="Tasche" asp-route-id="@kopf.AktiveFigurId" asp-route-bearbeiten="@g.Id" asp-fragment="gegenstand">ändern</a>
+                                <form asp-action="GegenstandEntfernen" asp-route-id="@kopf.AktiveFigurId" method="post"
+                                      onsubmit="return confirm('Wirklich aus der Tasche entfernen?')">
+                                    <input type="hidden" name="gegenstandId" value="@g.Id" />
+                                    <button type="submit" class="icon-btn danger" aria-label="@g.Name entfernen">✕</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+@if (kopf.DarfBearbeiten)
+{
+    <section class="a-panel ts-form" id="gegenstand">
+        @if (form.Id.HasValue)
+        {
+            <h3>„@form.Name“ ändern</h3>
+        }
+        else
+        {
+            <h3>Etwas in die Tasche packen</h3>
+        }
+        <form asp-action="GegenstandSpeichern" asp-route-id="@kopf.AktiveFigurId" method="post">
+            <input type="hidden" name="Id" value="@form.Id" />
+            <div class="hes-form-row">
+                <label class="hes-field" style="flex:2 1 200px"><span>Name</span>
+                    <input class="hes-input" name="Name" value="@form.Name" maxlength="60" required />
+                </label>
+                <label class="hes-field"><span>Art</span>
+                    <select class="hes-select" name="Kategorie">
+                        @foreach (var k in HesparisRegeln.Kategorien)
+                        {
+                            if (k == form.Kategorie)
+                            {
+                                <option selected>@k</option>
+                            }
+                            else
+                            {
+                                <option>@k</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label class="hes-field" style="flex:0 1 90px"><span>Menge</span>
+                    <input class="hes-input" type="number" min="1" name="Menge" value="@form.Menge" />
+                </label>
+                <label class="hes-field" style="flex:0 1 120px"><span>Preis (Kerzen)</span>
+                    <input class="hes-input" type="number" min="0" name="Preis" value="@form.Preis" />
+                </label>
+            </div>
+            <div class="hes-form-row" style="margin-top:10px">
+                <label class="hes-field" style="flex:2 1 240px"><span>Notiz</span>
+                    <input class="hes-input" name="Notiz" value="@form.Notiz" />
+                </label>
+                <label class="hes-field"><span>Herkunft</span>
+                    <input class="hes-input" name="Quelle" value="@form.Quelle" placeholder="gefunden, laden, schwarz …" />
+                </label>
+            </div>
+
+            <div class="col-label" style="margin-top:16px">Wirkung (optional)</div>
+            <div class="hes-form-row">
+                <label class="hes-field"><span>Art</span>
+                    <select class="hes-select" name="EffektArt">
+                        <option value="">keine</option>
+                        @foreach (var a in Enum.GetValues<EffektArt>())
+                        {
+                            var text = "Talentbonus";
+                            if (a == EffektArt.Vorteil)
+                            {
+                                text = "Vorteil";
+                            }
+                            if (form.EffektArt == a)
+                            {
+                                <option value="@a" selected>@text</option>
+                            }
+                            else
+                            {
+                                <option value="@a">@text</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label class="hes-field"><span>Talent</span>
+                    <select class="hes-select" name="EffektTalentCode">
+                        <option value="">–</option>
+                        @foreach (var t in Model.TalentNamen.OrderBy(x => x.Key))
+                        {
+                            if (form.EffektTalentCode == t.Key)
+                            {
+                                <option value="@t.Key" selected>@t.Value</option>
+                            }
+                            else
+                            {
+                                <option value="@t.Key">@t.Value</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label class="hes-field" style="flex:0 1 90px"><span>Wert</span>
+                    <input class="hes-input" type="number" name="EffektWert" value="@form.EffektWert" placeholder="±" />
+                </label>
+                <label class="hes-field"><span>Vorteil auf</span>
+                    <input class="hes-input" name="EffektVorteilAuf" value="@form.EffektVorteilAuf" maxlength="60" placeholder="z. B. Schulwissen" />
+                </label>
+                <label class="hes-field"><span>Dauer</span>
+                    <select class="hes-select" name="EffektDauerArt">
+                        <option value="">dauerhaft</option>
+                        @foreach (var d in Enum.GetValues<EffektDauerArt>())
+                        {
+                            if (form.EffektDauerArt == d)
+                            {
+                                <option value="@d" selected>@d</option>
+                            }
+                            else
+                            {
+                                <option value="@d">@d</option>
+                            }
+                        }
+                    </select>
+                </label>
+                <label class="hes-field" style="flex:0 1 90px"><span>Anzahl</span>
+                    <input class="hes-input" type="number" min="1" name="EffektDauerAnzahl" value="@form.EffektDauerAnzahl" />
+                </label>
+            </div>
+
+            <div class="hes-form-row" style="margin-top:16px">
+                <button type="submit" class="hes-btn">Speichern</button>
+                @if (form.Id.HasValue)
+                {
+                    <a class="hes-btn ghost" style="text-decoration:none" asp-action="Tasche" asp-route-id="@kopf.AktiveFigurId">Abbrechen</a>
+                }
+            </div>
+        </form>
+    </section>
+}

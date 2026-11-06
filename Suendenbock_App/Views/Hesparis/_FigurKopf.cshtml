@@ -1,0 +1,24 @@
+@model FigurKopfViewModel
+@*
+    Figurenwahl wie in der HTML (note-chars): ein Knopf je Spielfigur, führt zur selben Seite.
+    ✦ markiert die eigenen Figuren.
+*@
+<div class="note-chars">
+    @foreach (var f in Model.Figuren)
+    {
+        var klasse = "note-char";
+        if (f.Id == Model.AktiveFigurId)
+        {
+            klasse += " active";
+        }
+        if (f.Eigene)
+        {
+            klasse += " mine";
+        }
+        <a class="@klasse" asp-action="@Model.Aktion" asp-route-id="@f.Id">@f.Name</a>
+    }
+</div>
+@if (!Model.DarfBearbeiten)
+{
+    <p class="lese-hinweis">Nur ansehen · bearbeiten kann @Model.Aktiv.Name selbst oder die Spielleitung</p>
+}

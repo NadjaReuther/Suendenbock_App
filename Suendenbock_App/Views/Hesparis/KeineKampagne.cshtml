@@ -1,0 +1,18 @@
+@{
+    ViewData["Title"] = "Akademie";
+    ViewData["Bereich"] = "Index";
+}
+<div class="armory-head">
+    <div class="armory-eyebrow">Akademie Hesparis</div>
+    <h1 class="armory-title">Die Tore sind noch verschlossen</h1>
+    <p class="armory-sub">
+        Keiner deiner Characters ist bisher in einer Hesparis-Kampagne eingeschrieben.
+        Die Spielleitung trägt euch unter „Spielleitung“ ein.
+    </p>
+</div>
+@if (User.IsInRole("Gott"))
+{
+    <p style="text-align:center">
+        <a class="hes-btn" asp-controller="HesparisSpielleitung" asp-action="Index">Zur Spielleitung</a>
+    </p>
+}

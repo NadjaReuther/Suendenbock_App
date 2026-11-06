@@ -1,0 +1,117 @@
+@model HesparisIndexViewModel
+@{
+    ViewData["Title"] = "Startseite";
+    ViewData["Bereich"] = "Index";
+    ViewData["FigurId"] = Model.Kopf.AktiveFigurId;
+    var kampagne = Model.Kopf.Kampagne;
+    var spieltag = kampagne.Spieltag.ToString("dddd, d. MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
+}
+
+<div class="armory-head">
+    <div class="armory-eyebrow">@kampagne.GameWorld.Name · @kampagne.Schuljahr. Schuljahr</div>
+    <h1 class="armory-title">@kampagne.Name</h1>
+    <p class="armory-sub">Spieltag: @spieltag</p>
+</div>
+
+<div class="home-grid">
+    @foreach (var karte in Model.Karten)
+    {
+        var f = karte.Figur;
+        var kartenKlasse = "a-panel home-card";
+        if (f.Eigene)
+        {
+            kartenKlasse += " mine";
+        }
+        var lpProzent = 0;
+        if (karte.LebenspunkteMax > 0)
+        {
+            lpProzent = Math.Clamp(karte.LebenspunkteAktuell * 100 / karte.LebenspunkteMax, 0, 100);
+        }
+        var darfBearbeiten = Model.Kopf.IstSpielleitung || f.Eigene;
+
+        <section class="@kartenKlasse">
+            <div class="home-card-head">
+                @if (!string.IsNullOrEmpty(f.Bild))
+                {
+                    <img class="home-ava" src="@f.Bild" alt="@f.Name" />
+                }
+                else
+                {
+                    <div class="home-ava">@f.Name.Substring(0, 1)</div>
+                }
+                <div>
+                    <h2 class="home-name">@f.Name</h2>
+                    @if (f.Eigene)
+                    {
+                        <div class="home-sub">deine Figur</div>
+                    }
+                </div>
+            </div>
+
+            <div>
+                <div class="col-label">Lebenspunkte <span>@karte.LebenspunkteAktuell / @karte.LebenspunkteMax</span></div>
+                <div class="lp-bar"><i style="width:@(lpProzent)%"></i></div>
+                @if (darfBearbeiten)
+                {
+                    <form asp-action="Lebenspunkte" asp-route-id="@f.Id" method="post" class="lp-form" style="margin-top:8px">
+                        <input class="hes-input" type="number" name="aktuell" value="@karte.LebenspunkteAktuell" aria-label="Aktuelle Lebenspunkte" />
+                        /
+                        <input class="hes-input" type="number" name="max" value="@karte.LebenspunkteMax" aria-label="Maximale Lebenspunkte" />
+                        <button type="submit" class="icon-btn">speichern</button>
+                    </form>
+                }
+            </div>
+
+            <div class="home-stats">
+                <div class="home-stat">
+                    @if (karte.Notenschnitt.HasValue)
+                    {
+                        <b>@HesparisRegeln.NotenBuchstabe(karte.Notenschnitt.Value)</b>
+                        <span>Ø @HesparisRegeln.NotenFormat(karte.Notenschnitt.Value)</span>
+                    }
+                    else
+                    {
+                        <b>–</b>
+                        <span>Zeugnis</span>
+                    }
+                </div>
+                <div class="home-stat">
+                    <b>@karte.Gegenstaende</b>
+                    <span>in der Tasche</span>
+                </div>
+                <div class="home-stat">
+                    <b>@karte.AktiveWirkungen</b>
+                    <span>Wirkungen</span>
+                </div>
+            </div>
+
+            <div class="home-stats">
+                @foreach (var kw in karte.Kopfwerte)
+                {
+                    var farbe = HesparisRegeln.BegabungFarbe[kw.Key];
+                    var name = "Soziales";
+                    if (kw.Key == "h")
+                    {
+                        name = "Handeln";
+                    }
+                    else if (kw.Key == "w")
+                    {
+                        name = "Wissen";
+                    }
+                    <div class="home-stat" style="border-color:@farbe">
+                        <b>@kw.Value</b>
+                        <span>@name</span>
+                    </div>
+                }
+            </div>
+
+            <div class="col-label">Geldbeutel <span>@HesparisRegeln.GeldText(karte.Geld)</span></div>
+
+            <div class="home-links">
+                <a asp-action="Talente" asp-route-id="@f.Id">✧ Talente</a>
+                <a asp-action="Zeugnis" asp-route-id="@f.Id">✎ Zeugnis</a>
+                <a asp-action="Tasche" asp-route-id="@f.Id">◍ Tasche</a>
+            </div>
+        </section>
+    }
+</div>

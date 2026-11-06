@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace Suendenbock_App.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         // ===============================
         // DBSETS - ALLE ENTITÄTEN
@@ -847,6 +847,11 @@ namespace Suendenbock_App.Data
             builder.Entity<CharacterGameWorld>()
                 .HasIndex(cgw => new { cgw.CharacterId, cgw.GameWorldId })
                 .IsUnique();
+
+            // ===============================
+            // HESPARIS (Akademie-Welt)
+            // ===============================
+            Hesparis.HesparisModell.Konfigurieren(builder);
         }
     }
 }
