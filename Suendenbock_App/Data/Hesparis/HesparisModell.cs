@@ -71,6 +71,42 @@ public static partial class HesparisModell
                     prop.SetMaxLength(200);
             }
         }
+
+        FremdschluesselLaengenAngleichen(mb);
+    }
+
+    /// <summary>
+    /// SQL Server verlangt, dass ein Fremdschlüssel genauso lang ist wie der Schlüssel, auf den er zeigt
+    /// (z. B. Talente.BegabungCode nvarchar(1) wie Begabungen.Code). Deshalb übernimmt jede Text-Fremdschlüsselspalte
+    /// die Länge des Ziels. Mehrere Durchläufe, weil eine Spalte selbst wieder Ziel eines anderen Fremdschlüssels sein kann.
+    /// </summary>
+    private static void FremdschluesselLaengenAngleichen(ModelBuilder mb)
+    {
+        bool geaendert = true;
+        for (int durchlauf = 0; durchlauf < 5 && geaendert; durchlauf++)
+        {
+            geaendert = false;
+            var fks = mb.Model.GetEntityTypes()
+                .Where(e => IstHesparis(e.ClrType))
+                .SelectMany(e => e.GetForeignKeys());
+
+            foreach (var fk in fks)
+            {
+                for (int i = 0; i < fk.Properties.Count; i++)
+                {
+                    var spalte = fk.Properties[i];
+                    var ziel = fk.PrincipalKey.Properties[i];
+                    if (spalte.ClrType != typeof(string)) continue;
+
+                    var laenge = ziel.GetMaxLength();
+                    if (spalte.GetMaxLength() != laenge)
+                    {
+                        spalte.SetMaxLength(laenge);
+                        geaendert = true;
+                    }
+                }
+            }
+        }
     }
 
     // -----------------------------------------------------------------------
