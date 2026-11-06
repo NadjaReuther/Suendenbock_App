@@ -1242,6 +1242,6073 @@ namespace Suendenbock_App.Migrations
                     b.ToTable("Herkunftslaender");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Ag", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("BonusTalentCode")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<int>("BonusWert")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Kategorie")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Leitung")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Untertitel")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Code");
+
+                    b.HasIndex("BonusTalentCode");
+
+                    b.ToTable("Ags", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "funkenwerk",
+                            BonusTalentCode = "w2",
+                            BonusWert = 10,
+                            Kategorie = "Wissen",
+                            Leitung = "Fr. Krautler",
+                            Name = "Funkenwerk",
+                            Untertitel = "Junge Forschende"
+                        },
+                        new
+                        {
+                            Code = "rat",
+                            BonusTalentCode = "s7",
+                            BonusWert = 10,
+                            Kategorie = "Gemeinschaft",
+                            Leitung = "Schulleitung · Vorsitz: Clara Engelhardt (10a)",
+                            Name = "Schülerrat",
+                            Untertitel = "Schulkomitee"
+                        },
+                        new
+                        {
+                            Code = "lernzirkel",
+                            BonusTalentCode = "w9",
+                            BonusWert = 5,
+                            Kategorie = "Wissen",
+                            Leitung = "ältere Jahrgänge · Aufsicht der Bibliothek",
+                            Name = "Lernzirkel",
+                            Untertitel = "Nachhilfe von Schülern für Schüler"
+                        },
+                        new
+                        {
+                            Code = "runenlauf",
+                            BonusTalentCode = "h2",
+                            BonusWert = 10,
+                            Kategorie = "Sport",
+                            Leitung = "Hr. Rasmussen-Kukk",
+                            Name = "Glimrack-Mannschaft",
+                            Untertitel = "Schulteam"
+                        },
+                        new
+                        {
+                            Code = "duell",
+                            BonusTalentCode = "h9",
+                            BonusWert = 10,
+                            Kategorie = "Sport",
+                            Leitung = "Hr. von Graffenried",
+                            Name = "Duellclub",
+                            Untertitel = "Freies Ätherfechten"
+                        },
+                        new
+                        {
+                            Code = "funker",
+                            BonusTalentCode = "w4",
+                            BonusWert = 10,
+                            Kategorie = "Handwerk",
+                            Leitung = "Hr. Haas",
+                            Name = "Funkerclub",
+                            Untertitel = "Telegrafie und Morsen"
+                        },
+                        new
+                        {
+                            Code = "sterne",
+                            BonusTalentCode = "h1",
+                            BonusWert = 10,
+                            Kategorie = "Wissen",
+                            Leitung = "Fr. Hirschfelt",
+                            Name = "Sternenwache",
+                            Untertitel = "Nachtbeobachtung"
+                        },
+                        new
+                        {
+                            Code = "gewaechs",
+                            BonusTalentCode = "h0",
+                            BonusWert = 10,
+                            Kategorie = "Handwerk",
+                            Leitung = "Fr. Boeckensteedt",
+                            Name = "Gewächshaus-Kreis",
+                            Untertitel = "Kräuter und Pflanzen"
+                        },
+                        new
+                        {
+                            Code = "bote",
+                            BonusTalentCode = "s0",
+                            BonusWert = 10,
+                            Kategorie = "Kunst",
+                            Leitung = "Hr. Zielinski",
+                            Name = "Der Hesparis-Bote",
+                            Untertitel = "Schülerzeitung"
+                        },
+                        new
+                        {
+                            Code = "buehne",
+                            BonusTalentCode = "s3",
+                            BonusWert = 10,
+                            Kategorie = "Kunst",
+                            Leitung = "Hr. Sönneberg",
+                            Name = "Bühne der Trugbilder",
+                            Untertitel = "Theater mit Illusionen"
+                        },
+                        new
+                        {
+                            Code = "chronik",
+                            BonusTalentCode = "w8",
+                            BonusWert = 10,
+                            Kategorie = "Wissen",
+                            Leitung = "Sekretariat",
+                            Name = "Chronik-AG",
+                            Untertitel = "Schulgeschichte"
+                        },
+                        new
+                        {
+                            Code = "sani",
+                            BonusTalentCode = "w3",
+                            BonusWert = 10,
+                            Kategorie = "Gemeinschaft",
+                            Leitung = "Krankenzimmer",
+                            Name = "Schulsanitätsdienst",
+                            Untertitel = "Erste Hilfe"
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.AgEintrag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AgCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notiz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgCode");
+
+                    b.HasIndex("KampagneId", "AgCode")
+                        .IsUnique();
+
+                    b.ToTable("AgEintraege", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.AgMitglied", b =>
+                {
+                    b.Property<int>("AgEintragId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Wochentag")
+                        .HasColumnType("int");
+
+                    b.HasKey("AgEintragId", "SpielfigurId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("AgMitglieder", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("Eigen")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("Grundwert")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<string>("Kurz")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Ort")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("AkademieTeams", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "hesperis",
+                            Eigen = true,
+                            Kurz = "HES",
+                            Name = "Hesparis",
+                            Ort = "Hesparis, eure Akademie"
+                        },
+                        new
+                        {
+                            Code = "norrvik",
+                            Eigen = false,
+                            Grundwert = 6.6m,
+                            Kurz = "NOR",
+                            Name = "Norrvik",
+                            Ort = "Norrvik, an der Eisküste im hohen Norden"
+                        },
+                        new
+                        {
+                            Code = "aschgrund",
+                            Eigen = false,
+                            Grundwert = 6.4m,
+                            Kurz = "ASG",
+                            Name = "Aschgrund",
+                            Ort = "Aschgrund, Bergbaustadt am Vulkanhang"
+                        },
+                        new
+                        {
+                            Code = "tellhafen",
+                            Eigen = false,
+                            Grundwert = 5.9m,
+                            Kurz = "TEL",
+                            Name = "Tellhafen",
+                            Ort = "Tellhafen, Hafenstadt an der Westküste"
+                        },
+                        new
+                        {
+                            Code = "irmin",
+                            Eigen = false,
+                            Grundwert = 5.5m,
+                            Kurz = "IRM",
+                            Name = "St. Irmin",
+                            Ort = "St. Irmin, Klosterstadt im stillen Tal"
+                        },
+                        new
+                        {
+                            Code = "ostmark",
+                            Eigen = false,
+                            Grundwert = 5.3m,
+                            Kurz = "OST",
+                            Name = "Ostmark",
+                            Ort = "Ostmark, Industriestadt mit Telegrafenturm"
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ArchivDokument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Art")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("DatumText")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Signatur")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Unterschrift")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Verborgen")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Versiegelt")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("ArchivDokumente", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ArchivDokumentKategorie", b =>
+                {
+                    b.Property<int>("ArchivDokumentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ArchivKategorieId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ArchivDokumentId", "ArchivKategorieId");
+
+                    b.HasIndex("ArchivKategorieId");
+
+                    b.ToTable("ArchivDokumentKategorien", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ArchivKategorie", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Signatur")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("ArchivKategorien", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Aufgabe", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Erledigt")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ErstelltAm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Prioritaet")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("Aufgaben", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Begabung", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("Begabungen", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "h",
+                            Name = "Handeln"
+                        },
+                        new
+                        {
+                            Code = "w",
+                            Name = "Wissen"
+                        },
+                        new
+                        {
+                            Code = "s",
+                            Name = "Soziales"
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Beziehung", b =>
+                {
+                    b.Property<int>("MitschuelerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Verborgen")
+                        .HasColumnType("bit");
+
+                    b.HasKey("MitschuelerId", "SpielfigurId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("Beziehungen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Braueintrag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Ergebnis")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("Braueintraege", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.DuellClubBilanz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Niederlagen")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Siege")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Typ")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("DuellClubBilanzen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Essenskauf", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Datum")
+                        .HasColumnType("date");
+
+                    b.Property<string>("GerichtCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Mahlzeit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GerichtCode");
+
+                    b.HasIndex("SpielfigurId", "Datum", "Mahlzeit")
+                        .IsUnique();
+
+                    b.ToTable("Essenskaeufe", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Essenswirkung", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Datum")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Gericht")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Wirkung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("Essenswirkungen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Fach", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Kurzname")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Faecher", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 0,
+                            Kurzname = "Pokusweben",
+                            Name = "Pokusweben"
+                        },
+                        new
+                        {
+                            Id = 1,
+                            Kurzname = "Resonanzkunde",
+                            Name = "Resonanzkunde"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Kurzname = "Elementarharmonie",
+                            Name = "Elementarharmonie"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Kurzname = "Astr. Orientierung",
+                            Name = "Astronomische Orientierung"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Kurzname = "Kartopädie",
+                            Name = "Kartopädie"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Kurzname = "Chronotaktik",
+                            Name = "Chronotaktik"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Kurzname = "Ätherfechten",
+                            Name = "Ätherfechten"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Kurzname = "Liminaltheorie",
+                            Name = "Liminaltheorie"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Kurzname = "Grenzchemie",
+                            Name = "Grenzchemie"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Kurzname = "Magiatur",
+                            Name = "Magiatur"
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.FachStufe", b =>
+                {
+                    b.Property<int>("FachId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Stufe")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Beschreibung")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("FachId", "Stufe");
+
+                    b.ToTable("FachStufen", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 1,
+                            Beschreibung = "Feerum-Rüstung"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 2,
+                            Beschreibung = "Ätherblei-Rüstung"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 3,
+                            Beschreibung = "Maganbronze-Rüstung"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 4,
+                            Beschreibung = "Berylliumkupfer-Rüstung · Feuer- und Blitzschaden −1W10"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 5,
+                            Beschreibung = "Elektrum-Rüstung · 1× pro Kampf blendet sie einen Angreifer: sein nächster Angriff hat Nachteil"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 6,
+                            Beschreibung = "Tantalit-Rüstung · kein Schaden durch geworfene oder verschüttete Tränke"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 7,
+                            Beschreibung = "Vanadium-Rüstung · 1× pro Kampf einen Treffer halbieren"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 8,
+                            Beschreibung = "Aerolith-Rüstung"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 9,
+                            Beschreibung = "Osmium-Rüstung"
+                        },
+                        new
+                        {
+                            FachId = 0,
+                            Stufe = 10,
+                            Beschreibung = "Palladium-Rüstung"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 1,
+                            Beschreibung = "+10 AUR ODER +10 SIL"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 2,
+                            Beschreibung = "+10 AUR ODER +10 SIL"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 3,
+                            Beschreibung = "+10 AUR/SIL ODER +1 MSW"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 4,
+                            Beschreibung = "Mitschwingen: für Zauber von Verbündeten in 3 Feldern auritieren"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 5,
+                            Beschreibung = "Echo: 1× pro Kampf wirkt ein auritierter Zauber in der nächsten Runde nochmal mit halber Wirkung"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 6,
+                            Beschreibung = "+10 AUR ODER +10 SIL"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 7,
+                            Beschreibung = "Stimmgabel: 1× pro Kampf einen Zauber silizieren und seine Wirkung auf ein eigenes Ziel lenken"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 8,
+                            Beschreibung = "+10 AUR ODER +10 SIL"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 9,
+                            Beschreibung = "+10 AUR ODER +10 SIL"
+                        },
+                        new
+                        {
+                            FachId = 1,
+                            Stufe = 10,
+                            Beschreibung = "+20 AUR/SIL ODER +2 MSW"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 1,
+                            Beschreibung = "+10 LP ODER +10 RÜW"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 2,
+                            Beschreibung = "+10 LP ODER +10 RÜW"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 3,
+                            Beschreibung = "+1 RES"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 4,
+                            Beschreibung = "Erdung: Rast heilt +1W10 LP"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 5,
+                            Beschreibung = "Elementschild: 1× pro Kampf als Reaktion den Schaden eines Elements halbieren"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 6,
+                            Beschreibung = "+10 LP ODER +10 RÜW"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 7,
+                            Beschreibung = "Einklang: 1× pro Kampf 1 Runde kein Schaden durch ein Element, für dich und Verbündete in 2 Feldern"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 8,
+                            Beschreibung = "+15 LP ODER +15 RÜW"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 9,
+                            Beschreibung = "+15 LP ODER +15 RÜW"
+                        },
+                        new
+                        {
+                            FachId = 2,
+                            Stufe = 10,
+                            Beschreibung = "+2 RES"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 1,
+                            Beschreibung = "+10 MAGW ODER +10 HAPW"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 2,
+                            Beschreibung = "+10 MAGW ODER +10 HAPW"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 3,
+                            Beschreibung = "+10 MAGW/HAPW ODER +1 MSW"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 4,
+                            Beschreibung = "Sternenlicht: nachts unter freiem Himmel keine Erschwernis auf Wahrnehmung"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 5,
+                            Beschreibung = "Fixstern: 1× pro Mission einen Ort markieren, die Richtung dorthin ist immer bekannt"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 6,
+                            Beschreibung = "+10 MAGW ODER +10 HAPW"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 7,
+                            Beschreibung = "Konstellation: 1× pro Kampf die Position aller Wesen in 10 Feldern kennen, auch versteckte"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 8,
+                            Beschreibung = "+10 MAGW ODER +10 HAPW"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 9,
+                            Beschreibung = "+10 MAGW ODER +10 HAPW"
+                        },
+                        new
+                        {
+                            FachId = 3,
+                            Stufe = 10,
+                            Beschreibung = "+20 MAGW/HAPW ODER +2 MSW"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 1,
+                            Beschreibung = "+1 RW ODER +10 HLF"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 2,
+                            Beschreibung = "+1 RW ODER +10 HLF"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 3,
+                            Beschreibung = "+2 RW ODER +1 HLF-Aktion"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 4,
+                            Beschreibung = "Grundriss: einen Raum 1× betreten genügt, um ihn ohne Probe zu zeichnen"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 5,
+                            Beschreibung = "Abkürzung: 1× pro Kampf dich und einen Verbündeten +3 Felder bewegen"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 6,
+                            Beschreibung = "+1 RW ODER +10 HLF"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 7,
+                            Beschreibung = "Lagekarte: 1× pro Kampf stellen sich alle Verbündeten vor der Runde bis zu 2 Felder neu auf"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 8,
+                            Beschreibung = "+1 RW ODER +15 HLF"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 9,
+                            Beschreibung = "+1 RW ODER +15 HLF"
+                        },
+                        new
+                        {
+                            FachId = 4,
+                            Stufe = 10,
+                            Beschreibung = "+3 RW ODER +1 HLF-Aktion"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 1,
+                            Beschreibung = "+1 Krit auf alle Talente"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 2,
+                            Beschreibung = "+1 Krit auf alle Talente"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 3,
+                            Beschreibung = "+2 Krit auf alle Talente"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 4,
+                            Beschreibung = "Taktgefühl: im ersten Zug eines Kampfes +10 auf alle Proben"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 5,
+                            Beschreibung = "Zeitlupe: 1× pro Kampf einen eigenen Wurf wiederholen"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 6,
+                            Beschreibung = "+1 Krit auf alle Talente ODER Zeitlupe 2× pro Kampf"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 7,
+                            Beschreibung = "Vorgriff: 1× pro Kampf zwei Aktionen in einem Zug"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 8,
+                            Beschreibung = "+1 Krit ODER +1 Wiederholung"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 9,
+                            Beschreibung = "+1 Krit auf alle Talente"
+                        },
+                        new
+                        {
+                            FachId = 5,
+                            Stufe = 10,
+                            Beschreibung = "+3 Krit ODER +1 Extra-Aktion"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 1,
+                            Beschreibung = "+1W10 ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 2,
+                            Beschreibung = "+1W10 ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 3,
+                            Beschreibung = "+10 FD ODER +1 MSW"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 4,
+                            Beschreibung = "Weg der gebundenen Waffe · Schild: Standfest · Klinge: Ausfall · Pfeil: Zielen"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 5,
+                            Beschreibung = "Schild: Deckung · Klinge: Entwaffnen · Pfeil: Markieren"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 6,
+                            Beschreibung = "+10 TL ODER Schild: Langer Atem · Klinge: +1W10 · Pfeil: Weite"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 7,
+                            Beschreibung = "Schild: Spiegelschild · Klinge: Doppelschlag · Pfeil: Kettenschuss"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 8,
+                            Beschreibung = "+1W10 ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 9,
+                            Beschreibung = "+1W10 ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 6,
+                            Stufe = 10,
+                            Beschreibung = "+20 FD ODER +2 MSW"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 1,
+                            Beschreibung = "REA Wurf -1"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 2,
+                            Beschreibung = "REA = Vorteil"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 3,
+                            Beschreibung = "+1 REA"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 4,
+                            Beschreibung = "Schwellengespür: Schutzzauber und Bannkreise an Türen ohne Probe spüren"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 5,
+                            Beschreibung = "Zwischenschritt: 1× pro Kampf als Reaktion 2 Felder ausweichen, der Angriff verfehlt"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 6,
+                            Beschreibung = "+1 REA ODER REA = Vorteil gegen Magie"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 7,
+                            Beschreibung = "Halbschatten: 1× pro Kampf 1 Runde lang haben Angriffe gegen dich Nachteil"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 8,
+                            Beschreibung = "REA Wurf -2"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 9,
+                            Beschreibung = "REA auch für Verbündete"
+                        },
+                        new
+                        {
+                            FachId = 7,
+                            Stufe = 10,
+                            Beschreibung = "+2 REA"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 1,
+                            Beschreibung = "+10 SEP ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 2,
+                            Beschreibung = "+10 SEP ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 3,
+                            Beschreibung = "1 Trank = 2 Schluck ODER +1 MSW"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 4,
+                            Beschreibung = "Notdosis: einen Trank trinken ist eine Bonusaktion"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 5,
+                            Beschreibung = "Wurftrank: 1× pro Kampf einen Trank auf ein Ziel in 4 Feldern werfen, er wirkt dort"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 6,
+                            Beschreibung = "+10 SEP ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 7,
+                            Beschreibung = "Mischung: 1× pro Mission zwei Tränke zu einem mischen, beide wirken"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 8,
+                            Beschreibung = "+10 SEP ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 9,
+                            Beschreibung = "+10 SEP ODER +10 TL"
+                        },
+                        new
+                        {
+                            FachId = 8,
+                            Stufe = 10,
+                            Beschreibung = "Tränke wirken doppelt ODER +2 MSW"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 1,
+                            Beschreibung = "+1 Zauber ODER +1 Zauberslot"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 2,
+                            Beschreibung = "+1 Zauber ODER +1 Zauberslot"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 3,
+                            Beschreibung = "+2 Zauber ODER +2 Zauberslots"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 4,
+                            Beschreibung = "+1 Zauber ODER +1 Zauberslot"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 5,
+                            Beschreibung = "Schnellzauber: 1× pro Kampf einen Zauber als Bonusaktion"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 6,
+                            Beschreibung = "+1 Zauber ODER +1 Zauberslot"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 7,
+                            Beschreibung = "Doppelzauber: 1× pro Mission einen Zauber zweimal hintereinander, ohne zweiten Slot"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 8,
+                            Beschreibung = "+1 Zauber ODER +1 Zauberslot"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 9,
+                            Beschreibung = "+1 Zauber ODER +1 Zauberslot"
+                        },
+                        new
+                        {
+                            FachId = 9,
+                            Stufe = 10,
+                            Beschreibung = "+3 Zauber ODER +3 Zauberslots"
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Gegenstand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Kategorie")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Menge")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Neu")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notiz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Preis")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Quelle")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("Gegenstaende", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Geldbuchung", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Betrag")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Grund")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("Geldbuchungen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Gericht", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Art")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("Lebenspunkte")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Mahlzeit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Preis")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Wirkung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("Gerichte", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "haferbrei",
+                            Art = "heal",
+                            Lebenspunkte = 5,
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Haferbrei mit Honig",
+                            Preis = 3,
+                            Wirkung = "+5 LP sofort"
+                        },
+                        new
+                        {
+                            Code = "beerenbrei",
+                            Art = "heal",
+                            Lebenspunkte = 3,
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Haferbrei mit Beeren",
+                            Preis = 2,
+                            Wirkung = "+3 LP sofort"
+                        },
+                        new
+                        {
+                            Code = "milchbroetchen",
+                            Art = "tal",
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Milchbrötchen mit Butter",
+                            Preis = 2,
+                            Wirkung = "Nerven: nächste Probe +5"
+                        },
+                        new
+                        {
+                            Code = "ruehrei",
+                            Art = "tal",
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Rührei mit Kräutern",
+                            Preis = 4,
+                            Wirkung = "Wahrnehmung +5 bis Mittag"
+                        },
+                        new
+                        {
+                            Code = "pflaumenmus",
+                            Art = "tal",
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Brötchen mit Pflaumenmus",
+                            Preis = 3,
+                            Wirkung = "Erzählen +5 bis Mittag"
+                        },
+                        new
+                        {
+                            Code = "waffeln",
+                            Art = "tal",
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Waffeln mit Puderzucker",
+                            Preis = 5,
+                            Wirkung = "Überreden +10 bis Mittag"
+                        },
+                        new
+                        {
+                            Code = "hirobrot",
+                            Art = "kurios",
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Hiro-Brot mit Butter",
+                            Preis = 10,
+                            Wirkung = "1× am Tag einen Wurf wiederholen"
+                        },
+                        new
+                        {
+                            Code = "wachtee",
+                            Art = "kurios",
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Wachtee mit Zwieback",
+                            Preis = 4,
+                            Wirkung = "Kein Malus durch Müdigkeit bis Abend"
+                        },
+                        new
+                        {
+                            Code = "griesbrei",
+                            Art = "tal",
+                            Mahlzeit = "Fruehstueck",
+                            Name = "Grießbrei mit Zimt",
+                            Preis = 3,
+                            Wirkung = "Beruhigen +5 bis Mittag"
+                        },
+                        new
+                        {
+                            Code = "linsen",
+                            Art = "heal",
+                            Lebenspunkte = 10,
+                            Mahlzeit = "Mittag",
+                            Name = "Linseneintopf mit Brot",
+                            Preis = 8,
+                            Wirkung = "+10 LP sofort"
+                        },
+                        new
+                        {
+                            Code = "puffer",
+                            Art = "tal",
+                            Mahlzeit = "Mittag",
+                            Name = "Kartoffelpuffer mit Apfelmus",
+                            Preis = 6,
+                            Wirkung = "Akrobatik +5 bis Abend"
+                        },
+                        new
+                        {
+                            Code = "frikassee",
+                            Art = "tal",
+                            Mahlzeit = "Mittag",
+                            Name = "Hühnerfrikassee mit Reis",
+                            Preis = 10,
+                            Wirkung = "Körperkraft +10 bis Abend"
+                        },
+                        new
+                        {
+                            Code = "griessuppe",
+                            Art = "heal",
+                            Lebenspunkte = 5,
+                            Mahlzeit = "Mittag",
+                            Name = "Grießklößchensuppe",
+                            Preis = 5,
+                            Wirkung = "+5 LP sofort"
+                        },
+                        new
+                        {
+                            Code = "fischsuppe",
+                            Art = "tal",
+                            Mahlzeit = "Mittag",
+                            Name = "Fischsuppe mit Dill",
+                            Preis = 10,
+                            Wirkung = "Magisches Gespür +10 bis Abend"
+                        },
+                        new
+                        {
+                            Code = "vortag",
+                            Art = "kurios",
+                            Mahlzeit = "Mittag",
+                            Name = "Eintopf vom Vortag",
+                            Preis = 2,
+                            Wirkung = "Keine Wirkung, aber billig"
+                        },
+                        new
+                        {
+                            Code = "braten",
+                            Art = "heal",
+                            Lebenspunkte = 15,
+                            Mahlzeit = "Mittag",
+                            Name = "Sonntagsbraten mit Knödeln",
+                            Preis = 20,
+                            Wirkung = "+15 LP sofort"
+                        },
+                        new
+                        {
+                            Code = "mittwochsreis",
+                            Art = "kurios",
+                            Mahlzeit = "Mittag",
+                            Name = "Mittwochsreis",
+                            Preis = 2,
+                            Wirkung = "Wer zweimal nimmt, schläft im Unterricht ein"
+                        },
+                        new
+                        {
+                            Code = "gulasch",
+                            Art = "tal",
+                            Mahlzeit = "Mittag",
+                            Name = "Feuerwurz-Gulasch",
+                            Preis = 12,
+                            Wirkung = "Kein Frieren · Reizen +5 bis Abend"
+                        },
+                        new
+                        {
+                            Code = "klosterbrot",
+                            Art = "heal",
+                            Lebenspunkte = 8,
+                            Mahlzeit = "Mittag",
+                            Name = "Klosterbrot mit Mondmoos",
+                            Preis = 20,
+                            Wirkung = "+8 LP und eine leichte Wunde heilt"
+                        },
+                        new
+                        {
+                            Code = "nebelpastete",
+                            Art = "tal",
+                            Mahlzeit = "Mittag",
+                            Name = "Nebelpastete",
+                            Preis = 14,
+                            Wirkung = "Verschleierung +10 bis Abend"
+                        },
+                        new
+                        {
+                            Code = "kaesebrot",
+                            Art = "heal",
+                            Lebenspunkte = 5,
+                            Mahlzeit = "Abendbrot",
+                            Name = "Käsebrot und Apfelmost",
+                            Preis = 3,
+                            Wirkung = "Gut schlafen: +5 LP am Morgen"
+                        },
+                        new
+                        {
+                            Code = "gemuesesuppe",
+                            Art = "heal",
+                            Lebenspunkte = 5,
+                            Mahlzeit = "Abendbrot",
+                            Name = "Gemüsesuppe",
+                            Preis = 4,
+                            Wirkung = "+5 LP sofort"
+                        },
+                        new
+                        {
+                            Code = "brotzeit",
+                            Art = "tal",
+                            Mahlzeit = "Abendbrot",
+                            Name = "Brotzeit mit Kräuterquark",
+                            Preis = 4,
+                            Wirkung = "Wahrnehmung +5 bis Mitternacht"
+                        },
+                        new
+                        {
+                            Code = "bratkartoffeln",
+                            Art = "tal",
+                            Mahlzeit = "Abendbrot",
+                            Name = "Bratkartoffeln mit Spiegelei",
+                            Preis = 5,
+                            Wirkung = "Körperkraft +5 bis Mitternacht"
+                        },
+                        new
+                        {
+                            Code = "pfannkuchen",
+                            Art = "tal",
+                            Mahlzeit = "Abendbrot",
+                            Name = "Pfannkuchen",
+                            Preis = 4,
+                            Wirkung = "Erzählen +5 bis Mitternacht"
+                        },
+                        new
+                        {
+                            Code = "grillabend",
+                            Art = "tal",
+                            Mahlzeit = "Abendbrot",
+                            Name = "Grillabend im Innenhof",
+                            Preis = 10,
+                            Wirkung = "Beruhigen +10 bis Mitternacht"
+                        },
+                        new
+                        {
+                            Code = "kuchen",
+                            Art = "tal",
+                            Mahlzeit = "Abendbrot",
+                            Name = "Kuchen und Tee",
+                            Preis = 6,
+                            Wirkung = "Nerven: Panik-Proben +10 bis Mitternacht"
+                        },
+                        new
+                        {
+                            Code = "sternensuppe",
+                            Art = "kurios",
+                            Mahlzeit = "Abendbrot",
+                            Name = "Sternensuppe",
+                            Preis = 12,
+                            Wirkung = "Im Dunkeln sehen bis Mitternacht"
+                        },
+                        new
+                        {
+                            Code = "traumtee",
+                            Art = "kurios",
+                            Mahlzeit = "Abendbrot",
+                            Name = "Traumtee mit Honigkeks",
+                            Preis = 8,
+                            Wirkung = "Ein Traum mit Hinweis (Spielleitung)"
+                        },
+                        new
+                        {
+                            Code = "glimmmilch",
+                            Art = "kurios",
+                            Mahlzeit = "Abendbrot",
+                            Name = "Glimm-Milch",
+                            Preis = 3,
+                            Wirkung = "Leuchtet 1 Stunde schwach im Dunkeln"
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimAufstellung", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Mitglied")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Slot")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Slot")
+                        .IsUnique();
+
+                    b.ToTable("GlimAufstellung", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimBankplatz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Mitglied")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Position")
+                        .IsUnique();
+
+                    b.ToTable("GlimBank", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimCupArchiv", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CupNr")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MeisterTeamCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Niederlagen")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Platz")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Siege")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SpielerDesCups")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("MeisterTeamCode");
+
+                    b.ToTable("GlimCupArchiv", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimKarriere", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Siege")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Spiele")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("GlimKarrieren", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimKarriereCup", b =>
+                {
+                    b.Property<int>("GlimKarriereId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CupNr")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Einsaetze")
+                        .HasColumnType("int");
+
+                    b.HasKey("GlimKarriereId", "CupNr");
+
+                    b.ToTable("GlimKarriereCups", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimNachwuchs", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Jahrgang")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MitschuelerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Slot")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MitschuelerId");
+
+                    b.HasIndex("KampagneId", "Slot")
+                        .IsUnique();
+
+                    b.ToTable("GlimNachwuchs", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimNachwuchsTraining", b =>
+                {
+                    b.Property<int>("GlimNachwuchsId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Wert")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("Fortschritt")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Steigerungen")
+                        .HasColumnType("int");
+
+                    b.HasKey("GlimNachwuchsId", "Wert");
+
+                    b.ToTable("GlimNachwuchsTraining", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimPlayoff", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GastTeamCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("HeimTeamCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Runde")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GastTeamCode");
+
+                    b.HasIndex("HeimTeamCode");
+
+                    b.HasIndex("KampagneId", "Runde")
+                        .IsUnique();
+
+                    b.ToTable("GlimPlayoffs", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSaisonErgebnis", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Fixture")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PunkteGast")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PunkteHeim")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Simuliert")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Fixture")
+                        .IsUnique();
+
+                    b.ToTable("GlimSaisonErgebnisse", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSaisonStatistik", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Abwuerfe")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Punkte")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Treffer")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("GlimSaisonStatistiken", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpiel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Art")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateOnly?>("Datum")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Fixture")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("GegnerTeamCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("Heimspiel")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notiz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PunkteGegner")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PunkteHesparis")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Saison")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GegnerTeamCode");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("GlimSpiele", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpielLogEintrag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool?>("Aus")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("Durchgang")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GlimSpielId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Haelfte")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Seite")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Spielstand")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Trenner")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GlimSpielId");
+
+                    b.ToTable("GlimSpielLog", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpielStatistik", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Abwuerfe")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Aus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GlimSpielId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Punkte")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Treffer")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GlimSpielId");
+
+                    b.ToTable("GlimSpielStatistiken", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpieler", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Jahrgang")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Rolle")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Slot")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Stil")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Veteran")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("VorsaisonAbwuerfe")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VorsaisonPunkte")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VorsaisonTreffer")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Waffe")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("GlimSpieler", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimTeamStaerke", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeamCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal>("Wert")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamCode");
+
+                    b.HasIndex("KampagneId", "TeamCode")
+                        .IsUnique();
+
+                    b.ToTable("GlimTeamStaerken", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimTraining", b =>
+                {
+                    b.Property<int>("GlimSpielerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Wert")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("Fortschritt")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Steigerungen")
+                        .HasColumnType("int");
+
+                    b.HasKey("GlimSpielerId", "Wert");
+
+                    b.ToTable("GlimTraining", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimTrikotnummer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Mitglied")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Nummer")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Mitglied")
+                        .IsUnique();
+
+                    b.ToTable("GlimTrikotnummern", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimVerletzung", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Spiele")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("GlimVerletzungen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftAblauf", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("Datum")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Uhrzeit")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Wer")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Wichtig")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProtokollheftId");
+
+                    b.ToTable("HeftAblauf", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftAbschnitt", b =>
+                {
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Abschnitt")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ProtokollheftId", "Abschnitt");
+
+                    b.ToTable("HeftAbschnitte", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftCheck", b =>
+                {
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schluessel")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<bool>("Erledigt")
+                        .HasColumnType("bit");
+
+                    b.HasKey("ProtokollheftId", "Schluessel");
+
+                    b.ToTable("HeftChecks", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftFehlend", b =>
+                {
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProtokollheftId", "SpielfigurId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("HeftFehlend", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftFrage", b =>
+                {
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Abschnitt")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Beantwortet")
+                        .HasColumnType("bit");
+
+                    b.HasKey("ProtokollheftId", "Abschnitt", "Position");
+
+                    b.ToTable("HeftFragen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftJederEintrag", b =>
+                {
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schluessel")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ProtokollheftId", "Schluessel");
+
+                    b.ToTable("HeftJederEintraege", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftNotiz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("Datum")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Uhrzeit")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProtokollheftId");
+
+                    b.ToTable("HeftNotizen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftNotizUebernahme", b =>
+                {
+                    b.Property<int>("HeftNotizId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Abschnitt")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("HeftNotizId", "Abschnitt");
+
+                    b.ToTable("HeftNotizUebernahmen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftPerson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Eindruck")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Rolle")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Sagt")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Wichtig")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProtokollheftId");
+
+                    b.ToTable("HeftPersonen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftSchwerpunkt", b =>
+                {
+                    b.Property<int>("ProtokollheftId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("ProtokollheftId", "Text");
+
+                    b.ToTable("HeftSchwerpunkte", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KalenderTermin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("AutomatischAm")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("Datum")
+                        .HasColumnType("date");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RatMonat")
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Typ")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Datum");
+
+                    b.ToTable("KalenderTermine", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Kampagne", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("BrauenGesperrt")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("GameWorldId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GlimAblaufJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GlimKapitaen")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("GlimLaufendesSpielJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GlimSaisonNr")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("HafenOffen")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Kalenderjahr")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LadenNotiz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Schuljahr")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SchwarzmarktCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("SchwarzmarktRaetsel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SitzplanSpalten")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Spieltag")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("StufenPhase")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameWorldId");
+
+                    b.ToTable("Kampagnen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KartenNotiz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Ort")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Ort")
+                        .IsUnique();
+
+                    b.ToTable("KartenNotizen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KartenZeit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schluessel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Wert")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Schluessel")
+                        .IsUnique();
+
+                    b.ToTable("KartenZeiten", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Klassenarbeit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Datum")
+                        .HasColumnType("date");
+
+                    b.Property<int>("FachId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Schuljahr")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Stimmung")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FachId");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("Klassenarbeiten", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KlassenarbeitMitschueler", b =>
+                {
+                    b.Property<int>("KlassenarbeitId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MitschuelerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.HasKey("KlassenarbeitId", "MitschuelerId");
+
+                    b.HasIndex("MitschuelerId");
+
+                    b.ToTable("KlassenarbeitMitschueler", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KlassenarbeitSpielfigur", b =>
+                {
+                    b.Property<int>("KlassenarbeitId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("MussNachschreiben")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.HasKey("KlassenarbeitId", "SpielfigurId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("KlassenarbeitSpielfiguren", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KrankenGlimGemeldet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("KrankenGlimGemeldet", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Krankheitsfall", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Art")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateOnly>("Aufnahme")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Behandlung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Bett")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Diagnose")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly?>("Entlassung")
+                        .HasColumnType("date");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Malus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Notiz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Quelle")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("Simuliert")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Tage")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("Krankheitsfaelle", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.LadenArtikel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Beschreibung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Bestand")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Kategorie")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Preis")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("LadenArtikel", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Lehrer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Aufgaben")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Erkennungszeichen")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Geheimnis")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Haltung")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Mag")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("MagNicht")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SoPunktetMan")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Spitzname")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TrifftManMeist")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("WunderPunkt")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Lehrer", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.LehrerFach", b =>
+                {
+                    b.Property<int>("LehrerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FachId")
+                        .HasColumnType("int");
+
+                    b.HasKey("LehrerId", "FachId");
+
+                    b.HasIndex("FachId");
+
+                    b.ToTable("LehrerFaecher", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.LehrerFakt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DatumText")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("LehrerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Von")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LehrerId");
+
+                    b.ToTable("LehrerFakten", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MeisterschaftDefinition", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Beschreibung")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TalentCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TalentCode", "Position")
+                        .IsUnique();
+
+                    b.ToTable("Meisterschaften", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Beschreibung = "Hören durch Türen und dünne Wände ohne Erschwernis. Lauschen +20.",
+                            Name = "Lauscher",
+                            Position = 0,
+                            TalentCode = "h0"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Beschreibung = "Tränke am Geruch erkennen +20. Bei Erfolg nennt die Spielleitung Name und Wirkung.",
+                            Name = "Spürnase",
+                            Position = 1,
+                            TalentCode = "h0"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Beschreibung = "In Dunkelheit oder blind keine Erschwernis auf Wahrnehmung. Wesen in 2 Feldern werden ohne Probe gespürt.",
+                            Name = "Tastsinn",
+                            Position = 2,
+                            TalentCode = "h0"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Beschreibung = "Aura eines Wesens in Sichtweite ohne Probe lesen. Die Spielleitung nennt seine Stimmung in einem Wort.",
+                            Name = "Aurenblick",
+                            Position = 0,
+                            TalentCode = "h1"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Beschreibung = "Wesen in 5 Feldern ohne Probe bemerken, auch unsichtbar oder hinter Wänden. Man erfährt Anzahl und Richtung.",
+                            Name = "Präsenz",
+                            Position = 1,
+                            TalentCode = "h1"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Beschreibung = "1× pro Sitzung eine Ja/Nein-Frage über einen bekannten Ort oder eine bekannte Person. Die Antwort ist wahr.",
+                            Name = "Hellsicht",
+                            Position = 2,
+                            TalentCode = "h1"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Beschreibung = "Fallschaden −2W10.",
+                            Name = "Katzenlandung",
+                            Position = 0,
+                            TalentCode = "h2"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Beschreibung = "1× pro Kampf als Reaktion: einen Nahkampftreffer mit Akrobatik-Probe vollständig vermeiden.",
+                            Name = "Ausweichrolle",
+                            Position = 1,
+                            TalentCode = "h2"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Beschreibung = "Sprungweite +2 Felder. Über Gegner springen löst keinen Gelegenheitsangriff aus.",
+                            Name = "Hechtsprung",
+                            Position = 2,
+                            TalentCode = "h2"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Beschreibung = "Taschendiebstahl +20.",
+                            Name = "Flinke Finger",
+                            Position = 0,
+                            TalentCode = "h3"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Beschreibung = "Schlösser öffnen +20, in halber Zeit.",
+                            Name = "Schlossknacker",
+                            Position = 1,
+                            TalentCode = "h3"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Beschreibung = "Autonome Kutschen ohne Probe fahren. In brenzligen Lagen (Verfolgung, Ausweichen) +20.",
+                            Name = "Kutscher",
+                            Position = 2,
+                            TalentCode = "h3"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Beschreibung = "Schleichen +20.",
+                            Name = "Leisetritt",
+                            Position = 0,
+                            TalentCode = "h4"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Beschreibung = "Im Halbdunkel ohne Deckung verstecken möglich. Verstecken +20.",
+                            Name = "Schattenkleid",
+                            Position = 1,
+                            TalentCode = "h4"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Beschreibung = "Die erste Aktion aus dem Verborgenen hat Vorteil.",
+                            Name = "Überrumpeln",
+                            Position = 2,
+                            TalentCode = "h4"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Beschreibung = "Traglast ×2.",
+                            Name = "Packesel",
+                            Position = 0,
+                            TalentCode = "h5"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Beschreibung = "Festhalten und Befreien mit Vorteil.",
+                            Name = "Eisengriff",
+                            Position = 1,
+                            TalentCode = "h5"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Beschreibung = "Türen und Kisten aufbrechen +30.",
+                            Name = "Rammbock",
+                            Position = 2,
+                            TalentCode = "h5"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Beschreibung = "Kein Schaden durch das eigene Element.",
+                            Name = "Elementfreund",
+                            Position = 0,
+                            TalentCode = "h6"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Beschreibung = "1× pro Kampf das Element eines eigenen Zaubers ändern.",
+                            Name = "Wechselspiel",
+                            Position = 1,
+                            TalentCode = "h6"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Beschreibung = "Kritische Elementarzauber +1W10 Schaden.",
+                            Name = "Urgewalt",
+                            Position = 2,
+                            TalentCode = "h6"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Beschreibung = "Einen verzauberten Gegenstand mit einer Silizieren-Probe 1 Stunde lang magisch stilllegen.",
+                            Name = "Entzaubern",
+                            Position = 0,
+                            TalentCode = "h7"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Beschreibung = "Silizieren ohne Geste und Wort. Andere bemerken es nur mit Magischem Gespür −20.",
+                            Name = "Stille Hände",
+                            Position = 1,
+                            TalentCode = "h7"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Beschreibung = "1× pro Kampf Bannen als Reaktion, bevor der gegnerische Zauber wirkt.",
+                            Name = "Gegenbann",
+                            Position = 2,
+                            TalentCode = "h7"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Beschreibung = "Auritierte Zauber machen +1W10 zusätzlichen Schaden oder heilen +1W10 mehr.",
+                            Name = "Vollgas",
+                            Position = 0,
+                            TalentCode = "h8"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Beschreibung = "Auritierte Zauber haben +2 Felder Reichweite.",
+                            Name = "Weiter Hall",
+                            Position = 1,
+                            TalentCode = "h8"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Beschreibung = "Auritierte Zauber mit Dauer halten 1 Runde länger.",
+                            Name = "Lange Glut",
+                            Position = 2,
+                            TalentCode = "h8"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Beschreibung = "1× pro Kampf: Schaden ×2, vor dem Schadenswurf ansagen. Mit jeder Ätherwaffe.",
+                            Name = "Heldenhieb",
+                            Position = 0,
+                            TalentCode = "h9"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Beschreibung = "1× pro Kampf: der Angriff trifft zusätzlich ein zweites Ziel, das höchstens 1 Feld vom ersten entfernt steht, mit vollem Schaden. Mit jeder Ätherwaffe.",
+                            Name = "Zweierschlag",
+                            Position = 1,
+                            TalentCode = "h9"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Beschreibung = "1× pro Kampf: ein Treffer schiebt das Ziel 2 Felder weg oder zieht es 2 Felder heran. Mit jeder Ätherwaffe.",
+                            Name = "Rückstoß",
+                            Position = 2,
+                            TalentCode = "h9"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Beschreibung = "Zweck einer unbekannten Maschine ohne Probe erkennen.",
+                            Name = "Maschinenkenner",
+                            Position = 0,
+                            TalentCode = "w0"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Beschreibung = "Angriffe gegen Maschinen und Konstrukte +2 Krit.",
+                            Name = "Schwachstelle",
+                            Position = 1,
+                            TalentCode = "w0"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Beschreibung = "1× pro Szene läuft eine kaputte Maschine für 10 Minuten.",
+                            Name = "Notbetrieb",
+                            Position = 2,
+                            TalentCode = "w0"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Beschreibung = "Fallen und Gefahrenstellen erkennen +30.",
+                            Name = "Gefahrenblick",
+                            Position = 0,
+                            TalentCode = "w1"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Beschreibung = "Eine Maschine mit 1 Aktion ohne Probe stoppen.",
+                            Name = "Not-Aus",
+                            Position = 1,
+                            TalentCode = "w1"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Beschreibung = "Die Gruppe nimmt −1W10 Schaden durch Unfälle und Umgebung.",
+                            Name = "Absicherung",
+                            Position = 2,
+                            TalentCode = "w1"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Beschreibung = "Brauproben +20.",
+                            Name = "Sauberer Sud",
+                            Position = 0,
+                            TalentCode = "w2"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Beschreibung = "Ein gelungener Brauwurf ergibt 2 Tränke statt 1.",
+                            Name = "Doppelter Kessel",
+                            Position = 1,
+                            TalentCode = "w2"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Beschreibung = "Bei einem kritischen Erfolg beim Brauen wirkt der Trank doppelt.",
+                            Name = "Meisterbrau",
+                            Position = 2,
+                            TalentCode = "w2"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Beschreibung = "Erste Hilfe als Bonusaktion.",
+                            Name = "Feldarzt",
+                            Position = 0,
+                            TalentCode = "w3"
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Beschreibung = "Die Wirkung eines getrunkenen Tranks ohne Probe erkennen.",
+                            Name = "Diagnose",
+                            Position = 1,
+                            TalentCode = "w3"
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Beschreibung = "Behandelte Figuren heilen bei der nächsten Rast +1W10 LP.",
+                            Name = "Wundnaht",
+                            Position = 2,
+                            TalentCode = "w3"
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Beschreibung = "Morsezeichen ohne Probe verstehen.",
+                            Name = "Morsegehör",
+                            Position = 0,
+                            TalentCode = "w4"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Beschreibung = "Telegramme an einer Leitung abfangen +20.",
+                            Name = "Leitungslauscher",
+                            Position = 1,
+                            TalentCode = "w4"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Beschreibung = "Fremde Chiffren knacken +20.",
+                            Name = "Chiffreur",
+                            Position = 2,
+                            TalentCode = "w4"
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Beschreibung = "In bekannten Städten halbe Wegzeit.",
+                            Name = "Ortskenntnis",
+                            Position = 0,
+                            TalentCode = "w5"
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Beschreibung = "1× pro Stadt einen Kontakt benennen, den die Figur kennt.",
+                            Name = "Kontakte",
+                            Position = 1,
+                            TalentCode = "w5"
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Beschreibung = "Dinge besorgen, die es in der Schule nicht gibt +20. Lieferung am nächsten Tag.",
+                            Name = "Besorger",
+                            Position = 2,
+                            TalentCode = "w5"
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Beschreibung = "Ein Buch in 1 Stunde lesen.",
+                            Name = "Schnellleser",
+                            Position = 0,
+                            TalentCode = "w6"
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Beschreibung = "1× pro Sitzung: die Spielleitung sagt, ob die Bibliothek ein Buch zu einem Thema hat.",
+                            Name = "Querverweis",
+                            Position = 1,
+                            TalentCode = "w6"
+                        },
+                        new
+                        {
+                            Id = 51,
+                            Beschreibung = "Alte und fremde Schriften lesen +20.",
+                            Name = "Gelehrtenzunge",
+                            Position = 2,
+                            TalentCode = "w6"
+                        },
+                        new
+                        {
+                            Id = 52,
+                            Beschreibung = "Etikette bei offiziellen Anlässen +20.",
+                            Name = "Parkett",
+                            Position = 0,
+                            TalentCode = "w7"
+                        },
+                        new
+                        {
+                            Id = 53,
+                            Beschreibung = "Rang und Herkunft einer Person ohne Probe erkennen.",
+                            Name = "Rangkenner",
+                            Position = 1,
+                            TalentCode = "w7"
+                        },
+                        new
+                        {
+                            Id = 54,
+                            Beschreibung = "1× pro Mission Zutritt zu einer geschlossenen Veranstaltung.",
+                            Name = "Einladung",
+                            Position = 2,
+                            TalentCode = "w7"
+                        },
+                        new
+                        {
+                            Id = 55,
+                            Beschreibung = "Bräuche und Feiertage ohne Probe kennen.",
+                            Name = "Brauchtum",
+                            Position = 0,
+                            TalentCode = "w8"
+                        },
+                        new
+                        {
+                            Id = 56,
+                            Beschreibung = "1× pro Mission gibt die Spielleitung einen Hinweis aus alten Geschichten.",
+                            Name = "Ahnenwissen",
+                            Position = 1,
+                            TalentCode = "w8"
+                        },
+                        new
+                        {
+                            Id = 57,
+                            Beschreibung = "Zauberproben für Zauber mit Anwendung „Ritual“ +20.",
+                            Name = "Ritualmeister",
+                            Position = 2,
+                            TalentCode = "w8"
+                        },
+                        new
+                        {
+                            Id = 58,
+                            Beschreibung = "Soziale Proben gegenüber Lehrkräften +20.",
+                            Name = "Lehrerliebling",
+                            Position = 0,
+                            TalentCode = "w9"
+                        },
+                        new
+                        {
+                            Id = 59,
+                            Beschreibung = "1× pro Sitzung eine Wissensprobe mit Schulwissen statt mit dem eigentlichen Talent würfeln.",
+                            Name = "Spickzettel",
+                            Position = 1,
+                            TalentCode = "w9"
+                        },
+                        new
+                        {
+                            Id = 60,
+                            Beschreibung = "1× pro Schuljahr eine Note um eine Stufe verbessern.",
+                            Name = "Streber",
+                            Position = 2,
+                            TalentCode = "w9"
+                        },
+                        new
+                        {
+                            Id = 61,
+                            Beschreibung = "Lügen erkennen mit Vorteil.",
+                            Name = "Lügenblick",
+                            Position = 0,
+                            TalentCode = "s0"
+                        },
+                        new
+                        {
+                            Id = 62,
+                            Beschreibung = "Grundhaltung des Gegenübers ohne Probe erkennen: freundlich, neutral oder feindlich.",
+                            Name = "Stimmungsbild",
+                            Position = 1,
+                            TalentCode = "s0"
+                        },
+                        new
+                        {
+                            Id = 63,
+                            Beschreibung = "Bei Erfolg: die nächste soziale Probe der Gruppe gegen diese Person +20.",
+                            Name = "Wunder Punkt",
+                            Position = 2,
+                            TalentCode = "s0"
+                        },
+                        new
+                        {
+                            Id = 64,
+                            Beschreibung = "Im Kampf als Bonusaktion. Bei Erfolg hat der nächste Angriff des Ziels Nachteil.",
+                            Name = "Schnelles Mundwerk",
+                            Position = 0,
+                            TalentCode = "s1"
+                        },
+                        new
+                        {
+                            Id = 65,
+                            Beschreibung = "1× pro Szene ein misslungenes Überreden wiederholen.",
+                            Name = "Zweite Chance",
+                            Position = 1,
+                            TalentCode = "s1"
+                        },
+                        new
+                        {
+                            Id = 66,
+                            Beschreibung = "Überredete Personen halten ihr Wort bis zum Ende der Szene.",
+                            Name = "Handschlag",
+                            Position = 2,
+                            TalentCode = "s1"
+                        },
+                        new
+                        {
+                            Id = 67,
+                            Beschreibung = "Preise −20 %.",
+                            Name = "Feilscher",
+                            Position = 0,
+                            TalentCode = "s2"
+                        },
+                        new
+                        {
+                            Id = 68,
+                            Beschreibung = "Den Wert einer Ware ohne Probe kennen.",
+                            Name = "Warenkunde",
+                            Position = 1,
+                            TalentCode = "s2"
+                        },
+                        new
+                        {
+                            Id = 69,
+                            Beschreibung = "1 Gegenstand pro Woche bei bekannten Händlern auf Pump.",
+                            Name = "Kreditwürdig",
+                            Position = 2,
+                            TalentCode = "s2"
+                        },
+                        new
+                        {
+                            Id = 70,
+                            Beschreibung = "Erkennen-Proben gegen dich −20.",
+                            Name = "Pokerface",
+                            Position = 0,
+                            TalentCode = "s3"
+                        },
+                        new
+                        {
+                            Id = 71,
+                            Beschreibung = "Verkleiden +20.",
+                            Name = "Maske",
+                            Position = 1,
+                            TalentCode = "s3"
+                        },
+                        new
+                        {
+                            Id = 72,
+                            Beschreibung = "1× pro Kampf: der eigene nächste Angriff hat Vorteil.",
+                            Name = "Finte",
+                            Position = 2,
+                            TalentCode = "s3"
+                        },
+                        new
+                        {
+                            Id = 73,
+                            Beschreibung = "Bei Erfolg erfährt man zusätzlich ein Geheimnis des Ziels.",
+                            Name = "Druckmittel",
+                            Position = 0,
+                            TalentCode = "s4"
+                        },
+                        new
+                        {
+                            Id = 74,
+                            Beschreibung = "Erpressen gegen Jüngere +20.",
+                            Name = "Großer Schatten",
+                            Position = 1,
+                            TalentCode = "s4"
+                        },
+                        new
+                        {
+                            Id = 75,
+                            Beschreibung = "Erpresste verraten dich nicht, solange die Erpressung läuft.",
+                            Name = "Schweigegeld",
+                            Position = 2,
+                            TalentCode = "s4"
+                        },
+                        new
+                        {
+                            Id = 76,
+                            Beschreibung = "Panik bei einem Verbündeten ohne Probe aufheben.",
+                            Name = "Ruhepol",
+                            Position = 0,
+                            TalentCode = "s5"
+                        },
+                        new
+                        {
+                            Id = 77,
+                            Beschreibung = "Tiere beruhigen +20.",
+                            Name = "Tierflüsterer",
+                            Position = 1,
+                            TalentCode = "s5"
+                        },
+                        new
+                        {
+                            Id = 78,
+                            Beschreibung = "1× pro Mission pausiert ein Kampf für 1 Runde, alle dürfen reden.",
+                            Name = "Waffenruhe",
+                            Position = 2,
+                            TalentCode = "s5"
+                        },
+                        new
+                        {
+                            Id = 79,
+                            Beschreibung = "Ablenken als Bonusaktion.",
+                            Name = "Taschenspieler",
+                            Position = 0,
+                            TalentCode = "s6"
+                        },
+                        new
+                        {
+                            Id = 80,
+                            Beschreibung = "Bei Erfolg kann sich ein Verbündeter 1 Runde lang unbemerkt bewegen.",
+                            Name = "Lockvogel",
+                            Position = 1,
+                            TalentCode = "s6"
+                        },
+                        new
+                        {
+                            Id = 81,
+                            Beschreibung = "Bei Erfolg ist die Aufsicht (Lehrkräfte, Vertrauensschüler) 10 Minuten weg.",
+                            Name = "Fehlalarm",
+                            Position = 2,
+                            TalentCode = "s6"
+                        },
+                        new
+                        {
+                            Id = 82,
+                            Beschreibung = "Eine Probe gilt für alle Zuhörer.",
+                            Name = "Redner",
+                            Position = 0,
+                            TalentCode = "s7"
+                        },
+                        new
+                        {
+                            Id = 83,
+                            Beschreibung = "Mit einem Beweis +20.",
+                            Name = "Faktenlage",
+                            Position = 1,
+                            TalentCode = "s7"
+                        },
+                        new
+                        {
+                            Id = 84,
+                            Beschreibung = "Überzeugte Verbündete: nächste Probe +10.",
+                            Name = "Mitreißend",
+                            Position = 2,
+                            TalentCode = "s7"
+                        },
+                        new
+                        {
+                            Id = 85,
+                            Beschreibung = "Provozieren: Ein gereiztes Ziel greift 1 Runde lang nur dich an.",
+                            Name = "Weißglut",
+                            Position = 0,
+                            TalentCode = "s8"
+                        },
+                        new
+                        {
+                            Id = 86,
+                            Beschreibung = "Flirten: Eine erfolgreich angeflirtete Person erfüllt dir eine kleine Bitte ohne weitere Probe.",
+                            Name = "Charmeur",
+                            Position = 1,
+                            TalentCode = "s8"
+                        },
+                        new
+                        {
+                            Id = 87,
+                            Beschreibung = "Misslingt Reizen, darfst du es sofort 1× als das andere wiederholen: aus dem Flirt wird eine Provokation oder umgekehrt.",
+                            Name = "Doppeltes Spiel",
+                            Position = 2,
+                            TalentCode = "s8"
+                        },
+                        new
+                        {
+                            Id = 88,
+                            Beschreibung = "Eine Rast mit Geschichte: die Gruppe heilt +1W10 LP.",
+                            Name = "Lagerfeuer",
+                            Position = 0,
+                            TalentCode = "s9"
+                        },
+                        new
+                        {
+                            Id = 89,
+                            Beschreibung = "Ein Gerücht ist am nächsten Tag in der ganzen Schule bekannt.",
+                            Name = "Gerücht",
+                            Position = 1,
+                            TalentCode = "s9"
+                        },
+                        new
+                        {
+                            Id = 90,
+                            Beschreibung = "Die erste soziale Probe in einer neuen Umgebung +20.",
+                            Name = "Legende",
+                            Position = 2,
+                            TalentCode = "s9"
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Mission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notiz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Nummer")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StartText")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Ziel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("Missionen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MissionHinweis", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Erledigt")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MissionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MissionId");
+
+                    b.ToTable("MissionHinweise", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int?>("Farbe")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("Geburtstag")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("HassfachId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Herkunft")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Leistungsdruck")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("LieblingsfachId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Magie")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("Notenschnitt")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<string>("Notiz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Patronus")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Rolle")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("Sitzplatz")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Spitzname")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Spottname")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HassfachId");
+
+                    b.HasIndex("LieblingsfachId");
+
+                    b.HasIndex("SpielfigurId")
+                        .IsUnique()
+                        .HasFilter("[SpielfigurId] IS NOT NULL");
+
+                    b.HasIndex("KampagneId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("Mitschueler");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MitschuelerAg", b =>
+                {
+                    b.Property<int>("MitschuelerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AgCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("MitschuelerId", "AgCode");
+
+                    b.HasIndex("AgCode");
+
+                    b.ToTable("MitschuelerAgs", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MitschuelerMeinung", b =>
+                {
+                    b.Property<int>("MitschuelerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Thema")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Wert")
+                        .HasColumnType("int");
+
+                    b.HasKey("MitschuelerId", "Thema");
+
+                    b.ToTable("MitschuelerMeinungen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Nachsitzen", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DatumText")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("ErstelltAm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Grund")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("LehrerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LehrerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("MissionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Strafe")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Verfallen")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("LehrerId");
+
+                    b.HasIndex("MissionId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("Nachsitzen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ProtokollBeteiligter", b =>
+                {
+                    b.Property<int>("ProtokollEintragId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProtokollEintragId", "SpielfigurId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("ProtokollBeteiligte", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ProtokollEintrag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ErstelltAm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("Spieltag")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("ProtokollEintraege", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("Abgabe")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("AbgegebenAm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Auftrag")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("BegleiterId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly?>("Bis")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("Entwurf")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("KalenderTerminId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Lehrer")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Nummer")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Ort")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Rueckmeldung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("SchreiberMitschuelerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SchreiberSpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateOnly?>("Von")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BegleiterId");
+
+                    b.HasIndex("KalenderTerminId");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("SchreiberMitschuelerId");
+
+                    b.HasIndex("SchreiberSpielfigurId");
+
+                    b.ToTable("Protokollhefte", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Pruefungseintrag", b =>
+                {
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Abschnitt")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Teil")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Wert")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("SpielfigurId", "Abschnitt", "Teil");
+
+                    b.ToTable("Pruefungseintraege");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatAntrag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("AbgestimmtAm")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Ergebnis")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("Gewicht")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<string>("Haltung")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Monat")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schluessel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Thema")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Von")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("WirktInApp")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Wirkung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Monat");
+
+                    b.ToTable("RatAntraege", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatGefallen", b =>
+                {
+                    b.Property<int>("RatAntragId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MitschuelerId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Erledigt")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RatAntragId", "MitschuelerId");
+
+                    b.HasIndex("MitschuelerId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("RatGefallen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatPlanung", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("Basis")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Monat")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<string>("Schluessel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("Slot")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Thema")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Titel")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("WirktInApp")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Wirkung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Monat", "Slot")
+                        .IsUnique();
+
+                    b.ToTable("RatPlanungen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatRegel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("AufgehobenAm")
+                        .HasColumnType("date");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RatAntragId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schluessel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<DateOnly?>("Seit")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Thema")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("WirktInApp")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Wirkung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("RatAntragId");
+
+                    b.ToTable("RatRegeln", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatStimme", b =>
+                {
+                    b.Property<int>("RatAntragId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Klasse")
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<bool>("Ja")
+                        .HasColumnType("bit");
+
+                    b.HasKey("RatAntragId", "Klasse");
+
+                    b.ToTable("RatStimmen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatTagesordnungspunkt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Erledigt")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Von")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("RatTagesordnungspunkte", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatUnterschrift", b =>
+                {
+                    b.Property<int>("RatAntragId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MitschuelerId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Verweigert")
+                        .HasColumnType("bit");
+
+                    b.HasKey("RatAntragId", "MitschuelerId");
+
+                    b.HasIndex("MitschuelerId");
+
+                    b.ToTable("RatUnterschriften", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatVerbrauchterAntrag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schluessel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Schluessel")
+                        .IsUnique();
+
+                    b.ToTable("RatVerbrauchteAntraege", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Rezept", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Modifikator")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Wirkung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("Rezepte", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RezeptZutat", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Menge")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RezeptId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RezeptId");
+
+                    b.ToTable("RezeptZutaten", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrAbschnitt", b =>
+                {
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Abschnitt")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Wert")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("SpielfigurId", "Abschnitt");
+
+                    b.ToTable("SchuljahrAbschnitte", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrBilanz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Datum")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Jahr")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Jahr")
+                        .IsUnique();
+
+                    b.ToTable("SchuljahrBilanzen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrBilanzSpielfigur", b =>
+                {
+                    b.Property<int>("SchuljahrBilanzId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Abschnitt")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("AgPunkte")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<decimal?>("Fachpunkte")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<decimal?>("Haltungspunkte")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal?>("Schnitt")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.HasKey("SchuljahrBilanzId", "SpielfigurId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("SchuljahrBilanzSpielfiguren", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrZeugnisnote", b =>
+                {
+                    b.Property<int>("SchuljahrBilanzId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FachId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Schnitt")
+                        .HasPrecision(9, 2)
+                        .HasColumnType("decimal(9,2)");
+
+                    b.HasKey("SchuljahrBilanzId", "SpielfigurId", "FachId");
+
+                    b.HasIndex("FachId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("SchuljahrZeugnisnoten", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Schulnote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("FachId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FachId");
+
+                    b.HasIndex("SpielfigurId", "FachId", "Position")
+                        .IsUnique();
+
+                    b.ToTable("Schulnoten");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchwarzmarktVerkauf", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("SchwarzmarktVerkaeufe", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchwarzmarktWare", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("Bestand")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Kategorie")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Notiz")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Preis")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("SchwarzmarktWaren", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Sonderzauber", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("Person")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Titel")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("Sonderzauber", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "elma-fische",
+                            Person = "Elma",
+                            Titel = "Zusatzzauber — Fauna/Ichtyo"
+                        },
+                        new
+                        {
+                            Code = "levi-rauch",
+                            Person = "Levi",
+                            Titel = "Zusatzzauber — Feuer/Rauch"
+                        },
+                        new
+                        {
+                            Code = "darius-schleim",
+                            Person = "Darius",
+                            Titel = "Zusatzzauber — Wasser/Schleim"
+                        },
+                        new
+                        {
+                            Code = "svea-euphorie",
+                            Person = "Svea",
+                            Titel = "Zusatzzauber — Kunst/Euphorie"
+                        },
+                        new
+                        {
+                            Code = "rigel-kosmos",
+                            Person = "Rigel",
+                            Titel = "Zusatzzauber — Dunkel/Kosmos"
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SonderzauberAufgedeckt", b =>
+                {
+                    b.Property<int>("SonderzauberStandId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.HasKey("SonderzauberStandId", "Position");
+
+                    b.ToTable("SonderzauberAufgedeckt", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SonderzauberOption", b =>
+                {
+                    b.Property<string>("SonderzauberCode")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Anwendung")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Schaden")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("Slots")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Wirkung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SonderzauberCode", "Position");
+
+                    b.ToTable("SonderzauberOptionen", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            SonderzauberCode = "elma-fische",
+                            Position = 0,
+                            Anwendung = "Ritual",
+                            Name = "Panzerfisch",
+                            Schaden = "+25 RÜW bis zum nächsten eigenen Zug",
+                            Slots = 3,
+                            Wirkung = "Anwender legt sich einen schweren Knochenpanzer an, an dem selbst harte Treffer abprallen."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "elma-fische",
+                            Position = 1,
+                            Anwendung = "Blickkontakt",
+                            Name = "Schwarmschutz",
+                            Schaden = "+15 RÜW für den Verbündeten bis zu seinem nächsten Zug",
+                            Slots = 2,
+                            Wirkung = "Anwender lässt einen Schwarm schimmernder Fische um einen Verbündeten kreisen, der Treffer abfängt."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "elma-fische",
+                            Position = 2,
+                            Anwendung = "Ritual",
+                            Name = "Kugelfisch",
+                            Schaden = "Bei gegnerischem Nahkampf-Treffer: 1W10 Schaden zurück (bis zum nächsten eigenen Zug)",
+                            Slots = 2,
+                            Wirkung = "Anwender bläht sich auf und stellt Stacheln auf, an denen sich Angreifer verletzen."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "elma-fische",
+                            Position = 3,
+                            Anwendung = "Ritual",
+                            Name = "Schwarmwand",
+                            Schaden = "Blockt den nächsten Fernangriff auf den Anwender komplett",
+                            Slots = 3,
+                            Wirkung = "Anwender ruft einen dichten Schwarm Fische herbei, der sich wie eine lebende Wand vor ihn schiebt und Geschosse abfängt."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "levi-rauch",
+                            Position = 0,
+                            Anwendung = "Berührung",
+                            Name = "Rauchbund",
+                            Schaden = "Kein eigener Schaden — nächster Ätherwaffen-Treffer +1W10",
+                            Slots = 2,
+                            Wirkung = "Anwender umhüllt die eigene Ätherwaffe mit Rauch, der sich beim nächsten Treffer entlädt."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "levi-rauch",
+                            Position = 1,
+                            Anwendung = "Berührung",
+                            Name = "Kohlefaust",
+                            Schaden = "3W10",
+                            Slots = 3,
+                            Wirkung = "Anwender verdichtet Rauch zu glühender Kohle und schlägt mit voller Wucht zu."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "levi-rauch",
+                            Position = 2,
+                            Anwendung = "Ritual",
+                            Name = "Glutnebel",
+                            Schaden = "1W10 pro Zug, 2 Züge lang (Fläche)",
+                            Slots = 3,
+                            Wirkung = "Anwender lässt eine schwelende Rauchwolke am Zielort entstehen, die alle darin stehenden Gegner versengt."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "levi-rauch",
+                            Position = 3,
+                            Anwendung = "Sichtkontakt",
+                            Name = "Rußwurf",
+                            Schaden = "2W10 — nächster Angriff des Ziels = Nachteil",
+                            Slots = 2,
+                            Wirkung = "Anwender schleudert einen Klumpen heißen Rußes auf einen Gegner, der ihm beißend in die Augen fährt."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "darius-schleim",
+                            Position = 0,
+                            Anwendung = "Berührung",
+                            Name = "Schleimkokon",
+                            Schaden = "+2W10 Heilung",
+                            Slots = 3,
+                            Wirkung = "Anwender hüllt einen Verbündeten in einen weichen Schleimkokon, in dem sich Wunden rasch schließen."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "darius-schleim",
+                            Position = 1,
+                            Anwendung = "Berührung",
+                            Name = "Gallertpolster",
+                            Schaden = "+10 LP bis zum Ende des Kampfes",
+                            Slots = 2,
+                            Wirkung = "Anwender legt einem Verbündeten eine dicke, federnde Gallertschicht an, die zusätzlich Kraft spendet."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "darius-schleim",
+                            Position = 2,
+                            Anwendung = "Berührung",
+                            Name = "Reinigungsschleim",
+                            Schaden = "−1 Effekt beim Verbündeten",
+                            Slots = 2,
+                            Wirkung = "Anwender streicht heilenden Schleim über einen Verbündeten und löst so einen schädlichen Einfluss."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "darius-schleim",
+                            Position = 3,
+                            Anwendung = "Ritual",
+                            Name = "Rutschbahn",
+                            Schaden = "Gegner im Gebiet: nächster Angriff = Nachteil",
+                            Slots = 3,
+                            Wirkung = "Anwender überzieht den Boden am Zielort mit glitschigem Schleim, auf dem Gegner ins Straucheln geraten."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "svea-euphorie",
+                            Position = 0,
+                            Anwendung = "Ritual",
+                            Name = "Jubelchor",
+                            Schaden = "Alle Verbündeten: nächste Probe = Vorteil",
+                            Slots = 3,
+                            Wirkung = "Anwender stimmt eine ansteckende Hochstimmung an, die alle Verbündeten mitreißt."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "svea-euphorie",
+                            Position = 1,
+                            Anwendung = "Berührung",
+                            Name = "Überschwang",
+                            Schaden = "Nächster Schadenswurf des Verbündeten +1W10",
+                            Slots = 2,
+                            Wirkung = "Anwender lädt einen Verbündeten mit so viel Begeisterung auf, dass dessen nächster Schlag kräftiger ausfällt."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "svea-euphorie",
+                            Position = 2,
+                            Anwendung = "Blickkontakt",
+                            Name = "Ansteckendes Lachen",
+                            Schaden = "Nächste soziale Probe = Vorteil",
+                            Slots = 2,
+                            Wirkung = "Anwender bringt ein Gegenüber zum Lachen und öffnet es für ein freundliches Wort."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "svea-euphorie",
+                            Position = 3,
+                            Anwendung = "Ritual",
+                            Name = "Festtagsstimmung",
+                            Schaden = "Alle Verbündeten: +1W10 Heilung",
+                            Slots = 3,
+                            Wirkung = "Anwender verbreitet ausgelassene Feierlaune, die alle Verbündeten in Sichtweite aufatmen lässt."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "rigel-kosmos",
+                            Position = 0,
+                            Anwendung = "Ritual",
+                            Name = "Siriusblick",
+                            Schaden = "Kein eigener Schaden — nächste MAGW-Probe = Vorteil",
+                            Slots = 2,
+                            Wirkung = "Anwender taucht die eigenen Augen in kaltes Sternenlicht und erkennt dadurch Verborgenes."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "rigel-kosmos",
+                            Position = 1,
+                            Anwendung = "Sichtkontakt",
+                            Name = "Anziehung",
+                            Schaden = "Kein eigener Schaden",
+                            Slots = 2,
+                            Wirkung = "Anwender lässt einen Gegenstand in Reichweite wie von einer Gravitation gezogen zu sich heranschweben."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "rigel-kosmos",
+                            Position = 2,
+                            Anwendung = "Ritual",
+                            Name = "Sternenkarte",
+                            Schaden = "Kein eigener Schaden — Himmelsrichtung und Uhrzeit sind bekannt",
+                            Slots = 2,
+                            Wirkung = "Anwender liest den Sternenhimmel und kennt Himmelsrichtung und ungefähre Uhrzeit, auch bei bedecktem Himmel."
+                        },
+                        new
+                        {
+                            SonderzauberCode = "rigel-kosmos",
+                            Position = 3,
+                            Anwendung = "Berührung",
+                            Name = "Sternenstaub",
+                            Schaden = "Kein eigener Schaden",
+                            Slots = 2,
+                            Wirkung = "Anwender streut funkelnden Sternenstaub auf einen Gegenstand, der Schmutz, Staub und Flecken verschluckt."
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SonderzauberStand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("GewaehltePosition")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SonderzauberCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SonderzauberCode");
+
+                    b.HasIndex("KampagneId", "SonderzauberCode")
+                        .IsUnique();
+
+                    b.ToTable("SonderzauberStaende", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SpeiseplanEintrag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GerichtCode")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Mahlzeit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateOnly>("Woche")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Wochentag")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GerichtCode");
+
+                    b.HasIndex("KampagneId", "Woche", "Wochentag", "Mahlzeit")
+                        .IsUnique();
+
+                    b.ToTable("SpeiseplanEintraege", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Bonuspunkte")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Geld")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LebenspunkteAktuell")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LebenspunkteMax")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Meilenstein2")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Meilenstein3")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId");
+
+                    b.HasIndex("KampagneId", "CharacterId")
+                        .IsUnique();
+
+                    b.HasIndex("KampagneId", "Position")
+                        .IsUnique();
+
+                    b.ToTable("Spielfiguren");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SpielfigurFachStufe", b =>
+                {
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FachId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Stufe")
+                        .HasColumnType("int");
+
+                    b.HasKey("SpielfigurId", "FachId");
+
+                    b.HasIndex("FachId");
+
+                    b.ToTable("SpielfigurFachStufen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SpielfigurMeisterschaft", b =>
+                {
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MeisterschaftDefinitionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SpielfigurId", "MeisterschaftDefinitionId");
+
+                    b.HasIndex("MeisterschaftDefinitionId");
+
+                    b.ToTable("SpielfigurMeisterschaften");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.StufenWahl", b =>
+                {
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FachId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Stufe")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Wahl")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("SpielfigurId", "FachId", "Stufe");
+
+                    b.HasIndex("FachId");
+
+                    b.ToTable("StufenWahlen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Talent", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("BegabungCode")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.HasKey("Code");
+
+                    b.HasIndex("BegabungCode", "Position")
+                        .IsUnique();
+
+                    b.ToTable("Talente", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "h0",
+                            BegabungCode = "h",
+                            Name = "Wahrnehmung",
+                            Position = 0
+                        },
+                        new
+                        {
+                            Code = "h1",
+                            BegabungCode = "h",
+                            Name = "Magisches Gespür",
+                            Position = 1
+                        },
+                        new
+                        {
+                            Code = "h2",
+                            BegabungCode = "h",
+                            Name = "Akrobatik",
+                            Position = 2
+                        },
+                        new
+                        {
+                            Code = "h3",
+                            BegabungCode = "h",
+                            Name = "Motorik",
+                            Position = 3
+                        },
+                        new
+                        {
+                            Code = "h4",
+                            BegabungCode = "h",
+                            Name = "Verschleierung",
+                            Position = 4
+                        },
+                        new
+                        {
+                            Code = "h5",
+                            BegabungCode = "h",
+                            Name = "Körperkraft",
+                            Position = 5
+                        },
+                        new
+                        {
+                            Code = "h6",
+                            BegabungCode = "h",
+                            Name = "Elementarismus",
+                            Position = 6
+                        },
+                        new
+                        {
+                            Code = "h7",
+                            BegabungCode = "h",
+                            Name = "Silizieren",
+                            Position = 7
+                        },
+                        new
+                        {
+                            Code = "h8",
+                            BegabungCode = "h",
+                            Name = "Auritieren",
+                            Position = 8
+                        },
+                        new
+                        {
+                            Code = "h9",
+                            BegabungCode = "h",
+                            Name = "Ätherfechten",
+                            Position = 9
+                        },
+                        new
+                        {
+                            Code = "w0",
+                            BegabungCode = "w",
+                            Name = "Industriewissen",
+                            Position = 0
+                        },
+                        new
+                        {
+                            Code = "w1",
+                            BegabungCode = "w",
+                            Name = "Fabriksicherheit",
+                            Position = 1
+                        },
+                        new
+                        {
+                            Code = "w2",
+                            BegabungCode = "w",
+                            Name = "Metallurgie",
+                            Position = 2
+                        },
+                        new
+                        {
+                            Code = "w3",
+                            BegabungCode = "w",
+                            Name = "Medizin",
+                            Position = 3
+                        },
+                        new
+                        {
+                            Code = "w4",
+                            BegabungCode = "w",
+                            Name = "Telegrafie",
+                            Position = 4
+                        },
+                        new
+                        {
+                            Code = "w5",
+                            BegabungCode = "w",
+                            Name = "Stadtwissen",
+                            Position = 5
+                        },
+                        new
+                        {
+                            Code = "w6",
+                            BegabungCode = "w",
+                            Name = "Literatur",
+                            Position = 6
+                        },
+                        new
+                        {
+                            Code = "w7",
+                            BegabungCode = "w",
+                            Name = "Etikette",
+                            Position = 7
+                        },
+                        new
+                        {
+                            Code = "w8",
+                            BegabungCode = "w",
+                            Name = "Tradition",
+                            Position = 8
+                        },
+                        new
+                        {
+                            Code = "w9",
+                            BegabungCode = "w",
+                            Name = "Schulwissen",
+                            Position = 9
+                        },
+                        new
+                        {
+                            Code = "s0",
+                            BegabungCode = "s",
+                            Name = "Erkennen",
+                            Position = 0
+                        },
+                        new
+                        {
+                            Code = "s1",
+                            BegabungCode = "s",
+                            Name = "Überreden",
+                            Position = 1
+                        },
+                        new
+                        {
+                            Code = "s2",
+                            BegabungCode = "s",
+                            Name = "Kontorieren",
+                            Position = 2
+                        },
+                        new
+                        {
+                            Code = "s3",
+                            BegabungCode = "s",
+                            Name = "Täuschen",
+                            Position = 3
+                        },
+                        new
+                        {
+                            Code = "s4",
+                            BegabungCode = "s",
+                            Name = "Erpressen",
+                            Position = 4
+                        },
+                        new
+                        {
+                            Code = "s5",
+                            BegabungCode = "s",
+                            Name = "Beruhigen",
+                            Position = 5
+                        },
+                        new
+                        {
+                            Code = "s6",
+                            BegabungCode = "s",
+                            Name = "Ablenken",
+                            Position = 6
+                        },
+                        new
+                        {
+                            Code = "s7",
+                            BegabungCode = "s",
+                            Name = "Überzeugen",
+                            Position = 7
+                        },
+                        new
+                        {
+                            Code = "s8",
+                            BegabungCode = "s",
+                            Name = "Reizen",
+                            Position = 8
+                        },
+                        new
+                        {
+                            Code = "s9",
+                            BegabungCode = "s",
+                            Name = "Erzählen",
+                            Position = 9
+                        });
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.TalentWert", b =>
+                {
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TalentCode")
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<int>("Wert")
+                        .HasColumnType("int");
+
+                    b.HasKey("SpielfigurId", "TalentCode");
+
+                    b.HasIndex("TalentCode");
+
+                    b.ToTable("TalentWerte");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.TalentZiel", b =>
+                {
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schluessel")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TalentCode")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.HasKey("SpielfigurId", "Schluessel");
+
+                    b.HasIndex("TalentCode");
+
+                    b.ToTable("TalentZiele");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.TeamNotiz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeamCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamCode");
+
+                    b.HasIndex("KampagneId", "TeamCode")
+                        .IsUnique();
+
+                    b.ToTable("TeamNotizen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Waffenwurf", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schaden")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Waffenart")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("Waffenwuerfe", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Wettbewerb", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Disziplin")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Ermittlung")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("Wettbewerbe", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettbewerbPlatzierung", b =>
+                {
+                    b.Property<int>("WettbewerbId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeamCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Platz")
+                        .HasColumnType("int");
+
+                    b.HasKey("WettbewerbId", "TeamCode");
+
+                    b.HasIndex("TeamCode");
+
+                    b.ToTable("WettbewerbPlatzierungen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfErgebnis", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Art")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("Ausgewuerfelt")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DatumText")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Platz")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SiegerTeamCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Starter")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("SiegerTeamCode");
+
+                    b.ToTable("WettkampfErgebnisse", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfNpc", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Art")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("Grundwert")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Jahrgang")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Art", "Code")
+                        .IsUnique();
+
+                    b.ToTable("WettkampfNpcs", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfNpcWert", b =>
+                {
+                    b.Property<int>("WettkampfNpcId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Schluessel")
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<int>("Wert")
+                        .HasColumnType("int");
+
+                    b.HasKey("WettkampfNpcId", "Schluessel");
+
+                    b.ToTable("WettkampfNpcWerte", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfStand", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Art")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LaufendesClubduellJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LaufendesTurnierJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Art")
+                        .IsUnique();
+
+                    b.ToTable("WettkampfStaende", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfTeilnehmer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Art")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Gruppe")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Typ")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("WettkampfTeilnehmer", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfZeugnis", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("ErstelltAm")
+                        .HasColumnType("date");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Stichtag")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Stichtag")
+                        .IsUnique();
+
+                    b.ToTable("WettkampfZeugnisse", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfZeugnisEintrag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Art")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int?>("Platz")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("WettkampfZeugnisId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WettkampfZeugnisId");
+
+                    b.ToTable("WettkampfZeugnisEintraege", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Wirkung", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("Ab")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("Restanwendungen")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("Wirkungen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelFeld", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Feld")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<bool>("Gefunden")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("GesperrtBis")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Nr")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Seite")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Nr", "Seite", "Feld")
+                        .IsUnique();
+
+                    b.ToTable("ZirkelFelder", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelMordfall", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxVersuche")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Motiv")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("MotivAufgedeckt")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("OpferGeloest")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("OpferNr")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RestVersucheOpfer")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RestVersucheTaeter")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("TaeterGeloest")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("TaeterNr")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TaeterSeite")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId")
+                        .IsUnique();
+
+                    b.ToTable("ZirkelMordfaelle", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelNotiz", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Bestaetigt")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ErstelltAm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Nr")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Seite")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int?>("SpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Typ")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.HasIndex("SpielfigurId");
+
+                    b.ToTable("ZirkelNotizen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelPerson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Beruf")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Figur")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Geschlecht")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Magie")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Nachname")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Nr")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Seite")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Vorname")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId", "Nr", "Seite")
+                        .IsUnique();
+
+                    b.ToTable("ZirkelPersonen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelVersuch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Feld")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("KampagneId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Nr")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Seite")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("SpieltagText")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Wert")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("Zeitpunkt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KampagneId");
+
+                    b.ToTable("ZirkelVersuche", (string)null);
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Infanterie", b =>
                 {
                     b.Property<int>("Id")
@@ -3248,6 +9315,2008 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Guild");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Ag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", "BonusTalent")
+                        .WithMany()
+                        .HasForeignKey("BonusTalentCode")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("BonusTalent");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.AgEintrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Ag", "Ag")
+                        .WithMany()
+                        .HasForeignKey("AgCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ag");
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.AgMitglied", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AgEintrag", "AgEintrag")
+                        .WithMany("Mitglieder")
+                        .HasForeignKey("AgEintragId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("AgEintrag");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ArchivDokument", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ArchivDokumentKategorie", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.ArchivDokument", "ArchivDokument")
+                        .WithMany("Kategorien")
+                        .HasForeignKey("ArchivDokumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.ArchivKategorie", "ArchivKategorie")
+                        .WithMany()
+                        .HasForeignKey("ArchivKategorieId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ArchivDokument");
+
+                    b.Navigation("ArchivKategorie");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ArchivKategorie", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Aufgabe", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Beziehung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "Mitschueler")
+                        .WithMany("Beziehungen")
+                        .HasForeignKey("MitschuelerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Beziehungswerte", "MitschuelerZuSpielfigur", b1 =>
+                        {
+                            b1.Property<int>("BeziehungMitschuelerId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("BeziehungSpielfigurId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Abneigung")
+                                .HasColumnType("int")
+                                .HasColumnName("Mitschueler_Abneigung");
+
+                            b1.Property<int>("Freundschaft")
+                                .HasColumnType("int")
+                                .HasColumnName("Mitschueler_Freundschaft");
+
+                            b1.Property<int>("Respekt")
+                                .HasColumnType("int")
+                                .HasColumnName("Mitschueler_Respekt");
+
+                            b1.Property<int>("Rivalitaet")
+                                .HasColumnType("int")
+                                .HasColumnName("Mitschueler_Rivalitaet");
+
+                            b1.Property<int>("Romantik")
+                                .HasColumnType("int")
+                                .HasColumnName("Mitschueler_Romantik");
+
+                            b1.HasKey("BeziehungMitschuelerId", "BeziehungSpielfigurId");
+
+                            b1.ToTable("Beziehungen");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BeziehungMitschuelerId", "BeziehungSpielfigurId");
+                        });
+
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Beziehungswerte", "SpielfigurZuMitschueler", b1 =>
+                        {
+                            b1.Property<int>("BeziehungMitschuelerId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("BeziehungSpielfigurId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Abneigung")
+                                .HasColumnType("int")
+                                .HasColumnName("Figur_Abneigung");
+
+                            b1.Property<int>("Freundschaft")
+                                .HasColumnType("int")
+                                .HasColumnName("Figur_Freundschaft");
+
+                            b1.Property<int>("Respekt")
+                                .HasColumnType("int")
+                                .HasColumnName("Figur_Respekt");
+
+                            b1.Property<int>("Rivalitaet")
+                                .HasColumnType("int")
+                                .HasColumnName("Figur_Rivalitaet");
+
+                            b1.Property<int>("Romantik")
+                                .HasColumnType("int")
+                                .HasColumnName("Figur_Romantik");
+
+                            b1.HasKey("BeziehungMitschuelerId", "BeziehungSpielfigurId");
+
+                            b1.ToTable("Beziehungen");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BeziehungMitschuelerId", "BeziehungSpielfigurId");
+                        });
+
+                    b.Navigation("Mitschueler");
+
+                    b.Navigation("MitschuelerZuSpielfigur")
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+
+                    b.Navigation("SpielfigurZuMitschueler")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Braueintrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.DuellClubBilanz", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Essenskauf", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Gericht", "Gericht")
+                        .WithMany()
+                        .HasForeignKey("GerichtCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Gericht");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Essenswirkung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.FachStufe", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Fach")
+                        .WithMany("Stufen")
+                        .HasForeignKey("FachId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fach");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Gegenstand", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("Gegenstaende")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
+                        {
+                            b1.Property<int>("GegenstandId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Art")
+                                .HasMaxLength(10)
+                                .HasColumnType("nvarchar(10)")
+                                .HasColumnName("Effekt_Art");
+
+                            b1.Property<int?>("DauerAnzahl")
+                                .HasColumnType("int")
+                                .HasColumnName("Effekt_DauerAnzahl");
+
+                            b1.Property<string>("DauerArt")
+                                .HasMaxLength(15)
+                                .HasColumnType("nvarchar(15)")
+                                .HasColumnName("Effekt_DauerArt");
+
+                            b1.Property<string>("DauerText")
+                                .HasMaxLength(40)
+                                .HasColumnType("nvarchar(40)")
+                                .HasColumnName("Effekt_DauerText");
+
+                            b1.Property<string>("TalentCode")
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Effekt_TalentCode");
+
+                            b1.Property<string>("VorteilAuf")
+                                .HasMaxLength(60)
+                                .HasColumnType("nvarchar(60)")
+                                .HasColumnName("Effekt_VorteilAuf");
+
+                            b1.Property<int?>("Wert")
+                                .HasColumnType("int")
+                                .HasColumnName("Effekt_Wert");
+
+                            b1.HasKey("GegenstandId");
+
+                            b1.HasIndex("TalentCode");
+
+                            b1.ToTable("Gegenstaende");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GegenstandId");
+
+                            b1.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", null)
+                                .WithMany()
+                                .HasForeignKey("TalentCode")
+                                .OnDelete(DeleteBehavior.NoAction);
+                        });
+
+                    b.Navigation("Effekt")
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Geldbuchung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("Geldbuchungen")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimAufstellung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimBankplatz", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimCupArchiv", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", "MeisterTeam")
+                        .WithMany()
+                        .HasForeignKey("MeisterTeamCode")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("MeisterTeam");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimKarriere", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimKarriereCup", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.GlimKarriere", "GlimKarriere")
+                        .WithMany("Cups")
+                        .HasForeignKey("GlimKarriereId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GlimKarriere");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimNachwuchs", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "Mitschueler")
+                        .WithMany()
+                        .HasForeignKey("MitschuelerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.GlimWerte", "Werte", b1 =>
+                        {
+                            b1.Property<int>("GlimNachwuchsId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Fang")
+                                .HasColumnType("int")
+                                .HasColumnName("Fang");
+
+                            b1.Property<int>("Nerven")
+                                .HasColumnType("int")
+                                .HasColumnName("Nerven");
+
+                            b1.Property<int>("Schlag")
+                                .HasColumnType("int")
+                                .HasColumnName("Schlag");
+
+                            b1.Property<int>("Tempo")
+                                .HasColumnType("int")
+                                .HasColumnName("Tempo");
+
+                            b1.Property<int>("Wurf")
+                                .HasColumnType("int")
+                                .HasColumnName("Wurf");
+
+                            b1.HasKey("GlimNachwuchsId");
+
+                            b1.ToTable("GlimNachwuchs");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GlimNachwuchsId");
+                        });
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Mitschueler");
+
+                    b.Navigation("Werte")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimNachwuchsTraining", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.GlimNachwuchs", "GlimNachwuchs")
+                        .WithMany("Training")
+                        .HasForeignKey("GlimNachwuchsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GlimNachwuchs");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimPlayoff", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", "GastTeam")
+                        .WithMany()
+                        .HasForeignKey("GastTeamCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", "HeimTeam")
+                        .WithMany()
+                        .HasForeignKey("HeimTeamCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GastTeam");
+
+                    b.Navigation("HeimTeam");
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSaisonErgebnis", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSaisonStatistik", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpiel", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", "GegnerTeam")
+                        .WithMany()
+                        .HasForeignKey("GegnerTeamCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GegnerTeam");
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpielLogEintrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.GlimSpiel", "GlimSpiel")
+                        .WithMany("Log")
+                        .HasForeignKey("GlimSpielId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GlimSpiel");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpielStatistik", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.GlimSpiel", "GlimSpiel")
+                        .WithMany("Statistik")
+                        .HasForeignKey("GlimSpielId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GlimSpiel");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpieler", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.GlimWerte", "Werte", b1 =>
+                        {
+                            b1.Property<int>("GlimSpielerId")
+                                .HasColumnType("int");
+
+                            b1.Property<int>("Fang")
+                                .HasColumnType("int")
+                                .HasColumnName("Fang");
+
+                            b1.Property<int>("Nerven")
+                                .HasColumnType("int")
+                                .HasColumnName("Nerven");
+
+                            b1.Property<int>("Schlag")
+                                .HasColumnType("int")
+                                .HasColumnName("Schlag");
+
+                            b1.Property<int>("Tempo")
+                                .HasColumnType("int")
+                                .HasColumnName("Tempo");
+
+                            b1.Property<int>("Wurf")
+                                .HasColumnType("int")
+                                .HasColumnName("Wurf");
+
+                            b1.HasKey("GlimSpielerId");
+
+                            b1.ToTable("GlimSpieler");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GlimSpielerId");
+                        });
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Werte")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimTeamStaerke", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimTraining", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.GlimSpieler", "GlimSpieler")
+                        .WithMany("Training")
+                        .HasForeignKey("GlimSpielerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GlimSpieler");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimTrikotnummer", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimVerletzung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftAblauf", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("Ablauf")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftAbschnitt", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("Abschnitte")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftCheck", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("Checks")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftFehlend", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("Fehlend")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftFrage", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("Fragen")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftJederEintrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("JederEintraege")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftNotiz", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("Notizen")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftNotizUebernahme", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.HeftNotiz", "HeftNotiz")
+                        .WithMany("Uebernommen")
+                        .HasForeignKey("HeftNotizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HeftNotiz");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftPerson", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("Personen")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftSchwerpunkt", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", "Protokollheft")
+                        .WithMany("Schwerpunkte")
+                        .HasForeignKey("ProtokollheftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Protokollheft");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KalenderTermin", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Kampagne", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.GameWorld", "GameWorld")
+                        .WithMany()
+                        .HasForeignKey("GameWorldId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("GameWorld");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KartenNotiz", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KartenZeit", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Klassenarbeit", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Fach")
+                        .WithMany()
+                        .HasForeignKey("FachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fach");
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KlassenarbeitMitschueler", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Klassenarbeit", "Klassenarbeit")
+                        .WithMany("Mitschueler")
+                        .HasForeignKey("KlassenarbeitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "Mitschueler")
+                        .WithMany()
+                        .HasForeignKey("MitschuelerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Klassenarbeit");
+
+                    b.Navigation("Mitschueler");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KlassenarbeitSpielfigur", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Klassenarbeit", "Klassenarbeit")
+                        .WithMany("Spielfiguren")
+                        .HasForeignKey("KlassenarbeitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Klassenarbeit");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KrankenGlimGemeldet", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Krankheitsfall", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.LadenArtikel", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
+                        {
+                            b1.Property<int>("LadenArtikelId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Art")
+                                .HasMaxLength(10)
+                                .HasColumnType("nvarchar(10)")
+                                .HasColumnName("Effekt_Art");
+
+                            b1.Property<int?>("DauerAnzahl")
+                                .HasColumnType("int")
+                                .HasColumnName("Effekt_DauerAnzahl");
+
+                            b1.Property<string>("DauerArt")
+                                .HasMaxLength(15)
+                                .HasColumnType("nvarchar(15)")
+                                .HasColumnName("Effekt_DauerArt");
+
+                            b1.Property<string>("DauerText")
+                                .HasMaxLength(40)
+                                .HasColumnType("nvarchar(40)")
+                                .HasColumnName("Effekt_DauerText");
+
+                            b1.Property<string>("TalentCode")
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Effekt_TalentCode");
+
+                            b1.Property<string>("VorteilAuf")
+                                .HasMaxLength(60)
+                                .HasColumnType("nvarchar(60)")
+                                .HasColumnName("Effekt_VorteilAuf");
+
+                            b1.Property<int?>("Wert")
+                                .HasColumnType("int")
+                                .HasColumnName("Effekt_Wert");
+
+                            b1.HasKey("LadenArtikelId");
+
+                            b1.HasIndex("TalentCode");
+
+                            b1.ToTable("LadenArtikel");
+
+                            b1.WithOwner()
+                                .HasForeignKey("LadenArtikelId");
+
+                            b1.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", null)
+                                .WithMany()
+                                .HasForeignKey("TalentCode")
+                                .OnDelete(DeleteBehavior.NoAction);
+                        });
+
+                    b.Navigation("Effekt")
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Lehrer", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.LehrerFach", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Fach")
+                        .WithMany()
+                        .HasForeignKey("FachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Lehrer", "Lehrer")
+                        .WithMany("Faecher")
+                        .HasForeignKey("LehrerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fach");
+
+                    b.Navigation("Lehrer");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.LehrerFakt", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Lehrer", "Lehrer")
+                        .WithMany("Fakten")
+                        .HasForeignKey("LehrerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lehrer");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MeisterschaftDefinition", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", "Talent")
+                        .WithMany("Meisterschaften")
+                        .HasForeignKey("TalentCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Talent");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Mission", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MissionHinweis", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mission", "Mission")
+                        .WithMany("Hinweise")
+                        .HasForeignKey("MissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mission");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Hassfach")
+                        .WithMany()
+                        .HasForeignKey("HassfachId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany("Mitschueler")
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Lieblingsfach")
+                        .WithMany()
+                        .HasForeignKey("LieblingsfachId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Hassfach");
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Lieblingsfach");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MitschuelerAg", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Ag", "Ag")
+                        .WithMany()
+                        .HasForeignKey("AgCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "Mitschueler")
+                        .WithMany("Ags")
+                        .HasForeignKey("MitschuelerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Ag");
+
+                    b.Navigation("Mitschueler");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MitschuelerMeinung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "Mitschueler")
+                        .WithMany("Meinungen")
+                        .HasForeignKey("MitschuelerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mitschueler");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Nachsitzen", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Lehrer", "Lehrer")
+                        .WithMany()
+                        .HasForeignKey("LehrerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mission", "Mission")
+                        .WithMany()
+                        .HasForeignKey("MissionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Lehrer");
+
+                    b.Navigation("Mission");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ProtokollBeteiligter", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.ProtokollEintrag", "ProtokollEintrag")
+                        .WithMany("Beteiligte")
+                        .HasForeignKey("ProtokollEintragId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ProtokollEintrag");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ProtokollEintrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "Begleiter")
+                        .WithMany()
+                        .HasForeignKey("BegleiterId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.KalenderTermin", "KalenderTermin")
+                        .WithMany()
+                        .HasForeignKey("KalenderTerminId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "SchreiberMitschueler")
+                        .WithMany()
+                        .HasForeignKey("SchreiberMitschuelerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "SchreiberSpielfigur")
+                        .WithMany()
+                        .HasForeignKey("SchreiberSpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Begleiter");
+
+                    b.Navigation("KalenderTermin");
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("SchreiberMitschueler");
+
+                    b.Navigation("SchreiberSpielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Pruefungseintrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("Pruefungen")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatAntrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatGefallen", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "Mitschueler")
+                        .WithMany()
+                        .HasForeignKey("MitschuelerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.RatAntrag", "RatAntrag")
+                        .WithMany("Gefallen")
+                        .HasForeignKey("RatAntragId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Mitschueler");
+
+                    b.Navigation("RatAntrag");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatPlanung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatRegel", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.RatAntrag", "RatAntrag")
+                        .WithMany()
+                        .HasForeignKey("RatAntragId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("RatAntrag");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatStimme", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.RatAntrag", "RatAntrag")
+                        .WithMany("Stimmen")
+                        .HasForeignKey("RatAntragId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RatAntrag");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatTagesordnungspunkt", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatUnterschrift", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", "Mitschueler")
+                        .WithMany()
+                        .HasForeignKey("MitschuelerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.RatAntrag", "RatAntrag")
+                        .WithMany("Unterschriften")
+                        .HasForeignKey("RatAntragId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mitschueler");
+
+                    b.Navigation("RatAntrag");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatVerbrauchterAntrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Rezept", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RezeptZutat", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Rezept", "Rezept")
+                        .WithMany("Zutaten")
+                        .HasForeignKey("RezeptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rezept");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrAbschnitt", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrBilanz", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrBilanzSpielfigur", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.SchuljahrBilanz", "SchuljahrBilanz")
+                        .WithMany("Spielfiguren")
+                        .HasForeignKey("SchuljahrBilanzId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("SchuljahrBilanz");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrZeugnisnote", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Fach")
+                        .WithMany()
+                        .HasForeignKey("FachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.SchuljahrBilanz", "SchuljahrBilanz")
+                        .WithMany("Zeugnis")
+                        .HasForeignKey("SchuljahrBilanzId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Fach");
+
+                    b.Navigation("SchuljahrBilanz");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Schulnote", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Fach")
+                        .WithMany()
+                        .HasForeignKey("FachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("Noten")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fach");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchwarzmarktVerkauf", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchwarzmarktWare", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
+                        {
+                            b1.Property<int>("SchwarzmarktWareId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Art")
+                                .HasMaxLength(10)
+                                .HasColumnType("nvarchar(10)")
+                                .HasColumnName("Effekt_Art");
+
+                            b1.Property<int?>("DauerAnzahl")
+                                .HasColumnType("int")
+                                .HasColumnName("Effekt_DauerAnzahl");
+
+                            b1.Property<string>("DauerArt")
+                                .HasMaxLength(15)
+                                .HasColumnType("nvarchar(15)")
+                                .HasColumnName("Effekt_DauerArt");
+
+                            b1.Property<string>("DauerText")
+                                .HasMaxLength(40)
+                                .HasColumnType("nvarchar(40)")
+                                .HasColumnName("Effekt_DauerText");
+
+                            b1.Property<string>("TalentCode")
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Effekt_TalentCode");
+
+                            b1.Property<string>("VorteilAuf")
+                                .HasMaxLength(60)
+                                .HasColumnType("nvarchar(60)")
+                                .HasColumnName("Effekt_VorteilAuf");
+
+                            b1.Property<int?>("Wert")
+                                .HasColumnType("int")
+                                .HasColumnName("Effekt_Wert");
+
+                            b1.HasKey("SchwarzmarktWareId");
+
+                            b1.HasIndex("TalentCode");
+
+                            b1.ToTable("SchwarzmarktWaren");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SchwarzmarktWareId");
+
+                            b1.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", null)
+                                .WithMany()
+                                .HasForeignKey("TalentCode")
+                                .OnDelete(DeleteBehavior.NoAction);
+                        });
+
+                    b.Navigation("Effekt")
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SonderzauberAufgedeckt", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.SonderzauberStand", "SonderzauberStand")
+                        .WithMany("Aufgedeckt")
+                        .HasForeignKey("SonderzauberStandId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SonderzauberStand");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SonderzauberOption", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Sonderzauber", "Sonderzauber")
+                        .WithMany("Optionen")
+                        .HasForeignKey("SonderzauberCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sonderzauber");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SonderzauberStand", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Sonderzauber", "Sonderzauber")
+                        .WithMany()
+                        .HasForeignKey("SonderzauberCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Sonderzauber");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SpeiseplanEintrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Gericht", "Gericht")
+                        .WithMany()
+                        .HasForeignKey("GerichtCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Gericht");
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany("Spielfiguren")
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SpielfigurFachStufe", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Fach")
+                        .WithMany()
+                        .HasForeignKey("FachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("FachStufen")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fach");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SpielfigurMeisterschaft", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.MeisterschaftDefinition", "MeisterschaftDefinition")
+                        .WithMany()
+                        .HasForeignKey("MeisterschaftDefinitionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("Meisterschaften")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MeisterschaftDefinition");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.StufenWahl", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Fach", "Fach")
+                        .WithMany()
+                        .HasForeignKey("FachId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("StufenWahlen")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fach");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Talent", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Begabung", "Begabung")
+                        .WithMany("Talente")
+                        .HasForeignKey("BegabungCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Begabung");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.TalentWert", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("Talente")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", "Talent")
+                        .WithMany()
+                        .HasForeignKey("TalentCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+
+                    b.Navigation("Talent");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.TalentZiel", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("TalentZiele")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", "Talent")
+                        .WithMany()
+                        .HasForeignKey("TalentCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+
+                    b.Navigation("Talent");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.TeamNotiz", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Waffenwurf", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Wettbewerb", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettbewerbPlatzierung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamCode")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Wettbewerb", "Wettbewerb")
+                        .WithMany("Platzierungen")
+                        .HasForeignKey("WettbewerbId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+
+                    b.Navigation("Wettbewerb");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfErgebnis", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.AkademieTeam", "SiegerTeam")
+                        .WithMany()
+                        .HasForeignKey("SiegerTeamCode")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("SiegerTeam");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfNpc", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfNpcWert", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.WettkampfNpc", "WettkampfNpc")
+                        .WithMany("Werte")
+                        .HasForeignKey("WettkampfNpcId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WettkampfNpc");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfStand", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfTeilnehmer", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfZeugnis", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfZeugnisEintrag", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.WettkampfZeugnis", "WettkampfZeugnis")
+                        .WithMany("Eintraege")
+                        .HasForeignKey("WettkampfZeugnisId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WettkampfZeugnis");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Wirkung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany("Wirkungen")
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
+                        {
+                            b1.Property<int>("WirkungId")
+                                .HasColumnType("int");
+
+                            b1.Property<string>("Art")
+                                .HasMaxLength(10)
+                                .HasColumnType("nvarchar(10)")
+                                .HasColumnName("Effekt_Art");
+
+                            b1.Property<int?>("DauerAnzahl")
+                                .HasColumnType("int")
+                                .HasColumnName("Effekt_DauerAnzahl");
+
+                            b1.Property<string>("DauerArt")
+                                .HasMaxLength(15)
+                                .HasColumnType("nvarchar(15)")
+                                .HasColumnName("Effekt_DauerArt");
+
+                            b1.Property<string>("DauerText")
+                                .HasMaxLength(40)
+                                .HasColumnType("nvarchar(40)")
+                                .HasColumnName("Effekt_DauerText");
+
+                            b1.Property<string>("TalentCode")
+                                .HasMaxLength(3)
+                                .HasColumnType("nvarchar(3)")
+                                .HasColumnName("Effekt_TalentCode");
+
+                            b1.Property<string>("VorteilAuf")
+                                .HasMaxLength(60)
+                                .HasColumnType("nvarchar(60)")
+                                .HasColumnName("Effekt_VorteilAuf");
+
+                            b1.Property<int?>("Wert")
+                                .HasColumnType("int")
+                                .HasColumnName("Effekt_Wert");
+
+                            b1.HasKey("WirkungId");
+
+                            b1.HasIndex("TalentCode");
+
+                            b1.ToTable("Wirkungen");
+
+                            b1.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", null)
+                                .WithMany()
+                                .HasForeignKey("TalentCode")
+                                .OnDelete(DeleteBehavior.NoAction);
+
+                            b1.WithOwner()
+                                .HasForeignKey("WirkungId");
+                        });
+
+                    b.Navigation("Effekt")
+                        .IsRequired();
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelFeld", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelMordfall", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelNotiz", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "Spielfigur")
+                        .WithMany()
+                        .HasForeignKey("SpielfigurId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Kampagne");
+
+                    b.Navigation("Spielfigur");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelPerson", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelVersuch", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
+                        .WithMany()
+                        .HasForeignKey("KampagneId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Kampagne");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Infanterie", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Domain.Character", "LeaderCharacter")
@@ -3788,6 +11857,188 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Guild", b =>
                 {
                     b.Navigation("Gildenlizenzen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.AgEintrag", b =>
+                {
+                    b.Navigation("Mitglieder");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ArchivDokument", b =>
+                {
+                    b.Navigation("Kategorien");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Begabung", b =>
+                {
+                    b.Navigation("Talente");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Fach", b =>
+                {
+                    b.Navigation("Stufen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimKarriere", b =>
+                {
+                    b.Navigation("Cups");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimNachwuchs", b =>
+                {
+                    b.Navigation("Training");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpiel", b =>
+                {
+                    b.Navigation("Log");
+
+                    b.Navigation("Statistik");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.GlimSpieler", b =>
+                {
+                    b.Navigation("Training");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftNotiz", b =>
+                {
+                    b.Navigation("Uebernommen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Kampagne", b =>
+                {
+                    b.Navigation("Mitschueler");
+
+                    b.Navigation("Spielfiguren");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Klassenarbeit", b =>
+                {
+                    b.Navigation("Mitschueler");
+
+                    b.Navigation("Spielfiguren");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Lehrer", b =>
+                {
+                    b.Navigation("Faecher");
+
+                    b.Navigation("Fakten");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Mission", b =>
+                {
+                    b.Navigation("Hinweise");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Mitschueler", b =>
+                {
+                    b.Navigation("Ags");
+
+                    b.Navigation("Beziehungen");
+
+                    b.Navigation("Meinungen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ProtokollEintrag", b =>
+                {
+                    b.Navigation("Beteiligte");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Protokollheft", b =>
+                {
+                    b.Navigation("Ablauf");
+
+                    b.Navigation("Abschnitte");
+
+                    b.Navigation("Checks");
+
+                    b.Navigation("Fehlend");
+
+                    b.Navigation("Fragen");
+
+                    b.Navigation("JederEintraege");
+
+                    b.Navigation("Notizen");
+
+                    b.Navigation("Personen");
+
+                    b.Navigation("Schwerpunkte");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatAntrag", b =>
+                {
+                    b.Navigation("Gefallen");
+
+                    b.Navigation("Stimmen");
+
+                    b.Navigation("Unterschriften");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Rezept", b =>
+                {
+                    b.Navigation("Zutaten");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchuljahrBilanz", b =>
+                {
+                    b.Navigation("Spielfiguren");
+
+                    b.Navigation("Zeugnis");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Sonderzauber", b =>
+                {
+                    b.Navigation("Optionen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SonderzauberStand", b =>
+                {
+                    b.Navigation("Aufgedeckt");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", b =>
+                {
+                    b.Navigation("FachStufen");
+
+                    b.Navigation("Gegenstaende");
+
+                    b.Navigation("Geldbuchungen");
+
+                    b.Navigation("Meisterschaften");
+
+                    b.Navigation("Noten");
+
+                    b.Navigation("Pruefungen");
+
+                    b.Navigation("StufenWahlen");
+
+                    b.Navigation("TalentZiele");
+
+                    b.Navigation("Talente");
+
+                    b.Navigation("Wirkungen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Talent", b =>
+                {
+                    b.Navigation("Meisterschaften");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Wettbewerb", b =>
+                {
+                    b.Navigation("Platzierungen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfNpc", b =>
+                {
+                    b.Navigation("Werte");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.WettkampfZeugnis", b =>
+                {
+                    b.Navigation("Eintraege");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Infanterie", b =>
