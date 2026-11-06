@@ -620,9 +620,11 @@ namespace Suendenbock_App.Controllers
 
         /// <summary>
         /// Sync zwischen Tenant-System und Hesparis: Die Zuordnung in der Spielwelt-Verwaltung entscheidet.
-        /// Jeder Character mit Spieler (UserId), der der Welt der Akademie zugeordnet ist, bekommt automatisch
-        /// eine (leere) Spielfigur. Characters ohne Spieler sind Lehrkräfte oder Mitschüler und werden keine Figur.
-        /// Wird ein Character aus der Welt entfernt oder verliert seinen Spieler, verschwindet seine Figur, solange sie noch leer ist.
+        /// Spielfigur wird, wer der Welt der Akademie zugeordnet ist, einen Spieler (UserId) hat
+        /// und NICHT auch in der Originalwelt (Sündenbock) existiert.
+        /// Characters ohne Spieler sind Lehrkräfte oder Mitschüler. Characters, die auch in Sündenbock existieren,
+        /// sind dort Spielercharaktere und in Hesparis NPCs (umgekehrt gibt es das nicht).
+        /// Passt eine Figur nicht mehr dazu, verschwindet sie, solange sie noch leer ist.
         /// </summary>
         private async Task FehlendeFigurenAnlegenAsync()
         {
@@ -640,12 +642,13 @@ namespace Suendenbock_App.Controllers
                 .AsSplitQuery()
                 .ToListAsync();
             var zuordnungen = await _context.CharacterGameWorlds
-                .Select(cgw => new { cgw.CharacterId, cgw.GameWorldId })
+                .Select(cgw => new { cgw.CharacterId, cgw.GameWorldId, cgw.GameWorld.IsOriginWorld })
                 .ToListAsync();
 
             var fremdeLeere = vorhandene.Where(f =>
                 (f.Character.UserId == null ||
-                 !zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.GameWorldId == f.Kampagne.GameWorldId)) &&
+                 !zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.GameWorldId == f.Kampagne.GameWorldId) ||
+                 zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.IsOriginWorld)) &&
                 f.Geld == 0 && f.Talente.Count == 0 && f.Noten.Count == 0 && f.FachStufen.Count == 0 &&
                 f.Gegenstaende.Count == 0 && f.Wirkungen.Count == 0 && f.Geldbuchungen.Count == 0).ToList();
             if (fremdeLeere.Count > 0)
@@ -659,6 +662,8 @@ namespace Suendenbock_App.Controllers
                 from cgw in _context.CharacterGameWorlds
                 join k in _context.Kampagnen on cgw.GameWorldId equals k.GameWorldId
                 where cgw.Character.UserId != null
+                      // auch in der Originalwelt → dort Spielercharakter, hier NPC
+                      && !_context.CharacterGameWorlds.Any(o => o.CharacterId == cgw.CharacterId && o.GameWorld.IsOriginWorld)
                       && !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
                 select new { KampagneId = k.Id, cgw.Character }
             ).ToListAsync();

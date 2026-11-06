@@ -7,7 +7,7 @@ namespace Suendenbock_App.Data.Hesparis;
 /// <summary>
 /// Hesparis hat genau eine Akademie (technisch: eine Kampagne). Sie wird beim ersten Aufruf
 /// automatisch angelegt und hängt an der Spielwelt "Hesparis" aus dem Tenant-System.
-/// Jeder Character mit Spieler, der dieser Welt zugeordnet ist, wird automatisch als Spielfigur eingeschrieben.
+/// Jeder Character mit Spieler, der dieser Welt zugeordnet ist und nicht auch in der Originalwelt existiert, wird automatisch Spielfigur.
 /// </summary>
 public static class HesparisAkademie
 {
@@ -15,7 +15,7 @@ public static class HesparisAkademie
 
     /// <summary>
     /// Die Spielfiguren der Akademie, wie in der hesparis.html (Klassenliste, Reihenfolge = Spielerposition).
-    /// Bestimmt nur die Reihenfolge (diese fünf zuerst); eingeschrieben wird jeder Character der Welt, der einen Spieler hat.
+    /// Bestimmt nur die Reihenfolge (diese fünf zuerst); eingeschrieben werden die Spieler-Characters der Welt (siehe HesparisController.FehlendeFigurenAnlegenAsync).
     /// </summary>
     public static readonly string[] Spielfiguren =
     {
