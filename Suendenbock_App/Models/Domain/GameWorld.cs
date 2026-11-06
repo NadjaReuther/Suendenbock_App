@@ -36,6 +36,13 @@ namespace Suendenbock_App.Models.Domain
         [Display(Name = "Sortierung")]
         public int SortOrder { get; set; } = 0;
 
+        /// <summary>
+        /// Originalwelt (z.B. "Sündenbock 1618"). Es gibt genau eine; festgelegt in der Spielwelt-Übersicht.
+        /// Wer einer anderen Welt zugeordnet wird, sieht dort, ob er auch in der Originalwelt existiert.
+        /// </summary>
+        [Display(Name = "Originalwelt")]
+        public bool IsOriginWorld { get; set; } = false;
+
         // Navigation Properties
         public virtual ICollection<CharacterGameWorld> CharacterGameWorlds { get; set; } = new List<CharacterGameWorld>();
     }

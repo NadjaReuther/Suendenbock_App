@@ -3,6 +3,15 @@
     ViewData["Title"] = "Characters verwalten";
     var gameWorld = ViewBag.GameWorld as Suendenbock_App.Models.Domain.GameWorld;
     var availableCharacters = ViewBag.AvailableCharacters as List<Suendenbock_App.Models.Domain.Character>;
+    var originalwelt = ViewBag.Originalwelt as Suendenbock_App.Models.Domain.GameWorld;
+    var inOriginalwelt = ViewBag.InOriginalwelt as HashSet<int> ?? new HashSet<int>();
+
+    // Spalte "Originalwelt" nur in den anderen Welten zeigen
+    var istOriginalwelt = true;
+    if (originalwelt != null && originalwelt.Id != gameWorld.Id)
+    {
+        istOriginalwelt = false;
+    }
 }
 
 @section Styles {
@@ -43,28 +52,47 @@
             <!-- Character hinzufügen -->
             <div class="col-md-4">
                 <div class="pergament-table-card">
-                    <h3 class="pergament-header mb-3">Character hinzufügen</h3>
+                    <h3 class="pergament-header mb-3">Characters hinzufügen</h3>
 
                     @if (availableCharacters != null && availableCharacters.Any())
                     {
-                        <form asp-action="AddCharacter" method="post">
+                        <form asp-action="AddCharacters" method="post" id="mehrereHinzufuegen">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="gameWorldId" value="@gameWorld.Id" />
 
-                            <div class="mb-3">
-                                <label class="form-label">Character auswählen</label>
-                                <select name="characterId" class="form-select" required>
-                                    <option value="">-- Bitte wählen --</option>
-                                    @foreach (var character in availableCharacters)
-                                    {
-                                        <option value="@character.Id">
-                                            @character.Vorname @character.Nachname (@character.Rufname)
-                                        </option>
-                                    }
-                                </select>
+                            <input type="search" class="form-control mb-2" id="hinzufuegenFilter" placeholder="Name suchen …" aria-label="Characters filtern" />
+
+                            <div class="border rounded p-2 mb-3" style="max-height: 360px; overflow-y: auto;">
+                                @foreach (var character in availableCharacters)
+                                {
+                                    var suchtext = (character.Vorname + " " + character.Nachname + " " + character.Rufname).ToLower();
+                                    <label class="form-check d-flex align-items-center gap-2 mb-1 hinzufuegen-zeile" data-suche="@suchtext">
+                                        <input type="checkbox" class="form-check-input hinzufuegen-auswahl" name="characterIds" value="@character.Id" />
+                                        <span>
+                                            @character.Vorname @character.Nachname
+                                            @if (!string.IsNullOrEmpty(character.Rufname))
+                                            {
+                                                <span class="text-muted">(@character.Rufname)</span>
+                                            }
+                                        </span>
+                                        @if (!istOriginalwelt && originalwelt != null)
+                                        {
+                                            if (inOriginalwelt.Contains(character.Id))
+                                            {
+                                                <span class="badge bg-success ms-auto">auch in @originalwelt.Name</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary ms-auto">neu</span>
+                                            }
+                                        }
+                                    </label>
+                                }
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100">Character hinzufügen</button>
+                            <button type="submit" class="btn btn-primary w-100" id="hinzufuegenButton" disabled>
+                                Hinzufügen (<span id="hinzufuegenAnzahl">0</span>)
+                            </button>
                         </form>
                     }
                     else
@@ -101,6 +129,10 @@
                                         <th>Rufname</th>
                                         <th>Vorname</th>
                                         <th>Nachname</th>
+                                        @if (!istOriginalwelt)
+                                        {
+                                            <th>Originalwelt</th>
+                                        }
                                         <th>Hinzugefügt am</th>
                                         <th>Aktionen</th>
                                     </tr>
@@ -116,6 +148,19 @@
                                             <td>@cgw.Character.Rufname</td>
                                             <td>@cgw.Character.Vorname</td>
                                             <td>@cgw.Character.Nachname</td>
+                                            @if (!istOriginalwelt)
+                                            {
+                                                <td>
+                                                    @if (inOriginalwelt.Contains(cgw.CharacterId))
+                                                    {
+                                                        <span class="badge bg-success">auch in @originalwelt!.Name</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">nur hier</span>
+                                                    }
+                                                </td>
+                                            }
                                             <td>@cgw.AddedAt.ToLocalTime().ToString("dd.MM.yyyy")</td>
                                             <td>
                                                 <form asp-action="RemoveCharacter" asp-route-id="@cgw.Id" method="post"
@@ -167,6 +212,28 @@
                 aktualisieren();
             });
             boxen.forEach(b => b.addEventListener('change', aktualisieren));
+        })();
+
+        // Hinzufügen: Filter nach Namen und Anzahl im Button
+        (function () {
+            const filter = document.getElementById('hinzufuegenFilter');
+            const button = document.getElementById('hinzufuegenButton');
+            const anzahl = document.getElementById('hinzufuegenAnzahl');
+            if (!button) return;
+            const boxen = Array.from(document.querySelectorAll('.hinzufuegen-auswahl'));
+            boxen.forEach(b => b.addEventListener('change', function () {
+                const n = boxen.filter(x => x.checked).length;
+                anzahl.textContent = n;
+                button.disabled = n === 0;
+            }));
+            if (filter) {
+                filter.addEventListener('input', function () {
+                    const q = filter.value.trim().toLowerCase();
+                    document.querySelectorAll('.hinzufuegen-zeile').forEach(function (z) {
+                        z.style.display = z.dataset.suche.includes(q) ? '' : 'none';
+                    });
+                });
+            }
         })();
 
         function auswahlBestaetigen() {

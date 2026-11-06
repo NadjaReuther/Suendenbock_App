@@ -72,6 +72,11 @@ namespace Suendenbock_App.Controllers
             {
                 try
                 {
+                    // Die Originalwelt wird nur über "als Originalwelt festlegen" geändert, nicht im Formular
+                    gameWorld.IsOriginWorld = await _context.GameWorlds
+                        .Where(gw => gw.Id == id)
+                        .Select(gw => gw.IsOriginWorld)
+                        .FirstOrDefaultAsync();
                     _context.Update(gameWorld);
                     await _context.SaveChangesAsync();
                     TempData["Success"] = $"Spielwelt '{gameWorld.Name}' wurde erfolgreich aktualisiert.";
@@ -110,8 +115,21 @@ namespace Suendenbock_App.Controllers
                 .ThenBy(c => c.Vorname)
                 .ToListAsync();
 
+            // Originalwelt und welche Characters dort existieren (für die Spalte "Originalwelt")
+            var originalwelt = await _context.GameWorlds.FirstOrDefaultAsync(gw => gw.IsOriginWorld);
+            var inOriginalwelt = new HashSet<int>();
+            if (originalwelt != null)
+            {
+                inOriginalwelt = (await _context.CharacterGameWorlds
+                    .Where(cgw => cgw.GameWorldId == originalwelt.Id)
+                    .Select(cgw => cgw.CharacterId)
+                    .ToListAsync()).ToHashSet();
+            }
+
             ViewBag.GameWorld = gameWorld;
             ViewBag.AvailableCharacters = availableCharacters;
+            ViewBag.Originalwelt = originalwelt;
+            ViewBag.InOriginalwelt = inOriginalwelt;
 
             return View(gameWorld.CharacterGameWorlds.OrderBy(cgw => cgw.Character.Nachname).ToList());
         }
@@ -135,6 +153,7 @@ namespace Suendenbock_App.Controllers
             {
                 GameWorldId = gameWorldId,
                 CharacterId = characterId,
+                IsOriginWorld = await IstOriginalweltAsync(gameWorldId),
                 AddedAt = DateTime.UtcNow
             };
 
@@ -167,6 +186,67 @@ namespace Suendenbock_App.Controllers
 
             TempData["Success"] = $"Character '{characterName}' wurde aus der Spielwelt entfernt.";
             return RedirectToAction(nameof(ManageCharacters), new { id = gameWorldId });
+        }
+
+        // POST: GameWorld/AddCharacters
+        // Mehrere Characters auf einmal zuordnen (Checkboxen in ManageCharacters)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddCharacters(int gameWorldId, List<int> characterIds)
+        {
+            if (characterIds == null || characterIds.Count == 0)
+            {
+                TempData["Error"] = "Keine Characters ausgewählt.";
+                return RedirectToAction(nameof(ManageCharacters), new { id = gameWorldId });
+            }
+
+            // Schon zugeordnete überspringen
+            var vorhanden = await _context.CharacterGameWorlds
+                .Where(cgw => cgw.GameWorldId == gameWorldId)
+                .Select(cgw => cgw.CharacterId)
+                .ToListAsync();
+            var neu = characterIds.Distinct().Where(cid => !vorhanden.Contains(cid)).ToList();
+
+            bool istOriginalwelt = await IstOriginalweltAsync(gameWorldId);
+            foreach (var characterId in neu)
+            {
+                _context.CharacterGameWorlds.Add(new CharacterGameWorld
+                {
+                    GameWorldId = gameWorldId,
+                    CharacterId = characterId,
+                    IsOriginWorld = istOriginalwelt,
+                    AddedAt = DateTime.UtcNow
+                });
+            }
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"{neu.Count} Character(s) wurden hinzugefügt.";
+            return RedirectToAction(nameof(ManageCharacters), new { id = gameWorldId });
+        }
+
+        // POST: GameWorld/SetOriginWorld/5
+        // Diese Welt wird die (einzige) Originalwelt; alle Zuordnungen bekommen den passenden Wert
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetOriginWorld(int id)
+        {
+            var welten = await _context.GameWorlds.ToListAsync();
+            var neueOriginalwelt = welten.FirstOrDefault(gw => gw.Id == id);
+            if (neueOriginalwelt == null)
+                return NotFound();
+
+            foreach (var welt in welten)
+            {
+                welt.IsOriginWorld = welt.Id == id;
+            }
+            foreach (var cgw in await _context.CharacterGameWorlds.ToListAsync())
+            {
+                cgw.IsOriginWorld = cgw.GameWorldId == id;
+            }
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"'{neueOriginalwelt.Name}' ist jetzt die Originalwelt.";
+            return RedirectToAction(nameof(Index));
         }
 
         // POST: GameWorld/RemoveCharacters
@@ -215,6 +295,14 @@ namespace Suendenbock_App.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<bool> IstOriginalweltAsync(int gameWorldId)
+        {
+            return await _context.GameWorlds
+                .Where(gw => gw.Id == gameWorldId)
+                .Select(gw => gw.IsOriginWorld)
+                .FirstOrDefaultAsync();
         }
 
         private bool GameWorldExists(int id)

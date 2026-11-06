@@ -10,6 +10,7 @@ namespace Suendenbock_App.Data
             // Prüfe ob GameWorlds bereits existieren
             if (await context.GameWorlds.AnyAsync())
             {
+                await OriginalweltSicherstellenAsync(context);
                 return; // Bereits initialisiert
             }
 
@@ -20,6 +21,7 @@ namespace Suendenbock_App.Data
                     Name = "Sündenbock 1618",
                     Description = "Die Hauptspielwelt im 30-jährigen Krieg",
                     Era = "1618",
+                    IsOriginWorld = true,
                     ColorCode = "#8B4513", // Braun für historisches Setting
                     IsActive = true,
                     SortOrder = 1
@@ -73,6 +75,32 @@ namespace Suendenbock_App.Data
                 await context.CharacterGameWorlds.AddRangeAsync(characterGameWorlds);
                 await context.SaveChangesAsync();
             }
+        }
+    
+        /// <summary>
+        /// Ist noch keine Originalwelt markiert (z.B. nach der Migration), wird "Sündenbock 1618" gesetzt,
+        /// sonst die erste Welt nach Sortierung. Die Zuordnungen bekommen den passenden IsOriginWorld-Wert.
+        /// </summary>
+        public static async Task OriginalweltSicherstellenAsync(ApplicationDbContext context)
+        {
+            if (await context.GameWorlds.AnyAsync(gw => gw.IsOriginWorld))
+            {
+                return;
+            }
+
+            var original = await context.GameWorlds.FirstOrDefaultAsync(gw => gw.Name == "Sündenbock 1618")
+                           ?? await context.GameWorlds.OrderBy(gw => gw.SortOrder).FirstOrDefaultAsync();
+            if (original == null)
+            {
+                return;
+            }
+
+            original.IsOriginWorld = true;
+            foreach (var cgw in await context.CharacterGameWorlds.ToListAsync())
+            {
+                cgw.IsOriginWorld = cgw.GameWorldId == original.Id;
+            }
+            await context.SaveChangesAsync();
         }
     }
 }

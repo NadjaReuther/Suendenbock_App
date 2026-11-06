@@ -20,8 +20,7 @@ namespace Suendenbock_App.Models.Domain
         public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// Wurde dieser Character ursprünglich in dieser Welt erstellt?
-        /// (wichtig für Logik: neue 1810-Characters existieren nur dort)
+        /// Ist diese Welt die Originalwelt? Wird beim Zuordnen automatisch aus GameWorld.IsOriginWorld übernommen.
         /// </summary>
         public bool IsOriginWorld { get; set; } = false;
     }
