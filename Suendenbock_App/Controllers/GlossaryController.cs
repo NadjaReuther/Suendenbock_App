@@ -8,14 +8,12 @@ using Suendenbock_App.Services;
 namespace Suendenbock_App.Controllers
 {
     [Authorize]
-    public class GlossaryController : Controller
+    public class GlossaryController : BaseController
     {
-        private readonly ApplicationDbContext _context;
         private readonly IImageUploadService _imageUploadService;
 
-        public GlossaryController(ApplicationDbContext context, IImageUploadService imageUploadService)
+        public GlossaryController(ApplicationDbContext context, IImageUploadService imageUploadService) : base(context)
         {
-            _context = context;
             _imageUploadService = imageUploadService;
         }
 
@@ -23,6 +21,9 @@ namespace Suendenbock_App.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Browse(string searchTerm = "", string entityType = "", string category = "")
         {
+            // GAMEWORLD FILTER: Bestimme aktuelle Spielwelt
+            var effectiveGameWorld = await GetEffectiveGameWorldAsync();
+
             var query = _context.GlossaryEntries.AsQueryable();
 
             // Suchfilter
@@ -46,9 +47,16 @@ namespace Suendenbock_App.Controllers
 
             var entries = await query.OrderBy(g => g.Title).ToListAsync();
 
+            // GAMEWORLD FILTER: Nach dem Laden filtern (weil polymorphe Beziehungen)
+            if (effectiveGameWorld != null && !IsGott())
+            {
+                entries = await FilterGlossaryByGameWorldAsync(entries, effectiveGameWorld.Id);
+            }
+
             ViewBag.SearchTerm = searchTerm;
             ViewBag.EntityType = entityType;
             ViewBag.Category = category;
+            ViewBag.EffectiveGameWorld = effectiveGameWorld;
             ViewBag.EntityTypes = GetAvailableEntityTypesWithDisplayNames();
             ViewBag.Categories = await _context.GlossaryEntries
                 .Where(g => !string.IsNullOrEmpty(g.Category))
@@ -87,9 +95,11 @@ namespace Suendenbock_App.Controllers
 
             var entries = await query.OrderBy(g => g.Title).ToListAsync();
 
+            // GOTT sieht ALLES (kein GameWorld-Filter)
             ViewBag.SearchTerm = searchTerm;
             ViewBag.EntityType = entityType;
             ViewBag.Category = category;
+            ViewBag.EffectiveGameWorld = null; // Gott hat keine spezifische Welt
             ViewBag.EntityTypes = GetAvailableEntityTypesWithDisplayNames();
             ViewBag.Categories = await _context.GlossaryEntries
                 .Where(g => !string.IsNullOrEmpty(g.Category))
@@ -508,6 +518,45 @@ namespace Suendenbock_App.Controllers
                 "Stand" => (await _context.Staende.FindAsync(entityId))?.Name ?? "",
                 _ => ""
             };
+        }
+
+        /// <summary>
+        /// Filtert Glossar-Einträge nach GameWorld
+        /// Wenn EntityType = "Character", prüfe ob Character zur GameWorld gehört
+        /// </summary>
+        private async Task<List<GlossaryEntry>> FilterGlossaryByGameWorldAsync(List<GlossaryEntry> entries, int gameWorldId)
+        {
+            var filteredEntries = new List<GlossaryEntry>();
+
+            foreach (var entry in entries)
+            {
+                // Wenn kein EntityType → Freier Eintrag → immer anzeigen
+                if (string.IsNullOrEmpty(entry.EntityType))
+                {
+                    filteredEntries.Add(entry);
+                    continue;
+                }
+
+                // Wenn EntityType = "Character" → Prüfe GameWorld-Zugehörigkeit
+                if (entry.EntityType == "Character" && entry.EntityId.HasValue)
+                {
+                    var characterInWorld = await _context.CharacterGameWorlds
+                        .AnyAsync(cgw => cgw.CharacterId == entry.EntityId.Value && cgw.GameWorldId == gameWorldId);
+
+                    if (characterInWorld)
+                    {
+                        filteredEntries.Add(entry);
+                    }
+                }
+                else
+                {
+                    // Andere EntityTypes (Rasse, Magie, etc.) → immer anzeigen
+                    // (die sind nicht GameWorld-spezifisch)
+                    filteredEntries.Add(entry);
+                }
+            }
+
+            return filteredEntries;
         }
     }
 }

@@ -30,15 +30,41 @@ namespace Suendenbock_App.ViewComponents
                 return View("Default", new UserCharacterViewModel());
             }
 
-            // Charakter des Users laden
-            var character = await _context.Characters
-                .FirstOrDefaultAsync(c => c.UserId == user.Id);
+            // AKTUELLEN Character des Users laden (mit CurrentCharacterId)
+            var currentCharacter = user.CurrentCharacterId.HasValue
+                ? await _context.Characters
+                    .Include(c => c.CharacterGameWorlds)
+                        .ThenInclude(cgw => cgw.GameWorld)
+                    .FirstOrDefaultAsync(c => c.Id == user.CurrentCharacterId.Value)
+                : null;
+
+            // ALLE Characters des Users laden
+            var allUserCharacters = await _context.Characters
+                .Include(c => c.CharacterGameWorlds)
+                    .ThenInclude(cgw => cgw.GameWorld)
+                .Where(c => c.UserId == user.Id)
+                .ToListAsync();
+
+            // Aktuelle GameWorld ermitteln (priorisiert "Sündenbock 1618")
+            GameWorld? currentGameWorld = null;
+            if (currentCharacter?.CharacterGameWorlds != null && currentCharacter.CharacterGameWorlds.Any())
+            {
+                // REGEL: Bevorzuge "Sündenbock 1618" wenn Character in mehreren Welten ist
+                var hauptwelt = currentCharacter.CharacterGameWorlds
+                    .FirstOrDefault(cgw => cgw.GameWorld?.Name == "Sündenbock 1618");
+
+                currentGameWorld = hauptwelt?.GameWorld
+                    ?? currentCharacter.CharacterGameWorlds.FirstOrDefault()?.GameWorld;
+            }
 
             var viewModel = new UserCharacterViewModel
             {
-                CharacterId = character?.Id,
-                CharacterImagePath = character?.ImagePath,
-                UserInitial = user.Name?.Substring(0, 1) ?? user.UserName?.Substring(0, 1) ?? "?"
+                CharacterId = currentCharacter?.Id,
+                CharacterImagePath = currentCharacter?.ImagePath,
+                UserInitial = user.Name?.Substring(0, 1) ?? user.UserName?.Substring(0, 1) ?? "?",
+                CurrentCharacter = currentCharacter,
+                CurrentGameWorld = currentGameWorld,
+                AllUserCharacters = allUserCharacters
             };
 
             return View("Default", viewModel);
@@ -50,5 +76,8 @@ namespace Suendenbock_App.ViewComponents
         public int? CharacterId { get; set; }
         public string? CharacterImagePath { get; set; }
         public string UserInitial { get; set; } = "?";
+        public Character? CurrentCharacter { get; set; }
+        public GameWorld? CurrentGameWorld { get; set; }
+        public List<Character> AllUserCharacters { get; set; } = new List<Character>();
     }
 }

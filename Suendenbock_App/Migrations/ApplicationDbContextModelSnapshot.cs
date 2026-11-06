@@ -385,6 +385,9 @@ namespace Suendenbock_App.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("CurrentCharacterId")
+                        .HasColumnType("int");
+
                     b.Property<string>("CustomTrigger")
                         .HasColumnType("nvarchar(max)");
 
@@ -435,6 +438,8 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CurrentCharacterId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -687,6 +692,36 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("StandId");
 
                     b.ToTable("CharacterDetails");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterGameWorld", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GameWorldId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsOriginWorld")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GameWorldId");
+
+                    b.HasIndex("CharacterId", "GameWorldId")
+                        .IsUnique();
+
+                    b.ToTable("CharacterGameWorlds");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
@@ -948,6 +983,45 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("ForumThreads");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.GameWorld", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ColorCode")
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Era")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GameWorlds");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Gildenlizenz", b =>
@@ -2792,6 +2866,16 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Act");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.ApplicationUser", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Character", "CurrentCharacter")
+                        .WithMany()
+                        .HasForeignKey("CurrentCharacterId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CurrentCharacter");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Biom", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Domain.LightCard", "LightCard")
@@ -2926,6 +3010,25 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Herkunftsland");
 
                     b.Navigation("Stand");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterGameWorld", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
+                        .WithMany("CharacterGameWorlds")
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.GameWorld", "GameWorld")
+                        .WithMany("CharacterGameWorlds")
+                        .HasForeignKey("GameWorldId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("GameWorld");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
@@ -3653,6 +3756,8 @@ namespace Suendenbock_App.Migrations
                 {
                     b.Navigation("Affiliation");
 
+                    b.Navigation("CharacterGameWorlds");
+
                     b.Navigation("CharacterMagicClasses");
 
                     b.Navigation("Details");
@@ -3673,6 +3778,11 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Domain.ForumThread", b =>
                 {
                     b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.GameWorld", b =>
+                {
+                    b.Navigation("CharacterGameWorlds");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Guild", b =>

@@ -12,9 +12,8 @@ using System.Threading.Tasks;
 namespace Suendenbock_App.Controllers
 {
     [Authorize]
-    public class CharacterController : Controller
+    public class CharacterController : BaseController
     {
-        private readonly ApplicationDbContext _context;
         private readonly IImageUploadService _imageUploadService;
         private readonly IWebHostEnvironment _environment;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -24,9 +23,8 @@ namespace Suendenbock_App.Controllers
             IImageUploadService imageUploadService,
             IWebHostEnvironment environment,
             UserManager<ApplicationUser> userManager,
-            IAchievementService achievementService)
+            IAchievementService achievementService) : base(context)
         {
-            _context = context;
             _imageUploadService = imageUploadService;
             _environment = environment;
             _userManager = userManager;
@@ -37,9 +35,25 @@ namespace Suendenbock_App.Controllers
             return View();
         }
         [AllowAnonymous]
-        public IActionResult Overview(string searchTerm = "")
+        public async Task<IActionResult> Overview(string searchTerm = "")
         {
-            var characters = _context.Characters.AsQueryable();
+            // FILTER: GameWorld-Filterung
+            // - Nicht eingeloggt → nur "Sündenbock 1618"
+            // - Eingeloggt → basierend auf aktivem Character
+            // - Gott → alle (später implementieren, aktuell: Sündenbock 1618)
+            var effectiveGameWorld = await GetEffectiveGameWorldAsync();
+
+            var characters = _context.Characters
+                .Include(c => c.CharacterGameWorlds)
+                    .ThenInclude(cgw => cgw.GameWorld)
+                .AsQueryable();
+
+            // WICHTIG: Nur Characters der aktuellen GameWorld anzeigen
+            if (effectiveGameWorld != null && !IsGott())
+            {
+                characters = characters.Where(c =>
+                    c.CharacterGameWorlds.Any(cgw => cgw.GameWorldId == effectiveGameWorld.Id));
+            }
 
             // Suchfilter anwenden - nur am Anfang des Namens
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -51,10 +65,11 @@ namespace Suendenbock_App.Controllers
                     c.Rufname.ToLower().StartsWith(searchTerm));
             }
 
-            var characterList = characters.OrderBy(c => c.Vorname).ToList();
+            var characterList = await characters.OrderBy(c => c.Vorname).ToListAsync();
 
             // Suchterm für View speichern
             ViewBag.SearchTerm = searchTerm;
+            ViewBag.EffectiveGameWorld = effectiveGameWorld;
 
             return View(characterList);
         }
@@ -141,23 +156,19 @@ namespace Suendenbock_App.Controllers
 
             return View(character);
         }
-        public IActionResult Form(int id = 0, int step = 1)
+        public async Task<IActionResult> Form(int id = 0, int step = 1)
         {
-            var userId = _userManager.GetUserId(User);
-            var isGod = User.IsInRole("Gott");
-
             if (id > 0)
             {
+                // SECURITY: Prüfe Character-Zugriff
+                var accessCheck = await ValidateCharacterAccessAsync(id, "Du darfst nur deine eigenen Character bearbeiten");
+                if (accessCheck != null) return accessCheck;
+
                 // Load character data for editing
                 var character = LoadCharacterForEditing(id);
                 if (character == null)
                 {
                     return NotFound();
-                }
-                if (!isGod && character.UserId != userId)
-                {
-                    TempData["Error"] = "Du darfst nur deine eigenen Character bearbeiten";
-                    return RedirectToAction("Index", "Player");
                 }
 
                 // Initialisiere Details und Affiliation falls NULL
@@ -175,7 +186,9 @@ namespace Suendenbock_App.Controllers
                 ViewBag.Step = step;
                 return View(character);
             }
-            if (!isGod)
+
+            // SECURITY: Nur Gott darf neue Character erstellen
+            if (!IsGott())
             {
                 TempData["Error"] = "Nur Gott darf neue Character erstellen!";
                 return RedirectToAction("Index", "Player");

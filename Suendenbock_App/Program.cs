@@ -70,6 +70,10 @@ using(var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
     await CreateDefaultUser(userManager, "Gott", "gott@suendenbock.lore", "Adrijan1618!");
+
+    // Seed GameWorlds und migriere bestehende Characters
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await GameWorldSeeder.SeedGameWorldsAsync(dbContext);
 }
 
 async Task CreateDefaultUser(UserManager<ApplicationUser> userManager, string roleName, string userName, string password)

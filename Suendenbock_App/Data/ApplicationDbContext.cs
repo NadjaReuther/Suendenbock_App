@@ -25,6 +25,10 @@ namespace Suendenbock_App.Data
         public DbSet<CharacterAffiliation> CharacterAffiliations { get; set; }
         public DbSet<CharacterMagicClass> CharacterMagicClasses { get; set; }
 
+        // Multi-Tenant GameWorld System
+        public DbSet<GameWorld> GameWorlds { get; set; }
+        public DbSet<CharacterGameWorld> CharacterGameWorlds { get; set; }
+
         // Magie-System
         public DbSet<MagicClass> MagicClasses { get; set; }
         public DbSet<MagicClassSpecialization> MagicClassSpecializations { get; set; }
@@ -812,6 +816,37 @@ namespace Suendenbock_App.Data
 
             builder.Entity<Message>()
                 .HasIndex(m => m.ParentMessageId);
+
+            // ===============================
+            // GAMEWORLD SYSTEM (Multi-Tenant)
+            // ===============================
+
+            // CharacterGameWorld -> Character (CASCADE)
+            builder.Entity<CharacterGameWorld>()
+                .HasOne(cgw => cgw.Character)
+                .WithMany(c => c.CharacterGameWorlds)
+                .HasForeignKey(cgw => cgw.CharacterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CharacterGameWorld -> GameWorld (RESTRICT)
+            builder.Entity<CharacterGameWorld>()
+                .HasOne(cgw => cgw.GameWorld)
+                .WithMany(gw => gw.CharacterGameWorlds)
+                .HasForeignKey(cgw => cgw.GameWorldId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ApplicationUser -> CurrentCharacter (OPTIONAL, NO ACTION)
+            builder.Entity<ApplicationUser>()
+                .HasOne(u => u.CurrentCharacter)
+                .WithMany()
+                .HasForeignKey(u => u.CurrentCharacterId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired(false);
+
+            // Unique Index: ein Character kann nur einmal pro GameWorld sein
+            builder.Entity<CharacterGameWorld>()
+                .HasIndex(cgw => new { cgw.CharacterId, cgw.GameWorldId })
+                .IsUnique();
         }
     }
 }

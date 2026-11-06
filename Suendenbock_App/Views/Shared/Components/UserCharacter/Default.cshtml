@@ -1,4 +1,29 @@
 @model Suendenbock_App.ViewComponents.UserCharacterViewModel
+@using Suendenbock_App.Models.Domain
+
+@{
+    // Gruppiere Characters nach GameWorld
+    var charactersByWorld = new Dictionary<string, List<(Character character, GameWorld gameWorld)>>();
+
+    foreach (var character in Model.AllUserCharacters)
+    {
+        if (character.CharacterGameWorlds != null)
+        {
+            foreach (var cgw in character.CharacterGameWorlds)
+            {
+                var worldName = cgw.GameWorld?.Name ?? "Unbekannt";
+                if (!charactersByWorld.ContainsKey(worldName))
+                {
+                    charactersByWorld[worldName] = new List<(Character, GameWorld)>();
+                }
+                charactersByWorld[worldName].Add((character, cgw.GameWorld!));
+            }
+        }
+    }
+
+    // Hat der Spieler Characters in mehreren Welten?
+    var hasMultipleWorlds = charactersByWorld.Count > 1;
+}
 
 <li class="nav-item dropdown user-avatar-item">
     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -12,14 +37,97 @@
         }
     </a>
     <ul class="dropdown-menu dropdown-menu-end">
-        @if (Model.CharacterId.HasValue)
+        @if (hasMultipleWorlds)
         {
-            <li class="nav-item">
-                <a class="dropdown-item" asp-controller="Character" asp-action="Form" asp-route-id="@Model.CharacterId">
-                    📜 Dein Charakter
-                </a>
+            @* ===== MULTI-WORLD MODUS ===== *@
+            <li class="dropdown-header" style="font-weight: bold; font-size: 1rem;">
+                @if (Model.CurrentGameWorld != null)
+                {
+                    <span style="color: @(Model.CurrentGameWorld.ColorCode ?? "#8B4513")">🌍</span>
+                    @Model.CurrentGameWorld.Name
+                }
+                else
+                {
+                    <span>🌍 Spielwelt</span>
+                }
             </li>
+            @if (Model.CurrentCharacter != null)
+            {
+                <li class="dropdown-header" style="font-size: 0.9rem; color: #666;">
+                    → @Model.CurrentCharacter.Rufname (@Model.CurrentCharacter.Vorname @Model.CurrentCharacter.Nachname)
+                </li>
+            }
+            <li><hr class="dropdown-divider" /></li>
+
+            @* Character-Link (Charakterbogen) *@
+            @if (Model.CharacterId.HasValue)
+            {
+                <li class="nav-item">
+                    <a class="dropdown-item" asp-controller="Character" asp-action="Form" asp-route-id="@Model.CharacterId">
+                        📜 Charakterbogen öffnen
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+            }
+
+            @* Spielwelt wechseln *@
+            <li class="dropdown-header">Spielwelt wechseln:</li>
+            @foreach (var kvp in charactersByWorld.OrderBy(x => x.Key == "Sündenbock 1618" ? 0 : 1))
+            {
+                var worldName = kvp.Key;
+                var charactersInWorld = kvp.Value;
+                var worldColor = charactersInWorld.FirstOrDefault().gameWorld?.ColorCode ?? "#8B4513";
+
+                <li>
+                    <h6 class="dropdown-header" style="color: @worldColor; font-weight: bold; margin-bottom: 0;">
+                        <span style="color: @worldColor">🌍</span> @worldName
+                    </h6>
+                </li>
+
+                @foreach (var item in charactersInWorld)
+                {
+                    var character = item.character;
+                    var isActive = Model.CurrentCharacter != null && Model.CurrentCharacter.Id == character.Id;
+
+                    <li>
+                        <a class="dropdown-item @(isActive ? "active" : "")"
+                           href="#"
+                           onclick="switchCharacter(@character.Id); return false;"
+                           style="padding-left: 2rem;">
+                            @if (isActive)
+                            {
+                                <span style="color: @worldColor">●</span>
+                            }
+                            else
+                            {
+                                <span style="color: #ccc">○</span>
+                            }
+                            @character.Rufname
+                            <small class="text-muted">(@character.Vorname @character.Nachname)</small>
+                        </a>
+                    </li>
+                }
+
+                @if (kvp.Key != charactersByWorld.Last().Key)
+                {
+                    <li><hr class="dropdown-divider" style="margin: 0.25rem 0;" /></li>
+                }
+            }
         }
+        else
+        {
+            @* ===== SINGLE-WORLD MODUS (Standard: "Dein Charakter") ===== *@
+            @if (Model.CharacterId.HasValue)
+            {
+                <li class="nav-item">
+                    <a class="dropdown-item" asp-controller="Character" asp-action="Form" asp-route-id="@Model.CharacterId">
+                        📜 Dein Charakter
+                    </a>
+                </li>
+            }
+        }
+
+        @* ===== GEMEINSAME MENÜPUNKTE ===== *@
         <li><hr /></li>
         <li class="nav-item">
             <a class="dropdown-item" asp-controller="Player" asp-action="Triggerpunkte">
@@ -54,3 +162,40 @@
         </li>
     </ul>
 </li>
+
+<script>
+    async function switchCharacter(characterId) {
+        try {
+            const response = await fetch('/Player/SwitchCharacter', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ characterId: characterId })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                // Erfolg → Seite neu laden
+                window.location.reload();
+            } else {
+                alert(data.message || 'Fehler beim Wechseln des Characters');
+            }
+        } catch (error) {
+            console.error('Error switching character:', error);
+            alert('Fehler beim Wechseln des Characters');
+        }
+    }
+</script>
+
+<style>
+    .dropdown-item.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .dropdown-item small {
+        font-size: 0.75rem;
+    }
+</style>

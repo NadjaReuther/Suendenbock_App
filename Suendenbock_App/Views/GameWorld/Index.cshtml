@@ -1,0 +1,111 @@
+@model IEnumerable<Suendenbock_App.Models.Domain.GameWorld>
+@{
+    ViewData["Title"] = "Spielwelten Verwaltung";
+}
+
+@section Styles {
+    <link href="~/css/responsive-tables.css" rel="stylesheet" />
+}
+
+<div class="admin-container">
+    <div class="container-fluid py-4">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show">
+                <strong>Fehler:</strong> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <strong>Erfolg:</strong> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="pergament-header">Spielwelten Verwaltung</h1>
+                    <a asp-action="Create" class="btn btn-primary">
+                        Neue Spielwelt erstellen
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var gameWorld in Model)
+            {
+                <div class="col-md-6">
+                    <div class="pergament-table-card" style="border-left: 5px solid @(gameWorld.ColorCode ?? "#8B4513")">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h3 class="pergament-header mb-1">@gameWorld.Name</h3>
+                                @if (!string.IsNullOrEmpty(gameWorld.Era))
+                                {
+                                    <span class="badge bg-secondary">@gameWorld.Era</span>
+                                }
+                                @if (gameWorld.IsActive)
+                                {
+                                    <span class="badge bg-success ms-2">Aktiv</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger ms-2">Inaktiv</span>
+                                }
+                            </div>
+                            <div>
+                                <a asp-action="Edit" asp-route-id="@gameWorld.Id" class="btn btn-sm btn-outline-primary me-1">
+                                    Bearbeiten
+                                </a>
+                                <a asp-action="ManageCharacters" asp-route-id="@gameWorld.Id" class="btn btn-sm btn-outline-success">
+                                    Characters
+                                </a>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(gameWorld.Description))
+                        {
+                            <p class="text-muted mb-3">@gameWorld.Description</p>
+                        }
+
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-muted">
+                                    <strong>Characters:</strong> @gameWorld.CharacterGameWorlds.Count
+                                </small>
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="text-muted">
+                                    Erstellt: @gameWorld.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")
+                                </small>
+                            </div>
+                        </div>
+
+                        @if (gameWorld.CharacterGameWorlds.Count == 0)
+                        {
+                            <div class="mt-3">
+                                <form asp-action="Delete" asp-route-id="@gameWorld.Id" method="post" onsubmit="return confirm('Spielwelt wirklich löschen?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        Spielwelt löschen
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <strong>Keine Spielwelten vorhanden.</strong> Erstelle eine neue Spielwelt um zu starten.
+            </div>
+        }
+    </div>
+</div>
