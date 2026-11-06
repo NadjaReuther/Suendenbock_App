@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Data.Hesparis;
 using Suendenbock_App.Models.Domain.Hesparis;
 using Suendenbock_App.Models.ViewModels.Hesparis;
 
@@ -559,6 +560,12 @@ namespace Suendenbock_App.Controllers
         /// </summary>
         private async Task<Kampagne?> KampagneFuerBenutzerAsync(int? kampagneId)
         {
+            // Die Akademie gibt es immer: beim allerersten Aufruf wird sie automatisch angelegt
+            await HesparisAkademie.HolenOderAnlegenAsync(_context);
+
+            // Alle Spieler-Characters der Spielwelt automatisch einschreiben (auch für die Ansicht von Gott)
+            await FehlendeFigurenAnlegenAsync();
+
             if (IsGott())
             {
                 var alle = _context.Kampagnen.Include(k => k.GameWorld);
@@ -568,9 +575,6 @@ namespace Suendenbock_App.Controllers
             }
 
             var userId = GetUserId();
-
-            // Characters, die schon der Spielwelt einer Kampagne zugeordnet sind, automatisch einschreiben
-            await FehlendeFigurenAnlegenAsync(userId);
 
             var eigene = await _context.Spielfiguren
                 .Where(f => f.Character.UserId == userId)
@@ -594,18 +598,16 @@ namespace Suendenbock_App.Controllers
         }
 
         /// <summary>
-        /// Sync zwischen Tenant-System und Hesparis: Ist ein Character des Benutzers einer Spielwelt zugeordnet,
+        /// Sync zwischen Tenant-System und Hesparis: Ist ein Spieler-Character (mit UserId) einer Spielwelt zugeordnet,
         /// in der es eine Hesparis-Kampagne gibt, bekommt er dort automatisch eine (leere) Spielfigur.
         /// So reicht die Zuordnung über die Spielwelt-Verwaltung, ohne zusätzlich einzuschreiben.
         /// </summary>
-        private async Task FehlendeFigurenAnlegenAsync(string userId)
+        private async Task FehlendeFigurenAnlegenAsync()
         {
-            if (string.IsNullOrEmpty(userId)) return;
-
             var fehlend = await (
                 from cgw in _context.CharacterGameWorlds
                 join k in _context.Kampagnen on cgw.GameWorldId equals k.GameWorldId
-                where cgw.Character.UserId == userId
+                where cgw.Character.UserId != null
                       && !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
                 select new { KampagneId = k.Id, cgw.CharacterId }
             ).ToListAsync();

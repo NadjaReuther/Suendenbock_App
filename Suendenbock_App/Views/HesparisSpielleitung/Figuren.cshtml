@@ -9,13 +9,13 @@
     <div class="armory-eyebrow">Spielleitung · @k.GameWorld.Name</div>
     <h1 class="armory-title">@k.Name</h1>
     <p class="armory-sub">
-        <a asp-action="Index">← alle Kampagnen</a> ·
-        <a asp-controller="Hesparis" asp-action="Index" asp-route-kampagneId="@k.Id">Kampagne ansehen</a>
+        Alle Spieler, deren Character der Spielwelt „@k.GameWorld.Name“ zugeordnet ist, sind automatisch dabei.
+        Hier kannst du zusätzlich Characters einschreiben oder die Reihenfolge ändern.
     </p>
 </div>
 
 <section class="a-panel sl-panel">
-    <h3>Kampagne</h3>
+    <h3>Akademie</h3>
     <form asp-action="Bearbeiten" method="post" class="hes-form-row">
         <input type="hidden" name="Id" value="@k.Id" />
         <label class="hes-field" style="flex:2 1 220px"><span>Name</span>

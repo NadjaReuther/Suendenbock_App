@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Data.Hesparis;
 using Suendenbock_App.Models.Domain;
 using Suendenbock_App.Models.Domain.Hesparis;
 using Suendenbock_App.Models.ViewModels.Hesparis;
@@ -19,9 +20,17 @@ namespace Suendenbock_App.Controllers
         {
         }
 
+        /// <summary>
+        /// Es gibt eine Akademie: direkt zu ihren Spielfiguren. Die Kampagnenliste (Übersicht)
+        /// erscheint nur, falls später doch einmal mehrere angelegt werden.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var akademie = await HesparisAkademie.HolenOderAnlegenAsync(_context);
+            if (await _context.Kampagnen.CountAsync() == 1)
+                return RedirectToAction(nameof(Figuren), new { id = akademie.Id });
+
             var model = new SpielleitungIndexViewModel
             {
                 Welten = await _context.GameWorlds.OrderBy(w => w.SortOrder).ToListAsync(),
