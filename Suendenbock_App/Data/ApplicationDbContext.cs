@@ -843,6 +843,14 @@ namespace Suendenbock_App.Data
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired(false);
 
+            // CharacterGameWorld -> Spieler in dieser Welt (OPTIONAL, beim Löschen des Users auf NULL)
+            builder.Entity<CharacterGameWorld>()
+                .HasOne(cgw => cgw.User)
+                .WithMany()
+                .HasForeignKey(cgw => cgw.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+
             // Unique Index: ein Character kann nur einmal pro GameWorld sein
             builder.Entity<CharacterGameWorld>()
                 .HasIndex(cgw => new { cgw.CharacterId, cgw.GameWorldId })

@@ -30,32 +30,21 @@ namespace Suendenbock_App.ViewComponents
                 return View("Default", new UserCharacterViewModel());
             }
 
-            // AKTUELLEN Character des Users laden (mit CurrentCharacterId)
-            var currentCharacter = user.CurrentCharacterId.HasValue
-                ? await _context.Characters
-                    .Include(c => c.CharacterGameWorlds)
-                        .ThenInclude(cgw => cgw.GameWorld)
-                    .FirstOrDefaultAsync(c => c.Id == user.CurrentCharacterId.Value)
-                : null;
-
-            // ALLE Characters des Users laden
-            var allUserCharacters = await _context.Characters
+            // Hauptcharakter (Sündenbock): nur er trägt Character.UserId
+            var currentCharacter = await _context.Characters
                 .Include(c => c.CharacterGameWorlds)
                     .ThenInclude(cgw => cgw.GameWorld)
                 .Where(c => c.UserId == user.Id)
-                .ToListAsync();
+                .OrderBy(c => c.Id)
+                .FirstOrDefaultAsync();
 
-            // Aktuelle GameWorld ermitteln (priorisiert "Sündenbock 1618")
-            GameWorld? currentGameWorld = null;
-            if (currentCharacter?.CharacterGameWorlds != null && currentCharacter.CharacterGameWorlds.Any())
-            {
-                // REGEL: Bevorzuge "Sündenbock 1618" wenn Character in mehreren Welten ist
-                var hauptwelt = currentCharacter.CharacterGameWorlds
-                    .FirstOrDefault(cgw => cgw.GameWorld?.Name == "Sündenbock 1618");
+            var currentGameWorld = currentCharacter?.CharacterGameWorlds
+                .Select(cgw => cgw.GameWorld)
+                .FirstOrDefault(gw => gw.IsOriginWorld);
 
-                currentGameWorld = hauptwelt?.GameWorld
-                    ?? currentCharacter.CharacterGameWorlds.FirstOrDefault()?.GameWorld;
-            }
+            // Link "Zu Hesparis": wer dort einen Nebencharakter hat (oder Gott)
+            bool hatHesparis = User.IsInRole("Gott") || await _context.CharacterGameWorlds
+                .AnyAsync(cgw => cgw.UserId == user.Id && cgw.GameWorld.Name.Contains("Hesparis"));
 
             var viewModel = new UserCharacterViewModel
             {
@@ -64,7 +53,7 @@ namespace Suendenbock_App.ViewComponents
                 UserInitial = user.Name?.Substring(0, 1) ?? user.UserName?.Substring(0, 1) ?? "?",
                 CurrentCharacter = currentCharacter,
                 CurrentGameWorld = currentGameWorld,
-                AllUserCharacters = allUserCharacters
+                HatHesparis = hatHesparis
             };
 
             return View("Default", viewModel);
@@ -78,6 +67,7 @@ namespace Suendenbock_App.ViewComponents
         public string UserInitial { get; set; } = "?";
         public Character? CurrentCharacter { get; set; }
         public GameWorld? CurrentGameWorld { get; set; }
-        public List<Character> AllUserCharacters { get; set; } = new List<Character>();
+        /// <summary>Zeigt im Menü den Link "Zu Hesparis".</summary>
+        public bool HatHesparis { get; set; }
     }
 }

@@ -23,5 +23,13 @@ namespace Suendenbock_App.Models.Domain
         /// Ist diese Welt die Originalwelt? Wird beim Zuordnen automatisch aus GameWorld.IsOriginWorld übernommen.
         /// </summary>
         public bool IsOriginWorld { get; set; } = false;
+
+        /// <summary>
+        /// Spieler dieses Characters IN DIESER WELT (nur für Nebenwelten wie Hesparis).
+        /// Hauptcharaktere (Originalwelt Sündenbock) haben ihren Spieler weiter in Character.UserId.
+        /// Nebencharaktere haben Character.UserId = null, damit sie in Sündenbock nirgends als Spieler-Character auftauchen.
+        /// </summary>
+        public string? UserId { get; set; }
+        public virtual ApplicationUser? User { get; set; }
     }
 }

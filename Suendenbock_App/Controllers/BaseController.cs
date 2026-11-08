@@ -37,8 +37,9 @@ namespace Suendenbock_App.Controllers
         }
 
         /// <summary>
-        /// Helper: Get current character for the logged-in user
-        /// Returns null if user has no current character selected
+        /// Helper: Hauptcharakter des eingeloggten Spielers (Sündenbock ist das Hauptspiel).
+        /// Nur Hauptcharaktere tragen Character.UserId; Nebencharaktere (z.B. Hesparis) haben ihren
+        /// Spieler an der Welt-Zuordnung (siehe Data/Nebencharaktere.cs). Es gibt keinen Wechsel mehr.
         /// </summary>
         protected async Task<Character?> GetCurrentCharacterAsync()
         {
@@ -46,13 +47,12 @@ namespace Suendenbock_App.Controllers
             if (string.IsNullOrEmpty(userId))
                 return null;
 
-            var user = await _context.Users
-                .Include(u => u.CurrentCharacter)
-                    .ThenInclude(c => c.CharacterGameWorlds)
-                        .ThenInclude(cgw => cgw.GameWorld)
-                .FirstOrDefaultAsync(u => u.Id == userId);
-
-            return user?.CurrentCharacter;
+            return await _context.Characters
+                .Include(c => c.CharacterGameWorlds)
+                    .ThenInclude(cgw => cgw.GameWorld)
+                .Where(c => c.UserId == userId)
+                .OrderBy(c => c.Id)
+                .FirstOrDefaultAsync();
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Suendenbock_App.Controllers
         }
 
         /// <summary>
-        /// Helper: Get all characters for the current user (for character switcher)
+        /// Helper: Hauptcharaktere des Spielers in Sündenbock (normalerweise genau einer)
         /// </summary>
         protected async Task<List<Character>> GetUserCharactersAsync()
         {
@@ -95,36 +95,6 @@ namespace Suendenbock_App.Controllers
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
         }
-
-        /// <summary>
-        /// Helper: Switch to a different character
-        /// Updates ApplicationUser.CurrentCharacterId
-        /// </summary>
-        protected async Task<bool> SwitchCharacterAsync(int characterId)
-        {
-            var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId))
-                return false;
-
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-                return false;
-
-            // Prüfe ob Character dem User gehört
-            var character = await _context.Characters
-                .FirstOrDefaultAsync(c => c.Id == characterId && c.UserId == userId);
-
-            if (character == null)
-                return false;
-
-            user.CurrentCharacterId = characterId;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        // ===============================
-        // AUTHORIZATION HELPERS
-        // ===============================
 
         /// <summary>
         /// Helper: Get default GameWorld für nicht-eingeloggte User oder Gott

@@ -5,6 +5,7 @@
     var availableCharacters = ViewBag.AvailableCharacters as List<Suendenbock_App.Models.Domain.Character>;
     var originalwelt = ViewBag.Originalwelt as Suendenbock_App.Models.Domain.GameWorld;
     var inOriginalwelt = ViewBag.InOriginalwelt as HashSet<int> ?? new HashSet<int>();
+    var spielerListe = ViewBag.Spieler as List<Suendenbock_App.Models.Domain.ApplicationUser> ?? new List<Suendenbock_App.Models.Domain.ApplicationUser>();
 
     // Spalte "Originalwelt" nur in den anderen Welten zeigen
     var istOriginalwelt = true;
@@ -132,6 +133,7 @@
                                         @if (!istOriginalwelt)
                                         {
                                             <th>Originalwelt</th>
+                                            <th>Spieler in dieser Welt</th>
                                         }
                                         <th>Hinzugefügt am</th>
                                         <th>Aktionen</th>
@@ -159,6 +161,28 @@
                                                     {
                                                         <span class="badge bg-secondary">nur hier</span>
                                                     }
+                                                </td>
+                                                <td>
+                                                    @* Spieler nur für Nebencharaktere; leer = NPC (Lehrkraft, Mitschüler …) *@
+                                                    <form asp-action="SetSpieler" method="post" class="d-flex gap-1">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@cgw.Id" />
+                                                        <select name="userId" class="form-select form-select-sm" onchange="this.form.submit()"
+                                                                aria-label="Spieler für @cgw.Character.Vorname @cgw.Character.Nachname">
+                                                            <option value="">– NPC –</option>
+                                                            @foreach (var spieler in spielerListe)
+                                                            {
+                                                                if (spieler.Id == cgw.UserId)
+                                                                {
+                                                                    <option value="@spieler.Id" selected>@spieler.UserName</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@spieler.Id">@spieler.UserName</option>
+                                                                }
+                                                            }
+                                                        </select>
+                                                    </form>
                                                 </td>
                                             }
                                             <td>@cgw.AddedAt.ToLocalTime().ToString("dd.MM.yyyy")</td>

@@ -45,7 +45,7 @@ namespace Suendenbock_App.Controllers
                 return View("KeineKampagne");
 
             var start = await StandardFigurAsync(figuren);
-            var kopf = KopfErstellen(kampagne, figuren, start, "Index");
+            var kopf = await KopfErstellenAsync(kampagne, figuren, start, "Index");
 
             var model = new HesparisIndexViewModel { Kopf = kopf };
             foreach (var f in figuren)
@@ -597,22 +597,19 @@ namespace Suendenbock_App.Controllers
 
             var userId = GetUserId();
 
-            var eigene = await _context.Spielfiguren
-                .Where(f => f.Character.UserId == userId)
-                .Select(f => new { f.KampagneId, f.CharacterId })
+            var eigene = await EigeneFiguren(userId)
+                .Select(f => f.KampagneId)
                 .ToListAsync();
             if (eigene.Count == 0) return null;
 
             int gewaehlt;
-            if (kampagneId.HasValue && eigene.Any(e => e.KampagneId == kampagneId.Value))
+            if (kampagneId.HasValue && eigene.Contains(kampagneId.Value))
             {
                 gewaehlt = kampagneId.Value;
             }
             else
             {
-                var aktiv = await GetCurrentCharacterAsync();
-                gewaehlt = eigene.FirstOrDefault(e => aktiv != null && e.CharacterId == aktiv.Id)?.KampagneId
-                           ?? eigene.Max(e => e.KampagneId);
+                gewaehlt = eigene.Max();
             }
 
             return await _context.Kampagnen.Include(k => k.GameWorld).FirstOrDefaultAsync(k => k.Id == gewaehlt);
@@ -620,14 +617,17 @@ namespace Suendenbock_App.Controllers
 
         /// <summary>
         /// Sync zwischen Tenant-System und Hesparis: Die Zuordnung in der Spielwelt-Verwaltung entscheidet.
-        /// Spielfigur wird, wer der Welt der Akademie zugeordnet ist, einen Spieler (UserId) hat
-        /// und NICHT auch in der Originalwelt (Sündenbock) existiert.
+        /// Spielfigur wird, wer der Welt der Akademie zugeordnet ist und dort einen Spieler hat
+        /// (CharacterGameWorld.UserId, siehe Data/Nebencharaktere.cs).
         /// Characters ohne Spieler sind Lehrkräfte oder Mitschüler. Characters, die auch in Sündenbock existieren,
         /// sind dort Spielercharaktere und in Hesparis NPCs (umgekehrt gibt es das nicht).
         /// Passt eine Figur nicht mehr dazu, verschwindet sie, solange sie noch leer ist.
         /// </summary>
         private async Task FehlendeFigurenAnlegenAsync()
         {
+            // Spieler von Nebencharakteren an die Welt-Zuordnung umziehen (falls im Character-Formular gesetzt)
+            await Nebencharaktere.UmziehenAsync(_context);
+
             // Aufräumen: leere Figuren von Characters, die nicht (mehr) in der Welt der Akademie sind.
             // Figuren mit Daten (Talente, Noten, Tasche …) bleiben sicherheitshalber stehen.
             var vorhandene = await _context.Spielfiguren
@@ -642,13 +642,13 @@ namespace Suendenbock_App.Controllers
                 .AsSplitQuery()
                 .ToListAsync();
             var zuordnungen = await _context.CharacterGameWorlds
-                .Select(cgw => new { cgw.CharacterId, cgw.GameWorldId, cgw.GameWorld.IsOriginWorld })
+                .Where(cgw => cgw.UserId != null)
+                .Select(cgw => new { cgw.CharacterId, cgw.GameWorldId })
                 .ToListAsync();
 
+            // Kein Spieler in der Welt der Akademie (mehr) → Figur gehört nicht hierher
             var fremdeLeere = vorhandene.Where(f =>
-                (f.Character.UserId == null ||
-                 !zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.GameWorldId == f.Kampagne.GameWorldId) ||
-                 zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.IsOriginWorld)) &&
+                !zuordnungen.Any(z => z.CharacterId == f.CharacterId && z.GameWorldId == f.Kampagne.GameWorldId) &&
                 f.Geld == 0 && f.Talente.Count == 0 && f.Noten.Count == 0 && f.FachStufen.Count == 0 &&
                 f.Gegenstaende.Count == 0 && f.Wirkungen.Count == 0 && f.Geldbuchungen.Count == 0).ToList();
             if (fremdeLeere.Count > 0)
@@ -661,9 +661,7 @@ namespace Suendenbock_App.Controllers
             var fehlend = await (
                 from cgw in _context.CharacterGameWorlds
                 join k in _context.Kampagnen on cgw.GameWorldId equals k.GameWorldId
-                where cgw.Character.UserId != null
-                      // auch in der Originalwelt → dort Spielercharakter, hier NPC
-                      && !_context.CharacterGameWorlds.Any(o => o.CharacterId == cgw.CharacterId && o.GameWorld.IsOriginWorld)
+                where cgw.UserId != null
                       && !_context.Spielfiguren.Any(f => f.KampagneId == k.Id && f.CharacterId == cgw.CharacterId)
                 select new { KampagneId = k.Id, cgw.Character }
             ).ToListAsync();
@@ -708,15 +706,20 @@ namespace Suendenbock_App.Controllers
                 if (kampagne == null) return null;
 
                 var userId = GetUserId();
-                var aktiv = await GetCurrentCharacterAsync();
-                int aktivId = aktiv?.Id ?? 0;
-                id = await _context.Spielfiguren
+                id = await EigeneFiguren(userId)
                     .Where(f => f.KampagneId == kampagne.Id)
-                    .OrderByDescending(f => f.CharacterId == aktivId)
-                    .ThenByDescending(f => f.Character.UserId == userId)
-                    .ThenBy(f => f.Position)
+                    .OrderBy(f => f.Position)
                     .Select(f => (int?)f.Id)
                     .FirstOrDefaultAsync();
+                if (!id.HasValue)
+                {
+                    // Gott (oder ohne eigene Figur): die erste Figur der Akademie
+                    id = await _context.Spielfiguren
+                        .Where(f => f.KampagneId == kampagne.Id)
+                        .OrderBy(f => f.Position)
+                        .Select(f => (int?)f.Id)
+                        .FirstOrDefaultAsync();
+                }
                 if (!id.HasValue) return null;
             }
 
@@ -822,35 +825,45 @@ namespace Suendenbock_App.Controllers
         {
             if (IsGott()) return true;
             var userId = GetUserId();
-            return await _context.Spielfiguren.AnyAsync(f => f.KampagneId == figur.KampagneId && f.Character.UserId == userId);
+            return await EigeneFiguren(userId).AnyAsync(f => f.KampagneId == figur.KampagneId);
         }
 
-        /// <summary>Bearbeiten: eigene Figur (Character.UserId) oder Gott. Nutzt die Regel aus dem BaseController.</summary>
-        private async Task<bool> DarfBearbeitenAsync(Spielfigur figur) => await CanEditCharacterAsync(figur.CharacterId);
+        /// <summary>Bearbeiten: eigene Figur (Spieler in der Welt der Akademie) oder Gott.</summary>
+        private async Task<bool> DarfBearbeitenAsync(Spielfigur figur)
+        {
+            if (IsGott()) return true;
+            return await EigeneFiguren(GetUserId()).AnyAsync(f => f.Id == figur.Id);
+        }
+
+        /// <summary>
+        /// Figuren, deren Character in der Welt ihrer Akademie diesem Spieler gehört (CharacterGameWorld.UserId).
+        /// Nicht über Character.UserId: das tragen nur Hauptcharaktere aus Sündenbock.
+        /// </summary>
+        private IQueryable<Spielfigur> EigeneFiguren(string userId)
+        {
+            return _context.Spielfiguren.Where(f => _context.CharacterGameWorlds.Any(cgw =>
+                cgw.CharacterId == f.CharacterId &&
+                cgw.GameWorldId == f.Kampagne.GameWorldId &&
+                cgw.UserId == userId));
+        }
 
         private async Task<Spielfigur> StandardFigurAsync(List<Spielfigur> figuren)
         {
-            // Zuerst der gerade aktive Character, dann irgendeine eigene Figur, sonst die erste
-            var aktiv = await GetCurrentCharacterAsync();
-            if (aktiv != null)
-            {
-                var aktiveFigur = figuren.FirstOrDefault(f => f.CharacterId == aktiv.Id);
-                if (aktiveFigur != null) return aktiveFigur;
-            }
-            var userId = GetUserId();
-            return figuren.FirstOrDefault(f => f.Character.UserId == userId) ?? figuren[0];
+            // Die eigene Figur, sonst die erste
+            var eigene = await EigeneFiguren(GetUserId()).Select(f => f.Id).ToListAsync();
+            return figuren.FirstOrDefault(f => eigene.Contains(f.Id)) ?? figuren[0];
         }
 
-        private FigurKopfViewModel KopfErstellen(Kampagne kampagne, List<Spielfigur> figuren, Spielfigur aktiv, string aktion)
+        private async Task<FigurKopfViewModel> KopfErstellenAsync(Kampagne kampagne, List<Spielfigur> figuren, Spielfigur aktiv, string aktion)
         {
-            var userId = GetUserId();
+            var eigene = await EigeneFiguren(GetUserId()).Select(f => f.Id).ToListAsync();
             return new FigurKopfViewModel
             {
                 Kampagne = kampagne,
                 AktiveFigurId = aktiv.Id,
                 Aktion = aktion,
                 IstSpielleitung = IsGott(),
-                DarfBearbeiten = IsGott() || aktiv.Character.UserId == userId,
+                DarfBearbeiten = IsGott() || eigene.Contains(aktiv.Id),
                 Figuren = figuren.Select(f => new FigurKurz
                 {
                     Id = f.Id,
@@ -858,7 +871,7 @@ namespace Suendenbock_App.Controllers
                     Name = FigurKurz.NameVon(f.Character),
                     Bild = f.Character.ImagePath,
                     Farbe = f.Character.UserColor,
-                    Eigene = f.Character.UserId == userId,
+                    Eigene = eigene.Contains(f.Id),
                 }).ToList(),
             };
         }
@@ -870,7 +883,7 @@ namespace Suendenbock_App.Controllers
                 .Include(f => f.Character)
                 .OrderBy(f => f.Position)
                 .ToListAsync();
-            return KopfErstellen(figur.Kampagne, figuren, figuren.First(f => f.Id == figur.Id), aktion);
+            return await KopfErstellenAsync(figur.Kampagne, figuren, figuren.First(f => f.Id == figur.Id), aktion);
         }
 
         /// <summary>Boni aus AGs, in denen die Figur Mitglied ist (JS: agBoni).</summary>

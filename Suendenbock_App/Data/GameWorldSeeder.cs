@@ -11,6 +11,7 @@ namespace Suendenbock_App.Data
             if (await context.GameWorlds.AnyAsync())
             {
                 await OriginalweltSicherstellenAsync(context);
+                await Nebencharaktere.UmziehenAsync(context);
                 return; // Bereits initialisiert
             }
 

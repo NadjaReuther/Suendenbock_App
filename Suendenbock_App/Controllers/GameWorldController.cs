@@ -99,6 +99,9 @@ namespace Suendenbock_App.Controllers
             if (id == null)
                 return NotFound();
 
+            // Spieler von Nebencharakteren an die Welt-Zuordnung umziehen, damit die Spalte "Spieler" stimmt
+            await Nebencharaktere.UmziehenAsync(_context);
+
             var gameWorld = await _context.GameWorlds
                 .Include(gw => gw.CharacterGameWorlds)
                     .ThenInclude(cgw => cgw.Character)
@@ -130,6 +133,16 @@ namespace Suendenbock_App.Controllers
             ViewBag.AvailableCharacters = availableCharacters;
             ViewBag.Originalwelt = originalwelt;
             ViewBag.InOriginalwelt = inOriginalwelt;
+
+            // Spieler-Auswahl für Nebenwelten (Benutzer mit Rolle "Spieler")
+            var spielerRolle = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Spieler");
+            var spielerIds = spielerRolle == null
+                ? new List<string>()
+                : await _context.UserRoles.Where(ur => ur.RoleId == spielerRolle.Id).Select(ur => ur.UserId).ToListAsync();
+            ViewBag.Spieler = await _context.Users
+                .Where(u => spielerIds.Contains(u.Id))
+                .OrderBy(u => u.UserName)
+                .ToListAsync();
 
             return View(gameWorld.CharacterGameWorlds.OrderBy(cgw => cgw.Character.Nachname).ToList());
         }
@@ -220,8 +233,47 @@ namespace Suendenbock_App.Controllers
             }
             await _context.SaveChangesAsync();
 
+            // Characters mit Spieler, die nur in Nebenwelten sind → Spieler an die Zuordnung umziehen
+            await Nebencharaktere.UmziehenAsync(_context);
+
             TempData["Success"] = $"{neu.Count} Character(s) wurden hinzugefügt.";
             return RedirectToAction(nameof(ManageCharacters), new { id = gameWorldId });
+        }
+
+        // POST: GameWorld/SetSpieler
+        // Spieler eines Nebencharakters in dieser Welt festlegen (leer = NPC)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetSpieler(int id, string? userId)
+        {
+            var zuordnung = await _context.CharacterGameWorlds
+                .Include(cgw => cgw.GameWorld)
+                .Include(cgw => cgw.Character)
+                .FirstOrDefaultAsync(cgw => cgw.Id == id);
+            if (zuordnung == null)
+                return NotFound();
+
+            if (zuordnung.GameWorld.IsOriginWorld)
+            {
+                TempData["Error"] = "In der Originalwelt wird der Spieler im Charakterbogen eingetragen (Hauptcharakter).";
+                return RedirectToAction(nameof(ManageCharacters), new { id = zuordnung.GameWorldId });
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                zuordnung.UserId = null;
+            }
+            else
+            {
+                zuordnung.UserId = userId;
+            }
+            await _context.SaveChangesAsync();
+
+            if (zuordnung.UserId == null)
+                TempData["Success"] = $"{zuordnung.Character.Vorname} {zuordnung.Character.Nachname} ist in {zuordnung.GameWorld.Name} jetzt NPC.";
+            else
+                TempData["Success"] = $"Spieler für {zuordnung.Character.Vorname} {zuordnung.Character.Nachname} in {zuordnung.GameWorld.Name} gespeichert.";
+            return RedirectToAction(nameof(ManageCharacters), new { id = zuordnung.GameWorldId });
         }
 
         // POST: GameWorld/SetOriginWorld/5
