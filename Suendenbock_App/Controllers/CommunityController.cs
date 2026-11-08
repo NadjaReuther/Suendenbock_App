@@ -624,9 +624,17 @@ namespace Suendenbock_App.Controllers
             Dictionary<string, string?> userIdToColor = new();
             if (isAdmin)
             {
-                userIdToColor = await _context.Characters
+                // Ein Spieler kann mehrere Characters haben (z.B. Sündenbock und Hesparis):
+                // je Spieler eine Farbe, bevorzugt vom Character aus der Originalwelt
+                var spielerCharacters = await _context.Characters
                     .Where(c => c.UserId != null)
-                    .ToDictionaryAsync(c => c.UserId!, c => c.UserColor);
+                    .OrderByDescending(c => c.CharacterGameWorlds.Any(cgw => cgw.GameWorld.IsOriginWorld))
+                    .ThenBy(c => c.Id)
+                    .Select(c => new { c.UserId, c.UserColor })
+                    .ToListAsync();
+                userIdToColor = spielerCharacters
+                    .GroupBy(c => c.UserId!)
+                    .ToDictionary(g => g.Key, g => g.Select(c => c.UserColor).FirstOrDefault(farbe => farbe != null));
             }
 
             // Konvertiere zu ViewModels
