@@ -714,9 +714,14 @@ namespace Suendenbock_App.Migrations
                     b.Property<bool>("IsOriginWorld")
                         .HasColumnType("bit");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("GameWorldId");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("CharacterId", "GameWorldId")
                         .IsUnique();
@@ -9096,9 +9101,16 @@ namespace Suendenbock_App.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Suendenbock_App.Models.Domain.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Character");
 
                     b.Navigation("GameWorld");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
