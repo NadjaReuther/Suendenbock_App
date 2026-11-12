@@ -178,6 +178,95 @@ public static class HesparisRegeln
         return w.Effekt.DauerText ?? "";
     }
 
+    // ---------------------------------------------------------------- Magiestufen
+
+    /// <summary>Abschnitte der Magiestufen (JS: RG_PHASES / SJ_ABS). Max = höchste Stufe in diesem Abschnitt.</summary>
+    public static readonly (string Name, string Tor, string Schluessel, int Max)[] Abschnitte =
+    {
+        ("Unterstufe", "Hafenaufsicht", "hafen", 3),
+        ("Mittelstufe", "Angerwacht", "anger", 7),
+        ("Oberstufe", "Gartenhüter", "garten", 9),
+        ("Domstufe", "Domwächter", "dom", 10),
+    };
+
+    /// <summary>Startpunkte für Magiestufen (JS: cap → 6).</summary>
+    public const int StartPunkte = 6;
+
+    /// <summary>Zusatzpunkte je Abschlussnote, in Zehnteln (JS: SJ_STAFFEL).</summary>
+    private static readonly Dictionary<string, double> Staffel = new()
+    {
+        ["S"] = 2, ["A"] = 2, ["B"] = 1.5, ["C"] = 1, ["D"] = 0.5, ["E"] = 0,
+    };
+
+    /// <summary>Abschluss bestanden? Leer und "E" nicht (JS: sjPassed).</summary>
+    public static bool Bestanden(string? wert) => !string.IsNullOrEmpty(wert) && wert != "E";
+
+    /// <summary>
+    /// Abschnitt (1–4), bis zu dem eine Figur Stufen wählen darf: jeder bestandene Abschluss
+    /// (Hafen, Anger, Garten, in dieser Reihenfolge) öffnet den nächsten (JS: sjPhase).
+    /// </summary>
+    public static int Abschnitt(IEnumerable<SchuljahrAbschnitt> abschluesse)
+    {
+        var liste = abschluesse.ToList();
+        int n = 0;
+        foreach (var x in Abschnitte.Take(3))
+        {
+            if (Bestanden(liste.FirstOrDefault(a => a.Abschnitt == x.Schluessel)?.Wert)) n++;
+            else break;
+        }
+        return n + 1;
+    }
+
+    /// <summary>Höchste Stufe, die im aktuellen Abschnitt erreichbar ist (JS: rgMax).</summary>
+    public static int MaxStufe(int abschnitt) => Abschnitte[abschnitt - 1].Max;
+
+    /// <summary>Freipunkte aus Abschlüssen in Zehnteln: je bestandener Abschluss 30 + Notenbonus (JS: sjAbsZ).</summary>
+    public static int AbschlussZehntel(IEnumerable<SchuljahrAbschnitt> abschluesse) =>
+        abschluesse
+            .Where(a => Bestanden(a.Wert) && a.Wert != "alt")
+            .Sum(a => 30 + JsRunden(Staffel.GetValueOrDefault(a.Wert, 0) * 10));
+
+    /// <summary>
+    /// Punkte für Magiestufen: 6 + Punkte der Spielleitung + je 10 Zehntel aus Abschlüssen einer (JS: cap).
+    /// Der Anteil aus Protokollheften (JS: sjHeftZ) kommt mit dem Bereich "Spieltisch" dazu.
+    /// </summary>
+    public static int PunkteGesamt(Spielfigur figur, IEnumerable<SchuljahrAbschnitt> abschluesse) =>
+        StartPunkte + figur.Bonuspunkte + AbschlussZehntel(abschluesse) / 10;
+
+    /// <summary>
+    /// Fachpunkte eines Fachs: je A oder S in den Abschlussprüfungen ein Punkt (JS: fachPunkte).
+    /// Der Anteil aus Klassenarbeiten (JS: sjArbZ) kommt mit dem Bereich "Alltag" dazu.
+    /// </summary>
+    public static int Fachpunkte(Spielfigur figur, int fachId) =>
+        figur.Pruefungen.Count(p =>
+            FachpunktAbschnitte.Contains(p.Abschnitt) &&
+            p.Teil == fachId.ToString() &&
+            (p.Wert == "A" || p.Wert == "S"));
+
+    public static int Stufe(Spielfigur figur, int fachId) =>
+        figur.FachStufen.FirstOrDefault(s => s.FachId == fachId)?.Stufe ?? 0;
+
+    /// <summary>Verbrauchte Punkte: Stufen über den Fachpunkten hinaus (JS: used).</summary>
+    public static int PunkteVerbraucht(Spielfigur figur, IEnumerable<int> fachIds) =>
+        fachIds.Sum(id => Math.Max(0, Stufe(figur, id) - Fachpunkte(figur, id)));
+
+    /// <summary>Darf diese Stufe jetzt gewählt werden? (JS: canBuy)</summary>
+    public static bool KannWaehlen(Spielfigur figur, int fachId, int stufe, int maxStufe, int punkteFrei)
+    {
+        if (stufe != Stufe(figur, fachId) + 1 || stufe > maxStufe) return false;
+        bool fachpunktFrei = Fachpunkte(figur, fachId) - Stufe(figur, fachId) > 0;
+        return fachpunktFrei || punkteFrei > 0;
+    }
+
+    /// <summary>Abkürzungen in den Stufentexten (JS: LEGEND).</summary>
+    public static readonly (string Kurz, string Lang)[] Abkuerzungen =
+    {
+        ("TL", "Talentwert"), ("SEP", "Sepsiswert"), ("SIL", "Silizieren/Bannen"), ("HLF", "Helfen"),
+        ("MAGW", "Magische Wahrnehmung"), ("FD", "Flatdamage"), ("RES", "Resistenz"), ("REA", "Reaktion"),
+        ("LP", "Lebenspunkte"), ("HAPW", "Haptische Wahrnehmung"), ("MSW", "Meisterschaftswürfel"),
+        ("AUR", "Auritieren/Bündeln"), ("RW", "Reichweite"), ("RÜW", "Rüstwert"),
+    };
+
     // ---------------------------------------------------------------- Noten
 
     /// <summary>Zahlenwert einer Note, S ist die Sondernote (JS: NOTE_VAL).</summary>

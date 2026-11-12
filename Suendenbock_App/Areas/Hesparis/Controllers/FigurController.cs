@@ -183,10 +183,7 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
 
                 // Fachpunkte: je A oder S in den Abschlussprüfungen ein Punkt (JS: fachPunkte).
                 // Der Anteil aus Klassenarbeiten (JS: sjArbZ) kommt mit dem Bereich "Alltag" dazu.
-                int fachpunkte = figur.Pruefungen.Count(p =>
-                    HesparisRegeln.FachpunktAbschnitte.Contains(p.Abschnitt) &&
-                    p.Teil == fach.Id.ToString() &&
-                    (p.Wert == "A" || p.Wert == "S"));
+                int fachpunkte = HesparisRegeln.Fachpunkte(figur, fach.Id);
 
                 model.Faecher.Add(new ZeugnisFach
                 {

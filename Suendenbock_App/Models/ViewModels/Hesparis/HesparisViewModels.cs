@@ -207,3 +207,108 @@ public class CharakterFormularViewModel
     public List<ApplicationUser> Spieler { get; set; } = new();
     public List<Character> SuendenbockCharacters { get; set; } = new();
 }
+
+// ------------------------------------------------------------------ Magiestufen
+
+public class StufenViewModel
+{
+    public FigurKopfViewModel Kopf { get; set; } = null!;
+
+    /// <summary>Abschnitt 1–4 (Unterstufe … Domstufe) und höchste wählbare Stufe darin.</summary>
+    public int Abschnitt { get; set; }
+    public string AbschnittName { get; set; } = "";
+    public int MaxStufe { get; set; }
+
+    public int PunkteGesamt { get; set; }
+    public int PunkteVerbraucht { get; set; }
+    public int PunkteFrei => PunkteGesamt - PunkteVerbraucht;
+    public int Bonuspunkte { get; set; }
+    public int AbschlussPunkte { get; set; }
+
+    public List<StufenFach> Faecher { get; set; } = new();
+    public StufenFach Auswahl { get; set; } = null!;
+    public string? Beschreibung { get; set; }
+    public List<StufenSchritt> Schritte { get; set; } = new();
+    public List<StufenPerk> Perks { get; set; } = new();
+
+    /// <summary>Wahlmöglichkeiten für die nächste Stufe (mehrere bei "… ODER …").</summary>
+    public List<string> Optionen { get; set; } = new();
+    public bool KannWaehlen { get; set; }
+    public string? Grund { get; set; }
+
+    /// <summary>Abschlüsse (hafen, anger, garten, dom) → Note, für Gott.</summary>
+    public Dictionary<string, string?> Abschluesse { get; set; } = new();
+
+    // Ring
+    public string Polygon { get; set; } = "";
+    public List<RingPunkt> Punkte { get; set; } = new();
+    public List<RingBeschriftung> Beschriftungen { get; set; } = new();
+    public List<RingLinie> Speichen { get; set; } = new();
+    public List<RingLinie> Pfade { get; set; } = new();
+    public List<RingTor> Tore { get; set; } = new();
+}
+
+/// <summary>Linie im SVG des Rings (Koordinaten im 720er Raster).</summary>
+public class RingLinie
+{
+    public string X1 { get; set; } = "";
+    public string Y1 { get; set; } = "";
+    public string X2 { get; set; } = "";
+    public string Y2 { get; set; } = "";
+}
+
+/// <summary>Beschriftung eines Tors zwischen zwei Abschnitten (Hafenaufsicht, Angerwacht, Gartenhüter).</summary>
+public class RingTor
+{
+    public string Name { get; set; } = "";
+    public string Links { get; set; } = "";
+    public string Oben { get; set; } = "";
+    public bool Offen { get; set; }
+}
+
+public class StufenFach
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public int Stufe { get; set; }
+    public int Fachpunkte { get; set; }
+    public int FachpunkteFrei => Math.Max(0, Fachpunkte - Stufe);
+}
+
+public class StufenSchritt
+{
+    public int Stufe { get; set; }
+    public string Text { get; set; } = "";
+
+    /// <summary>"got" = erreicht, "next" = jetzt wählbar, "" = noch verdeckt.</summary>
+    public string Status { get; set; } = "";
+}
+
+public class StufenPerk
+{
+    public string Tor { get; set; } = "";
+    public string Name { get; set; } = "";
+    public bool Erhalten { get; set; }
+    public string Hinweis { get; set; } = "";
+    public string? Text { get; set; }
+}
+
+public class RingPunkt
+{
+    public int FachId { get; set; }
+    public int Stufe { get; set; }
+    public string Links { get; set; } = "";
+    public string Oben { get; set; } = "";
+    public string Klasse { get; set; } = "";
+    public string Beschriftung { get; set; } = "";
+}
+
+public class RingBeschriftung
+{
+    public int FachId { get; set; }
+    public string Name { get; set; } = "";
+    public int Stufe { get; set; }
+    public string Links { get; set; } = "";
+    public string Oben { get; set; } = "";
+    public bool Aktiv { get; set; }
+}

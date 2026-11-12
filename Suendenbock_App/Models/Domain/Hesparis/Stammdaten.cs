@@ -16,6 +16,18 @@ public class Fach
     /// <summary>Kurzname für Karte/Stundenplan (JS: KM_FACH_SHORT).</summary>
     public string? Kurzname { get; set; }
 
+    /// <summary>Erklärung des Fachs (JS: FAECHER[i].desc).</summary>
+    public string? Beschreibung { get; set; }
+
+    /// <summary>Fähigkeit bei Hafenaufsicht (Stufe 3), Angerwacht (7), Gartenhüter (9), Domwächter (10) (JS: perks).</summary>
+    public string? PerkHafen { get; set; }
+    public string? PerkAnger { get; set; }
+    public string? PerkGarten { get; set; }
+    public string? PerkDom { get; set; }
+
+    /// <summary>Zusatztext zur Hafen-Fähigkeit (JS: hafenText).</summary>
+    public string? HafenText { get; set; }
+
     public ICollection<FachStufe> Stufen { get; set; } = new List<FachStufe>();
 }
 
