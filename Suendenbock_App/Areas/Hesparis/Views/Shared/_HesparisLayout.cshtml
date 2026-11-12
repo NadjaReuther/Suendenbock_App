@@ -1,5 +1,5 @@
 @{
-    // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche", "Stufen", "Sonder", "Charakter"
+    // Bereich für die Navigation (siehe HesparisMenue): "Index", "Talente", "Zeugnis", "Tasche", "Stufen", "Sonder", "Charakter" …
     var bereich = ViewData["Bereich"] as string ?? "";
     var figurId = ViewData["FigurId"] as int?;
     // Zusätzliche Klasse für <body>, z. B. "on-home" auf der Übersicht (Nebel kräftiger, kein Abstand unten)
@@ -11,15 +11,29 @@
     var istGott = User.IsInRole("Gott");
     // Der eigene Hesparis-Charakter (setzt HesparisBaseController)
     var meinCharakter = ViewBag.MeinHesparisCharakter as HesparisCharakter;
+    // Spieltag der Akademie (setzt HesparisBaseController), wie "Do, 3. September" in der HTML
+    var spieltag = ViewBag.Spieltag as DateOnly?;
 
-    string Aktiv(string name)
+    // Haus-Knopf: aktiv auf der Übersicht
+    string StartKlasse()
     {
-        if (bereich == name)
+        if (bereich == "Index")
         {
-            return "active";
+            return "topbar-link topbar-start active";
         }
-        return "";
+        return "topbar-link topbar-start";
     }
+
+    // Gruppen-Knopf: aktiv, wenn die offene Seite in dieser Gruppe liegt
+    string GruppenKlasse(HesparisMenue.Gruppe gruppe)
+    {
+        if (gruppe.Eintraege.Any(e => e.Bereich == bereich))
+        {
+            return "topbar-link nav-group-btn active";
+        }
+        return "topbar-link nav-group-btn";
+    }
+
 }
 <!DOCTYPE html>
 <html lang="de">
@@ -40,26 +54,67 @@
     </div>
 
     <nav class="topbar">
-        @* "Hesparis" führt zurück zum Startbild, das Haus zur Übersicht der Türme *@
+        @* "Hesparis" führt zurück zum Startbild *@
         <a class="topbar-home" asp-controller="Home" asp-action="Index">Hesparis</a>
-        <div class="topbar-nav">
-            <a class="@Aktiv("Index")" asp-controller="Home" asp-action="Uebersicht" asp-route-figur="@figurId"><span class="glyph">⌂</span>Übersicht</a>
-            <a class="@Aktiv("Talente")" asp-controller="Figur" asp-action="Talente" asp-route-id="@figurId"><span class="glyph">✧</span>Talente</a>
-            <a class="@Aktiv("Zeugnis")" asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@figurId"><span class="glyph">✎</span>Zeugnis</a>
-            <a class="@Aktiv("Tasche")" asp-controller="Figur" asp-action="Tasche" asp-route-id="@figurId"><span class="glyph">◍</span>Tasche</a>
-            <a class="@Aktiv("Stufen")" asp-controller="Magie" asp-action="Stufen" asp-route-id="@figurId"><span class="glyph">✺</span>Magiestufen</a>
-            <a class="@Aktiv("Sonder")" asp-controller="Magie" asp-action="Sonderzauber" asp-route-id="@figurId"><span class="glyph">☾</span>Sonderzauber</a>
-            @if (istGott)
+        @if (spieltag.HasValue)
+        {
+            <span class="topbar-day" title="Heute in der Spielwelt"><span class="td-date">@HesparisMenue.Spieltag(spieltag.Value)</span></span>
+        }
+
+        <div class="nav-main" role="menubar">
+            <a class="@StartKlasse()" asp-controller="Home" asp-action="Uebersicht" asp-route-figur="@figurId" title="Übersicht" aria-label="Übersicht">
+                <span class="glyph" aria-hidden="true">⌂</span>
+            </a>
+
+            @foreach (var gruppe in HesparisMenue.Gruppen)
             {
-                <a class="@Aktiv("Charakter")" asp-controller="Charakter" asp-action="Index"><span class="glyph">⚜</span>Charaktere</a>
+                <div class="nav-group">
+                    <button type="button" class="@GruppenKlasse(gruppe)" aria-haspopup="true" aria-expanded="false" title="@gruppe.Text">
+                        <span class="glyph" aria-hidden="true">@gruppe.Glyph</span><span class="link-txt">@gruppe.Text</span><span class="caret" aria-hidden="true">▾</span>
+                    </button>
+                    <div class="nav-drop" role="menu">
+                        @foreach (var e in gruppe.Eintraege)
+                        {
+                            if (e.NurGott && !istGott)
+                            {
+                                continue;
+                            }
+                            var klasse = "nav-item";
+                            if (e.NurGott)
+                            {
+                                klasse += " sl-only";
+                            }
+                            if (bereich == e.Bereich)
+                            {
+                                klasse += " active";
+                            }
+
+                            if (e.Controller == null)
+                            {
+                                @* Noch nicht gebaut *@
+                                <span class="@klasse soon" role="menuitem" aria-disabled="true"><span class="glyph">@e.Glyph</span>@e.Text<small>bald</small></span>
+                            }
+                            else if (e.MitFigur)
+                            {
+                                <a class="@klasse" role="menuitem" asp-controller="@e.Controller" asp-action="@e.Action" asp-route-id="@figurId"><span class="glyph">@e.Glyph</span>@e.Text</a>
+                            }
+                            else
+                            {
+                                <a class="@klasse" role="menuitem" asp-controller="@e.Controller" asp-action="@e.Action"><span class="glyph">@e.Glyph</span>@e.Text</a>
+                            }
+                        }
+                    </div>
+                </div>
             }
         </div>
-        <span class="topbar-section">@ViewData["Title"]</span>
-        @if (meinCharakter != null)
-        {
-            <span class="topbar-me" title="Dein Charakter in Hesparis">✦ @meinCharakter.Anzeigename</span>
-        }
-        <a class="topbar-back" asp-area="" asp-controller="Home" asp-action="Index">← Sündenbock</a>
+
+        <div class="topbar-right">
+            @if (meinCharakter != null)
+            {
+                <span class="topbar-me" title="Dein Charakter in Hesparis">✦ @meinCharakter.Anzeigename</span>
+            }
+            <a class="topbar-back" asp-area="" asp-controller="Home" asp-action="Index" title="Zurück zu Sündenbock">←<span class="back-txt"> Sündenbock</span></a>
+        </div>
     </nav>
 
     <main class="hes-main">
@@ -74,6 +129,34 @@
         @RenderBody()
     </main>
 
+    <script>
+        // Ausklappmenüs wie in der HTML: Klick öffnet die Gruppe, Klick daneben oder Esc schließt.
+        (function () {
+            var gruppen = document.querySelectorAll('.nav-group');
+            function alleZu(ausser) {
+                gruppen.forEach(function (g) {
+                    if (g === ausser) return;
+                    g.classList.remove('open');
+                    g.querySelector('.nav-group-btn').setAttribute('aria-expanded', 'false');
+                });
+            }
+            gruppen.forEach(function (g) {
+                var knopf = g.querySelector('.nav-group-btn');
+                knopf.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    alleZu(g);
+                    var offen = g.classList.toggle('open');
+                    knopf.setAttribute('aria-expanded', offen ? 'true' : 'false');
+                });
+            });
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.nav-group')) alleZu(null);
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') alleZu(null);
+            });
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
