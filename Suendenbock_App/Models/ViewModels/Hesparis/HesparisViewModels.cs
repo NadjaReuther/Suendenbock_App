@@ -23,15 +23,9 @@ public class FigurKopfViewModel
 public class FigurKurz
 {
     public int Id { get; set; }
-    public int CharacterId { get; set; }
     public string Name { get; set; } = "";
     public string? Bild { get; set; }
-    public string? Farbe { get; set; }
     public bool Eigene { get; set; }
-
-    /// <summary>Anzeigename aus dem Sündenbock-Character: Rufname, sonst Vorname.</summary>
-    public static string NameVon(Character c) =>
-        !string.IsNullOrWhiteSpace(c.Rufname) ? c.Rufname : c.Vorname;
 }
 
 // ------------------------------------------------------------------ Startseite
@@ -179,4 +173,37 @@ public class GeldFormular
     public string Grund { get; set; } = "";
 
     public int Kerzen => Hiro * 1000 + Nimbus * 100 + Lumen * 10 + Kerze;
+}
+
+// ------------------------------------------------------------------ Charaktere (Gott-Modus)
+
+public class CharakterIndexViewModel
+{
+    public List<Charakterart> Arten { get; set; } = new();
+    public List<HesparisCharakter> Charaktere { get; set; } = new();
+}
+
+/// <summary>Formularfelder eines Hesparis-Charakters.</summary>
+public class CharakterFormular
+{
+    public int? Id { get; set; }
+    public string Vorname { get; set; } = "";
+    public string? Nachname { get; set; }
+    public string? Rufname { get; set; }
+    public string? BildPfad { get; set; }
+    public int CharakterartId { get; set; }
+
+    /// <summary>Spieler (nur bei Art Spieler).</summary>
+    public string? UserId { get; set; }
+
+    /// <summary>Verknüpfter Sündenbock-Character (dieselbe Person in beiden Welten).</summary>
+    public int? CharacterId { get; set; }
+}
+
+public class CharakterFormularViewModel
+{
+    public CharakterFormular Formular { get; set; } = new();
+    public List<Charakterart> Arten { get; set; } = new();
+    public List<ApplicationUser> Spieler { get; set; } = new();
+    public List<Character> SuendenbockCharacters { get; set; } = new();
 }

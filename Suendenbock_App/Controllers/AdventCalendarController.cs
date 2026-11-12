@@ -217,12 +217,11 @@ namespace Suendenbock_App.Controllers
 
             // Nur Player mit zugewiesenem Character laden (mit Character-Farbe)
             var playerUserIds = playerUsers.Select(u => u.Id).ToList();
-            // Ein Spieler kann mehrere Characters haben (z.B. Sündenbock und Hesparis):
-            // je Spieler eine Farbe, bevorzugt vom Character aus der Originalwelt
+            // Ein Spieler kann mehrere Characters haben:
+            // je Spieler eine Farbe (vom ältesten Character mit Farbe)
             var spielerCharacters = await _context.Characters
                 .Where(c => playerUserIds.Contains(c.UserId))
-                .OrderByDescending(c => c.CharacterGameWorlds.Any(cgw => cgw.GameWorld.IsOriginWorld))
-                .ThenBy(c => c.Id)
+                .OrderBy(c => c.Id)
                 .Select(c => new { c.UserId, c.UserColor })
                 .ToListAsync();
             var charactersWithColor = spielerCharacters

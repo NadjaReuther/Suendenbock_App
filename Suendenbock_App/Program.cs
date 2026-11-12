@@ -71,9 +71,11 @@ using(var scope = app.Services.CreateScope())
 
     await CreateDefaultUser(userManager, "Gott", "gott@suendenbock.lore", "Adrijan1618!");
 
-    // Seed GameWorlds und migriere bestehende Characters
+    // Hesparis: Characters aus der alten Spielwelt "Hesparis" in die eigene Hesparis-Tabelle umziehen
+    // (läuft nur, solange es die alten GameWorld-Tabellen noch gibt; danach entfernen)
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await GameWorldSeeder.SeedGameWorldsAsync(dbContext);
+    var umzugLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("HesparisUmzug");
+    await Suendenbock_App.Data.Hesparis.HesparisUmzug.AusfuehrenAsync(dbContext, umzugLogger);
 }
 
 async Task CreateDefaultUser(UserManager<ApplicationUser> userManager, string roleName, string userName, string password)
@@ -125,6 +127,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+// Areas (z.B. /Hesparis → Areas/Hesparis, eigene Webseite im selben Projekt)
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",

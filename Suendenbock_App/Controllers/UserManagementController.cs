@@ -196,6 +196,17 @@ namespace Suendenbock_App.Controllers
                     await _context.SaveChangesAsync();
                 }
 
+                // Hesparis-Charaktere des Users behalten, nur den Spieler austragen
+                var hesparisCharaktere = await _context.HesparisCharaktere.Where(h => h.UserId == id).ToListAsync();
+                if (hesparisCharaktere.Any())
+                {
+                    foreach (var hesparisCharakter in hesparisCharaktere)
+                    {
+                        hesparisCharakter.UserId = null;
+                    }
+                    await _context.SaveChangesAsync();
+                }
+
                 // Lösche alle UserAchievements des Users
                 var userAchievements = await _context.UserAchievements.Where(ua => ua.UserId == id).ToListAsync();
                 if (userAchievements.Any())

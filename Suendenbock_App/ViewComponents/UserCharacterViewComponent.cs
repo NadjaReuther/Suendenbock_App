@@ -30,21 +30,15 @@ namespace Suendenbock_App.ViewComponents
                 return View("Default", new UserCharacterViewModel());
             }
 
-            // Hauptcharakter (Sündenbock): nur er trägt Character.UserId
+            // Character des Spielers in Sündenbock
             var currentCharacter = await _context.Characters
-                .Include(c => c.CharacterGameWorlds)
-                    .ThenInclude(cgw => cgw.GameWorld)
                 .Where(c => c.UserId == user.Id)
                 .OrderBy(c => c.Id)
                 .FirstOrDefaultAsync();
 
-            var currentGameWorld = currentCharacter?.CharacterGameWorlds
-                .Select(cgw => cgw.GameWorld)
-                .FirstOrDefault(gw => gw.IsOriginWorld);
-
-            // Link "Zu Hesparis": wer dort einen Nebencharakter hat (oder Gott)
-            bool hatHesparis = User.IsInRole("Gott") || await _context.CharacterGameWorlds
-                .AnyAsync(cgw => cgw.UserId == user.Id && cgw.GameWorld.Name.Contains("Hesparis"));
+            // Link "Zu Hesparis": wer dort einen Charakter hat (oder Gott)
+            bool hatHesparis = User.IsInRole("Gott") || await _context.HesparisCharaktere
+                .AnyAsync(h => h.UserId == user.Id);
 
             var viewModel = new UserCharacterViewModel
             {
@@ -52,7 +46,6 @@ namespace Suendenbock_App.ViewComponents
                 CharacterImagePath = currentCharacter?.ImagePath,
                 UserInitial = user.Name?.Substring(0, 1) ?? user.UserName?.Substring(0, 1) ?? "?",
                 CurrentCharacter = currentCharacter,
-                CurrentGameWorld = currentGameWorld,
                 HatHesparis = hatHesparis
             };
 
@@ -66,7 +59,6 @@ namespace Suendenbock_App.ViewComponents
         public string? CharacterImagePath { get; set; }
         public string UserInitial { get; set; } = "?";
         public Character? CurrentCharacter { get; set; }
-        public GameWorld? CurrentGameWorld { get; set; }
         /// <summary>Zeigt im Menü den Link "Zu Hesparis".</summary>
         public bool HatHesparis { get; set; }
     }

@@ -6,12 +6,6 @@
     var isSpieler = User.IsInRole("Spieler");
     var isModerator = User.IsInRole("Moderator");
     var isGott = User.IsInRole("Gott");
-
-    // GameWorld-Context für Menü-Filterung
-    var currentGameWorld = ViewBag.CurrentGameWorld as GameWorld;
-    var effectiveGameWorld = ViewBag.EffectiveGameWorld as GameWorld;
-    var activeGameWorld = currentGameWorld ?? effectiveGameWorld;
-    var is1618World = activeGameWorld?.Name == "Sündenbock 1618" || activeGameWorld == null; // Default: 1618
 }
 <!-- Todo und Tagebuch für alle außer Gäste -->
 @if (!isGast)
@@ -45,20 +39,16 @@
                 👤 Charaktere
             </a>
         </li>
-        @* Gilden und Infanterien nur in "Sündenbock 1618" anzeigen *@
-        @if (is1618World)
-        {
-            <li class="nav-item">
-                <a class="dropdown-item" asp-controller="Guild" asp-action="Overview">
-                    🏰 Gilden
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="dropdown-item" asp-controller="Infanterie" asp-action="Overview">
-                    ⚔️ Infanterien
-                </a>
-            </li>
-        }
+        <li class="nav-item">
+            <a class="dropdown-item" asp-controller="Guild" asp-action="Overview">
+                🏰 Gilden
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="dropdown-item" asp-controller="Infanterie" asp-action="Overview">
+                ⚔️ Infanterien
+            </a>
+        </li>
     </ul>
 </li>
 
@@ -93,7 +83,7 @@
         </a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" asp-controller="Hesparis" asp-action="Index">
+        <a class="nav-link" asp-area="Hesparis" asp-controller="Home" asp-action="Index">
             ✦ Hesparis
         </a>
     </li>

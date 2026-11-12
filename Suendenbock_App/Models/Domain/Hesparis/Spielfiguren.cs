@@ -3,8 +3,8 @@ using Suendenbock_App.Models.Domain;
 namespace Suendenbock_App.Models.Domain.Hesparis;
 
 /// <summary>
-/// Spielercharakter (JS: state.players[i]). Hängt an einem Sündenbock-Character;
-/// dessen Besitzer darf die Figur bearbeiten, die Spielleitung (Gott) alle.
+/// Spielwerte eines Spielercharakters (JS: state.players[i]). Gehört zu einem HesparisCharakter der Art Spieler.
+/// Bearbeiten dürfen alle Spieler und die Spielleitung (Gott).
 /// </summary>
 public class Spielfigur : IKampagnenDaten
 {
@@ -15,13 +15,16 @@ public class Spielfigur : IKampagnenDaten
     /// <summary>Reihenfolge in der Gruppe (bisheriger Array-Index, 0–4).</summary>
     public int Position { get; set; }
 
+    /// <summary>Der Hesparis-Charakter (Art Spieler) zu diesen Spielwerten.</summary>
+    public int? HesparisCharakterId { get; set; }
+    public HesparisCharakter? HesparisCharakter { get; set; }
+
     /// <summary>
-    /// Der Sündenbock-Character hinter dieser Figur. Name, Bild und Besitzer (Character.UserId)
-    /// kommen von dort, damit ein Character in beiden Welten derselbe Datensatz bleibt.
-    /// Hier stehen nur die Werte, die es nur in Hesparis gibt.
+    /// ALT: Verweis auf den Sündenbock-Character aus der Zeit vor der eigenen Hesparis-Tabelle.
+    /// Wird nur noch von HesparisUmzug gelesen und im nächsten Schritt entfernt.
     /// </summary>
-    public int CharacterId { get; set; }
-    public Character Character { get; set; } = null!;
+    public int? CharacterId { get; set; }
+    public Character? Character { get; set; }
 
     /// <summary>Meilenstein 2/3 der Magiestufen erreicht (JS: m2, m3).</summary>
     public bool Meilenstein2 { get; set; }

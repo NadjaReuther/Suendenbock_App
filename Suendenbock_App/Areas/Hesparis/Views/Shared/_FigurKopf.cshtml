@@ -15,10 +15,10 @@
         {
             klasse += " mine";
         }
-        <a class="@klasse" asp-action="@Model.Aktion" asp-route-id="@f.Id">@f.Name</a>
+        <a class="@klasse" asp-controller="Figur" asp-action="@Model.Aktion" asp-route-id="@f.Id">@f.Name</a>
     }
 </div>
 @if (!Model.DarfBearbeiten)
 {
-    <p class="lese-hinweis">Nur ansehen · bearbeiten kann @Model.Aktiv.Name selbst oder die Spielleitung</p>
+    <p class="lese-hinweis">Nur ansehen · bearbeiten können Spieler und die Spielleitung</p>
 }

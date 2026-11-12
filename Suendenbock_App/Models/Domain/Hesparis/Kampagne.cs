@@ -12,12 +12,6 @@ public class Kampagne
     public int Id { get; set; }
     public string Name { get; set; } = "";
 
-    /// <summary>
-    /// Spielwelt aus dem Sündenbock-Tenant-System, zu der diese Kampagne gehört.
-    /// Darüber sieht ein Spieler nur die Hesparis-Kampagne seiner aktiven Welt.
-    /// </summary>
-    public int GameWorldId { get; set; }
-    public GameWorld GameWorld { get; set; } = null!;
 
     /// <summary>Der aktuelle Spieltag im Kalender (JS: kal.heute).</summary>
     public DateOnly Spieltag { get; set; }

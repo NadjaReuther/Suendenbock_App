@@ -10,6 +10,10 @@ public class Mitschueler : IKampagnenDaten
     public int KampagneId { get; set; }
     public Kampagne Kampagne { get; set; } = null!;
 
+    /// <summary>Der Hesparis-Charakter (Art Lehrkraft bzw. Mitschüler) zu diesen Zusatzdaten.</summary>
+    public int? HesparisCharakterId { get; set; }
+    public HesparisCharakter? HesparisCharakter { get; set; }
+
     /// <summary>Kennung aus dem Frontend, z. B. "kl0". Eindeutig je Kampagne.</summary>
     public string Code { get; set; } = "";
     public string Name { get; set; } = "";
@@ -101,6 +105,10 @@ public class Lehrer : IKampagnenDaten
     public int Id { get; set; }
     public int KampagneId { get; set; }
     public Kampagne Kampagne { get; set; } = null!;
+
+    /// <summary>Der Hesparis-Charakter (Art Lehrkraft bzw. Mitschüler) zu diesen Zusatzdaten.</summary>
+    public int? HesparisCharakterId { get; set; }
+    public HesparisCharakter? HesparisCharakter { get; set; }
     public string Name { get; set; } = "";
 
     /// <summary>Freitext zu Fächern/Ämtern (JS: __extra.faecher), z. B. "Schulleiterin".</summary>

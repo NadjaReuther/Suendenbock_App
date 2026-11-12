@@ -23,11 +23,11 @@
             </li>
         }
 
-        @* Nebenwelt: kein Wechsel nötig, Hesparis nimmt automatisch den Nebencharakter *@
+        @* Hesparis: eigene Webseite mit eigenem Charakter *@
         @if (Model.HatHesparis)
         {
             <li class="nav-item">
-                <a class="dropdown-item" asp-controller="Hesparis" asp-action="Index">
+                <a class="dropdown-item" asp-area="Hesparis" asp-controller="Home" asp-action="Index">
                     ✦ Zu Hesparis
                 </a>
             </li>

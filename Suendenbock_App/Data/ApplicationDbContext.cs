@@ -25,7 +25,7 @@ namespace Suendenbock_App.Data
         public DbSet<CharacterAffiliation> CharacterAffiliations { get; set; }
         public DbSet<CharacterMagicClass> CharacterMagicClasses { get; set; }
 
-        // Multi-Tenant GameWorld System
+        // ALT: Tenant-System, wird nur noch vom HesparisUmzug gelesen und danach entfernt
         public DbSet<GameWorld> GameWorlds { get; set; }
         public DbSet<CharacterGameWorld> CharacterGameWorlds { get; set; }
 

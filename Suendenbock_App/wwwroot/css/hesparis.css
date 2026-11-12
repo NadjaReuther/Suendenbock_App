@@ -340,3 +340,9 @@ body.hes a{color:var(--ether);}
   .tal-row{grid-template-columns:minmax(0,1fr) auto 44px;gap:8px;padding:7px 4px 8px;}
   .coin i{width:44px;height:44px;font-size:15px;}
 }
+
+/* Eigener Hesparis-Charakter in der Kopfleiste */
+.topbar-me{font-family:'Cormorant Garamond', serif;font-weight:600;font-size:15px;color:var(--ether);margin-left:auto;}
+.topbar-me + .topbar-back{margin-left:12px;}
+a.hes-btn{color:var(--ink-deep) !important;text-decoration:none;display:inline-block;}
+a.hes-btn.ghost{color:var(--gold) !important;}

@@ -8,7 +8,7 @@
 }
 
 <div class="armory-head">
-    <div class="armory-eyebrow">@kampagne.GameWorld.Name · @kampagne.Schuljahr. Schuljahr</div>
+    <div class="armory-eyebrow">Akademie Hesparis · @kampagne.Schuljahr. Schuljahr</div>
     <h1 class="armory-title">@kampagne.Name</h1>
     <p class="armory-sub">Spieltag: @spieltag</p>
 </div>
@@ -122,9 +122,9 @@
             <div class="col-label">Geldbeutel <span>@HesparisRegeln.GeldText(karte.Geld)</span></div>
 
             <div class="home-links">
-                <a asp-action="Talente" asp-route-id="@f.Id">✧ Talente</a>
-                <a asp-action="Zeugnis" asp-route-id="@f.Id">✎ Zeugnis</a>
-                <a asp-action="Tasche" asp-route-id="@f.Id">◍ Tasche</a>
+                <a asp-controller="Figur" asp-action="Talente" asp-route-id="@f.Id">✧ Talente</a>
+                <a asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@f.Id">✎ Zeugnis</a>
+                <a asp-controller="Figur" asp-action="Tasche" asp-route-id="@f.Id">◍ Tasche</a>
             </div>
         </section>
     }

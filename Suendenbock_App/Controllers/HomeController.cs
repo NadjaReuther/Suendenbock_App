@@ -493,12 +493,11 @@ namespace Suendenbock_App.Controllers
                 .Where(u => spielerUserIds.Contains(u.Id))
                 .ToListAsync();
 
-            // Ein Spieler kann mehrere Characters haben (z.B. Sündenbock und Hesparis):
-            // je Spieler einer, bevorzugt der aus der Originalwelt
+            // Ein Spieler kann mehrere Characters haben:
+            // je Spieler einer (der älteste)
             var spielerCharacters = await _context.Characters
                 .Where(c => spielerUserIds.Contains(c.UserId))
-                .OrderByDescending(c => c.CharacterGameWorlds.Any(cgw => cgw.GameWorld.IsOriginWorld))
-                .ThenBy(c => c.Id)
+                .OrderBy(c => c.Id)
                 .ToListAsync();
             var characters = spielerCharacters
                 .GroupBy(c => c.UserId)

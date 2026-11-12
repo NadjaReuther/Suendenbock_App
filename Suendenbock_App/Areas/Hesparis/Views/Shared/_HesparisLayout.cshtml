@@ -1,7 +1,10 @@
 @{
-    // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche"
+    // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche", "Charakter"
     var bereich = ViewData["Bereich"] as string ?? "";
     var figurId = ViewData["FigurId"] as int?;
+    var istGott = User.IsInRole("Gott");
+    // Der eigene Hesparis-Charakter (setzt HesparisBaseController)
+    var meinCharakter = ViewBag.MeinHesparisCharakter as HesparisCharakter;
 
     string Aktiv(string name)
     {
@@ -25,15 +28,23 @@
 </head>
 <body class="hes">
     <nav class="topbar">
-        <a class="topbar-home" asp-controller="Hesparis" asp-action="Index">Hesparis</a>
+        <a class="topbar-home" asp-controller="Home" asp-action="Index">Hesparis</a>
         <div class="topbar-nav">
-            <a class="@Aktiv("Index")" asp-controller="Hesparis" asp-action="Index"><span class="glyph">⌂</span>Start</a>
-            <a class="@Aktiv("Talente")" asp-controller="Hesparis" asp-action="Talente" asp-route-id="@figurId"><span class="glyph">✧</span>Talente</a>
-            <a class="@Aktiv("Zeugnis")" asp-controller="Hesparis" asp-action="Zeugnis" asp-route-id="@figurId"><span class="glyph">✎</span>Zeugnis</a>
-            <a class="@Aktiv("Tasche")" asp-controller="Hesparis" asp-action="Tasche" asp-route-id="@figurId"><span class="glyph">◍</span>Tasche</a>
+            <a class="@Aktiv("Index")" asp-controller="Home" asp-action="Index"><span class="glyph">⌂</span>Start</a>
+            <a class="@Aktiv("Talente")" asp-controller="Figur" asp-action="Talente" asp-route-id="@figurId"><span class="glyph">✧</span>Talente</a>
+            <a class="@Aktiv("Zeugnis")" asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@figurId"><span class="glyph">✎</span>Zeugnis</a>
+            <a class="@Aktiv("Tasche")" asp-controller="Figur" asp-action="Tasche" asp-route-id="@figurId"><span class="glyph">◍</span>Tasche</a>
+            @if (istGott)
+            {
+                <a class="@Aktiv("Charakter")" asp-controller="Charakter" asp-action="Index"><span class="glyph">⚜</span>Charaktere</a>
+            }
         </div>
         <span class="topbar-section">@ViewData["Title"]</span>
-        <a class="topbar-back" asp-controller="Home" asp-action="Index">← Sündenbock</a>
+        @if (meinCharakter != null)
+        {
+            <span class="topbar-me" title="Dein Charakter in Hesparis">✦ @meinCharakter.Anzeigename</span>
+        }
+        <a class="topbar-back" asp-area="" asp-controller="Home" asp-action="Index">← Sündenbock</a>
     </nav>
 
     <main class="hes-main">

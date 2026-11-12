@@ -24,6 +24,11 @@ public partial class ApplicationDbContext
     // ---- Hesparis: Kampagne und Spielfiguren ----
     public DbSet<Kampagne> Kampagnen => Set<Kampagne>();
     public DbSet<Spielfigur> Spielfiguren => Set<Spielfigur>();
+
+    // ---- Hesparis: eigene Charaktere ----
+    public DbSet<Charakterart> Charakterarten => Set<Charakterart>();
+    public DbSet<HesparisCharakter> HesparisCharaktere => Set<HesparisCharakter>();
+    public DbSet<CharakterVerknuepfung> CharakterVerknuepfungen => Set<CharakterVerknuepfung>();
     public DbSet<SpielfigurFachStufe> SpielfigurFachStufen => Set<SpielfigurFachStufe>();
     public DbSet<StufenWahl> StufenWahlen => Set<StufenWahl>();
     public DbSet<Schulnote> Schulnoten => Set<Schulnote>();

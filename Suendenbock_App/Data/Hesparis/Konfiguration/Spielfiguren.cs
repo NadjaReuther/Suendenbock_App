@@ -12,10 +12,6 @@ public static partial class HesparisModell
         {
             e.Property(x => x.Version).IsRowVersion();
             e.Property(x => x.SchwarzmarktCode).HasMaxLength(20);
-
-            // Kampagne gehört zu einer Spielwelt. NO ACTION: Eine Welt mit Kampagne lässt sich nicht löschen.
-            e.HasOne(x => x.GameWorld).WithMany().HasForeignKey(x => x.GameWorldId).OnDelete(DeleteBehavior.NoAction);
-            e.HasIndex(x => x.GameWorldId);
         });
 
         mb.Entity<Spielfigur>(e =>
@@ -24,11 +20,13 @@ public static partial class HesparisModell
             e.HasOne(x => x.Kampagne).WithMany(k => k.Spielfiguren).HasForeignKey(x => x.KampagneId);
             e.HasIndex(x => new { x.KampagneId, x.Position }).IsUnique();
 
-            // Verbindung zum Sündenbock-Character. NO ACTION: Ein Character mit Hesparis-Figur
-            // lässt sich erst löschen, wenn die Figur entfernt ist (sonst gingen Noten, Tasche … verloren).
-            e.HasOne(x => x.Character).WithMany().HasForeignKey(x => x.CharacterId).OnDelete(DeleteBehavior.NoAction);
-            // Ein Character kommt pro Kampagne nur einmal vor.
-            e.HasIndex(x => new { x.KampagneId, x.CharacterId }).IsUnique();
+            // Spielwerte gehören zu genau einem Hesparis-Charakter (1:1). Wird der Charakter gelöscht,
+            // verschwinden auch Talente, Noten, Tasche … (Kaskade, siehe HesparisModell.Kaskaden).
+            e.HasOne(x => x.HesparisCharakter).WithOne(h => h.Spielfigur).HasForeignKey<Spielfigur>(x => x.HesparisCharakterId);
+            e.HasIndex(x => x.HesparisCharakterId).IsUnique();
+
+            // ALT: Verweis auf den Sündenbock-Character, nur noch für den Umzug (HesparisUmzug)
+            e.HasOne(x => x.Character).WithMany().HasForeignKey(x => x.CharacterId);
         });
 
         mb.Entity<SpielfigurFachStufe>(e =>

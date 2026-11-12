@@ -1,0 +1,122 @@
+@model CharakterFormularViewModel
+@{
+    var f = Model.Formular;
+    ViewData["Title"] = "Charakter";
+    ViewData["Bereich"] = "Charakter";
+}
+
+<div class="armory-head">
+    <div class="armory-eyebrow">Gott-Modus</div>
+    @if (f.Id.HasValue)
+    {
+        <h1 class="armory-title">@f.Vorname @f.Nachname bearbeiten</h1>
+    }
+    else
+    {
+        <h1 class="armory-title">Neuer Charakter</h1>
+    }
+    @if (f.CharacterId.HasValue && !f.Id.HasValue)
+    {
+        <p class="armory-sub">Vorausgefüllt aus Sündenbock. Passe an, was in Hesparis anders ist, und speichere.</p>
+    }
+</div>
+
+<section class="a-panel sl-panel" style="max-width:860px;margin:0 auto">
+    <form asp-action="Speichern" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="Id" value="@f.Id" />
+        <input type="hidden" name="BildPfad" value="@f.BildPfad" />
+
+        <div class="hes-form-row">
+            <label class="hes-field"><span>Vorname</span>
+                <input class="hes-input" name="Vorname" value="@f.Vorname" required maxlength="100" />
+            </label>
+            <label class="hes-field"><span>Nachname</span>
+                <input class="hes-input" name="Nachname" value="@f.Nachname" maxlength="100" />
+            </label>
+            <label class="hes-field"><span>Rufname</span>
+                <input class="hes-input" name="Rufname" value="@f.Rufname" maxlength="100" />
+            </label>
+        </div>
+
+        <div class="hes-form-row" style="margin-top:12px">
+            <label class="hes-field"><span>Art</span>
+                <select class="hes-select" name="CharakterartId" id="artAuswahl">
+                    @foreach (var art in Model.Arten)
+                    {
+                        if (art.Id == f.CharakterartId)
+                        {
+                            <option value="@art.Id" selected>@art.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@art.Id">@art.Name</option>
+                        }
+                    }
+                </select>
+            </label>
+            <label class="hes-field" id="spielerFeld"><span>Spieler</span>
+                <select class="hes-select" name="UserId">
+                    <option value="">– noch keiner –</option>
+                    @foreach (var s in Model.Spieler)
+                    {
+                        if (s.Id == f.UserId)
+                        {
+                            <option value="@s.Id" selected>@s.UserName</option>
+                        }
+                        else
+                        {
+                            <option value="@s.Id">@s.UserName</option>
+                        }
+                    }
+                </select>
+            </label>
+        </div>
+
+        <div class="hes-form-row" style="margin-top:12px">
+            <label class="hes-field" style="flex:2 1 280px"><span>Auch in Sündenbock (dieselbe Person)</span>
+                <select class="hes-select" name="CharacterId">
+                    <option value="">– nur in Hesparis –</option>
+                    @foreach (var c in Model.SuendenbockCharacters)
+                    {
+                        var name = (c.Vorname + " " + c.Nachname).Trim();
+                        if (c.Id == f.CharacterId)
+                        {
+                            <option value="@c.Id" selected>@name</option>
+                        }
+                        else
+                        {
+                            <option value="@c.Id">@name</option>
+                        }
+                    }
+                </select>
+            </label>
+            <label class="hes-field" style="flex:2 1 280px"><span>Bild</span>
+                <input class="hes-input" type="file" name="bild" accept="image/*" />
+            </label>
+            @if (!string.IsNullOrEmpty(f.BildPfad))
+            {
+                <img class="home-ava" src="@f.BildPfad" alt="aktuelles Bild" />
+            }
+        </div>
+
+        <div class="hes-form-row" style="margin-top:20px">
+            <button type="submit" class="hes-btn">Speichern</button>
+            <a class="hes-btn ghost" style="text-decoration:none" asp-action="Index">Abbrechen</a>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <script>
+        // Spieler-Auswahl nur bei Art "Spieler" zeigen
+        (function () {
+            const art = document.getElementById('artAuswahl');
+            const feld = document.getElementById('spielerFeld');
+            function zeigen() {
+                feld.style.display = art.value === '@Charakterart.Spieler' ? '' : 'none';
+            }
+            art.addEventListener('change', zeigen);
+            zeigen();
+        })();
+    </script>
+}

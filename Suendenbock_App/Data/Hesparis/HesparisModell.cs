@@ -19,6 +19,7 @@ public static partial class HesparisModell
     public static void Konfigurieren(ModelBuilder mb)
     {
         KonfiguriereStammdaten(mb);
+        KonfiguriereCharaktere(mb);
         KonfiguriereSpielfiguren(mb);
         KonfiguriereKlasse(mb);
         KonfiguriereSchulalltag(mb);
@@ -123,6 +124,12 @@ public static partial class HesparisModell
         (typeof(Talent), typeof(Begabung)),
         (typeof(MeisterschaftDefinition), typeof(Talent)),
         (typeof(SonderzauberOption), typeof(Sonderzauber)),
+
+        // Hesparis-Charaktere: Spielwerte und Verknüpfung verschwinden mit dem Charakter;
+        // die Verknüpfung auch, wenn der Sündenbock-Character gelöscht wird
+        (typeof(Spielfigur), typeof(HesparisCharakter)),
+        (typeof(CharakterVerknuepfung), typeof(HesparisCharakter)),
+        (typeof(CharakterVerknuepfung), typeof(Suendenbock_App.Models.Domain.Character)),
 
         (typeof(SpielfigurFachStufe), typeof(Spielfigur)),
         (typeof(StufenWahl), typeof(Spielfigur)),
