@@ -209,7 +209,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("IsActive");
 
-                    b.ToTable("Acts");
+                    b.ToTable("Acts", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.CombatSession", b =>
@@ -252,7 +252,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ActId", "IsActive");
 
-                    b.ToTable("CombatSessions");
+                    b.ToTable("CombatSessions", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Abenteuerrang", b =>
@@ -269,7 +269,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Abenteuerraenge");
+                    b.ToTable("Abenteuerraenge", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Achievement", b =>
@@ -319,7 +319,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Achievements");
+                    b.ToTable("Achievements", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.AdventDoor", b =>
@@ -350,7 +350,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AdventDoors");
+                    b.ToTable("AdventDoors", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Anmeldungsstatus", b =>
@@ -367,7 +367,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Anmeldungsstati");
+                    b.ToTable("Anmeldungsstati", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.ApplicationUser", b =>
@@ -476,7 +476,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("LightCardId");
 
-                    b.ToTable("Biome");
+                    b.ToTable("Biome", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Blutgruppe", b =>
@@ -496,7 +496,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Blutgruppen");
+                    b.ToTable("Blutgruppen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Character", b =>
@@ -597,7 +597,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("VaterId");
 
-                    b.ToTable("Characters");
+                    b.ToTable("Characters", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterAffiliation", b =>
@@ -636,7 +636,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ReligionId");
 
-                    b.ToTable("CharacterAffiliations");
+                    b.ToTable("CharacterAffiliations", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterDetails", b =>
@@ -691,7 +691,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("StandId");
 
-                    b.ToTable("CharacterDetails");
+                    b.ToTable("CharacterDetails", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterGameWorld", b =>
@@ -726,7 +726,7 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("CharacterId", "GameWorldId")
                         .IsUnique();
 
-                    b.ToTable("CharacterGameWorlds");
+                    b.ToTable("CharacterGameWorlds", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
@@ -754,7 +754,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MagicClassSpecializationId");
 
-                    b.ToTable("CharacterMagicClasses");
+                    b.ToTable("CharacterMagicClasses", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Eindruck", b =>
@@ -771,7 +771,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Eindruecke");
+                    b.ToTable("Eindruecke", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.EventChore", b =>
@@ -801,7 +801,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("EventChores");
+                    b.ToTable("EventChores", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.EventRSVP", b =>
@@ -839,7 +839,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("EventRSVPs");
+                    b.ToTable("EventRSVPs", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.FeldEffekt", b =>
@@ -871,7 +871,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("LightCardId");
 
-                    b.ToTable("FeldEffekte");
+                    b.ToTable("FeldEffekte", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.ForumCategory", b =>
@@ -897,7 +897,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ForumCategories");
+                    b.ToTable("ForumCategories", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.ForumReply", b =>
@@ -938,7 +938,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ThreadId");
 
-                    b.ToTable("forumReplies");
+                    b.ToTable("forumReplies", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.ForumThread", b =>
@@ -987,7 +987,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("ForumThreads");
+                    b.ToTable("ForumThreads", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.GameWorld", b =>
@@ -1029,7 +1029,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("GameWorlds");
+                    b.ToTable("GameWorlds", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Gildenlizenz", b =>
@@ -1052,7 +1052,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("LizenzenId");
 
-                    b.ToTable("Gildenlizenzen");
+                    b.ToTable("Gildenlizenzen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.GlossaryEntry", b =>
@@ -1085,7 +1085,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("GlossaryEntries");
+                    b.ToTable("GlossaryEntries", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Grundzauber", b =>
@@ -1126,7 +1126,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ZaubertypID");
 
-                    b.ToTable("Grundzauber");
+                    b.ToTable("Grundzauber", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Guild", b =>
@@ -1181,7 +1181,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("VertreterId");
 
-                    b.ToTable("Guilds");
+                    b.ToTable("Guilds", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.GuildAchievement", b =>
@@ -1210,7 +1210,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("GuildId");
 
-                    b.ToTable("GuildAchievements");
+                    b.ToTable("GuildAchievements", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Haus", b =>
@@ -1230,7 +1230,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Haeuser");
+                    b.ToTable("Haeuser", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Herkunftsland", b =>
@@ -1247,7 +1247,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Herkunftslaender");
+                    b.ToTable("Herkunftslaender", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Ag", b =>
@@ -2633,7 +2633,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("SpielfigurId");
 
-                    b.ToTable("Geldbuchungen");
+                    b.ToTable("Geldbuchungen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Gericht", b =>
@@ -3884,7 +3884,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("GameWorldId");
 
-                    b.ToTable("Kampagnen");
+                    b.ToTable("Kampagnen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KartenNotiz", b =>
@@ -5163,7 +5163,7 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("KampagneId", "Code")
                         .IsUnique();
 
-                    b.ToTable("Mitschueler");
+                    b.ToTable("Mitschueler", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.MitschuelerAg", b =>
@@ -5401,7 +5401,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("SpielfigurId", "Abschnitt", "Teil");
 
-                    b.ToTable("Pruefungseintraege");
+                    b.ToTable("Pruefungseintraege", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.RatAntrag", b =>
@@ -5879,7 +5879,7 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("SpielfigurId", "FachId", "Position")
                         .IsUnique();
 
-                    b.ToTable("Schulnoten");
+                    b.ToTable("Schulnoten", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SchwarzmarktVerkauf", b =>
@@ -6365,7 +6365,7 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("KampagneId", "Position")
                         .IsUnique();
 
-                    b.ToTable("Spielfiguren");
+                    b.ToTable("Spielfiguren", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SpielfigurFachStufe", b =>
@@ -6383,7 +6383,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("FachId");
 
-                    b.ToTable("SpielfigurFachStufen");
+                    b.ToTable("SpielfigurFachStufen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.SpielfigurMeisterschaft", b =>
@@ -6398,7 +6398,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MeisterschaftDefinitionId");
 
-                    b.ToTable("SpielfigurMeisterschaften");
+                    b.ToTable("SpielfigurMeisterschaften", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.StufenWahl", b =>
@@ -6421,7 +6421,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("FachId");
 
-                    b.ToTable("StufenWahlen");
+                    b.ToTable("StufenWahlen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Talent", b =>
@@ -6679,7 +6679,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("TalentCode");
 
-                    b.ToTable("TalentWerte");
+                    b.ToTable("TalentWerte", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.TalentZiel", b =>
@@ -6700,7 +6700,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("TalentCode");
 
-                    b.ToTable("TalentZiele");
+                    b.ToTable("TalentZiele", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.TeamNotiz", b =>
@@ -7088,7 +7088,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("SpielfigurId");
 
-                    b.ToTable("Wirkungen");
+                    b.ToTable("Wirkungen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.ZirkelFeld", b =>
@@ -7354,7 +7354,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("VertreterId");
 
-                    b.ToTable("Infanterien");
+                    b.ToTable("Infanterien", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Infanterierang", b =>
@@ -7371,7 +7371,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Infanterieraenge");
+                    b.ToTable("Infanterieraenge", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Lebensstatus", b =>
@@ -7388,7 +7388,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lebensstati");
+                    b.ToTable("Lebensstati", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.LightCard", b =>
@@ -7413,7 +7413,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LightCards");
+                    b.ToTable("LightCards", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Lizenzen", b =>
@@ -7430,7 +7430,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lizenzen");
+                    b.ToTable("Lizenzen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.MagicClass", b =>
@@ -7456,7 +7456,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ObermagieId");
 
-                    b.ToTable("MagicClasses");
+                    b.ToTable("MagicClasses", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.MagicClassSpecialization", b =>
@@ -7481,7 +7481,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MagicClassId");
 
-                    b.ToTable("MagicClassSpecializations");
+                    b.ToTable("MagicClassSpecializations", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Message", b =>
@@ -7558,7 +7558,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ThreadId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monster", b =>
@@ -7635,7 +7635,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonstertypId");
 
-                    b.ToTable("Monsters");
+                    b.ToTable("Monsters", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsteranfaelligkeiten", b =>
@@ -7652,7 +7652,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monsteranfaelligkeiten");
+                    b.ToTable("Monsteranfaelligkeiten", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstergruppen", b =>
@@ -7669,7 +7669,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monstergruppen");
+                    b.ToTable("Monstergruppen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsterimmunitaeten", b =>
@@ -7686,7 +7686,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monsterimmunitaeten");
+                    b.ToTable("Monsterimmunitaeten", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsterintelligenz", b =>
@@ -7703,7 +7703,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monsterintelligenzen");
+                    b.ToTable("Monsterintelligenzen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertyp", b =>
@@ -7741,7 +7741,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonsterwuerfelId");
 
-                    b.ToTable("MonsterTypes");
+                    b.ToTable("MonsterTypes", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertypanfaelligkeiten", b =>
@@ -7764,7 +7764,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonstertypId");
 
-                    b.ToTable("Monstertypanfaelligkeiten");
+                    b.ToTable("Monstertypanfaelligkeiten", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertypimmunitaeten", b =>
@@ -7787,7 +7787,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonstertypId");
 
-                    b.ToTable("Monstertypimmunitaeten");
+                    b.ToTable("Monstertypimmunitaeten", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstertypvorkommen", b =>
@@ -7810,7 +7810,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MonstervorkommenId");
 
-                    b.ToTable("Monstertypvorkommen");
+                    b.ToTable("Monstertypvorkommen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monstervorkommen", b =>
@@ -7827,7 +7827,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monstervorkommen");
+                    b.ToTable("Monstervorkommen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Monsterwuerfel", b =>
@@ -7844,7 +7844,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Monsterwuerfel");
+                    b.ToTable("Monsterwuerfel", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.MonthlyEvent", b =>
@@ -7895,7 +7895,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.ToTable("MonthlyEvents");
+                    b.ToTable("MonthlyEvents", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.MonthlyPayment", b =>
@@ -7934,7 +7934,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MonthlyPayments");
+                    b.ToTable("MonthlyPayments", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.NewsComment", b =>
@@ -7964,7 +7964,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("NewsItemId");
 
-                    b.ToTable("NewsComments");
+                    b.ToTable("NewsComments", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.NewsItem", b =>
@@ -8009,7 +8009,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NewsItems");
+                    b.ToTable("NewsItems", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.NightRestRequest", b =>
@@ -8035,7 +8035,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NightRestRequests");
+                    b.ToTable("NightRestRequests", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.NotificationPreference", b =>
@@ -8073,7 +8073,7 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("NotificationPreferences");
+                    b.ToTable("NotificationPreferences", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Obermagie", b =>
@@ -8095,7 +8095,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("LightCardId");
 
-                    b.ToTable("Obermagien");
+                    b.ToTable("Obermagien", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Poll", b =>
@@ -8143,7 +8143,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("CreatedById");
 
-                    b.ToTable("Polls");
+                    b.ToTable("Polls", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.PollOption", b =>
@@ -8169,7 +8169,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("PollId");
 
-                    b.ToTable("PollOptions");
+                    b.ToTable("PollOptions", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.PollVote", b =>
@@ -8208,7 +8208,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PollVotes");
+                    b.ToTable("PollVotes", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.PushSubscription", b =>
@@ -8257,7 +8257,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PushSubscriptions");
+                    b.ToTable("PushSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Rasse", b =>
@@ -8274,7 +8274,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Rassen");
+                    b.ToTable("Rassen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Regiment", b =>
@@ -8309,7 +8309,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("RegimentsleiterId");
 
-                    b.ToTable("Regiments");
+                    b.ToTable("Regiments", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Religion", b =>
@@ -8326,7 +8326,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Religions");
+                    b.ToTable("Religions", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.SpecialZauber", b =>
@@ -8367,7 +8367,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ZaubertypID");
 
-                    b.ToTable("SpecialZauber");
+                    b.ToTable("SpecialZauber", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Stand", b =>
@@ -8384,7 +8384,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Staende");
+                    b.ToTable("Staende", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Ticket", b =>
@@ -8438,7 +8438,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ResolvedById");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Tickets", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.TriggerCategory", b =>
@@ -8461,7 +8461,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TriggerCategories");
+                    b.ToTable("TriggerCategories", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.TriggerTopic", b =>
@@ -8489,7 +8489,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("TriggerTopics");
+                    b.ToTable("TriggerTopics", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.UserAchievement", b =>
@@ -8519,7 +8519,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserAchievements");
+                    b.ToTable("UserAchievements", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.UserAdventChoice", b =>
@@ -8547,7 +8547,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("AdventDoorId");
 
-                    b.ToTable("UserAdventChoices");
+                    b.ToTable("UserAdventChoices", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.UserTriggerPreference", b =>
@@ -8581,7 +8581,7 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("UserId", "TopicId")
                         .IsUnique();
 
-                    b.ToTable("UserTriggerPreferences");
+                    b.ToTable("UserTriggerPreferences", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.WeatherForecastDay", b =>
@@ -8617,7 +8617,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("WeatherOptionId");
 
-                    b.ToTable("WeatherForecastDays");
+                    b.ToTable("WeatherForecastDays", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.WeatherOption", b =>
@@ -8645,7 +8645,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("Month");
 
-                    b.ToTable("WeatherOptions");
+                    b.ToTable("WeatherOptions", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Zaubertyp", b =>
@@ -8665,7 +8665,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Zaubertypen");
+                    b.ToTable("Zaubertypen", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Map", b =>
@@ -8704,7 +8704,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("ParentMapId");
 
-                    b.ToTable("Maps");
+                    b.ToTable("Maps", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.MapMarker", b =>
@@ -8750,7 +8750,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MapId");
 
-                    b.ToTable("MapMarkers");
+                    b.ToTable("MapMarkers", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.MapRegion", b =>
@@ -8789,7 +8789,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("MapId");
 
-                    b.ToTable("MapRegions");
+                    b.ToTable("MapRegions", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Quest", b =>
@@ -8855,7 +8855,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("Type");
 
-                    b.ToTable("Quests");
+                    b.ToTable("Quests", (string)null);
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.RestFood", b =>
@@ -8876,7 +8876,7 @@ namespace Suendenbock_App.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RestFoods");
+                    b.ToTable("RestFoods", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -9444,7 +9444,7 @@ namespace Suendenbock_App.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Beziehungswerte", "MitschuelerZuSpielfigur", b1 =>
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Beziehung.MitschuelerZuSpielfigur#Suendenbock_App.Models.Domain.Hesparis.Beziehungswerte", "MitschuelerZuSpielfigur", b1 =>
                         {
                             b1.Property<int>("BeziehungMitschuelerId")
                                 .HasColumnType("int");
@@ -9474,13 +9474,13 @@ namespace Suendenbock_App.Migrations
 
                             b1.HasKey("BeziehungMitschuelerId", "BeziehungSpielfigurId");
 
-                            b1.ToTable("Beziehungen");
+                            b1.ToTable("Beziehungen", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("BeziehungMitschuelerId", "BeziehungSpielfigurId");
                         });
 
-                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Beziehungswerte", "SpielfigurZuMitschueler", b1 =>
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Beziehung.SpielfigurZuMitschueler#Suendenbock_App.Models.Domain.Hesparis.Beziehungswerte", "SpielfigurZuMitschueler", b1 =>
                         {
                             b1.Property<int>("BeziehungMitschuelerId")
                                 .HasColumnType("int");
@@ -9510,7 +9510,7 @@ namespace Suendenbock_App.Migrations
 
                             b1.HasKey("BeziehungMitschuelerId", "BeziehungSpielfigurId");
 
-                            b1.ToTable("Beziehungen");
+                            b1.ToTable("Beziehungen", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("BeziehungMitschuelerId", "BeziehungSpielfigurId");
@@ -9612,7 +9612,7 @@ namespace Suendenbock_App.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Gegenstand.Effekt#Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
                         {
                             b1.Property<int>("GegenstandId")
                                 .HasColumnType("int");
@@ -9654,7 +9654,7 @@ namespace Suendenbock_App.Migrations
 
                             b1.HasIndex("TalentCode");
 
-                            b1.ToTable("Gegenstaende");
+                            b1.ToTable("Gegenstaende", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("GegenstandId");
@@ -9757,7 +9757,7 @@ namespace Suendenbock_App.Migrations
                         .HasForeignKey("MitschuelerId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.GlimWerte", "Werte", b1 =>
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.GlimNachwuchs.Werte#Suendenbock_App.Models.Domain.Hesparis.GlimWerte", "Werte", b1 =>
                         {
                             b1.Property<int>("GlimNachwuchsId")
                                 .HasColumnType("int");
@@ -9784,7 +9784,7 @@ namespace Suendenbock_App.Migrations
 
                             b1.HasKey("GlimNachwuchsId");
 
-                            b1.ToTable("GlimNachwuchs");
+                            b1.ToTable("GlimNachwuchs", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("GlimNachwuchsId");
@@ -9907,7 +9907,7 @@ namespace Suendenbock_App.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.GlimWerte", "Werte", b1 =>
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.GlimSpieler.Werte#Suendenbock_App.Models.Domain.Hesparis.GlimWerte", "Werte", b1 =>
                         {
                             b1.Property<int>("GlimSpielerId")
                                 .HasColumnType("int");
@@ -9934,7 +9934,7 @@ namespace Suendenbock_App.Migrations
 
                             b1.HasKey("GlimSpielerId");
 
-                            b1.ToTable("GlimSpieler");
+                            b1.ToTable("GlimSpieler", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("GlimSpielerId");
@@ -10254,7 +10254,7 @@ namespace Suendenbock_App.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.LadenArtikel.Effekt#Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
                         {
                             b1.Property<int>("LadenArtikelId")
                                 .HasColumnType("int");
@@ -10296,7 +10296,7 @@ namespace Suendenbock_App.Migrations
 
                             b1.HasIndex("TalentCode");
 
-                            b1.ToTable("LadenArtikel");
+                            b1.ToTable("LadenArtikel", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("LadenArtikelId");
@@ -10808,7 +10808,7 @@ namespace Suendenbock_App.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.SchwarzmarktWare.Effekt#Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
                         {
                             b1.Property<int>("SchwarzmarktWareId")
                                 .HasColumnType("int");
@@ -10850,7 +10850,7 @@ namespace Suendenbock_App.Migrations
 
                             b1.HasIndex("TalentCode");
 
-                            b1.ToTable("SchwarzmarktWaren");
+                            b1.ToTable("SchwarzmarktWaren", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("SchwarzmarktWareId");
@@ -11211,7 +11211,7 @@ namespace Suendenbock_App.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
+                    b.OwnsOne("Suendenbock_App.Models.Domain.Hesparis.Wirkung.Effekt#Suendenbock_App.Models.Domain.Hesparis.Effekt", "Effekt", b1 =>
                         {
                             b1.Property<int>("WirkungId")
                                 .HasColumnType("int");
@@ -11253,7 +11253,7 @@ namespace Suendenbock_App.Migrations
 
                             b1.HasIndex("TalentCode");
 
-                            b1.ToTable("Wirkungen");
+                            b1.ToTable("Wirkungen", (string)null);
 
                             b1.HasOne("Suendenbock_App.Models.Domain.Hesparis.Talent", null)
                                 .WithMany()
