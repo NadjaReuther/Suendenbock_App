@@ -122,10 +122,13 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// Areas (z.B. /Hesparis → Areas/Hesparis, eigene Webseite im selben Projekt)
-app.MapControllerRoute(
-    name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+// Hesparis: eigene Webseite im selben Projekt unter /Hesparis (Areas/Hesparis).
+// Bewusst NUR für diese eine Area: Eine allgemeine {area:exists}-Route würde auch
+// "Identity" (Login-Seiten) treffen und Links wie /Identity/Community erzeugen.
+app.MapAreaControllerRoute(
+    name: "hesparis",
+    areaName: "Hesparis",
+    pattern: "Hesparis/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
