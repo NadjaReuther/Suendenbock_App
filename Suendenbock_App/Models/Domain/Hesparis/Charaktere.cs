@@ -44,10 +44,26 @@ public class HesparisCharakter
     /// <summary>Spielwerte (Talente, Noten, Tasche …), nur bei Art Spieler.</summary>
     public Spielfigur? Spielfigur { get; set; }
 
-    /// <summary>Anzeigename in Hesparis: immer der Vorname (der Rufname bleibt als Info gespeichert).</summary>
-    public string Anzeigename => Vorname;
+    /// <summary>
+    /// Erster Vorname: bei "Svea Marie" nur "Svea". Leerzeichen, Tabs und Bindestrich-Namen
+    /// ("Anna-Lena") bleiben wie sie sind, getrennt wird nur am Leerraum.
+    /// </summary>
+    public string ErsterVorname => ErsterName(Vorname);
+
+    /// <summary>Anzeigename in Hesparis: immer der erste Vorname (der Rufname bleibt als Info gespeichert).</summary>
+    public string Anzeigename => ErsterVorname;
 
     public string VollerName => (Vorname + " " + Nachname).Trim();
+
+    /// <summary>Erster Name aus einem Text mit mehreren Vornamen.</summary>
+    public static string ErsterName(string? vorname)
+    {
+        if (string.IsNullOrWhiteSpace(vorname))
+        {
+            return "";
+        }
+        return vorname.Trim().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)[0];
+    }
 }
 
 /// <summary>

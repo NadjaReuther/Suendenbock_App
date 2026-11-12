@@ -75,15 +75,15 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
                 var turm = new Turm
                 {
                     Id = f.Id,
-                    Vorname = charakter.Vorname,
+                    Vorname = charakter.ErsterVorname,
                     VollerName = charakter.VollerName,
                     Eigene = kopf.Figuren.First(x => x.Id == f.Id).Eigene,
                     LpAktuell = f.LebenspunkteAktuell,
                     LpMax = f.LebenspunkteMax,
                 };
 
-                // Sonderzauber gehört zur Person (Vorname): daraus Element, Farbe und Symbol
-                var zauber = sonderzauber.FirstOrDefault(z => z.Person == charakter.Vorname);
+                // Sonderzauber gehört zur Person (erster Vorname): daraus Element, Farbe und Symbol
+                var zauber = sonderzauber.FirstOrDefault(z => z.Person == charakter.ErsterVorname);
                 if (zauber != null)
                 {
                     turm.Aussehen = HesparisSigille.Fuer(zauber.Code);
