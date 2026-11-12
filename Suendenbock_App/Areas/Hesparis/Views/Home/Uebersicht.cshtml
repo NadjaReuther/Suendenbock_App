@@ -184,7 +184,7 @@
                     <em>noch keine gewählt</em>
                 }
             </div>
-            <div class="pt-fact">
+            <a class="pt-fact" asp-controller="Magie" asp-action="Sonderzauber" asp-route-id="@d.Id">
                 <span>Sonderzauber</span>
                 @if (d.Sonderzauber != null)
                 {
@@ -195,7 +195,7 @@
                     <b>–</b>
                     <em>noch nicht gewählt</em>
                 }
-            </div>
+            </a>
         </div>
 
         <div class="pt-hud-bez">

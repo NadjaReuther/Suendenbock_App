@@ -1,5 +1,5 @@
 @{
-    // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche", "Stufen", "Charakter"
+    // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche", "Stufen", "Sonder", "Charakter"
     var bereich = ViewData["Bereich"] as string ?? "";
     var figurId = ViewData["FigurId"] as int?;
     // Zusätzliche Klasse für <body>, z. B. "on-home" auf der Übersicht (Nebel kräftiger, kein Abstand unten)
@@ -48,6 +48,7 @@
             <a class="@Aktiv("Zeugnis")" asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@figurId"><span class="glyph">✎</span>Zeugnis</a>
             <a class="@Aktiv("Tasche")" asp-controller="Figur" asp-action="Tasche" asp-route-id="@figurId"><span class="glyph">◍</span>Tasche</a>
             <a class="@Aktiv("Stufen")" asp-controller="Magie" asp-action="Stufen" asp-route-id="@figurId"><span class="glyph">✺</span>Magiestufen</a>
+            <a class="@Aktiv("Sonder")" asp-controller="Magie" asp-action="Sonderzauber" asp-route-id="@figurId"><span class="glyph">☾</span>Sonderzauber</a>
             @if (istGott)
             {
                 <a class="@Aktiv("Charakter")" asp-controller="Charakter" asp-action="Index"><span class="glyph">⚜</span>Charaktere</a>

@@ -9,8 +9,8 @@ using Suendenbock_App.Models.ViewModels.Hesparis;
 namespace Suendenbock_App.Areas.Hesparis.Controllers
 {
     /// <summary>
-    /// Gruppe "Magie" (/Hesparis/Magie/…). Zuerst die Magiestufen ("Der Weg nach innen").
-    /// Stufen wählen dürfen alle Spieler, Bonuspunkte und Abschlüsse vergibt Gott.
+    /// Gruppe "Magie" (/Hesparis/Magie/…): Magiestufen ("Der Weg nach innen") und Sonderzauber ("Vier Karten, eine Wahl").
+    /// Stufen wählen und Karten aufdecken dürfen alle Spieler; Bonuspunkte, Abschlüsse und Zurücksetzen nur Gott.
     /// </summary>
     public class MagieController : HesparisBaseController
     {
@@ -295,6 +295,304 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Stufen), new { id, fach });
+        }
+
+        // =====================================================================
+        // Sonderzauber ("Vier Karten, eine Wahl")
+        // =====================================================================
+
+        private static readonly string[] Roemisch = { "I", "II", "III", "IV", "V", "VI" };
+
+        /// <summary>Höchstens so viele Karten dürfen aufgedeckt werden (JS: revealed.length >= 2).</summary>
+        private const int MaxAufgedeckt = 2;
+
+        /// <summary>
+        /// Kartentisch. Welcher Zauber offen ist: ?zauber=Code, sonst der der Figur (id), sonst der eigene.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Sonderzauber(int? id, string? zauber)
+        {
+            var kampagne = await AkademieLadenAsync();
+            var alleZauber = await _context.Sonderzauber
+                .Include(z => z.Optionen)
+                .OrderBy(z => z.Code)
+                .ToListAsync();
+            if (alleZauber.Count == 0) return View("KeineKampagne");
+
+            var staende = await _context.SonderzauberStaende
+                .Where(s => s.KampagneId == kampagne.Id)
+                .Include(s => s.Aufgedeckt)
+                .ToListAsync();
+            var figuren = await _context.Spielfiguren
+                .Where(f => f.KampagneId == kampagne.Id && f.HesparisCharakter != null)
+                .Include(f => f.HesparisCharakter)
+                .OrderBy(f => f.Position)
+                .ToListAsync();
+
+            // Reihenfolge der Leiste wie die Türme: nach der Position der Spielfigur, Zauber ohne Figur ans Ende
+            int Reihenfolge(Sonderzauber z)
+            {
+                var f = figuren.FirstOrDefault(x => x.HesparisCharakter!.ErsterVorname == z.Person);
+                if (f == null)
+                {
+                    return int.MaxValue;
+                }
+                return f.Position;
+            }
+            alleZauber = alleZauber.OrderBy(Reihenfolge).ToList();
+
+            // Welcher Zauber ist ausgewählt?
+            var gewaehlt = alleZauber.FirstOrDefault(z => z.Code == zauber);
+            if (gewaehlt == null)
+            {
+                var figur = figuren.FirstOrDefault(f => f.Id == id) ?? figuren.FirstOrDefault(f => f.HesparisCharakter!.UserId == GetUserId());
+                if (figur != null)
+                {
+                    gewaehlt = alleZauber.FirstOrDefault(z => z.Person == figur.HesparisCharakter!.ErsterVorname);
+                }
+            }
+            gewaehlt ??= alleZauber[0];
+
+            var model = new SonderzauberViewModel
+            {
+                DarfBearbeiten = DarfBearbeiten(),
+                IstSpielleitung = IsGott(),
+            };
+
+            foreach (var z in alleZauber)
+            {
+                var stand = staende.FirstOrDefault(s => s.SonderzauberCode == z.Code);
+                var eintrag = new SonderzauberFigur
+                {
+                    Code = z.Code,
+                    Person = z.Person,
+                    Titel = z.Titel,
+                    Element = z.Titel.Split("— ").Last(),
+                    Aussehen = HesparisSigille.Fuer(z.Code),
+                    FigurId = figuren.FirstOrDefault(f => f.HesparisCharakter!.ErsterVorname == z.Person)?.Id,
+                };
+
+                // Status unter dem Namen (JS: sonderStatus)
+                var gewaehlteOption = z.Optionen.FirstOrDefault(o => stand != null && o.Position == stand.GewaehltePosition);
+                if (gewaehlteOption != null)
+                {
+                    eintrag.StatusKlasse = "done";
+                    eintrag.StatusText = "✦ " + gewaehlteOption.Name;
+                }
+                else if (stand != null && stand.Aufgedeckt.Count > 0)
+                {
+                    eintrag.StatusKlasse = "progress";
+                    eintrag.StatusText = stand.Aufgedeckt.Count + " von " + MaxAufgedeckt + " aufgedeckt";
+                }
+                else
+                {
+                    eintrag.StatusKlasse = "open";
+                    eintrag.StatusText = z.Optionen.Count + " verdeckte Karten";
+                }
+                model.Figuren.Add(eintrag);
+            }
+            model.Auswahl = model.Figuren.First(f => f.Code == gewaehlt.Code);
+            ViewData["FigurId"] = model.Auswahl.FigurId;
+
+            // Karten des ausgewählten Zaubers
+            var aktStand = staende.FirstOrDefault(s => s.SonderzauberCode == gewaehlt.Code);
+            var offen = new List<int>();
+            int? gewaehltePos = null;
+            if (aktStand != null)
+            {
+                offen = aktStand.Aufgedeckt.Select(a => a.Position).ToList();
+                gewaehltePos = aktStand.GewaehltePosition;
+            }
+            bool fertig = gewaehltePos.HasValue;
+            model.Aufgedeckt = offen.Count;
+            model.Gewaehlt = fertig;
+
+            // Gerade passiert (für die Animation): "reveal:2" oder "choose:1", kommt aus TempData
+            string? justArt = null;
+            int? justPos = null;
+            if (TempData["SzJust"] is string just && just.Contains(':'))
+            {
+                var teile = just.Split(':');
+                justArt = teile[0];
+                justPos = int.Parse(teile[1]);
+            }
+
+            foreach (var opt in gewaehlt.Optionen.OrderBy(o => o.Position))
+            {
+                bool istOffen = offen.Contains(opt.Position);
+                bool istGewaehlt = gewaehltePos == opt.Position;
+                bool kannAufdecken = !fertig && offen.Count < MaxAufgedeckt && !istOffen && model.DarfBearbeiten;
+
+                var klasse = "sz-card";
+                if (istOffen)
+                {
+                    klasse += " is-revealed";
+                }
+                else if (fertig)
+                {
+                    klasse += " is-sealed";
+                }
+                else if (kannAufdecken)
+                {
+                    klasse += " can-reveal";
+                }
+                else
+                {
+                    klasse += " is-locked";
+                }
+
+                if (fertig && istOffen)
+                {
+                    if (istGewaehlt)
+                    {
+                        klasse += " is-chosen";
+                    }
+                    else
+                    {
+                        klasse += " not-chosen";
+                    }
+                }
+
+                if (justArt != null && justPos == opt.Position)
+                {
+                    klasse += " just-" + justArt;
+                }
+                else if (justArt == "choose")
+                {
+                    klasse += " just-fade";
+                }
+
+                string hinweis;
+                if (fertig)
+                {
+                    hinweis = "für immer verborgen";
+                }
+                else if (kannAufdecken)
+                {
+                    hinweis = "Zum Aufdecken antippen";
+                }
+                else
+                {
+                    hinweis = "nicht mehr aufdeckbar";
+                }
+
+                model.Karten.Add(new SonderzauberKarte
+                {
+                    Position = opt.Position,
+                    Roemisch = opt.Position < Roemisch.Length ? Roemisch[opt.Position] : (opt.Position + 1).ToString(),
+                    Option = opt,
+                    Klasse = klasse,
+                    IstAufgedeckt = istOffen,
+                    IstGewaehlt = istGewaehlt,
+                    KannAufdecken = kannAufdecken,
+                    Versiegelt = fertig,
+                    Hinweis = hinweis,
+                });
+            }
+
+            // Schritte oben rechts (JS: s1, s2, s3)
+            if (fertig || offen.Count >= MaxAufgedeckt)
+            {
+                model.Schritt1 = "done";
+            }
+            else
+            {
+                model.Schritt1 = "active";
+            }
+
+            if (fertig)
+            {
+                model.Schritt2 = "done";
+                model.Schritt3 = "done";
+            }
+            else if (offen.Count >= 1)
+            {
+                model.Schritt2 = "active";
+            }
+
+            return View(model);
+        }
+
+        /// <summary>Eine Karte aufdecken (JS: revealSonderCard). Höchstens zwei, und nur solange nichts gewählt ist.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SonderzauberAufdecken(string zauber, int position)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var stand = await SonderzauberStandAsync(zauber);
+            if (stand == null) return NotFound();
+
+            bool erlaubt = stand.GewaehltePosition == null
+                           && stand.Aufgedeckt.Count < MaxAufgedeckt
+                           && stand.Aufgedeckt.All(a => a.Position != position)
+                           && stand.Sonderzauber.Optionen.Any(o => o.Position == position);
+            if (erlaubt)
+            {
+                stand.Aufgedeckt.Add(new SonderzauberAufgedeckt { Position = position });
+                await _context.SaveChangesAsync();
+                TempData["SzJust"] = "reveal:" + position;
+            }
+            return RedirectToAction(nameof(Sonderzauber), new { zauber });
+        }
+
+        /// <summary>Eine aufgedeckte Karte endgültig wählen (JS: chooseSonderCard). Danach ist nichts mehr änderbar.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SonderzauberWaehlen(string zauber, int position)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var stand = await SonderzauberStandAsync(zauber);
+            if (stand == null) return NotFound();
+
+            if (stand.GewaehltePosition == null && stand.Aufgedeckt.Any(a => a.Position == position))
+            {
+                stand.GewaehltePosition = position;
+                await _context.SaveChangesAsync();
+                var name = stand.Sonderzauber.Optionen.First(o => o.Position == position).Name;
+                TempData["Success"] = $"{stand.Sonderzauber.Person} hat „{name}“ gewählt.";
+                TempData["SzJust"] = "choose:" + position;
+            }
+            return RedirectToAction(nameof(Sonderzauber), new { zauber });
+        }
+
+        /// <summary>Gott: Kartentisch einer Figur zurücksetzen (alles wieder verdeckt, keine Wahl).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> SonderzauberZuruecksetzen(string zauber)
+        {
+            var kampagne = await AkademieLadenAsync();
+            var stand = await _context.SonderzauberStaende
+                .Include(s => s.Aufgedeckt)
+                .FirstOrDefaultAsync(s => s.KampagneId == kampagne.Id && s.SonderzauberCode == zauber);
+            if (stand != null)
+            {
+                _context.SonderzauberStaende.Remove(stand);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Die Karten liegen wieder verdeckt.";
+            }
+            return RedirectToAction(nameof(Sonderzauber), new { zauber });
+        }
+
+        /// <summary>Stand eines Sonderzaubers in der Akademie laden, beim ersten Mal anlegen.</summary>
+        private async Task<SonderzauberStand?> SonderzauberStandAsync(string zauber)
+        {
+            var kampagne = await AkademieLadenAsync();
+            var sonderzauber = await _context.Sonderzauber
+                .Include(z => z.Optionen)
+                .FirstOrDefaultAsync(z => z.Code == zauber);
+            if (sonderzauber == null) return null;
+
+            var stand = await _context.SonderzauberStaende
+                .Include(s => s.Aufgedeckt)
+                .FirstOrDefaultAsync(s => s.KampagneId == kampagne.Id && s.SonderzauberCode == zauber);
+            if (stand == null)
+            {
+                stand = new SonderzauberStand { KampagneId = kampagne.Id, SonderzauberCode = zauber };
+                _context.SonderzauberStaende.Add(stand);
+            }
+            stand.Sonderzauber = sonderzauber;
+            return stand;
         }
 
         // =====================================================================

@@ -364,3 +364,59 @@ public class RingBeschriftung
     public string Oben { get; set; } = "";
     public bool Aktiv { get; set; }
 }
+
+// ------------------------------------------------------------------ Sonderzauber
+
+/// <summary>Kartentisch "Vier Karten, eine Wahl": je Figur vier verdeckte Zauber, zwei aufdecken, einen wählen.</summary>
+public class SonderzauberViewModel
+{
+    public List<SonderzauberFigur> Figuren { get; set; } = new();
+    public SonderzauberFigur Auswahl { get; set; } = null!;
+    public List<SonderzauberKarte> Karten { get; set; } = new();
+
+    public int Aufgedeckt { get; set; }
+    public bool Gewaehlt { get; set; }
+
+    public bool DarfBearbeiten { get; set; }
+    public bool IstSpielleitung { get; set; }
+
+    /// <summary>Zustand der drei Schritte oben rechts: "done", "active" oder "".</summary>
+    public string Schritt1 { get; set; } = "";
+    public string Schritt2 { get; set; } = "";
+    public string Schritt3 { get; set; } = "";
+}
+
+/// <summary>Knopf in der Figurenleiste (JS: sz-char).</summary>
+public class SonderzauberFigur
+{
+    public string Code { get; set; } = "";
+    public string Person { get; set; } = "";
+    public string Titel { get; set; } = "";
+    public string Element { get; set; } = "";
+    public HesparisSigille.Aussehen Aussehen { get; set; } = HesparisSigille.Standard;
+
+    /// <summary>Spielfigur dieser Person (für die Navigation), falls es sie gibt.</summary>
+    public int? FigurId { get; set; }
+
+    /// <summary>"open", "progress" oder "done" und der Text darunter (JS: sonderStatus).</summary>
+    public string StatusKlasse { get; set; } = "open";
+    public string StatusText { get; set; } = "";
+}
+
+/// <summary>Eine der vier Karten (JS: sonderCardHtml).</summary>
+public class SonderzauberKarte
+{
+    public int Position { get; set; }
+    public string Roemisch { get; set; } = "";
+    public SonderzauberOption Option { get; set; } = null!;
+
+    /// <summary>CSS-Klassen der Karte, z. B. "sz-card is-revealed is-chosen".</summary>
+    public string Klasse { get; set; } = "";
+    public bool IstAufgedeckt { get; set; }
+    public bool IstGewaehlt { get; set; }
+    public bool KannAufdecken { get; set; }
+
+    /// <summary>Wahl getroffen: verdeckte Karten bekommen ein Schloss.</summary>
+    public bool Versiegelt { get; set; }
+    public string Hinweis { get; set; } = "";
+}
