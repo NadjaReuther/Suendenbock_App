@@ -1,10 +1,33 @@
-﻿<!-- Die Kalender-Container -->
-<div class="advent-container">
-    <h1 class="advent-title"><img width="75%" ; src="~/assets/spieler/Weihnachten/LOGO.svg" /></h1>
-    <a asp-controller="Player" asp-action="Anleitung">
-        <div class="advent-title"><img width="50%" src="~/assets/spieler/Weihnachten/anleitung.svg" alt="Anleitung" class="anleitung-button" /></div>
-    </a>
-    <a asp-controller="Player" asp-action="Weihnachtsabenteuer">
-        <div class="advent-title"><img width="50%" src="~/assets/spieler/Weihnachten/kalender.svg" alt="Kalender" class="kalender-button" /></div>
-    </a>
-</div>
+@{
+    ViewData["Title"] = "Weihnachtsabenteuer";
+    Layout = null; // Kein Layout - Angular übernimmt alles!
+}
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <title>Weihnachtsabenteuer</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        /* Entferne alle Margins/Paddings */
+        body {
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Anti-Forgery Token für POST Requests -->
+    @Html.AntiForgeryToken()
+
+    <!-- Angular App Root -->
+    <app-root></app-root>
+
+    <!-- Angular Scripts -->
+    <script src="/polyfills-FFHMD2TL.js" type="module"></script>
+    <script src="/main-IWYGPDJM.js" type="module"></script>
+</body>
+</html>

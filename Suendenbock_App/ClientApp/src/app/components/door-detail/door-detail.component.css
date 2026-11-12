@@ -1,0 +1,173 @@
+/* Door Detail Styles */
+.door-detail-container {
+  padding: 2rem;
+}
+
+.door-detail-content {
+  margin: 0 auto;
+  max-width: 900px;
+  background: rgba(255, 255, 255, 1);
+  border: 3px solid #d4af37;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.door-detail-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #d4af37;
+}
+
+.door-detail-header h1 {
+  font-family: 'Cinzel', serif;
+  color: #5d4e37;
+  font-size: 2.5rem;
+}
+
+/* Simple Content Styles */
+.advent-simple-content {
+  padding: 1rem;
+}
+
+.advent-simple-content img {
+  max-width: 45%;
+  height: auto;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+}
+
+.advent-simple-content h1,
+.advent-simple-content h2,
+.advent-simple-content h3 {
+  font-family: 'Cinzel', serif;
+  color: #5d4e37;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.advent-simple-content p {
+  font-family: 'MedievalSharp', cursive;
+  color: #4a3f2e;
+  text-align: justify;
+  padding: 0 40px 0 40px;
+  font-size: 26px;
+  line-height: 1.6;
+}
+
+/* Audio Content Styles */
+.advent-audio-content audio {
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.advent-audio-content audio::-webkit-media-controls-panel {
+  background-color: #f9f6f0;
+}
+
+/* Choice Selection Styles */
+.choice-selection {
+  padding: 2rem 0;
+}
+
+.choice-card {
+  border: 3px solid #d4af37;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(145deg, #f9f6f0, #e8dcc0);
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.choice-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.choice-card.emma-card {
+  border-color: #28a745;
+}
+
+.choice-card.emma-card:hover {
+  background: linear-gradient(145deg, #d4edda, #c3e6cb);
+}
+
+.choice-card.kasimir-card {
+  border-color: #007bff;
+}
+
+.choice-card.kasimir-card:hover {
+  background: linear-gradient(145deg, #d1ecf1, #bee5eb);
+}
+
+.choice-card.selected {
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.8);
+  transform: scale(1.05);
+}
+
+.choice-card h4 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  font-family: 'Cinzel', serif;
+}
+
+.choice-card p {
+  font-size: 1.2rem;
+  color: #5d4e37;
+}
+
+/* Choice Result */
+.choice-result {
+  padding: 2rem 0;
+}
+
+/* Back Button */
+.back-button {
+  display: inline-block;
+  margin-top: 2rem;
+  padding: 0.75rem 2rem;
+  background: linear-gradient(145deg, #d4af37, #b8941f);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'MedievalSharp', cursive;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.back-button:hover {
+  transform: scale(1.05);
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .door-detail-content {
+    padding: 1rem;
+  }
+
+  .door-detail-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .advent-simple-content p {
+    font-size: 18px;
+    padding: 0 20px;
+  }
+
+  .choice-card {
+    min-height: 150px;
+  }
+
+  .choice-card h4 {
+    font-size: 1.5rem;
+  }
+}

@@ -1,0 +1,68 @@
+<!-- Advent Calendar Container -->
+<div class="advent-container">
+
+  <!-- Back Button -->
+  <div class="back-button-container">
+    <a href="/" class="back-button">← Zurück zur Startseite</a>
+  </div>
+
+  <!-- Title Section with Logo -->
+  <h1 class="advent-title">
+    <img width="70%" src="/assets/spieler/Weihnachten/LOGO.svg" alt="Weihnachtsabenteuer Logo" />
+  </h1>
+
+  <!-- Grid with all doors -->
+  <div class="advent-grid">
+    <div
+      *ngFor="let day of doors"
+      class="advent-door"
+      [class.already-opened]="isDoorOpened(day, openedDoors$ | async)"
+      [attr.data-day]="day"
+      (click)="onDoorClick(day)">
+
+      <!-- Door SVG Image (Kalenderzahlen) -->
+      <img
+        [src]="getDoorImagePath(day)"
+        [alt]="'Türchen ' + day"
+        class="door-image">
+
+      <!-- Lock Icon (hidden by default, shown via CSS when locked) -->
+      <div class="door-lock" style="display: none;">🔒</div>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <a (click)="goToOverview()" style="cursor: pointer;">
+    <div class="advent-title">
+      <img width="50%" src="/assets/spieler/Weihnachten/zurueck.svg" alt="zurück" />
+    </div>
+  </a>
+
+</div>
+
+<!-- Bootstrap Modal für Nachrichten (wie in Razor-Version) -->
+<div class="modal fade" id="adventModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background: linear-gradient(145deg, #f9f6f0, #e8dcc0); border: 3px solid #d4af37;">
+
+      <div class="modal-header" style="border-bottom: 2px solid #d4af37;">
+        <h5 class="modal-title" id="adventModalTitle" style="font-family: 'Cinzel', serif; color: #5d4e37;">
+          <!-- Titel wird dynamisch gefüllt -->
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body text-center" id="adventModalBody" style="font-family: 'MedievalSharp', cursive; color: #5d4e37;">
+        <!-- Inhalt wird dynamisch gefüllt -->
+      </div>
+
+      <div class="modal-footer" style="border-top: 2px solid #d4af37;">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                style="background: linear-gradient(145deg, #8b7355, #6e5b3f); border: none;">
+          Schließen
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

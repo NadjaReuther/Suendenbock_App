@@ -1,0 +1,38 @@
+<div class="riddle-container">
+  <div class="back-button-container">
+    <a href="/" class="back-button">← Zurück zur Startseite</a>
+  </div>
+
+  <div class="riddle-title">
+    <img src="/assets/raetsel/logo.svg" alt="Rätsel-Adventskalender 2026">
+  </div>
+
+  <!-- Türchen-Grid -->
+  <div class="riddle-grid">
+    <div
+      *ngFor="let door of doors$ | async"
+      class="riddle-door"
+      [class.solved]="isSolved(door.id, progress$ | async)"
+      (click)="openDoor(door)">
+
+      <!-- Türchen-Bild (SVG) -->
+      <img [src]="door.imagePath" [alt]="'Türchen ' + door.dayNumber" class="door-image">
+
+      <!-- Gelöst-Badge -->
+      <div *ngIf="isSolved(door.id, progress$ | async)" class="solved-badge">✓</div>
+
+      <!-- Hinweis-Counter -->
+      <div *ngIf="getHintsUsed(door.id, progress$ | async) > 0 && !isSolved(door.id, progress$ | async)"
+           class="hints-badge">
+        💡 {{ getHintsUsed(door.id, progress$ | async) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Rätsel-Modal -->
+  <app-riddle-modal
+    *ngIf="showModal && selectedDoor"
+    [door]="selectedDoor"
+    (close)="closeModal()">
+  </app-riddle-modal>
+</div>

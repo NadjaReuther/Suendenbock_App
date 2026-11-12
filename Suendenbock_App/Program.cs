@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Suendenbock_App.Data;
 using Suendenbock_App.Data.Seeders;
 using Suendenbock_App.Models.Domain;
@@ -62,6 +63,14 @@ builder.Services.AddSignalR(options =>
 
 var app = builder.Build();
 
+// Statische Dateien für Angular-Build (ohne RequestPath = alle Dateien unter root)
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "ClientApp/dist/client-app/browser")),
+    RequestPath = "" // Leerer Pfad = Dateien direkt unter root verfügbar
+});
+    
 using(var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();

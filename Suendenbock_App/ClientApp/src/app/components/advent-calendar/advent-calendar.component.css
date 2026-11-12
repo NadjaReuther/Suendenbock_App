@@ -1,0 +1,175 @@
+/* Container für den ganzen Kalender */
+.advent-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+.back-button-container {
+  padding: 20px;
+  position: relative;
+  z-index: 10;
+}
+
+.back-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #8b4513;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.advent-container::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 100vh;
+  background-image: url("/assets/spieler/Weihnachten/Background.svg");
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
+
+.advent-title {
+  text-align: center;
+  padding-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.font-weihnachten {
+  background-color: rgba(212, 175, 55, 0.5);
+  color: white;
+  font-family: Georgia;
+  font-weight: 200;
+  font-size: 1.5rem;
+  text-align: justify;
+  margin: 0 200px;
+  border: 3px solid #d4af37;
+  padding: 24px 36px;
+  border-radius: 8px;
+}
+
+/* Das Gitter mit allen Türchen */
+.advent-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 15px;
+  padding: 20px;
+}
+
+/* Jedes einzelne Türchen */
+.advent-door {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+/* SVG-Bild im Türchen */
+.door-image {
+  width: 120%;
+  height: auto;
+  display: block;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+/* Hover-Effekt */
+.advent-door:hover .door-image {
+  transform: scale(1.1);
+}
+
+/* Bereits geöffnete Türchen markieren */
+.advent-door.already-opened .door-image {
+  opacity: 0.5;
+}
+
+.advent-door.already-opened::after {
+  content: "✓";
+  position: absolute;
+  top: 10px;
+  right: 0;
+  font-size: 2rem;
+  color: #d4af37;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+.door-lock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 1rem;
+  border-radius: 50%;
+}
+
+.door-lock.shaking {
+  animation: shake 0.5s ease-in-out infinite;
+}
+
+/* Schüttel-Animation für das Schloss */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  25% {
+    transform: translate(-50%, -50%) rotate(-10deg);
+  }
+
+  75% {
+    transform: translate(-50%, -50%) rotate(10deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .advent-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .font-weihnachten {
+    margin: 0 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .advent-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .font-weihnachten {
+    margin: 0 20px;
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .advent-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

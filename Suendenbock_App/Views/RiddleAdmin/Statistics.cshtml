@@ -1,0 +1,234 @@
+@model IEnumerable<Suendenbock_App.Models.Domain.RiddleDoor>
+@using Suendenbock_App.Models.Domain
+@{
+    ViewData["Title"] = "Rätsel-Statistiken";
+    var users = ViewBag.Users as Dictionary<string, ApplicationUser>;
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        📊 Rätsel-Kalender Statistiken
+    </h3>
+</header>
+
+<div class="container-fluid mt-4">
+
+    @if (Model != null && Model.Any())
+    {
+        <!-- Gesamtstatistiken -->
+        var totalDoors = Model.Count();
+        var totalAttempts = Model.SelectMany(d => d.UserAttempts).ToList();
+        var totalSolved = totalAttempts.Count(a => a.IsSolved);
+        var uniquePlayers = totalAttempts.Select(a => a.UserId).Distinct().Count();
+        var totalHintsUsed = totalAttempts.Sum(a => a.HintsUsed);
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">🚪 Türchen</h5>
+                        <p class="display-4">@totalDoors</p>
+                        <small class="text-muted">von 24</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">👥 Spieler</h5>
+                        <p class="display-4">@uniquePlayers</p>
+                        <small class="text-muted">aktive Teilnehmer</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">✓ Gelöst</h5>
+                        <p class="display-4">@totalSolved</p>
+                        <small class="text-muted">Rätsel</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">💡 Hinweise</h5>
+                        <p class="display-4">@totalHintsUsed</p>
+                        <small class="text-muted">verwendet</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Türchen-Details -->
+        <div class="card shadow mb-4">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);">
+                <h5 class="mb-0">📅 Detaillierte Türchen-Statistiken</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">Tag</th>
+                                <th>Lösung</th>
+                                <th style="width: 100px;">Versuche</th>
+                                <th style="width: 100px;">Gelöst</th>
+                                <th style="width: 120px;">Erfolgsrate</th>
+                                <th style="width: 100px;">Ø Hinweise</th>
+                                <th style="width: 100px;">Ø Versuche</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var door in Model.OrderBy(d => d.DayNumber))
+                            {
+                                var attempts = door.UserAttempts.ToList();
+                                var solved = attempts.Count(a => a.IsSolved);
+                                var totalPlayers = attempts.Count;
+                                var successRate = totalPlayers > 0 ? (double)solved / totalPlayers * 100 : 0;
+                                var avgHints = attempts.Any() ? attempts.Average(a => a.HintsUsed) : 0;
+                                var avgAttempts = attempts.Any() ? attempts.Average(a => a.AttemptCount) : 0;
+
+                                <tr>
+                                    <td>
+                                        <strong style="font-size: 1.2rem;">@door.DayNumber</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">@door.Solution</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">@totalPlayers</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">@solved</span>
+                                    </td>
+                                    <td>
+                                        @if (totalPlayers > 0)
+                                        {
+                                            <div class="progress">
+                                                <div class="progress-bar @(successRate >= 75 ? "bg-success" : successRate >= 50 ? "bg-warning" : "bg-danger")"
+                                                     role="progressbar"
+                                                     style="width: @successRate%"
+                                                     aria-valuenow="@successRate"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100">
+                                                    @successRate.ToString("F0")%
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (attempts.Any())
+                                        {
+                                            <span class="badge bg-warning text-dark">@avgHints.ToString("F1")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (attempts.Any())
+                                        {
+                                            <span class="badge bg-info">@avgAttempts.ToString("F1")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Spieler (wer hat die meisten Rätsel gelöst?) -->
+        var playerStats = totalAttempts
+            .GroupBy(a => a.UserId)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                Solved = g.Count(a => a.IsSolved),
+                TotalAttempts = g.Sum(a => a.AttemptCount),
+                HintsUsed = g.Sum(a => a.HintsUsed)
+            })
+            .OrderByDescending(p => p.Solved)
+            .ThenBy(p => p.HintsUsed)
+            .Take(10)
+            .ToList();
+
+        @if (playerStats.Any())
+        {
+            <div class="card shadow mb-4">
+                <div class="card-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0">🏆 Top 10 Spieler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">Rang</th>
+                                    <th>Spieler</th>
+                                    <th style="width: 100px;">Gelöst</th>
+                                    <th style="width: 100px;">Versuche</th>
+                                    <th style="width: 100px;">Hinweise</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < playerStats.Count; i++)
+                                {
+                                    var player = playerStats[i];
+                                    var rank = i + 1;
+                                    var medal = rank == 1 ? "🥇" : rank == 2 ? "🥈" : rank == 3 ? "🥉" : rank.ToString();
+
+                                    var user = users != null && users.ContainsKey(player.UserId) ? users[player.UserId] : null;
+                                    var playerName = user?.CurrentCharacter?.Vorname ?? user?.UserName ?? "Unbekannt";
+
+                                    <tr>
+                                        <td><strong>@medal</strong></td>
+                                        <td>
+                                            <strong>@playerName</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">@player.Solved / @totalDoors</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">@player.TotalAttempts</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-warning text-dark">@player.HintsUsed</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            Noch keine Daten verfügbar. Erstelle zuerst Türchen im Rätsel-Kalender.
+        </div>
+    }
+
+    <!-- Zurück-Button -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <a asp-action="Index" class="btn btn-secondary btn-lg shadow">
+                Zurück zur Türchen-Verwaltung
+            </a>
+        </div>
+    </div>
+</div>

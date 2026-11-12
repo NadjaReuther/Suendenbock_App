@@ -1,0 +1,80 @@
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>🎄 Türchen {{ door.dayNumber }} 🎄</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+
+      <!-- Bereits gelöst -->
+      <div *ngIf="isSolved" class="success-message">
+        <h3>✓ Gelöst!</h3>
+        <p>Du hast dieses Rätsel bereits erfolgreich gelöst!</p>
+        <p class="stats">Versuche: {{ attemptCount }} | Hinweise: {{ hintsUsed }}/3</p>
+      </div>
+
+      <!-- Rätsel-Interface -->
+      <div *ngIf="!isSolved">
+
+        <!-- Beschreibung -->
+        <p *ngIf="door.description" class="description">{{ door.description }}</p>
+
+        <!-- Input für Lösungswort -->
+        <div class="answer-section">
+          <label for="answer">Deine Lösung:</label>
+          <input
+            id="answer"
+            type="text"
+            [(ngModel)]="userAnswer"
+            (keyup.enter)="checkAnswer()"
+            placeholder="Lösungswort eingeben..."
+            class="answer-input"
+            [disabled]="isLoading">
+
+          <button
+            (click)="checkAnswer()"
+            [disabled]="!userAnswer.trim() || isLoading"
+            class="check-btn">
+            {{ isLoading ? 'Prüfe...' : 'Prüfen' }}
+          </button>
+        </div>
+
+        <!-- Feedback -->
+        <div *ngIf="isCorrect === false" class="error-message">
+          ❌ Leider falsch! Versuche es nochmal.
+        </div>
+        <div *ngIf="isCorrect === true" class="success-message">
+          ✓ Richtig! Gut gemacht!
+        </div>
+
+        <!-- Hinweise -->
+        <div class="hints-section">
+          <h3>Hinweise ({{ hintsUsed }}/3)</h3>
+
+          <!-- Hinweis-Button -->
+          <button
+            *ngIf="hintsUsed < 3"
+            (click)="getHint()"
+            [disabled]="isLoading"
+            class="hint-btn">
+            💡 Hinweis {{ hintsUsed + 1 }} anzeigen
+          </button>
+
+          <!-- Angezeigte Hinweise -->
+          <div *ngFor="let hint of hints; let i = index" class="hint">
+            <strong>Hinweis {{ i + 1 }}:</strong> {{ hint }}
+          </div>
+
+          <p *ngIf="hintsUsed >= 3" class="no-hints">Keine weiteren Hinweise verfügbar</p>
+        </div>
+
+        <!-- Statistik -->
+        <p class="stats">Versuche: {{ attemptCount }}</p>
+      </div>
+    </div>
+  </div>
+</div>

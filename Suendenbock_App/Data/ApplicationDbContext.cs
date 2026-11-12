@@ -75,6 +75,10 @@ namespace Suendenbock_App.Data
         public DbSet<AdventDoor> AdventDoors { get; set; }
         public DbSet<UserAdventChoice> UserAdventChoices { get; set; }
 
+        // Rätsel-Adventskalender
+        public DbSet<RiddleDoor> RiddleDoors { get; set; }
+        public DbSet<UserRiddleAttempt> UserRiddleAttempts { get; set; }
+
         // Glossar/Wiki-System
         public DbSet<GlossaryEntry> GlossaryEntries { get; set; }
 

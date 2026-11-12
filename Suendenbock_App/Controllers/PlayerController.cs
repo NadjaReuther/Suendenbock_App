@@ -156,11 +156,7 @@ namespace Suendenbock_App.Controllers
         {
             return View();
         }
-        public IActionResult Anleitung()
-        {
-            return View();
-        }
-
+      
         /// <summary>
         /// Zeigt die Achievements-Übersicht des Spielers an
         /// </summary>
@@ -208,28 +204,6 @@ namespace Suendenbock_App.Controllers
             };
 
             return View(viewModel);
-        }
-
-        [AllowAnonymous]
-        [Authorize]
-        public async Task<IActionResult> Weihnachtsabenteuer()
-        {
-            // Prüfen ob User in Spieler oder Gott Rolle ist
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Redirect("/Identity/Account/Login");
-            }
-
-            var isSpieler = await _userManager.IsInRoleAsync(user, "Spieler");
-            var isGott = await _userManager.IsInRoleAsync(user, "Gott");
-
-            if (!isSpieler && !isGott)
-            {
-                return Forbid();
-            }
-
-            return View();
         }
 
         [AllowAnonymous]

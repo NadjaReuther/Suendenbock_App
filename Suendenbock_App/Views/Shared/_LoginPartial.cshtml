@@ -48,15 +48,19 @@
                     <span class="user-avatar">@User?.Identity?.Name?.Substring(0, 1)</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">⚙️ Datenbank</a></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">⚙️ Admin Dashboard</a></li>
                     <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageFeldEffekte">⚡ Umweltbank</a></li>
                     <li><a class="dropdown-item" asp-controller="Admin" asp-action="GenerateSession">🎮 Aktverwaltung</a></li>
                     <li><a class="dropdown-item" asp-controller="UserManagement" asp-action="Index">👥 Benutzerverwaltung</a></li>
                     <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageAchievements">🏆 Achievementverwaltung</a></li>
-                    @* <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageBiome">🌍 Biome</a></li> *@
                     <li><a class="dropdown-item" asp-controller="Admin" asp-action="ManageMaps">🗺️ Kartenverwaltung</a></li>
                     <li><a class="dropdown-item" asp-controller="Admin" asp-action="QRGenerator">📱 QR-Generator</a></li>
-                    <li><a class="dropdown-item" asp-controller="AdventCalendar" asp-action="AdminDashboard">🎄 Eventverwaltung</a></li>
+                    <li><hr /></li>
+                    <li><a class="dropdown-item" asp-controller="AdventCalendar" asp-action="AdminDashboard">🎄 Weihnachtsabenteuer 2025</a></li>
+                    <li><a class="dropdown-item" asp-controller="RiddleAdmin" asp-action="Index">🎁 Rätsel-Kalender</a></li>
+                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Quellhueter">🎮 Quellhüter</a></li>
+                    <li><hr /></li>
+                    <li><a class="dropdown-item" asp-controller="GameWorld" asp-action="Index">🏰 Spielwelten</a></li>
                     <li><hr /></li>
                     <li>
                         <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/ChangePassword">

@@ -1,0 +1,70 @@
+/* Container für die Anleitung */
+.advent-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.advent-container::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 100vh;
+  background-image: url("/assets/spieler/Weihnachten/Background.svg");
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
+
+.advent-title {
+  text-align: center;
+  padding-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.advent-title img {
+  transition: transform 0.3s ease;
+}
+
+.advent-title:hover img {
+  transform: scale(1.05);
+}
+
+.font-weihnachten {
+  background-color: rgba(212, 175, 55, 0.5);
+  color: white;
+  font-family: Georgia;
+  font-weight: 200;
+  font-size: 1.5rem;
+  text-align: justify;
+  margin: 0 200px;
+  border: 3px solid #d4af37;
+  padding: 24px 36px;
+  border-radius: 8px;
+  max-width: 900px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .font-weihnachten {
+    margin: 0 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .font-weihnachten {
+    margin: 0 20px;
+    font-size: 1.2rem;
+  }
+
+  .advent-title img {
+    width: 90% !important;
+  }
+}

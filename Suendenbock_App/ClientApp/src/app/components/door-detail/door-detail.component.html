@@ -1,0 +1,95 @@
+<div class="advent-container">
+  <div class="door-detail-container">
+    <div class="door-detail-content">
+
+      <!-- Header -->
+      <div class="door-detail-header">
+        <h1>🎄 Türchen {{ dayNumber }} 🎄</h1>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Lädt...</span>
+        </div>
+        <p class="mt-3">Türchen wird geöffnet...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage && !isLoading" class="alert alert-danger" role="alert">
+        <strong>❌ Fehler:</strong> {{ errorMessage }}
+      </div>
+
+      <!-- Content - Simple (HTML) -->
+      <div *ngIf="content && content.doorType === 'simple' && !isLoading"
+           class="advent-simple-content"
+           [innerHTML]="content.htmlContent">
+      </div>
+
+      <!-- Content - Direct Audio -->
+      <div *ngIf="content && content.doorType === 'directAudio' && !isLoading"
+           class="advent-audio-content text-center">
+        <p class="mb-4">🎵 Höre dir die Geschichte an:</p>
+        <audio controls class="w-100" style="max-width: 600px;">
+          <source [src]="content.audioPath" type="audio/mpeg">
+          Dein Browser unterstützt das Audio-Element nicht.
+        </audio>
+      </div>
+
+      <!-- Content - Choice (Emma / Kasimir) -->
+      <div *ngIf="content && content.doorType === 'choice' && !isLoading">
+
+        <!-- User hat noch nicht gewählt -->
+        <div *ngIf="!content.alreadyChosen" class="choice-selection">
+          <div class="text-center mb-4">
+            <h3>🎭 Wähle deinen Weg</h3>
+            <p>Welcher Geschichte möchtest du folgen?</p>
+          </div>
+
+          <div class="row justify-content-center">
+            <!-- Emma Choice -->
+            <div class="col-md-5 mb-3">
+              <div class="choice-card emma-card"
+                   [class.selected]="selectedChoice === 0"
+                   (click)="onChoiceSelected(0)">
+                <h4>🌊 Emma</h4>
+                <p>Folge Emmas Geschichte</p>
+              </div>
+            </div>
+
+            <!-- Kasimir Choice -->
+            <div class="col-md-5 mb-3">
+              <div class="choice-card kasimir-card"
+                   [class.selected]="selectedChoice === 1"
+                   (click)="onChoiceSelected(1)">
+                <h4>⏳ Kasimir</h4>
+                <p>Folge Kasimirs Geschichte</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User hat bereits gewählt -->
+        <div *ngIf="content.alreadyChosen" class="choice-result text-center">
+          <div class="alert alert-info mb-4">
+            <strong>✓ Du hast gewählt:</strong> {{ content.choiceName }}
+          </div>
+
+          <p class="mb-4">🎵 Höre dir deine gewählte Geschichte an:</p>
+          <audio controls class="w-100" style="max-width: 600px;">
+            <source [src]="content.audioPath" type="audio/mpeg">
+            Dein Browser unterstützt das Audio-Element nicht.
+          </audio>
+        </div>
+      </div>
+
+      <!-- Back Button -->
+      <div class="text-center mt-4">
+        <button class="back-button" (click)="goBack()">
+          ← Zurück zum Kalender
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

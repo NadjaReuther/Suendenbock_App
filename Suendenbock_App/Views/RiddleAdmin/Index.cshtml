@@ -1,0 +1,142 @@
+@model IEnumerable<Suendenbock_App.Models.Domain.RiddleDoor>
+@{
+    ViewData["Title"] = "Rätsel-Kalender Verwaltung";
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        🎄 Rätsel-Adventskalender Verwaltung 🎄
+    </h3>
+</header>
+
+<div class="container-fluid mt-4">
+    <!-- TempData Benachrichtigungen -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>✓ Erfolg!</strong> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>✗ Fehler!</strong> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Aktionen -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <a asp-action="Create" class="btn btn-success btn-lg">
+                ➕ Neues Türchen erstellen
+            </a>
+            <a asp-action="Statistics" class="btn btn-info btn-lg">
+                📊 Statistiken anzeigen
+            </a>
+            <form asp-action="ResetAllProgress" method="post" class="d-inline"
+                  onsubmit="return confirm('⚠️ ACHTUNG: Alle Spieler-Fortschritte (Hinweise, Versuche, Lösungen) werden unwiderruflich gelöscht! Bist du sicher?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-warning btn-lg">
+                    🔄 Alle Fortschritte zurücksetzen (TEST)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Türchen-Übersicht -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="card shadow mb-4">
+            <div class="card-header text-white" style="background: linear-gradient(135deg, #1a472a 0%, #2d5a3d 100%);">
+                <h5 class="mb-0">📅 Alle Türchen (@Model.Count())/24)</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">Tag</th>
+                                <th>Lösung</th>
+                                <th>Beschreibung</th>
+                                <th style="width: 100px;">Lösungen</th>
+                                <th style="width: 150px;">Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var door in Model.OrderBy(d => d.DayNumber))
+                            {
+                                <tr>
+                                    <td>
+                                        <strong style="font-size: 1.2rem;">@door.DayNumber</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">@door.Solution</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(door.Description))
+                                        {
+                                            <span title="@door.Description">@(door.Description.Length > 50 ? door.Description.Substring(0, 50) + "..." : door.Description)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@door.UserAttempts.Count(a => a.IsSolved)</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Edit" asp-route-id="@door.Id" class="btn btn-sm btn-primary" title="Bearbeiten">
+                                                ✏️
+                                            </a>
+                                            <form asp-action="Delete" asp-route-id="@door.Id" method="post" class="d-inline"
+                                                  onsubmit="return confirm('Bist du sicher, dass du Türchen @door.DayNumber löschen möchtest? Alle Spielerfortschritte gehen verloren!');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Löschen">
+                                                    🗑️
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fehlende Türchen -->
+        var existingDays = Model.Select(d => d.DayNumber).ToList();
+        var missingDays = Enumerable.Range(1, 24).Except(existingDays).ToList();
+
+        @if (missingDays.Any())
+        {
+            <div class="alert alert-warning" role="alert">
+                <strong>⚠️ Fehlende Türchen:</strong>
+                @foreach (var day in missingDays)
+                {
+                    <span class="badge bg-warning text-dark">@day</span>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            Noch keine Türchen erstellt. Erstelle dein erstes Rätsel-Türchen!
+        </div>
+    }
+
+    <!-- Zurück-Button -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-secondary btn-lg shadow">
+                Zurück zur Admin-Übersicht
+            </a>
+        </div>
+    </div>
+</div>

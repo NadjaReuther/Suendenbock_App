@@ -2254,6 +2254,48 @@ namespace Suendenbock_App.Migrations
                     b.ToTable("Religions");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.RiddleDoor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DayNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Hint1")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Hint2")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Hint3")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Solution")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RiddleDoors");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.SpecialZauber", b =>
                 {
                     b.Property<int>("Id")
@@ -2473,6 +2515,48 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("AdventDoorId");
 
                     b.ToTable("UserAdventChoices");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.UserRiddleAttempt", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FirstOpenedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("HintsUsed")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsSolved")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RiddleDoorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("SolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SubmittedAnswers")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RiddleDoorId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserRiddleAttempts");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.UserTriggerPreference", b =>
@@ -3603,6 +3687,25 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("AdventDoor");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.UserRiddleAttempt", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.RiddleDoor", "RiddleDoor")
+                        .WithMany("UserAttempts")
+                        .HasForeignKey("RiddleDoorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RiddleDoor");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.UserTriggerPreference", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Domain.TriggerTopic", "Topic")
@@ -3885,6 +3988,11 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Rasse", b =>
                 {
                     b.Navigation("Characters");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.RiddleDoor", b =>
+                {
+                    b.Navigation("UserAttempts");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.TriggerCategory", b =>

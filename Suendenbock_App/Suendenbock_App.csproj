@@ -45,6 +45,39 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\anleitung.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Background.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\kalender.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\1.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\10.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\11.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\12.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\13.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\14.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\15.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\16.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\17.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\18.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\19.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\2.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\20.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\21.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\22.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\23.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\24.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\3.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\4.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\5.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\6.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\7.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\8.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\Kalenderzahlen\9.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\LOGO.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\zuKalender.svg" />
+    <Content Include="ClientApp\src\assets\spieler\Weihnachten\zurueck.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.15" />

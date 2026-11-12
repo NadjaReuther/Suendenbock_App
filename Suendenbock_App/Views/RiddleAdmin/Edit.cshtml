@@ -1,0 +1,84 @@
+@model Suendenbock_App.Models.Domain.RiddleDoor
+@{
+    ViewData["Title"] = $"Türchen {Model.DayNumber} bearbeiten";
+}
+
+<header class="antique-header">
+    <h3 style="text-align:center; color: #8b7355; font-family: 'MedievalSharp', cursive">
+        🎄 Türchen @Model.DayNumber bearbeiten
+    </h3>
+</header>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="Id" type="hidden" />
+
+                        <div class="mb-3">
+                            <label asp-for="DayNumber" class="form-label">Tag (1-24)</label>
+                            <input asp-for="DayNumber" class="form-control" type="number" min="1" max="24" required />
+                            <span asp-validation-for="DayNumber" class="text-danger"></span>
+                            <div class="form-text">Welcher Tag im Advent? (1 bis 24) - Das entsprechende Bild wird automatisch verwendet (z.B. Tag 1 = 1.svg)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Solution" class="form-label">Lösungswort</label>
+                            <input asp-for="Solution" class="form-control" type="text" required />
+                            <span asp-validation-for="Solution" class="text-danger"></span>
+                            <div class="form-text">Das korrekte Lösungswort (Groß-/Kleinschreibung egal)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Beschreibung / Rätseltext (optional)</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                            <div class="form-text">Optional: Eine Beschreibung oder das Rätsel selbst</div>
+                        </div>
+
+                        <hr />
+
+                        <h5 class="mb-3">💡 Hinweise</h5>
+
+                        <div class="mb-3">
+                            <label asp-for="Hint1" class="form-label">Hinweis 1</label>
+                            <input asp-for="Hint1" class="form-control" type="text" required />
+                            <span asp-validation-for="Hint1" class="text-danger"></span>
+                            <div class="form-text">Erster Hinweis (am einfachsten)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Hint2" class="form-label">Hinweis 2</label>
+                            <input asp-for="Hint2" class="form-control" type="text" required />
+                            <span asp-validation-for="Hint2" class="text-danger"></span>
+                            <div class="form-text">Zweiter Hinweis (mittelschwer)</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Hint3" class="form-label">Hinweis 3</label>
+                            <input asp-for="Hint3" class="form-control" type="text" required />
+                            <span asp-validation-for="Hint3" class="text-danger"></span>
+                            <div class="form-text">Dritter Hinweis (stärkster Hinweis)</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                Abbrechen
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                ✓ Änderungen speichern
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
