@@ -70,12 +70,6 @@ using(var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
     await CreateDefaultUser(userManager, "Gott", "gott@suendenbock.lore", "Adrijan1618!");
-
-    // Hesparis: Characters aus der alten Spielwelt "Hesparis" in die eigene Hesparis-Tabelle umziehen
-    // (läuft nur, solange es die alten GameWorld-Tabellen noch gibt; danach entfernen)
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var umzugLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("HesparisUmzug");
-    await Suendenbock_App.Data.Hesparis.HesparisUmzug.AusfuehrenAsync(dbContext, umzugLogger);
 }
 
 async Task CreateDefaultUser(UserManager<ApplicationUser> userManager, string roleName, string userName, string password)

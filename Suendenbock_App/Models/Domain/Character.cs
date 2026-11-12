@@ -111,8 +111,5 @@ namespace Suendenbock_App.Models.Domain
         public virtual CharacterAffiliation? Affiliation { get; set; }
         //Magie-Beziehungen (Pflicht - mindestens eine Magie-Klasse)
         public virtual ICollection<CharacterMagicClass> CharacterMagicClasses { get; set; } = new List<CharacterMagicClass>();
-
-        //GameWorld-Zuordnung (Many-to-Many: ein Character kann in mehreren Welten existieren)
-        public virtual ICollection<CharacterGameWorld> CharacterGameWorlds { get; set; } = new List<CharacterGameWorld>();
     }
 }

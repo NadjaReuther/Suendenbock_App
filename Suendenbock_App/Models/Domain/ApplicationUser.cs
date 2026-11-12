@@ -12,9 +12,5 @@ namespace Suendenbock_App.Models.Domain
         public string? Farbcode { get; set; }
 
         public ICollection<UserTriggerPreference> TriggerPreferences { get; set; } = new List<UserTriggerPreference>();
-
-        // Multi-Character-System: Welcher Character ist aktuell aktiv?
-        public int? CurrentCharacterId { get; set; }
-        public virtual Character? CurrentCharacter { get; set; }
     }
 }
