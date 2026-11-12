@@ -1760,6 +1760,63 @@ namespace Suendenbock_App.Migrations
                     b.ToTable("Braueintraege", (string)null);
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.CharakterVerknuepfung", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CharacterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HesparisCharakterId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharacterId")
+                        .IsUnique();
+
+                    b.HasIndex("HesparisCharakterId")
+                        .IsUnique();
+
+                    b.ToTable("CharakterVerknuepfungen", (string)null);
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Charakterart", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Charakterarten", "stamm");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Spieler"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Lehrkraft"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Mitschüler"
+                        });
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.DuellClubBilanz", b =>
                 {
                     b.Property<int>("Id")
@@ -3775,6 +3832,46 @@ namespace Suendenbock_App.Migrations
                     b.ToTable("HeftSchwerpunkte", (string)null);
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BildPfad")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<int>("CharakterartId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nachname")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Rufname")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Vorname")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CharakterartId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("HesparisCharaktere", (string)null);
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KalenderTermin", b =>
                 {
                     b.Property<int>("Id")
@@ -3823,9 +3920,6 @@ namespace Suendenbock_App.Migrations
 
                     b.Property<bool>("BrauenGesperrt")
                         .HasColumnType("bit");
-
-                    b.Property<int>("GameWorldId")
-                        .HasColumnType("int");
 
                     b.Property<string>("GlimAblaufJson")
                         .HasColumnType("nvarchar(max)");
@@ -3881,8 +3975,6 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GameWorldId");
 
                     b.ToTable("Kampagnen");
                 });
@@ -4167,6 +4259,9 @@ namespace Suendenbock_App.Migrations
                     b.Property<int?>("Haltung")
                         .HasColumnType("int");
 
+                    b.Property<int?>("HesparisCharakterId")
+                        .HasColumnType("int");
+
                     b.Property<int>("KampagneId")
                         .HasColumnType("int");
 
@@ -4198,6 +4293,8 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("HesparisCharakterId");
 
                     b.HasIndex("KampagneId", "Name")
                         .IsUnique();
@@ -5097,6 +5194,9 @@ namespace Suendenbock_App.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("HesparisCharakterId")
+                        .HasColumnType("int");
+
                     b.Property<int>("KampagneId")
                         .HasColumnType("int");
 
@@ -5153,6 +5253,8 @@ namespace Suendenbock_App.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("HassfachId");
+
+                    b.HasIndex("HesparisCharakterId");
 
                     b.HasIndex("LieblingsfachId");
 
@@ -6325,10 +6427,13 @@ namespace Suendenbock_App.Migrations
                     b.Property<int>("Bonuspunkte")
                         .HasColumnType("int");
 
-                    b.Property<int>("CharacterId")
+                    b.Property<int?>("CharacterId")
                         .HasColumnType("int");
 
                     b.Property<int>("Geld")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("HesparisCharakterId")
                         .HasColumnType("int");
 
                     b.Property<int>("KampagneId")
@@ -6359,8 +6464,9 @@ namespace Suendenbock_App.Migrations
 
                     b.HasIndex("CharacterId");
 
-                    b.HasIndex("KampagneId", "CharacterId")
-                        .IsUnique();
+                    b.HasIndex("HesparisCharakterId")
+                        .IsUnique()
+                        .HasFilter("[HesparisCharakterId] IS NOT NULL");
 
                     b.HasIndex("KampagneId", "Position")
                         .IsUnique();
@@ -9629,6 +9735,25 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Spielfigur");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.CharakterVerknuepfung", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter", "HesparisCharakter")
+                        .WithOne("Verknuepfung")
+                        .HasForeignKey("Suendenbock_App.Models.Domain.Hesparis.CharakterVerknuepfung", "HesparisCharakterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Character");
+
+                    b.Navigation("HesparisCharakter");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.DuellClubBilanz", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
@@ -10200,6 +10325,24 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Protokollheft");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter", b =>
+                {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Charakterart", "Charakterart")
+                        .WithMany("Charaktere")
+                        .HasForeignKey("CharakterartId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Suendenbock_App.Models.Domain.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Charakterart");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KalenderTermin", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
@@ -10209,17 +10352,6 @@ namespace Suendenbock_App.Migrations
                         .IsRequired();
 
                     b.Navigation("Kampagne");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Kampagne", b =>
-                {
-                    b.HasOne("Suendenbock_App.Models.Domain.GameWorld", "GameWorld")
-                        .WithMany()
-                        .HasForeignKey("GameWorldId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("GameWorld");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.KartenNotiz", b =>
@@ -10399,11 +10531,18 @@ namespace Suendenbock_App.Migrations
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Lehrer", b =>
                 {
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter", "HesparisCharakter")
+                        .WithMany()
+                        .HasForeignKey("HesparisCharakterId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
                         .WithMany()
                         .HasForeignKey("KampagneId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("HesparisCharakter");
 
                     b.Navigation("Kampagne");
                 });
@@ -10478,6 +10617,11 @@ namespace Suendenbock_App.Migrations
                         .HasForeignKey("HassfachId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter", "HesparisCharakter")
+                        .WithMany()
+                        .HasForeignKey("HesparisCharakterId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
                         .WithMany("Mitschueler")
                         .HasForeignKey("KampagneId")
@@ -10495,6 +10639,8 @@ namespace Suendenbock_App.Migrations
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Hassfach");
+
+                    b.Navigation("HesparisCharakter");
 
                     b.Navigation("Kampagne");
 
@@ -11016,8 +11162,12 @@ namespace Suendenbock_App.Migrations
                     b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
                         .WithMany()
                         .HasForeignKey("CharacterId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter", "HesparisCharakter")
+                        .WithOne("Spielfigur")
+                        .HasForeignKey("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "HesparisCharakterId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Suendenbock_App.Models.Domain.Hesparis.Kampagne", "Kampagne")
                         .WithMany("Spielfiguren")
@@ -11026,6 +11176,8 @@ namespace Suendenbock_App.Migrations
                         .IsRequired();
 
                     b.Navigation("Character");
+
+                    b.Navigation("HesparisCharakter");
 
                     b.Navigation("Kampagne");
                 });
@@ -11992,6 +12144,11 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Talente");
                 });
 
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Charakterart", b =>
+                {
+                    b.Navigation("Charaktere");
+                });
+
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Fach", b =>
                 {
                     b.Navigation("Stufen");
@@ -12022,6 +12179,13 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HeftNotiz", b =>
                 {
                     b.Navigation("Uebernommen");
+                });
+
+            modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter", b =>
+                {
+                    b.Navigation("Spielfigur");
+
+                    b.Navigation("Verknuepfung");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Kampagne", b =>
