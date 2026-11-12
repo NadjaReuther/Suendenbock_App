@@ -217,9 +217,16 @@ namespace Suendenbock_App.Controllers
 
             // Nur Player mit zugewiesenem Character laden (mit Character-Farbe)
             var playerUserIds = playerUsers.Select(u => u.Id).ToList();
-            var charactersWithColor = await _context.Characters
+            // Ein Spieler kann mehrere Characters haben:
+            // je Spieler eine Farbe (vom ältesten Character mit Farbe)
+            var spielerCharacters = await _context.Characters
                 .Where(c => playerUserIds.Contains(c.UserId))
-                .ToDictionaryAsync(c => c.UserId, c => c.UserColor);
+                .OrderBy(c => c.Id)
+                .Select(c => new { c.UserId, c.UserColor })
+                .ToListAsync();
+            var charactersWithColor = spielerCharacters
+                .GroupBy(c => c.UserId)
+                .ToDictionary(g => g.Key, g => g.Select(c => c.UserColor).FirstOrDefault(farbe => farbe != null));
 
             // Für jeden Player die Statistik berechnen
             var playerStats = new List<dynamic>();

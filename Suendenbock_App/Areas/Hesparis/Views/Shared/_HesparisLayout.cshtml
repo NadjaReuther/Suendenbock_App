@@ -1,0 +1,64 @@
+@{
+    // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche", "Charakter"
+    var bereich = ViewData["Bereich"] as string ?? "";
+    var figurId = ViewData["FigurId"] as int?;
+    var istGott = User.IsInRole("Gott");
+    // Der eigene Hesparis-Charakter (setzt HesparisBaseController)
+    var meinCharakter = ViewBag.MeinHesparisCharakter as HesparisCharakter;
+
+    string Aktiv(string name)
+    {
+        if (bereich == name)
+        {
+            return "active";
+        }
+        return "";
+    }
+}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#120a24" />
+    <title>@ViewData["Title"] · Hesparis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=UnifrakturMaguntia&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/hesparis.css" asp-append-version="true" />
+</head>
+<body class="hes">
+    <nav class="topbar">
+        <a class="topbar-home" asp-controller="Home" asp-action="Index">Hesparis</a>
+        <div class="topbar-nav">
+            <a class="@Aktiv("Index")" asp-controller="Home" asp-action="Index"><span class="glyph">⌂</span>Start</a>
+            <a class="@Aktiv("Talente")" asp-controller="Figur" asp-action="Talente" asp-route-id="@figurId"><span class="glyph">✧</span>Talente</a>
+            <a class="@Aktiv("Zeugnis")" asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@figurId"><span class="glyph">✎</span>Zeugnis</a>
+            <a class="@Aktiv("Tasche")" asp-controller="Figur" asp-action="Tasche" asp-route-id="@figurId"><span class="glyph">◍</span>Tasche</a>
+            @if (istGott)
+            {
+                <a class="@Aktiv("Charakter")" asp-controller="Charakter" asp-action="Index"><span class="glyph">⚜</span>Charaktere</a>
+            }
+        </div>
+        <span class="topbar-section">@ViewData["Title"]</span>
+        @if (meinCharakter != null)
+        {
+            <span class="topbar-me" title="Dein Charakter in Hesparis">✦ @meinCharakter.Anzeigename</span>
+        }
+        <a class="topbar-back" asp-area="" asp-controller="Home" asp-action="Index">← Sündenbock</a>
+    </nav>
+
+    <main class="hes-main">
+        @if (TempData["Success"] is string ok)
+        {
+            <div class="hes-flash ok">@ok</div>
+        }
+        @if (TempData["Error"] is string fehler)
+        {
+            <div class="hes-flash err">@fehler</div>
+        }
+        @RenderBody()
+    </main>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

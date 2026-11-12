@@ -1,0 +1,123 @@
+@model ZeugnisViewModel
+@{
+    var kopf = Model.Kopf;
+    ViewData["Title"] = "Zeugnis";
+    ViewData["Bereich"] = "Zeugnis";
+    ViewData["FigurId"] = kopf.AktiveFigurId;
+    var noten = Enum.GetValues<Note>();
+}
+
+<div class="armory-head">
+    <div class="armory-eyebrow">Zeugnis · Akademie Hesparis</div>
+    <h1 class="armory-title">@(kopf.Aktiv.Name)s Blatt</h1>
+    <p class="armory-sub">
+        S ist die Sondernote und zählt 0,9. Jede A- oder S-Note in einer Abschlussprüfung bringt einen Fachpunkt.
+        @if (kopf.IstSpielleitung)
+        {
+            <text>Noten trägst du direkt auf der jeweiligen Karte ein.</text>
+        }
+    </p>
+</div>
+
+<partial name="_FigurKopf" model="kopf" />
+
+<div class="zt-total a-panel">
+    <div>
+        <small>GESAMTWERT</small>
+        @if (Model.Gesamtschnitt.HasValue)
+        {
+            <b>Ø @HesparisRegeln.NotenFormat(Model.Gesamtschnitt.Value)</b>
+        }
+        else
+        {
+            <b>noch offen</b>
+        }
+        <div class="stars">
+            @if (Model.FachpunkteGesamt > 0)
+            {
+                var sterne = string.Concat(Enumerable.Repeat("★ ", Math.Min(Model.FachpunkteGesamt, 6)));
+                var wort = "Fachpunkte frei";
+                if (Model.FachpunkteFrei == 1)
+                {
+                    wort = "Fachpunkt frei";
+                }
+                <text>@sterne @Model.FachpunkteFrei @wort</text>
+            }
+            else
+            {
+                <text>noch keine Fachpunkte</text>
+            }
+        </div>
+    </div>
+    @if (Model.Gesamtschnitt.HasValue)
+    {
+        <div class="zt-card-big">@HesparisRegeln.NotenBuchstabe(Model.Gesamtschnitt.Value)</div>
+    }
+    else
+    {
+        <div class="zt-card-big empty">–</div>
+    }
+</div>
+
+<div class="zt-grid">
+    @foreach (var fach in Model.Faecher)
+    {
+        <article class="zt-fach">
+            <h3>@fach.Name</h3>
+            <div class="zt-avg">
+                @if (fach.Schnitt.HasValue)
+                {
+                    <b>@HesparisRegeln.NotenBuchstabe(fach.Schnitt.Value)</b>
+                    <span>Ø @HesparisRegeln.NotenFormat(fach.Schnitt.Value) · @fach.Noten.Count Noten</span>
+                }
+                else
+                {
+                    <b>–</b>
+                    <span>noch keine Note</span>
+                }
+            </div>
+
+            <div class="zt-notes">
+                @foreach (var n in fach.Noten)
+                {
+                    <span class="zt-note @n.Note">
+                        @n.Note
+                        @if (kopf.IstSpielleitung)
+                        {
+                            <form asp-action="NoteEntfernen" asp-route-id="@kopf.AktiveFigurId" method="post" class="inline">
+                                <input type="hidden" name="noteId" value="@n.Id" />
+                                <button type="submit" title="Note entfernen" aria-label="Note @n.Note entfernen">✕</button>
+                            </form>
+                        }
+                    </span>
+                }
+            </div>
+
+            <div class="zt-meta">
+                <span>Magiestufe @fach.Stufe</span>
+                <span>@fach.Fachpunkte Fachpunkt(e) · @fach.FachpunkteFrei frei</span>
+            </div>
+
+            @if (kopf.IstSpielleitung)
+            {
+                <form asp-action="NoteHinzufuegen" asp-route-id="@kopf.AktiveFigurId" method="post" class="zt-add">
+                    <input type="hidden" name="fachId" value="@fach.FachId" />
+                    <select name="note" aria-label="Note für @fach.Name">
+                        @foreach (var n in noten)
+                        {
+                            if (n == Note.B)
+                            {
+                                <option value="@n" selected>@n</option>
+                            }
+                            else
+                            {
+                                <option value="@n">@n</option>
+                            }
+                        }
+                    </select>
+                    <button type="submit">+ Note</button>
+                </form>
+            }
+        </article>
+    }
+</div>

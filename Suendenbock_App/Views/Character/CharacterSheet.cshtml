@@ -79,6 +79,23 @@
            asp-route-searchTerm="@ViewBag.SearchTerm">
             <i class="bi bi-grid-3x3"></i> Zurück zur Übersicht
         </a>
+        @* Gott: Diesen Character auch in Hesparis führen (öffnet das Hesparis-Formular, vorausgefüllt) *@
+        @if (User.IsInRole("Gott"))
+        {
+            var hesparisCharakter = ViewBag.HesparisCharakter as Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter;
+            if (hesparisCharakter != null)
+            {
+                <a class="back-to-overview" asp-area="Hesparis" asp-controller="Charakter" asp-action="Bearbeiten" asp-route-id="@hesparisCharakter.Id">
+                    ✦ In Hesparis: @hesparisCharakter.Anzeigename
+                </a>
+            }
+            else
+            {
+                <a class="back-to-overview" asp-area="Hesparis" asp-controller="Charakter" asp-action="Neu" asp-route-characterId="@Model.Id">
+                    ✦ Existiert auch in Hesparis
+                </a>
+            }
+        }
     </div>
 
     <div>

@@ -7,7 +7,7 @@ using System.Reflection.Emit;
 
 namespace Suendenbock_App.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    public partial class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         // ===============================
         // DBSETS - ALLE ENTITÄTEN
@@ -25,7 +25,7 @@ namespace Suendenbock_App.Data
         public DbSet<CharacterAffiliation> CharacterAffiliations { get; set; }
         public DbSet<CharacterMagicClass> CharacterMagicClasses { get; set; }
 
-        // Multi-Tenant GameWorld System
+        // ALT: Tenant-System, wird nur noch vom HesparisUmzug gelesen und danach entfernt
         public DbSet<GameWorld> GameWorlds { get; set; }
         public DbSet<CharacterGameWorld> CharacterGameWorlds { get; set; }
 
@@ -847,10 +847,23 @@ namespace Suendenbock_App.Data
                 .OnDelete(DeleteBehavior.NoAction)
                 .IsRequired(false);
 
+            // CharacterGameWorld -> Spieler in dieser Welt (OPTIONAL, beim Löschen des Users auf NULL)
+            builder.Entity<CharacterGameWorld>()
+                .HasOne(cgw => cgw.User)
+                .WithMany()
+                .HasForeignKey(cgw => cgw.UserId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
+
             // Unique Index: ein Character kann nur einmal pro GameWorld sein
             builder.Entity<CharacterGameWorld>()
                 .HasIndex(cgw => new { cgw.CharacterId, cgw.GameWorldId })
                 .IsUnique();
+
+            // ===============================
+            // HESPARIS (Akademie-Welt)
+            // ===============================
+            Hesparis.HesparisModell.Konfigurieren(builder);
         }
     }
 }

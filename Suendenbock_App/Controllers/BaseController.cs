@@ -37,8 +37,8 @@ namespace Suendenbock_App.Controllers
         }
 
         /// <summary>
-        /// Helper: Get current character for the logged-in user
-        /// Returns null if user has no current character selected
+        /// Helper: Character des eingeloggten Spielers in Sündenbock.
+        /// (Hesparis hat eigene Charaktere, siehe Models/Domain/Hesparis/Charaktere.cs.)
         /// </summary>
         protected async Task<Character?> GetCurrentCharacterAsync()
         {
@@ -46,42 +46,14 @@ namespace Suendenbock_App.Controllers
             if (string.IsNullOrEmpty(userId))
                 return null;
 
-            var user = await _context.Users
-                .Include(u => u.CurrentCharacter)
-                    .ThenInclude(c => c.CharacterGameWorlds)
-                        .ThenInclude(cgw => cgw.GameWorld)
-                .FirstOrDefaultAsync(u => u.Id == userId);
-
-            return user?.CurrentCharacter;
+            return await _context.Characters
+                .Where(c => c.UserId == userId)
+                .OrderBy(c => c.Id)
+                .FirstOrDefaultAsync();
         }
 
         /// <summary>
-        /// Helper: Get current GameWorld based on active character
-        /// Returns null if no character is selected or character has no world
-        /// WICHTIG: Wenn Character in mehreren Welten ist, wird "Sündenbock 1618" bevorzugt
-        /// </summary>
-        protected async Task<GameWorld?> GetCurrentGameWorldAsync()
-        {
-            var character = await GetCurrentCharacterAsync();
-            if (character == null)
-                return null;
-
-            if (character.CharacterGameWorlds == null || !character.CharacterGameWorlds.Any())
-                return null;
-
-            // REGEL: Wenn Character in mehreren Welten existiert, bevorzuge "Sündenbock 1618"
-            var hauptwelt = character.CharacterGameWorlds
-                .FirstOrDefault(cgw => cgw.GameWorld?.Name == "Sündenbock 1618");
-
-            if (hauptwelt != null)
-                return hauptwelt.GameWorld;
-
-            // Fallback: Erste verfügbare Welt (z.B. nur 1810)
-            return character.CharacterGameWorlds.FirstOrDefault()?.GameWorld;
-        }
-
-        /// <summary>
-        /// Helper: Get all characters for the current user (for character switcher)
+        /// Helper: Characters des Spielers in Sündenbock (normalerweise genau einer)
         /// </summary>
         protected async Task<List<Character>> GetUserCharactersAsync()
         {
@@ -90,74 +62,8 @@ namespace Suendenbock_App.Controllers
                 return new List<Character>();
 
             return await _context.Characters
-                .Include(c => c.CharacterGameWorlds)
-                    .ThenInclude(cgw => cgw.GameWorld)
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
-        }
-
-        /// <summary>
-        /// Helper: Switch to a different character
-        /// Updates ApplicationUser.CurrentCharacterId
-        /// </summary>
-        protected async Task<bool> SwitchCharacterAsync(int characterId)
-        {
-            var userId = GetUserId();
-            if (string.IsNullOrEmpty(userId))
-                return false;
-
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-                return false;
-
-            // Prüfe ob Character dem User gehört
-            var character = await _context.Characters
-                .FirstOrDefaultAsync(c => c.Id == characterId && c.UserId == userId);
-
-            if (character == null)
-                return false;
-
-            user.CurrentCharacterId = characterId;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        // ===============================
-        // AUTHORIZATION HELPERS
-        // ===============================
-
-        /// <summary>
-        /// Helper: Get default GameWorld für nicht-eingeloggte User oder Gott
-        /// Standard: "Sündenbock 1618"
-        /// </summary>
-        protected async Task<GameWorld?> GetDefaultGameWorldAsync()
-        {
-            return await _context.GameWorlds
-                .FirstOrDefaultAsync(gw => gw.Name == "Sündenbock 1618");
-        }
-
-        /// <summary>
-        /// Helper: Get GameWorld für Anzeige (mit Fallback auf Default)
-        /// - Eingeloggte Spieler: Ihre aktuelle Welt basierend auf aktivem Character
-        /// - Nicht eingeloggt oder Gott: "Sündenbock 1618"
-        /// </summary>
-        protected async Task<GameWorld?> GetEffectiveGameWorldAsync()
-        {
-            // Gott sieht standardmäßig "Sündenbock 1618" (kann später alle sehen)
-            if (IsGott())
-                return await GetDefaultGameWorldAsync();
-
-            // Wenn nicht eingeloggt → Standard
-            if (User.Identity?.IsAuthenticated != true)
-                return await GetDefaultGameWorldAsync();
-
-            // Eingeloggte Spieler → Ihre aktuelle Welt
-            var currentWorld = await GetCurrentGameWorldAsync();
-            if (currentWorld != null)
-                return currentWorld;
-
-            // Fallback wenn kein Character ausgewählt
-            return await GetDefaultGameWorldAsync();
         }
 
         /// <summary>
@@ -185,15 +91,6 @@ namespace Suendenbock_App.Controllers
         protected async Task<bool> CanEditCharacterAsync(int characterId)
         {
             return await HasCharacterAccessAsync(characterId);
-        }
-
-        /// <summary>
-        /// Prüft ob ein Character zu einer bestimmten GameWorld gehört
-        /// </summary>
-        protected async Task<bool> IsCharacterInGameWorldAsync(int characterId, int gameWorldId)
-        {
-            return await _context.CharacterGameWorlds
-                .AnyAsync(cgw => cgw.CharacterId == characterId && cgw.GameWorldId == gameWorldId);
         }
 
         /// <summary>
@@ -228,7 +125,6 @@ namespace Suendenbock_App.Controllers
         /// <summary>
         /// Wird vor jeder Action ausgeführt
         /// Setzt ViewBag.CurrentActId mit dem aktiven Act
-        /// Setzt ViewBag für Multi-Character/GameWorld System
         /// </summary>
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
@@ -248,10 +144,8 @@ namespace Suendenbock_App.Controllers
                     ViewBag.CurrentActId = null;
                 }
 
-                // Multi-Character/GameWorld System
                 ViewBag.IsGott = IsGott();
                 ViewBag.CurrentCharacter = await GetCurrentCharacterAsync();
-                ViewBag.CurrentGameWorld = await GetCurrentGameWorldAsync();
                 ViewBag.UserCharacters = await GetUserCharactersAsync();
             }
 

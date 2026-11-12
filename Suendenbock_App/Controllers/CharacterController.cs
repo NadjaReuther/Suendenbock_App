@@ -37,23 +37,7 @@ namespace Suendenbock_App.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Overview(string searchTerm = "")
         {
-            // FILTER: GameWorld-Filterung
-            // - Nicht eingeloggt → nur "Sündenbock 1618"
-            // - Eingeloggt → basierend auf aktivem Character
-            // - Gott → alle (später implementieren, aktuell: Sündenbock 1618)
-            var effectiveGameWorld = await GetEffectiveGameWorldAsync();
-
-            var characters = _context.Characters
-                .Include(c => c.CharacterGameWorlds)
-                    .ThenInclude(cgw => cgw.GameWorld)
-                .AsQueryable();
-
-            // WICHTIG: Nur Characters der aktuellen GameWorld anzeigen
-            if (effectiveGameWorld != null && !IsGott())
-            {
-                characters = characters.Where(c =>
-                    c.CharacterGameWorlds.Any(cgw => cgw.GameWorldId == effectiveGameWorld.Id));
-            }
+            var characters = _context.Characters.AsQueryable();
 
             // Suchfilter anwenden - nur am Anfang des Namens
             if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -69,7 +53,6 @@ namespace Suendenbock_App.Controllers
 
             // Suchterm für View speichern
             ViewBag.SearchTerm = searchTerm;
-            ViewBag.EffectiveGameWorld = effectiveGameWorld;
 
             return View(characterList);
         }
@@ -153,6 +136,13 @@ namespace Suendenbock_App.Controllers
             ViewBag.NextId = currentIndex < charIdsList.Count - 1 ? charIdsList[currentIndex + 1] : 0;
             ViewBag.CharacterIds = string.Join(",", charIdsList);
             ViewBag.SearchTerm = searchTerm;
+
+            // Hesparis: Ist dieser Character auch in Hesparis angelegt? (nur für Gott sichtbar)
+            ViewBag.HesparisCharakter = _context.CharakterVerknuepfungen
+                .Include(v => v.HesparisCharakter)
+                .Where(v => v.CharacterId == id)
+                .Select(v => v.HesparisCharakter)
+                .FirstOrDefault();
 
             return View(character);
         }

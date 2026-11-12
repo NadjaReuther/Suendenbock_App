@@ -230,39 +230,5 @@ namespace Suendenbock_App.Controllers
 
             return View();
         }
-
-        // ===============================
-        // CHARACTER SWITCHER (Multi-GameWorld System)
-        // ===============================
-
-        /// <summary>
-        /// Switch to a different character (AJAX endpoint)
-        /// </summary>
-        [HttpPost]
-        public async Task<IActionResult> SwitchCharacter(int characterId)
-        {
-            var success = await SwitchCharacterAsync(characterId);
-
-            if (!success)
-            {
-                return Json(new { success = false, message = "Character konnte nicht gewechselt werden." });
-            }
-
-            var character = await _context.Characters
-                .Include(c => c.CharacterGameWorlds)
-                    .ThenInclude(cgw => cgw.GameWorld)
-                .FirstOrDefaultAsync(c => c.Id == characterId);
-
-            var gameWorld = character?.CharacterGameWorlds.FirstOrDefault()?.GameWorld;
-
-            return Json(new
-            {
-                success = true,
-                message = $"Du spielst jetzt als {character?.Vorname} {character?.Nachname} in {gameWorld?.Name}",
-                characterName = $"{character?.Vorname} {character?.Nachname}",
-                gameWorldName = gameWorld?.Name,
-                gameWorldColor = gameWorld?.ColorCode
-            });
-        }
     }
 }

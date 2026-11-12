@@ -624,9 +624,16 @@ namespace Suendenbock_App.Controllers
             Dictionary<string, string?> userIdToColor = new();
             if (isAdmin)
             {
-                userIdToColor = await _context.Characters
+                // Ein Spieler kann mehrere Characters haben:
+                // je Spieler eine Farbe (vom ältesten Character mit Farbe)
+                var spielerCharacters = await _context.Characters
                     .Where(c => c.UserId != null)
-                    .ToDictionaryAsync(c => c.UserId!, c => c.UserColor);
+                    .OrderBy(c => c.Id)
+                    .Select(c => new { c.UserId, c.UserColor })
+                    .ToListAsync();
+                userIdToColor = spielerCharacters
+                    .GroupBy(c => c.UserId!)
+                    .ToDictionary(g => g.Key, g => g.Select(c => c.UserColor).FirstOrDefault(farbe => farbe != null));
             }
 
             // Konvertiere zu ViewModels

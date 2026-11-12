@@ -1,0 +1,384 @@
+@model TalenteViewModel
+@{
+    var kopf = Model.Kopf;
+    ViewData["Title"] = "Talente";
+    ViewData["Bereich"] = "Talente";
+    ViewData["FigurId"] = kopf.AktiveFigurId;
+
+    var frei = Model.Budget - Model.Verteilt;
+    var orbKlasse = "tb-orb";
+    if (frei < 0)
+    {
+        orbKlasse += " over";
+    }
+    else if (frei == 0)
+    {
+        orbKlasse += " done";
+    }
+
+    string Vorzeichen(int n)
+    {
+        if (n < 0)
+        {
+            return "−" + Math.Abs(n);
+        }
+        return "+" + n;
+    }
+
+    string TalentName(string? code)
+    {
+        if (code != null && Model.TalentNamen.TryGetValue(code, out var name))
+        {
+            return name;
+        }
+        return code ?? "";
+    }
+}
+
+<div class="armory-head">
+    <div class="armory-eyebrow">Talentwerte</div>
+    <h1 class="armory-title">Talente von @kopf.Aktiv.Name</h1>
+    <p class="armory-sub">
+        @Model.Budget Punkte auf die drei Begabungen verteilen. Je zehn Punkte in einer Begabung ergeben
+        einen Punkt Kopfwert, und der zählt zu jedem Talent dazu.
+    </p>
+</div>
+
+<partial name="_FigurKopf" model="kopf" />
+
+<div class="tal-budget a-panel">
+    <div class="@orbKlasse"><b id="tbRest">@frei</b><small>frei</small></div>
+    <div class="tb-main">
+        <div class="tb-top">
+            <span class="tb-title">Punktekonto</span>
+            <span class="tb-count"><b id="tbUsed">@Model.Verteilt</b> / @Model.Budget verteilt</span>
+        </div>
+        <div class="tb-bar">
+            @foreach (var b in Model.Begabungen)
+            {
+                var breite = 0.0;
+                if (Model.Budget > 0 && b.Summe > 0)
+                {
+                    breite = Math.Min(100.0, b.Summe * 100.0 / Model.Budget);
+                }
+                <i data-bar="@b.Code" style="--tc:@b.Farbe;width:@breite.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"></i>
+            }
+        </div>
+        <div class="tb-legend">
+            @foreach (var b in Model.Begabungen)
+            {
+                <span style="--tc:@b.Farbe">@b.Name <b data-leg="@b.Code">@b.Summe</b></span>
+            }
+        </div>
+        @if (frei < 0)
+        {
+            <div class="tb-warn">Mehr als @Model.Budget Punkte verteilt. Irgendwo muss etwas runter.</div>
+        }
+    </div>
+</div>
+
+<form asp-action="Talente" asp-route-id="@kopf.AktiveFigurId" method="post" id="talForm" novalidate>
+    <div class="tal-grid">
+        @foreach (var b in Model.Begabungen)
+        {
+            <section class="tal-card" style="--tc:@b.Farbe">
+                <header class="tal-card-head">
+                    <h3>@b.Name</h3>
+                    <div class="tal-stats">
+                        <div class="tal-stat main"><b>@b.Kopfwert</b><span>Kopfwert</span></div>
+                        <div class="tal-stat"><b>@b.Geistesblitze</b><span>Geistesblitze</span></div>
+                        <div class="tal-stat"><b>@b.Summe</b><span>Punkte</span></div>
+                    </div>
+                </header>
+                <div class="tal-rows">
+                    @foreach (var t in b.Talente)
+                    {
+                        var wertKlasse = "tal-val";
+                        if (t.Bonus != 0)
+                        {
+                            wertKlasse += " has-bonus";
+                        }
+                        <div class="tal-row">
+                            <div class="tal-name">
+                                @t.Name
+                                @if (t.Boni.Count > 0)
+                                {
+                                    var bonusKlasse = "tal-bonus";
+                                    if (t.Bonus < 0)
+                                    {
+                                        bonusKlasse += " neg";
+                                    }
+                                    var titel = string.Join(", ", t.Boni.Select(x => x.Quelle + " (" + x.Herkunft + ")"));
+                                    <span class="@bonusKlasse" title="@titel">@Vorzeichen(t.Bonus)</span>
+                                }
+                                @if (t.MeisterschaftStufe > 0)
+                                {
+                                    <span class="tal-mst" title="Meisterschafts-Schwellen erreicht">✦ @t.GewaehlteMeisterschaften/@Math.Min(t.MeisterschaftStufe, 3)</span>
+                                }
+                            </div>
+                            <div class="tal-step">
+                                @if (kopf.DarfBearbeiten)
+                                {
+                                    <button type="button" data-step="-5" aria-label="@t.Name minus 5">−</button>
+                                    <input type="number" inputmode="numeric" min="-995" max="995" step="5"
+                                           name="punkte[@t.Code]" value="@t.Punkte" data-beg="@b.Code" aria-label="Punkte @t.Name" />
+                                    <button type="button" data-step="5" aria-label="@t.Name plus 5">+</button>
+                                }
+                                else
+                                {
+                                    <input type="number" value="@t.Punkte" readonly aria-label="Punkte @t.Name" />
+                                }
+                            </div>
+                            <div class="@wertKlasse" title="Gesamt @t.Gesamt">
+                                @t.AufDemBogen
+                                @if (t.MeisterschaftStufe > 0)
+                                {
+                                    <small>@t.Gesamt</small>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+
+    @if (kopf.DarfBearbeiten)
+    {
+        <div class="tal-actions">
+            <button type="submit" class="hes-btn">Talente speichern</button>
+        </div>
+    }
+</form>
+
+<div class="tal-boni a-panel">
+    <div class="col-label">Boni aus Magiestufen, AGs und der Tasche</div>
+    @if (Model.Boni.Count == 0)
+    {
+        <div class="tal-boni-empty">
+            Noch keine Boni auf Talente. Wer in den Magiestufen zum Beispiel bei Ätherfechten „+10 TL“ wählt,
+            sieht den Bonus hier und direkt beim Talent.
+        </div>
+    }
+    else
+    {
+        <div class="tal-boni-list">
+            @foreach (var bo in Model.Boni)
+            {
+                var klasse = "tbi";
+                if (bo.Ziel == null)
+                {
+                    klasse += " open";
+                }
+                if (bo.Herkunft == "in der Tasche" || bo.Herkunft == "wirkt gerade")
+                {
+                    klasse += " fx";
+                }
+                if (bo.Betrag < 0)
+                {
+                    klasse += " neg";
+                }
+                <div class="@klasse">
+                    <span class="tbi-amt">@Vorzeichen(bo.Betrag)</span>
+                    <div class="tbi-body">
+                        <div class="tbi-src">
+                            @bo.Quelle
+                            <small>
+                                @bo.Herkunft
+                                @if (!string.IsNullOrEmpty(bo.Dauer))
+                                {
+                                    <text> · @bo.Dauer</text>
+                                }
+                                @if (!string.IsNullOrEmpty(bo.Beschriftung) && bo.Herkunft.StartsWith("Stufe"))
+                                {
+                                    <text> · @bo.Beschriftung</text>
+                                }
+                            </small>
+                        </div>
+                        @if (bo.Kandidaten.Count == 1)
+                        {
+                            <div class="tbi-target">→ @TalentName(bo.Ziel)</div>
+                        }
+                        else if (kopf.DarfBearbeiten)
+                        {
+                            <form asp-action="TalentZiel" asp-route-id="@kopf.AktiveFigurId" method="post">
+                                <input type="hidden" name="schluessel" value="@bo.Schluessel" />
+                                <select name="talentCode" onchange="this.form.submit()" aria-label="Talent für @bo.Quelle wählen">
+                                    <option value="">Talent wählen …</option>
+                                    @foreach (var code in bo.Kandidaten)
+                                    {
+                                        if (code == bo.Ziel)
+                                        {
+                                            <option value="@code" selected>@TalentName(code)</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@code">@TalentName(code)</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        }
+                        else if (bo.Ziel != null)
+                        {
+                            <div class="tbi-target">→ @TalentName(bo.Ziel)</div>
+                        }
+                        else
+                        {
+                            <div class="tbi-target">→ noch nicht gewählt</div>
+                        }
+                    </div>
+                    @if (bo.WirkungId.HasValue && kopf.DarfBearbeiten)
+                    {
+                        <div class="tbi-acts">
+                            @if (bo.Anwendungen)
+                            {
+                                <form asp-action="WirkungAnwenden" asp-route-id="@kopf.AktiveFigurId" method="post">
+                                    <input type="hidden" name="wirkungId" value="@bo.WirkungId" />
+                                    <input type="hidden" name="zurueck" value="Talente" />
+                                    <button type="submit" class="icon-btn" title="Eine Anwendung verbrauchen">1× angewendet</button>
+                                </form>
+                            }
+                            <form asp-action="WirkungBeenden" asp-route-id="@kopf.AktiveFigurId" method="post">
+                                <input type="hidden" name="wirkungId" value="@bo.WirkungId" />
+                                <input type="hidden" name="zurueck" value="Talente" />
+                                <button type="submit" class="icon-btn" title="Wirkung ist vorbei">beenden</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    @if (Model.Vorteile.Count > 0)
+    {
+        <div class="col-label" style="margin-top:16px">Vorteile gerade</div>
+        <div class="tal-boni-list">
+            @foreach (var v in Model.Vorteile)
+            {
+                <div class="tbi fx vor">
+                    <span class="tbi-amt">V</span>
+                    <div class="tbi-body">
+                        <div class="tbi-src">@v.Quelle<small>@v.Herkunft</small></div>
+                        <div class="tbi-target">
+                            @v.Beschriftung
+                            @if (!string.IsNullOrEmpty(v.Dauer))
+                            {
+                                <text> · @v.Dauer</text>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<details class="tal-boni a-panel mst-all">
+    <summary>Meisterschaften</summary>
+    @if (!Model.MeisterschaftenFreigeschaltet)
+    {
+        <p class="tal-boni-empty">
+            Meisterschaften werden erst mit 3 Punkten in Chronotaktik freigeschaltet.
+            Erreichte Schwellen sind vermerkt und können dann gewählt werden.
+        </p>
+    }
+    <div class="mst-grid">
+        @foreach (var b in Model.Begabungen)
+        {
+            <section style="--tc:@b.Farbe">
+                <h4>@b.Name</h4>
+                @foreach (var t in b.Talente)
+                {
+                    <div class="mst-look">
+                        <div class="mst-look-t">
+                            @t.Name
+                            @if (t.MeisterschaftStufe >= 4)
+                            {
+                                <em>Virtuos · 4W6</em>
+                            }
+                            else if (t.MeisterschaftStufe > 0)
+                            {
+                                <em>@t.MeisterschaftStufe W6 · @t.FreieMeisterschaften frei</em>
+                            }
+                        </div>
+                        @foreach (var m in t.Meisterschaften)
+                        {
+                            var mKlasse = "mst-item";
+                            if (m.Gewaehlt)
+                            {
+                                mKlasse += " on";
+                            }
+                            <div class="@mKlasse">
+                                <div><b>@m.Name</b> @m.Beschreibung</div>
+                                @if (kopf.DarfBearbeiten)
+                                {
+                                    if (m.Gewaehlt)
+                                    {
+                                        <form asp-action="Meisterschaft" asp-route-id="@kopf.AktiveFigurId" method="post">
+                                            <input type="hidden" name="meisterschaftId" value="@m.Id" />
+                                            <input type="hidden" name="waehlen" value="false" />
+                                            <button type="submit" class="icon-btn">abwählen</button>
+                                        </form>
+                                    }
+                                    else if (Model.MeisterschaftenFreigeschaltet && t.FreieMeisterschaften > 0)
+                                    {
+                                        <form asp-action="Meisterschaft" asp-route-id="@kopf.AktiveFigurId" method="post">
+                                            <input type="hidden" name="meisterschaftId" value="@m.Id" />
+                                            <input type="hidden" name="waehlen" value="true" />
+                                            <button type="submit" class="icon-btn">wählen</button>
+                                        </form>
+                                    }
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        }
+    </div>
+</details>
+
+<div class="tal-hint">
+    Talentwert = Punkte + Kopfwert + Boni aus Magiestufen, AGs und Tasche · ab 100 gesamt fällt der Wert auf dem Bogen
+    je Schwelle um 50 (Meisterschaft, kleine Zahl = Gesamtwert) · Boni zählen nicht zum Kopfwert · ± ändert um 5,
+    eintippen geht auch (wird auf 5er gerundet, Minuswerte sind erlaubt)
+</div>
+
+@section Scripts {
+    <script>
+        // ± ändert um 5 und zählt das Punktekonto live mit (Speichern erst über den Knopf)
+        (function () {
+            const form = document.getElementById('talForm');
+            if (!form) return;
+            const budget = @Model.Budget;
+            function neuZaehlen() {
+                const summen = {};
+                let gesamt = 0;
+                form.querySelectorAll('input[data-beg]').forEach(function (inp) {
+                    const v = parseInt(inp.value, 10) || 0;
+                    summen[inp.dataset.beg] = (summen[inp.dataset.beg] || 0) + v;
+                    gesamt += v;
+                });
+                document.getElementById('tbUsed').textContent = gesamt;
+                document.getElementById('tbRest').textContent = budget - gesamt;
+                Object.keys(summen).forEach(function (k) {
+                    const leg = document.querySelector('[data-leg="' + k + '"]');
+                    if (leg) leg.textContent = summen[k];
+                    const bar = document.querySelector('[data-bar="' + k + '"]');
+                    if (bar) bar.style.width = Math.max(0, Math.min(100, summen[k] * 100 / budget)) + '%';
+                });
+            }
+            form.addEventListener('click', function (e) {
+                const btn = e.target.closest('[data-step]');
+                if (!btn) return;
+                const inp = btn.parentElement.querySelector('input');
+                const v = (parseInt(inp.value, 10) || 0) + parseInt(btn.dataset.step, 10);
+                inp.value = Math.max(-995, Math.min(995, v));
+                neuZaehlen();
+            });
+            form.addEventListener('input', neuZaehlen);
+        })();
+    </script>
+}

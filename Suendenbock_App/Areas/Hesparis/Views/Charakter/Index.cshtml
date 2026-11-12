@@ -1,0 +1,102 @@
+@model CharakterIndexViewModel
+@{
+    ViewData["Title"] = "Charaktere";
+    ViewData["Bereich"] = "Charakter";
+}
+
+<div class="armory-head">
+    <div class="armory-eyebrow">Gott-Modus</div>
+    <h1 class="armory-title">Charaktere der Akademie</h1>
+    <p class="armory-sub">
+        Spielercharaktere bekommen automatisch Talente, Zeugnis und Tasche.
+        Ist dieselbe Person auch in Sündenbock unterwegs, wird sie dort verknüpft.
+    </p>
+    <p style="margin-top:14px">
+        <a class="hes-btn" asp-action="Neu">Neuer Charakter</a>
+    </p>
+</div>
+
+@foreach (var art in Model.Arten)
+{
+    var liste = Model.Charaktere.Where(c => c.CharakterartId == art.Id).ToList();
+    <section class="a-panel sl-panel">
+        <h3>@art.Name <span class="sl-tag">@liste.Count</span></h3>
+        @if (liste.Count == 0)
+        {
+            <p class="empty-state">Noch niemand.</p>
+        }
+        else
+        {
+            <table class="sl-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Name</th>
+                        @if (art.Id == Charakterart.Spieler)
+                        {
+                            <th>Spieler</th>
+                        }
+                        <th>Auch in Sündenbock</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in liste)
+                    {
+                        <tr>
+                            <td style="width:52px">
+                                @if (!string.IsNullOrEmpty(c.BildPfad))
+                                {
+                                    <img class="home-ava" style="width:40px;height:40px" src="@c.BildPfad" alt="" />
+                                }
+                                else
+                                {
+                                    <div class="home-ava" style="width:40px;height:40px;font-size:16px">@c.Vorname.Substring(0, 1)</div>
+                                }
+                            </td>
+                            <td>
+                                @c.VollerName
+                                @if (!string.IsNullOrEmpty(c.Rufname))
+                                {
+                                    <span class="sl-tag">„@c.Rufname“</span>
+                                }
+                            </td>
+                            @if (art.Id == Charakterart.Spieler)
+                            {
+                                <td>
+                                    @if (c.User != null)
+                                    {
+                                        <span class="sl-tag ok">@c.User.UserName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="sl-tag">kein Spieler</span>
+                                    }
+                                </td>
+                            }
+                            <td>
+                                @if (c.Verknuepfung != null)
+                                {
+                                    <a asp-area="" asp-controller="Character" asp-action="CharacterSheet" asp-route-id="@c.Verknuepfung.CharacterId">
+                                        @c.Verknuepfung.Character.Vorname @c.Verknuepfung.Character.Nachname
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="sl-tag">nur Hesparis</span>
+                                }
+                            </td>
+                            <td style="white-space:nowrap">
+                                <a class="icon-btn" style="display:inline-flex;align-items:center;text-decoration:none" asp-action="Bearbeiten" asp-route-id="@c.Id">bearbeiten</a>
+                                <form asp-action="Loeschen" asp-route-id="@c.Id" method="post" class="inline"
+                                      onsubmit="return confirm('Charakter löschen? Bei Spielercharakteren gehen auch Talente, Noten und Tasche verloren. Ein verknüpfter Sündenbock-Character bleibt erhalten.')">
+                                    <button type="submit" class="icon-btn danger" aria-label="löschen">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </section>
+}
