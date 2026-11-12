@@ -2,6 +2,12 @@
     // Bereich für die Navigation: "Index", "Talente", "Zeugnis", "Tasche", "Stufen", "Charakter"
     var bereich = ViewData["Bereich"] as string ?? "";
     var figurId = ViewData["FigurId"] as int?;
+    // Zusätzliche Klasse für <body>, z. B. "on-home" auf der Übersicht (Nebel kräftiger, kein Abstand unten)
+    var bodyKlasse = "hes";
+    if (ViewData["BodyKlasse"] is string extra)
+    {
+        bodyKlasse += " " + extra;
+    }
     var istGott = User.IsInRole("Gott");
     // Der eigene Hesparis-Charakter (setzt HesparisBaseController)
     var meinCharakter = ViewBag.MeinHesparisCharakter as HesparisCharakter;
@@ -26,11 +32,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=UnifrakturMaguntia&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/hesparis.css" asp-append-version="true" />
 </head>
-<body class="hes">
+<body class="@bodyKlasse">
+    @* Bewegter Hintergrund wie in der HTML: drei Nebel, die langsam treiben *@
+    <div id="bgFx" aria-hidden="true">
+        <div class="nebula n1"></div><div class="nebula n2"></div><div class="nebula n3"></div>
+        <div class="shoot"></div><div class="shoot two"></div>
+    </div>
+
     <nav class="topbar">
+        @* "Hesparis" führt zurück zum Startbild, das Haus zur Übersicht der Türme *@
         <a class="topbar-home" asp-controller="Home" asp-action="Index">Hesparis</a>
         <div class="topbar-nav">
-            <a class="@Aktiv("Index")" asp-controller="Home" asp-action="Index"><span class="glyph">⌂</span>Start</a>
+            <a class="@Aktiv("Index")" asp-controller="Home" asp-action="Uebersicht" asp-route-figur="@figurId"><span class="glyph">⌂</span>Übersicht</a>
             <a class="@Aktiv("Talente")" asp-controller="Figur" asp-action="Talente" asp-route-id="@figurId"><span class="glyph">✧</span>Talente</a>
             <a class="@Aktiv("Zeugnis")" asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@figurId"><span class="glyph">✎</span>Zeugnis</a>
             <a class="@Aktiv("Tasche")" asp-controller="Figur" asp-action="Tasche" asp-route-id="@figurId"><span class="glyph">◍</span>Tasche</a>

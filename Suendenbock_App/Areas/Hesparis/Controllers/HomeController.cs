@@ -7,7 +7,10 @@ using Suendenbock_App.Models.ViewModels.Hesparis;
 
 namespace Suendenbock_App.Areas.Hesparis.Controllers
 {
-    /// <summary>Startseite der Akademie (/Hesparis): alle Spielercharaktere, Spieltag für Gott.</summary>
+    /// <summary>
+    /// Einstieg in Hesparis wie in der hesparis.html:
+    /// /Hesparis = Startbild ("Zum Starten tippen"), danach /Hesparis/Home/Uebersicht = die Türme der Spielfiguren.
+    /// </summary>
     public class HomeController : HesparisBaseController
     {
         public HomeController(ApplicationDbContext context) : base(context)
@@ -15,11 +18,21 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
         }
 
         // =====================================================================
-        // Startseite
+        // Startbild
         // =====================================================================
 
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
+        {
+            return View();
+        }
+
+        // =====================================================================
+        // Übersicht: ein Turm je Spielfigur, darunter die Detailleiste
+        // =====================================================================
+
+        [HttpGet]
+        public async Task<IActionResult> Uebersicht(int? figur)
         {
             var kampagne = await AkademieLadenAsync();
 
@@ -27,9 +40,7 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
                 .Where(f => f.KampagneId == kampagne.Id && f.HesparisCharakter != null)
                 .Include(f => f.HesparisCharakter)
                 .Include(f => f.Noten)
-                .Include(f => f.Talente)
-                .Include(f => f.Gegenstaende)
-                .Include(f => f.Wirkungen)
+                .Include(f => f.FachStufen)
                 .OrderBy(f => f.Position)
                 .AsSplitQuery()
                 .ToListAsync();
@@ -37,37 +48,92 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             if (figuren.Count == 0)
                 return View("KeineKampagne");
 
-            var start = StandardFigur(figuren);
-            var kopf = KopfErstellen(kampagne, figuren, start, "Index");
+            var aktiv = figuren.FirstOrDefault(f => f.Id == figur) ?? StandardFigur(figuren);
+            var kopf = KopfErstellen(kampagne, figuren, aktiv, nameof(Uebersicht));
 
-            var model = new HesparisIndexViewModel { Kopf = kopf };
+            // Zusatzdaten, die an anderen Tabellen hängen (je eine Abfrage für alle Figuren)
+            var ids = figuren.Select(f => f.Id).ToList();
+            var faecher = await _context.Faecher.ToDictionaryAsync(f => f.Id, f => f.Name);
+            var sonderzauber = await _context.Sonderzauber.ToListAsync();
+            var staende = await _context.SonderzauberStaende
+                .Where(s => s.KampagneId == kampagne.Id && s.GewaehltePosition != null)
+                .Include(s => s.Sonderzauber).ThenInclude(z => z.Optionen)
+                .ToListAsync();
+            var agMitglieder = await _context.AgMitglieder
+                .Where(m => ids.Contains(m.SpielfigurId))
+                .Include(m => m.AgEintrag).ThenInclude(e => e.Ag).ThenInclude(a => a.BonusTalent)
+                .ToListAsync();
+            var klassenEintraege = await _context.Mitschueler
+                .Where(m => m.SpielfigurId != null && ids.Contains(m.SpielfigurId.Value))
+                .Include(m => m.Lieblingsfach)
+                .ToListAsync();
+
+            var model = new UebersichtViewModel { Kopf = kopf, Ruhig = figur.HasValue };
             foreach (var f in figuren)
             {
+                var charakter = f.HesparisCharakter!;
+                var turm = new Turm
+                {
+                    Id = f.Id,
+                    Vorname = charakter.Vorname,
+                    VollerName = charakter.VollerName,
+                    Eigene = kopf.Figuren.First(x => x.Id == f.Id).Eigene,
+                    LpAktuell = f.LebenspunkteAktuell,
+                    LpMax = f.LebenspunkteMax,
+                };
+
+                // Sonderzauber gehört zur Person (Vorname): daraus Element, Farbe und Symbol
+                var zauber = sonderzauber.FirstOrDefault(z => z.Person == charakter.Vorname);
+                if (zauber != null)
+                {
+                    turm.Aussehen = HesparisSigille.Fuer(zauber.Code);
+                    var teile = zauber.Titel.Split("— ");
+                    turm.Element = teile[teile.Length - 1];
+
+                    var stand = staende.FirstOrDefault(s => s.SonderzauberCode == zauber.Code);
+                    if (stand != null)
+                    {
+                        turm.Sonderzauber = stand.Sonderzauber.Optionen
+                            .FirstOrDefault(o => o.Position == stand.GewaehltePosition)?.Name;
+                    }
+                }
+
+                // Notenschnitt über die Fächer (JS: playerNotenSchnitt)
                 var fachSchnitte = f.Noten
                     .GroupBy(n => n.FachId)
                     .Select(g => HesparisRegeln.Schnitt(g.Select(n => n.Note)))
                     .Where(s => s.HasValue)
                     .Select(s => s!.Value)
                     .ToList();
-
-                var kopfwerte = new Dictionary<string, int>();
-                foreach (var code in HesparisRegeln.BegabungFarbe.Keys)
+                if (fachSchnitte.Count > 0)
                 {
-                    int summe = f.Talente.Where(t => t.TalentCode.StartsWith(code)).Sum(t => t.Wert);
-                    kopfwerte[code] = HesparisRegeln.Kopfwert(summe);
+                    turm.Notenschnitt = fachSchnitte.Average();
+                    turm.BenoteteFaecher = fachSchnitte.Count;
                 }
 
-                model.Karten.Add(new FigurUebersicht
+                var ag = agMitglieder.FirstOrDefault(m => m.SpielfigurId == f.Id)?.AgEintrag.Ag;
+                if (ag != null)
                 {
-                    Figur = kopf.Figuren.First(x => x.Id == f.Id),
-                    LebenspunkteAktuell = f.LebenspunkteAktuell,
-                    LebenspunkteMax = f.LebenspunkteMax,
-                    Geld = f.Geld,
-                    Notenschnitt = fachSchnitte.Count > 0 ? fachSchnitte.Average() : null,
-                    Kopfwerte = kopfwerte,
-                    Gegenstaende = f.Gegenstaende.Sum(g => g.Menge),
-                    AktiveWirkungen = f.Wirkungen.Count(w => HesparisRegeln.WirkungAktiv(w, kampagne.Spieltag)),
-                });
+                    turm.AgName = ag.Name;
+                    if (ag.BonusTalent != null && ag.BonusWert != 0)
+                    {
+                        turm.AgBonus = "+" + ag.BonusWert + " " + ag.BonusTalent.Name;
+                    }
+                }
+
+                var eintrag = klassenEintraege.FirstOrDefault(m => m.SpielfigurId == f.Id);
+                turm.Lieblingsfach = eintrag?.Lieblingsfach?.Name;
+                turm.Rolle = eintrag?.Rolle;
+
+                var beste = f.FachStufen.OrderByDescending(s => s.Stufe).FirstOrDefault(s => s.Stufe > 0);
+                if (beste != null)
+                {
+                    turm.BestesFachId = beste.FachId;
+                    turm.BestesFach = faecher.GetValueOrDefault(beste.FachId);
+                    turm.BesteStufe = beste.Stufe;
+                }
+
+                model.Tuerme.Add(turm);
             }
 
             return View(model);
@@ -80,7 +146,7 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Gott")]
-        public async Task<IActionResult> Akademie(int kampagneId, DateOnly spieltag, int schuljahr)
+        public async Task<IActionResult> Akademie(int kampagneId, DateOnly spieltag, int schuljahr, int? figur)
         {
             var kampagne = await _context.Kampagnen.FirstOrDefaultAsync(k => k.Id == kampagneId);
             if (kampagne == null) return NotFound();
@@ -91,22 +157,37 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Spieltag und Schuljahr gespeichert.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Uebersicht), new { figur });
         }
 
-        /// <summary>Lebenspunkte ändern (eigene Figur oder Gott).</summary>
+        /// <summary>
+        /// Lebenspunkte in der Detailleiste: Knöpfe −10 … +5 (aenderung), "voll" oder neues Maximum.
+        /// </summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Lebenspunkte(int id, int aktuell, int max)
+        public async Task<IActionResult> Lebenspunkte(int id, int? aenderung, bool voll, int? max)
         {
+            if (!DarfBearbeiten()) return Forbid();
             var figur = await _context.Spielfiguren.FirstOrDefaultAsync(f => f.Id == id);
             if (figur == null) return NotFound();
-            if (!DarfBearbeiten()) return Forbid();
 
-            figur.LebenspunkteMax = Math.Max(1, max);
-            figur.LebenspunkteAktuell = Math.Clamp(aktuell, 0, figur.LebenspunkteMax);
+            if (max.HasValue)
+            {
+                figur.LebenspunkteMax = Math.Clamp(max.Value, 1, 999);
+            }
+
+            if (voll)
+            {
+                figur.LebenspunkteAktuell = figur.LebenspunkteMax;
+            }
+            else if (aenderung.HasValue)
+            {
+                figur.LebenspunkteAktuell += aenderung.Value;
+            }
+
+            figur.LebenspunkteAktuell = Math.Clamp(figur.LebenspunkteAktuell, 0, figur.LebenspunkteMax);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Uebersicht), new { figur = id });
         }
     }
 }

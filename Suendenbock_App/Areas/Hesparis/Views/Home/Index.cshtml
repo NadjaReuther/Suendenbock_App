@@ -1,131 +1,79 @@
-@model HesparisIndexViewModel
 @{
-    ViewData["Title"] = "Startseite";
-    ViewData["Bereich"] = "Index";
-    ViewData["FigurId"] = Model.Kopf.AktiveFigurId;
-    var kampagne = Model.Kopf.Kampagne;
-    var spieltag = kampagne.Spieltag.ToString("dddd, d. MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
+    // Startbild wie in der hesparis.html: ganzer Bildschirm, ohne Kopfleiste.
+    Layout = null;
+    var titel = "Hesparis";
+
+    // Jeder Buchstabe einzeln, damit sie nacheinander einschweben (--i = Verzögerung).
+    // Als ein Stück Text gebaut, damit kein Leerraum zwischen den Buchstaben entsteht.
+    var buchstaben = string.Concat(titel.Select((zeichen, i) => $"<span class=\"ch\" style=\"--i:{i}\">{zeichen}</span>"));
 }
-
-<div class="armory-head">
-    <div class="armory-eyebrow">Akademie Hesparis · @kampagne.Schuljahr. Schuljahr</div>
-    <h1 class="armory-title">@kampagne.Name</h1>
-    <p class="armory-sub">Spieltag: @spieltag</p>
-</div>
-
-@if (Model.Kopf.IstSpielleitung)
-{
-    <form asp-action="Akademie" method="post" class="a-panel hes-form-row" style="padding:14px 20px;margin:0 auto 22px;max-width:720px">
-        <input type="hidden" name="kampagneId" value="@kampagne.Id" />
-        <label class="hes-field"><span>Spieltag</span>
-            <input class="hes-input" type="date" name="spieltag" value="@kampagne.Spieltag.ToString("yyyy-MM-dd")" />
-        </label>
-        <label class="hes-field" style="flex:0 1 110px"><span>Schuljahr</span>
-            <input class="hes-input" type="number" min="1" name="schuljahr" value="@kampagne.Schuljahr" />
-        </label>
-        <button type="submit" class="hes-btn ghost">Speichern</button>
-    </form>
-}
-
-<div class="home-grid">
-    @foreach (var karte in Model.Karten)
-    {
-        var f = karte.Figur;
-        var kartenKlasse = "a-panel home-card";
-        if (f.Eigene)
-        {
-            kartenKlasse += " mine";
-        }
-        var lpProzent = 0;
-        if (karte.LebenspunkteMax > 0)
-        {
-            lpProzent = Math.Clamp(karte.LebenspunkteAktuell * 100 / karte.LebenspunkteMax, 0, 100);
-        }
-        var darfBearbeiten = Model.Kopf.IstSpielleitung || f.Eigene;
-
-        <section class="@kartenKlasse">
-            <div class="home-card-head">
-                @if (!string.IsNullOrEmpty(f.Bild))
-                {
-                    <img class="home-ava" src="@f.Bild" alt="@f.Name" />
-                }
-                else
-                {
-                    <div class="home-ava">@f.Name.Substring(0, 1)</div>
-                }
-                <div>
-                    <h2 class="home-name">@f.Name</h2>
-                    @if (f.Eigene)
-                    {
-                        <div class="home-sub">deine Figur</div>
-                    }
-                </div>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a0617" />
+    <title>Hesparis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=EB+Garamond:ital,wght@0,400;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/hesparis.css" asp-append-version="true" />
+</head>
+<body class="hes">
+    @* Der ganze Bildschirm ist ein Link zur Übersicht ("Zum Starten tippen") *@
+    <a id="splash" asp-controller="Home" asp-action="Uebersicht" aria-label="Hesparis starten">
+        <div id="splashStars"></div>
+        <div class="shoot"></div><div class="shoot two"></div>
+        <div class="splash-ring" aria-hidden="true">
+            <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                <g class="ring-a" fill="none" stroke="#a89568">
+                    <circle cx="200" cy="200" r="196" stroke-opacity="0.55" stroke-width="1.4" />
+                    <circle cx="200" cy="200" r="186" stroke-opacity="0.25" stroke-width="0.8" />
+                    <polygon points="200,-2 207,8 200,18 193,8" fill="#49d9c9" stroke="none" />
+                    <polygon points="200,382 207,392 200,402 193,392" fill="#49d9c9" stroke="none" />
+                    <polygon points="-2,200 8,193 18,200 8,207" fill="#d9a24a" stroke="none" />
+                    <polygon points="382,200 392,193 402,200 392,207" fill="#d9a24a" stroke="none" />
+                </g>
+                <g class="ring-b" fill="none" stroke="#a89568" stroke-opacity="0.35">
+                    <circle cx="200" cy="200" r="168" stroke-width="0.8" stroke-dasharray="2 7" />
+                    <circle cx="200" cy="200" r="150" stroke-width="0.8" stroke-dasharray="14 10 3 10" />
+                </g>
+            </svg>
+        </div>
+        <div class="splash-stage">
+            <div class="splash-eyebrow">Werkzeuge für den Spieltisch</div>
+            <div class="splash-title" aria-hidden="true">
+                @Html.Raw(buchstaben)
             </div>
+            <div class="splash-orn" aria-hidden="true"><span></span><i></i><span></span></div>
+            <div class="splash-sub">Per aspera ad astra</div>
+        </div>
+        <div class="splash-prompt">✦ Zum Starten tippen ✦</div>
+    </a>
 
-            <div>
-                <div class="col-label">Lebenspunkte <span>@karte.LebenspunkteAktuell / @karte.LebenspunkteMax</span></div>
-                <div class="lp-bar"><i style="width:@(lpProzent)%"></i></div>
-                @if (darfBearbeiten)
-                {
-                    <form asp-action="Lebenspunkte" asp-route-id="@f.Id" method="post" class="lp-form" style="margin-top:8px">
-                        <input class="hes-input" type="number" name="aktuell" value="@karte.LebenspunkteAktuell" aria-label="Aktuelle Lebenspunkte" />
-                        /
-                        <input class="hes-input" type="number" name="max" value="@karte.LebenspunkteMax" aria-label="Maximale Lebenspunkte" />
-                        <button type="submit" class="icon-btn">speichern</button>
-                    </form>
-                }
-            </div>
+    <script>
+        // Funkelnde Sterne verteilen (wie in der HTML)
+        (function () {
+            var box = document.getElementById('splashStars');
+            var farben = ['#f4e8c0', '#f4e8c0', '#49d9c9', '#ad8ff7'];
+            for (var i = 0; i < 110; i++) {
+                var s = document.createElement('span');
+                var g = Math.random() < 0.85 ? 1 + Math.random() * 1.5 : 2.5 + Math.random() * 1.5;
+                s.className = 'sstar';
+                s.style.cssText = 'left:' + (Math.random() * 100) + '%;top:' + (Math.random() * 100) + '%;width:' + g + 'px;height:' + g +
+                    'px;background:' + farben[i % farben.length] + ';--d:' + (2 + Math.random() * 4) + 's;--delay:' + (Math.random() * 4) +
+                    's;--o:' + (0.5 + Math.random() * 0.5);
+                box.appendChild(s);
+            }
 
-            <div class="home-stats">
-                <div class="home-stat">
-                    @if (karte.Notenschnitt.HasValue)
-                    {
-                        <b>@HesparisRegeln.NotenBuchstabe(karte.Notenschnitt.Value)</b>
-                        <span>Ø @HesparisRegeln.NotenFormat(karte.Notenschnitt.Value)</span>
-                    }
-                    else
-                    {
-                        <b>–</b>
-                        <span>Zeugnis</span>
-                    }
-                </div>
-                <div class="home-stat">
-                    <b>@karte.Gegenstaende</b>
-                    <span>in der Tasche</span>
-                </div>
-                <div class="home-stat">
-                    <b>@karte.AktiveWirkungen</b>
-                    <span>Wirkungen</span>
-                </div>
-            </div>
-
-            <div class="home-stats">
-                @foreach (var kw in karte.Kopfwerte)
-                {
-                    var farbe = HesparisRegeln.BegabungFarbe[kw.Key];
-                    var name = "Soziales";
-                    if (kw.Key == "h")
-                    {
-                        name = "Handeln";
-                    }
-                    else if (kw.Key == "w")
-                    {
-                        name = "Wissen";
-                    }
-                    <div class="home-stat" style="border-color:@farbe">
-                        <b>@kw.Value</b>
-                        <span>@name</span>
-                    </div>
-                }
-            </div>
-
-            <div class="col-label">Geldbeutel <span>@HesparisRegeln.GeldText(karte.Geld)</span></div>
-
-            <div class="home-links">
-                <a asp-controller="Figur" asp-action="Talente" asp-route-id="@f.Id">✧ Talente</a>
-                <a asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@f.Id">✎ Zeugnis</a>
-                <a asp-controller="Figur" asp-action="Tasche" asp-route-id="@f.Id">◍ Tasche</a>
-            </div>
-        </section>
-    }
-</div>
+            // Beim Klick kurz aufleuchten lassen, dann weiter zur Übersicht
+            var splash = document.getElementById('splash');
+            splash.addEventListener('click', function (e) {
+                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+                e.preventDefault();
+                splash.classList.add('launching');
+                setTimeout(function () { window.location.href = splash.href; }, 650);
+            });
+        })();
+    </script>
+</body>
+</html>

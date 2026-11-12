@@ -44,8 +44,8 @@ public class HesparisCharakter
     /// <summary>Spielwerte (Talente, Noten, Tasche …), nur bei Art Spieler.</summary>
     public Spielfigur? Spielfigur { get; set; }
 
-    /// <summary>Anzeigename: Rufname, sonst Vorname.</summary>
-    public string Anzeigename => !string.IsNullOrWhiteSpace(Rufname) ? Rufname : Vorname;
+    /// <summary>Anzeigename in Hesparis: immer der Vorname (der Rufname bleibt als Info gespeichert).</summary>
+    public string Anzeigename => Vorname;
 
     public string VollerName => (Vorname + " " + Nachname).Trim();
 }

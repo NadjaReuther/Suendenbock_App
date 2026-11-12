@@ -28,24 +28,76 @@ public class FigurKurz
     public bool Eigene { get; set; }
 }
 
-// ------------------------------------------------------------------ Startseite
+// ------------------------------------------------------------------ Übersicht (Türme)
 
-public class HesparisIndexViewModel
+/// <summary>Gruppenbildschirm nach dem Startbild: ein Turm je Spielfigur, darunter die Detailleiste.</summary>
+public class UebersichtViewModel
 {
     public FigurKopfViewModel Kopf { get; set; } = null!;
-    public List<FigurUebersicht> Karten { get; set; } = new();
+    public List<Turm> Tuerme { get; set; } = new();
+    public Turm Auswahl => Tuerme.First(t => t.Id == Kopf.AktiveFigurId);
+
+    /// <summary>true, wenn eine Figur angeklickt wurde: dann steigen die Türme nicht erneut auf.</summary>
+    public bool Ruhig { get; set; }
 }
 
-public class FigurUebersicht
+public class Turm
 {
-    public FigurKurz Figur { get; set; } = null!;
-    public int LebenspunkteAktuell { get; set; }
-    public int LebenspunkteMax { get; set; }
-    public int Geld { get; set; }
+    public int Id { get; set; }
+    public string Vorname { get; set; } = "";
+    public string VollerName { get; set; } = "";
+    public bool Eigene { get; set; }
+
+    /// <summary>Element aus dem Sonderzauber, z. B. "Fauna/Ichtyo".</summary>
+    public string Element { get; set; } = "";
+    public string? Rolle { get; set; }
+    public HesparisSigille.Aussehen Aussehen { get; set; } = HesparisSigille.Standard;
+
+    public int LpAktuell { get; set; }
+    public int LpMax { get; set; }
+
     public double? Notenschnitt { get; set; }
-    public Dictionary<string, int> Kopfwerte { get; set; } = new();
-    public int Gegenstaende { get; set; }
-    public int AktiveWirkungen { get; set; }
+    public int BenoteteFaecher { get; set; }
+    public string? Lieblingsfach { get; set; }
+    public string? AgName { get; set; }
+    public string? AgBonus { get; set; }
+    public string? Sonderzauber { get; set; }
+
+    /// <summary>Fach mit der höchsten Magiestufe (für den Link "Magiestufen").</summary>
+    public int? BestesFachId { get; set; }
+    public string? BestesFach { get; set; }
+    public int BesteStufe { get; set; }
+
+    /// <summary>Segmente der Lebensbalken (JS: ptLpBar): gefüllte Anzahl und Zustand "", "mid", "low".</summary>
+    public int LpGefuellt(int segmente)
+    {
+        if (LpMax <= 0)
+        {
+            return 0;
+        }
+        return (int)Math.Ceiling((double)LpAktuell / LpMax * segmente - 0.0001);
+    }
+
+    public string LpZustand
+    {
+        get
+        {
+            double anteil = 0;
+            if (LpMax > 0)
+            {
+                anteil = (double)LpAktuell / LpMax;
+            }
+            if (anteil <= 0.25)
+            {
+                return "low";
+            }
+            if (anteil <= 0.5)
+            {
+                return "mid";
+            }
+            return "";
+        }
+    }
 }
 
 // ------------------------------------------------------------------ Talente

@@ -1,0 +1,238 @@
+@model UebersichtViewModel
+@{
+    var kopf = Model.Kopf;
+    var kampagne = kopf.Kampagne;
+    var d = Model.Auswahl;
+    ViewData["Title"] = "Übersicht";
+    ViewData["Bereich"] = "Index";
+    ViewData["FigurId"] = kopf.AktiveFigurId;
+    ViewData["BodyKlasse"] = "on-home";
+
+    var zeileKlasse = "pt-row";
+    if (Model.Ruhig)
+    {
+        zeileKlasse += " ruhig";
+    }
+
+    // Kleine Hilfe für die Lebensbalken (JS: ptLpBar)
+    string Segment(Turm t, int nr, int segmente)
+    {
+        if (nr < t.LpGefuellt(segmente))
+        {
+            return "on";
+        }
+        return "";
+    }
+}
+
+<div class="pt-stage">
+    @* ------------------------------------------------------------ Türme *@
+    <div class="@zeileKlasse">
+        @for (int n = 0; n < Model.Tuerme.Count; n++)
+        {
+            var t = Model.Tuerme[n];
+            var klasse = "pt-card";
+            string? aktuell = null;
+            if (t.Id == d.Id)
+            {
+                klasse += " sel";
+                aktuell = "true";
+            }
+            if (t.Eigene)
+            {
+                klasse += " mine";
+            }
+            var barKlasse = ("pt-lpbar " + t.LpZustand).Trim();
+
+            <a class="@klasse" asp-action="Uebersicht" asp-route-figur="@t.Id"
+               style="--pc:@t.Aussehen.Farbe;--pc-rgb:@t.Aussehen.Rgb;--n:@n" aria-current="@aktuell">
+                <span class="pt-arch">
+                    <span class="pt-stars"></span>
+                    <svg class="pt-ring" viewBox="0 0 200 200" aria-hidden="true">
+                        <circle cx="100" cy="100" r="92" fill="none" stroke="currentColor" stroke-opacity="0.35" stroke-dasharray="2 9" />
+                        <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" stroke-opacity="0.25" stroke-dasharray="30 8 4 8" />
+                    </svg>
+                    <svg class="pt-sigil" viewBox="0 0 100 100" aria-hidden="true">@Html.Raw(t.Aussehen.Svg)</svg>
+                    <span class="pt-init">@t.Vorname.Substring(0, 1)</span>
+                </span>
+                <span class="pt-plate">
+                    <span class="pt-name">@t.Vorname</span>
+                    <span class="pt-elem">@t.Element</span>
+                </span>
+                <span class="pt-lp">
+                    <span class="pt-lp-num"><b>@t.LpAktuell</b>/@t.LpMax</span>
+                    <span class="@barKlasse">
+                        @for (int k = 0; k < 12; k++)
+                        {
+                            <i class="@Segment(t, k, 12)"></i>
+                        }
+                    </span>
+                </span>
+                <span class="pt-sockets">
+                    <span class="pt-sock" title="Notenschnitt">
+                        @if (t.Notenschnitt.HasValue)
+                        {
+                            <b>@HesparisRegeln.NotenBuchstabe(t.Notenschnitt.Value)</b>
+                        }
+                        else
+                        {
+                            <b>–</b>
+                        }
+                    </span>
+                    <span class="pt-sock" title="AG: @(t.AgName ?? "keine")">
+                        @if (t.AgName != null)
+                        {
+                            <b>◆</b>
+                        }
+                        else
+                        {
+                            <b>·</b>
+                        }
+                    </span>
+                    <span class="pt-sock" title="Magiestufen"><b>@t.BesteStufe</b></span>
+                </span>
+            </a>
+        }
+    </div>
+
+    @* ------------------------------------------------------------ Detailleiste der gewählten Figur *@
+    <section class="pt-hud" style="--pc:@d.Aussehen.Farbe;--pc-rgb:@d.Aussehen.Rgb">
+        <span class="pt-corner tl"></span><span class="pt-corner tr"></span><span class="pt-corner bl"></span><span class="pt-corner br"></span>
+
+        <div class="pt-hud-id">
+            <div class="pt-hud-name">@d.VollerName</div>
+            <div class="pt-hud-sub">
+                @d.Element
+                @if (!string.IsNullOrEmpty(d.Rolle))
+                {
+                    <text> · @d.Rolle</text>
+                }
+            </div>
+            <div class="pt-hud-lp">
+                <form asp-action="Lebenspunkte" method="post" class="pt-hud-lp-top">
+                    <input type="hidden" name="id" value="@d.Id" />
+                    <span>Lebenspunkte</span><b>@d.LpAktuell</b><small>/</small>
+                    @if (kopf.DarfBearbeiten)
+                    {
+                        <input type="number" name="max" value="@d.LpMax" min="1" max="999" aria-label="Maximale Lebenspunkte" onchange="this.form.submit()" />
+                    }
+                    else
+                    {
+                        <small>@d.LpMax</small>
+                    }
+                </form>
+                <span class="@(("pt-lpbar " + d.LpZustand).Trim())">
+                    @for (int k = 0; k < 20; k++)
+                    {
+                        <i class="@Segment(d, k, 20)"></i>
+                    }
+                </span>
+                @if (kopf.DarfBearbeiten)
+                {
+                    <form asp-action="Lebenspunkte" method="post" class="pt-lp-btns">
+                        <input type="hidden" name="id" value="@d.Id" />
+                        <button type="submit" name="aenderung" value="-10">−10</button>
+                        <button type="submit" name="aenderung" value="-5">−5</button>
+                        <button type="submit" name="aenderung" value="-1">−1</button>
+                        <button type="submit" name="aenderung" value="1">+1</button>
+                        <button type="submit" name="aenderung" value="5">+5</button>
+                        <button type="submit" name="voll" value="true" class="full">voll</button>
+                    </form>
+                }
+            </div>
+        </div>
+
+        <div class="pt-hud-facts">
+            <a class="pt-fact" asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@d.Id">
+                <span>Notenschnitt</span>
+                @if (d.Notenschnitt.HasValue)
+                {
+                    <b>@HesparisRegeln.NotenBuchstabe(d.Notenschnitt.Value) <small>Ø @HesparisRegeln.NotenFormat(d.Notenschnitt.Value)</small></b>
+                    <em>@d.BenoteteFaecher Fächer benotet</em>
+                }
+                else
+                {
+                    <b>–</b>
+                    <em>noch keine Noten</em>
+                }
+            </a>
+            <div class="pt-fact">
+                <span>Lieblingsfach</span>
+                @if (d.Lieblingsfach != null)
+                {
+                    <b>@d.Lieblingsfach</b>
+                }
+                else
+                {
+                    <b>–</b>
+                    <em>kommt mit der Klassenliste</em>
+                }
+            </div>
+            <div class="pt-fact">
+                <span>AG</span>
+                @if (d.AgName != null)
+                {
+                    <b>◆ @d.AgName</b>
+                    @if (d.AgBonus != null)
+                    {
+                        <em>@d.AgBonus</em>
+                    }
+                }
+                else
+                {
+                    <b>–</b>
+                    <em>noch keine gewählt</em>
+                }
+            </div>
+            <div class="pt-fact">
+                <span>Sonderzauber</span>
+                @if (d.Sonderzauber != null)
+                {
+                    <b>@d.Sonderzauber</b>
+                }
+                else
+                {
+                    <b>–</b>
+                    <em>noch nicht gewählt</em>
+                }
+            </div>
+        </div>
+
+        <div class="pt-hud-bez">
+            <div class="pt-lbl">Beziehungen</div>
+            <p class="pt-empty">Rivalen, Schwärme und starke Gefühle erscheinen hier, sobald die Klassenliste da ist.</p>
+        </div>
+
+        <div class="pt-hud-go">
+            <a asp-controller="Magie" asp-action="Stufen" asp-route-id="@d.Id" asp-route-fach="@d.BestesFachId">
+                <i>✦</i>Magiestufen
+                @if (d.BestesFach != null)
+                {
+                    <small>@d.BestesFach · @d.BesteStufe</small>
+                }
+            </a>
+            <a asp-controller="Figur" asp-action="Talente" asp-route-id="@d.Id"><i>✧</i>Talente</a>
+            <a asp-controller="Figur" asp-action="Zeugnis" asp-route-id="@d.Id"><i>✎</i>Zeugnis</a>
+            <a asp-controller="Figur" asp-action="Tasche" asp-route-id="@d.Id"><i>◍</i>Tasche</a>
+        </div>
+    </section>
+</div>
+
+@if (kopf.IstSpielleitung)
+{
+    var spieltag = kampagne.Spieltag.ToString("dddd, d. MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
+    <details class="a-panel pt-sl">
+        <summary>Spielleitung · @kampagne.Schuljahr. Schuljahr · @spieltag</summary>
+        <form asp-action="Akademie" method="post" class="hes-form-row">
+            <input type="hidden" name="kampagneId" value="@kampagne.Id" />
+            <input type="hidden" name="figur" value="@d.Id" />
+            <label class="hes-field"><span>Spieltag</span>
+                <input class="hes-input" type="date" name="spieltag" value="@kampagne.Spieltag.ToString("yyyy-MM-dd")" />
+            </label>
+            <label class="hes-field" style="flex:0 1 110px"><span>Schuljahr</span>
+                <input class="hes-input" type="number" min="1" name="schuljahr" value="@kampagne.Schuljahr" />
+            </label>
+            <button type="submit" class="hes-btn ghost">Speichern</button>
+        </form>
+    </details>
+}
