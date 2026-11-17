@@ -23,6 +23,14 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddRoles<IdentityRole>() // Role Support
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Anmeldung: 14 Tage gültig, jeder Besuch verlängert sie wieder.
+// Wer 14 Tage nicht vorbeischaut, wird aus Sicherheitsgründen abgemeldet.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = true;
+});
+
 builder.Services.AddControllersWithViews(options =>
 {
     // Beim ersten Login nach dem echten Namen fragen
