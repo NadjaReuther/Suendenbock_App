@@ -7,8 +7,8 @@ namespace Suendenbock_App.Services
 {
     /// <summary>
     /// Läuft einmal am Tag (18:00 Uhr deutscher Zeit) und verschickt Erinnerungen.
-    /// Derzeit: Erinnerung an offene Monatsbeiträge.
-    /// Später kommen hier auch die Termin-Erinnerungen dazu.
+    /// - Termine: Erinnerung am Vortag (mit eigenem Dienst) und Erinnerung, wenn noch nicht geantwortet
+    /// - Monatsbeitrag: Erinnerung an offene Beiträge
     /// </summary>
     public class ReminderBackgroundService : BackgroundService
     {
@@ -17,6 +17,9 @@ namespace Suendenbock_App.Services
 
         /// <summary>An diesem Tag im Monat wird an offene Beiträge erinnert</summary>
         public const int PaymentReminderDay = 5;
+
+        /// <summary>So viele Tage vor einem Termin wird erinnert, wer noch nicht geantwortet hat</summary>
+        public const int RsvpReminderDaysBefore = 3;
 
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<ReminderBackgroundService> _logger;
@@ -65,6 +68,9 @@ namespace Suendenbock_App.Services
 
         private async Task RunDailyRemindersAsync(DateTime today)
         {
+            await SendEventDayBeforeRemindersAsync(today);
+            await SendRsvpRemindersAsync(today);
+
             if (today.Day == PaymentReminderDay)
             {
                 await SendPaymentRemindersAsync(today);
@@ -104,6 +110,103 @@ namespace Suendenbock_App.Services
                     "Kurze Erinnerung: Dein Beitrag ist noch nicht eingegangen.",
                     "/Community"
                 );
+            }
+        }
+
+        /// <summary>
+        /// Am Vortag: alle, die zugesagt oder "vielleicht" gesagt haben, mit ihrem Dienst
+        /// </summary>
+        private async Task SendEventDayBeforeRemindersAsync(DateTime today)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var pushService = scope.ServiceProvider.GetRequiredService<IPushNotificationService>();
+
+            var tomorrow = today.Date.AddDays(1);
+            var events = await context.MonthlyEvents
+                .Include(e => e.Chores)
+                .Include(e => e.RSVPs)
+                .Where(e => e.Date.Date == tomorrow)
+                .ToListAsync();
+
+            foreach (var evt in events)
+            {
+                var userIds = evt.RSVPs
+                    .Where(r => r.UserId != null && (r.Status == "yes" || r.Status == "maybe"))
+                    .Select(r => r.UserId!)
+                    .Distinct()
+                    .ToList();
+
+                var users = await context.Users
+                    .Include(u => u.CurrentCharacter)
+                    .Where(u => userIds.Contains(u.Id))
+                    .ToListAsync();
+
+                _logger.LogInformation($"Vortag-Erinnerung '{evt.Title}': {users.Count} Empfänger");
+
+                var time = EventNotificationTexts.FormatTime(evt);
+                foreach (var user in users)
+                {
+                    var parts = new List<string>();
+                    if (!string.IsNullOrEmpty(time))
+                        parts.Add($"{time} Uhr");
+
+                    var chore = EventNotificationTexts.FindChoreFor(user, evt.Chores);
+                    if (chore != null)
+                        parts.Add($"Dein Dienst: {chore.ChoreName}");
+
+                    await pushService.SendToUserAsync(
+                        user.Id,
+                        $"⏰ Morgen: {evt.Title}",
+                        parts.Any() ? string.Join(" · ", parts) : "Bis morgen!",
+                        EventNotificationTexts.EventsUrl
+                    );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Einige Tage vorher: Spieler, die noch gar nicht geantwortet haben
+        /// </summary>
+        private async Task SendRsvpRemindersAsync(DateTime today)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var pushService = scope.ServiceProvider.GetRequiredService<IPushNotificationService>();
+
+            var targetDay = today.Date.AddDays(RsvpReminderDaysBefore);
+            var events = await context.MonthlyEvents
+                .Include(e => e.RSVPs)
+                .Where(e => e.Date.Date == targetDay)
+                .ToListAsync();
+
+            if (!events.Any())
+                return;
+
+            // Gleiche Spielerliste wie beim Monatsbeitrag (ohne Gott, Mamoschka, Biene)
+            var players = await PaymentPeriod.GetPayingPlayersAsync(userManager);
+
+            foreach (var evt in events)
+            {
+                var answered = evt.RSVPs
+                    .Where(r => r.UserId != null)
+                    .Select(r => r.UserId!)
+                    .ToHashSet();
+
+                var missing = players.Where(p => !answered.Contains(p.Id)).ToList();
+
+                _logger.LogInformation($"Antwort-Erinnerung '{evt.Title}': {missing.Count} ohne Antwort");
+
+                foreach (var player in missing)
+                {
+                    await pushService.SendToUserAsync(
+                        player.Id,
+                        "❓ Bist du dabei?",
+                        $"{evt.Title} am {EventNotificationTexts.FormatDate(evt.Date)} – du hast noch nicht geantwortet.",
+                        EventNotificationTexts.EventsUrl
+                    );
+                }
             }
         }
 
