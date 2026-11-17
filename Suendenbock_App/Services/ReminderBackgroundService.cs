@@ -108,7 +108,8 @@ namespace Suendenbock_App.Services
                     player.Id,
                     $"💰 Monatsbeitrag {monthName} offen",
                     "Kurze Erinnerung: Dein Beitrag ist noch nicht eingegangen.",
-                    "/Community"
+                    "/App",
+                    "Payment"
                 );
             }
         }
@@ -159,7 +160,8 @@ namespace Suendenbock_App.Services
                         user.Id,
                         $"⏰ Morgen: {evt.Title}",
                         parts.Any() ? string.Join(" · ", parts) : "Bis morgen!",
-                        EventNotificationTexts.EventsUrl
+                        EventNotificationTexts.EventsUrl,
+                        "Event"
                     );
                 }
             }
@@ -204,7 +206,8 @@ namespace Suendenbock_App.Services
                         player.Id,
                         "❓ Bist du dabei?",
                         $"{evt.Title} am {EventNotificationTexts.FormatDate(evt.Date)} – du hast noch nicht geantwortet.",
-                        EventNotificationTexts.EventsUrl
+                        EventNotificationTexts.EventsUrl,
+                        "Event"
                     );
                 }
             }

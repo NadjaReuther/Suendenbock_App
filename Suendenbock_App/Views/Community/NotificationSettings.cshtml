@@ -88,6 +88,34 @@
             </label>
         </div>
 
+        <div class="preference-item">
+            <div class="preference-info">
+                <span class="material-symbols-outlined">event</span>
+                <div>
+                    <strong>Termine</strong>
+                    <p>Neue, geänderte und abgesagte Termine sowie Erinnerungen</p>
+                </div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="notifyEvents" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-item">
+            <div class="preference-info">
+                <span class="material-symbols-outlined">payments</span>
+                <div>
+                    <strong>Monatsbeitrag</strong>
+                    <p>Bestätigung, wenn dein Beitrag eingegangen ist, und Erinnerung, wenn er noch offen ist</p>
+                </div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="notifyPayments" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
         <div class="preference-actions">
             <button type="button" class="btn-save" id="savePreferencesBtn">
                 <span class="material-symbols-outlined">save</span>
@@ -165,6 +193,8 @@
                 document.getElementById('notifyForumReplies').checked = prefs.notifyForumReplies;
                 document.getElementById('notifyNews').checked = prefs.notifyNews;
                 document.getElementById('notifyPolls').checked = prefs.notifyPolls;
+                document.getElementById('notifyEvents').checked = prefs.notifyEvents !== false;
+                document.getElementById('notifyPayments').checked = prefs.notifyPayments !== false;
             } catch (error) {
                 console.error('Fehler beim Laden der Einstellungen:', error);
             }
@@ -217,7 +247,9 @@
                 notifyForumThreads: document.getElementById('notifyForumThreads').checked,
                 notifyForumReplies: document.getElementById('notifyForumReplies').checked,
                 notifyNews: document.getElementById('notifyNews').checked,
-                notifyPolls: document.getElementById('notifyPolls').checked
+                notifyPolls: document.getElementById('notifyPolls').checked,
+                notifyEvents: document.getElementById('notifyEvents').checked,
+                notifyPayments: document.getElementById('notifyPayments').checked
             };
 
             try {

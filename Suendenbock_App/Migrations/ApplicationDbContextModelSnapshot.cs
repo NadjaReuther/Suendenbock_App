@@ -8155,6 +8155,9 @@ namespace Suendenbock_App.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("NotifyEvents")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("NotifyForumReplies")
                         .HasColumnType("bit");
 
@@ -8162,6 +8165,9 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("NotifyNews")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyPayments")
                         .HasColumnType("bit");
 
                     b.Property<bool>("NotifyPolls")

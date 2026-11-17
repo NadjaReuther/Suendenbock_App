@@ -23,7 +23,9 @@ namespace Suendenbock_App.Services
         /// <param name="title">Titel der Benachrichtigung</param>
         /// <param name="message">Nachrichtentext</param>
         /// <param name="url">URL zum Öffnen beim Klick</param>
-        Task SendToUserAsync(string userId, string title, string message, string url);
+        /// <param name="notificationType">Optional: "Event" oder "Payment". Dann wird der passende Schalter
+        /// in den Einstellungen des Benutzers beachtet. Ohne Typ (z.B. persönliche Nachricht) wird immer gesendet.</param>
+        Task SendToUserAsync(string userId, string title, string message, string url, string? notificationType = null);
 
         /// <summary>
         /// Sendet eine Test-Benachrichtigung an einen spezifischen Benutzer

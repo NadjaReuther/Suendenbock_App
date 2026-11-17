@@ -1,0 +1,114 @@
+@{
+    var tab = ViewBag.AppTab as string ?? "";
+    var unread = ViewBag.AppUnreadMessages as int? ?? 0;
+    string On(string t) => tab == t ? "on" : "";
+}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>@ViewData["Title"] – Sündenbock</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <meta name="theme-color" content="#FFFCF7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Sündenbock">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0">
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="app">
+
+    <!-- Vorspann: Schriftrolle (einmal pro App-Start, siehe app.js) -->
+    <div id="intro" aria-hidden="true">
+        <div class="rl-wrap">
+            <div class="rl-rod"></div>
+            <div class="rl-roll">
+                <div class="rl-paper">
+                    <div class="rl-inner">
+                        <svg width="40" height="18" viewBox="0 0 40 18" aria-hidden="true"><path d="M2 9c6-8 12-8 18 0s12 8 18 0" fill="none" stroke="#8a7445" stroke-width="1.4" /></svg>
+                        <div class="rl-title">Sündenbock</div>
+                        <div class="rl-line"></div>
+                        <div class="rl-year">ANNO 1618</div>
+                        <svg width="40" height="18" viewBox="0 0 40 18" aria-hidden="true"><path d="M2 9c6 8 12 8 18 0s12-8 18 0" fill="none" stroke="#8a7445" stroke-width="1.4" /></svg>
+                    </div>
+                </div>
+            </div>
+            <div class="rl-rod"></div>
+            <div class="rl-cord"></div>
+            <div class="rl-seal">
+                <svg width="58" height="58" viewBox="0 0 74 74" aria-hidden="true"><path d="M37 3c6 0 8 3 13 4s9 0 12 5 1 9 4 13 5 7 4 12-4 8-4 13 1 9-3 12-9 2-13 5-6 5-13 5-8-3-13-4-9 0-12-5-1-9-4-13-5-7-4-12 4-8 4-13-1-9 3-12 9-2 13-5 6-5 13-5z" fill="#8e1f1a" /><text x="37" y="49" text-anchor="middle" font-family="Lemon Tuesday" font-size="34" fill="#e0796a">S</text></svg>
+            </div>
+        </div>
+        <button type="button" class="rl-cta" id="introBtn">Einkehren</button>
+    </div>
+
+    <div class="app-shell">
+        <header class="app-header">
+            <a href="/App" aria-label="Start"><img src="/icons/icon-192.png" alt="" class="logo" width="34" height="34"></a>
+            <h1>Sündenbock</h1>
+            <button type="button" class="hbtn" id="searchBtn" aria-label="Im Wiki suchen"><span class="ms">search</span></button>
+            <a href="/App/Profil" class="avatar" aria-label="Profil">@ViewBag.AppUserInitial</a>
+        </header>
+
+        <main class="app-main">
+            @if (TempData["AppSuccess"] is string ok)
+            {
+                <div class="flash ok" role="status">@ok</div>
+            }
+            @if (TempData["AppError"] is string err)
+            {
+                <div class="flash err" role="alert">@err</div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+
+    <nav class="app-tabs" aria-label="Hauptnavigation">
+        <div class="inner">
+            <a href="/App" class="@On("start")"><span class="ms">home</span>Start</a>
+            <a href="/App/Termine" class="@On("termine")"><span class="ms">calendar_month</span>Termine</a>
+            <a href="/App/Forum" class="@On("forum")"><span class="ms">forum</span>Forum</a>
+            <a href="/App/Charakter" class="@On("charakter")"><span class="ms">person_book</span>Charakter</a>
+            <a href="/App/Post" class="@On("post")">
+                <span class="ms">mail</span>Post
+                @if (unread > 0)
+                {
+                    <span class="badge" aria-label="@unread ungelesen">@(unread > 9 ? "9+" : unread.ToString())</span>
+                }
+            </a>
+        </div>
+    </nav>
+
+    <!-- Pop-up: Seit deinem letzten Besuch -->
+    <div id="whatsnew" role="dialog" aria-modal="true" aria-labelledby="wnTitle">
+        <div class="wn">
+            <div class="grab"></div>
+            <h2 id="wnTitle">Seit deinem letzten Besuch</h2>
+            <p class="since" id="wnSince"></p>
+            <div id="wnList"></div>
+            <button type="button" class="btn-gold" style="margin-top:14px" id="wnClose">Alles klar</button>
+        </div>
+    </div>
+
+    <!-- Wiki-Suche -->
+    <div id="search" role="dialog" aria-modal="true" aria-label="Wiki-Suche">
+        <div class="sbar">
+            <label class="field">
+                <span class="ms" style="color:var(--muted)">search</span>
+                <input id="sq" type="search" placeholder="Wiki durchsuchen …" autocomplete="off" aria-label="Suchbegriff">
+            </label>
+            <button type="button" class="close" id="searchClose">Fertig</button>
+        </div>
+        <div class="sres" id="sres"></div>
+    </div>
+
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    <script src="~/js/push-notifications.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

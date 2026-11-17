@@ -2,11 +2,11 @@
   "name": "Sündenbock App",
   "short_name": "Sündenbock",
   "description": "Rollenspiel-Management-System",
-  "start_url": "/",
+  "start_url": "/App",
   "display": "standalone",
   "background_color": "#15100b",
-  "theme_color": "#d4c4a8",
-  "orientation": "any",
+  "theme_color": "#FFFCF7",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -26,5 +26,7 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "scope": "/",
+  "id": "/App"
 }

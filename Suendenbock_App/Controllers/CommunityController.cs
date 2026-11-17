@@ -485,8 +485,14 @@ namespace Suendenbock_App.Controllers
 
         // POST: /Community/CreateThread
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateThread(CreateThreadViewModel vm)
+        public async Task<IActionResult> CreateThread(CreateThreadViewModel vm, bool plainText = false, bool app = false)
         {
+            // Aus der Handy-App kommt reiner Text statt Editor-HTML
+            if (plainText && !string.IsNullOrWhiteSpace(vm.Content))
+            {
+                vm.Content = PlainTextToHtml(vm.Content);
+            }
+
             if (!ModelState.IsValid)
             {
                 // Kategorien neu laden, da sie beim POST nicht mitgeschickt werden
@@ -530,7 +536,7 @@ namespace Suendenbock_App.Controllers
                         "ForumThread",
                         $"📝 Neuer Forumsbeitrag: {threadTitle}",
                         $"In {category?.Name ?? "Forum"}: {threadTitle}",
-                        $"/Community/ThreadDetail/{threadId}",
+                        $"/App/Thema/{threadId}",
                         currentUserId
                     );
                 }
@@ -540,13 +546,24 @@ namespace Suendenbock_App.Controllers
                 }
             });
 
+            if (app)
+            {
+                return Redirect($"/App/Thema/{thread.Id}");
+            }
+
             return RedirectToAction(nameof(ThreadDetail), new { id = thread.Id });
         }
 
         // POST: /Community/PostReply
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostReply(int threadId, string content)
+        public async Task<IActionResult> PostReply(int threadId, string content, bool plainText = false, string? returnUrl = null)
         {
+            // Aus der Handy-App kommt reiner Text statt Editor-HTML
+            if (plainText && !string.IsNullOrWhiteSpace(content))
+            {
+                content = PlainTextToHtml(content);
+            }
+
             if (!string.IsNullOrWhiteSpace(content))
             {
                 var reply = new ForumReply
@@ -580,7 +597,7 @@ namespace Suendenbock_App.Controllers
                                 "ForumReply",
                                 $"💬 Neue Antwort: {threadTitle}",
                                 $"Jemand hat auf \"{threadTitle}\" geantwortet",
-                                $"/Community/ThreadDetail/{threadId}",
+                                $"/App/Thema/{threadId}",
                                 currentUserId
                             );
                         }
@@ -592,7 +609,25 @@ namespace Suendenbock_App.Controllers
                 }
             }
 
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
+            }
+
             return RedirectToAction(nameof(ThreadDetail), new { id = threadId });
+        }
+
+        /// <summary>
+        /// Reiner Text (z.B. aus der Handy-App) → sicheres HTML wie aus dem Editor:
+        /// HTML wird maskiert, Leerzeilen werden Absätze, Zeilenumbrüche &lt;br&gt;.
+        /// </summary>
+        private static string PlainTextToHtml(string text)
+        {
+            var normalized = text.Replace("\r\n", "\n").Trim();
+            var paragraphs = System.Text.RegularExpressions.Regex.Split(normalized, @"\n\s*\n")
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Select(p => "<p>" + System.Net.WebUtility.HtmlEncode(p.Trim()).Replace("\n", "<br>") + "</p>");
+            return string.Join("", paragraphs);
         }
 
         // POST: /Community/DeleteThread/5

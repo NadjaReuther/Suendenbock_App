@@ -128,7 +128,7 @@ namespace Suendenbock_App.Controllers.Api
                             request.ReceiverUserId!,
                             $"📬 Neue Nachricht von {notificationSenderName}",
                             request.Subject,
-                            "/Messages/Inbox"
+                            "/App/Post"
                         );
                     }
                     catch (Exception ex)
@@ -189,7 +189,7 @@ namespace Suendenbock_App.Controllers.Api
                                     rcvUserId,
                                     $"📬 Neue Nachricht von {notificationSenderName}",
                                     request.Subject,
-                                    "/Messages/Inbox"
+                                    "/App/Post"
                                 );
                             }
                             catch (Exception ex)

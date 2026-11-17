@@ -254,7 +254,7 @@ namespace Suendenbock_App.Controllers.Api
                 {
                     try
                     {
-                        await _pushService.SendToUserAsync(id, title, body, EventNotificationTexts.EventsUrl);
+                        await _pushService.SendToUserAsync(id, title, body, EventNotificationTexts.EventsUrl, "Event");
                     }
                     catch (Exception ex)
                     {

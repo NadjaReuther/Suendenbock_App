@@ -7,7 +7,7 @@ namespace Suendenbock_App.Services
     /// </summary>
     public static class EventNotificationTexts
     {
-        public const string EventsUrl = "/Community/Events";
+        public const string EventsUrl = "/App/Termine";
 
         private static readonly string[] DayNames = { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
 

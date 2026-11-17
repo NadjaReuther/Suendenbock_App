@@ -38,6 +38,16 @@ namespace Suendenbock_App.Models.Domain
         public bool NotifyPolls { get; set; } = true;
 
         /// <summary>
+        /// Benachrichtigungen für Termine (neu, geändert, abgesagt, Erinnerungen)
+        /// </summary>
+        public bool NotifyEvents { get; set; } = true;
+
+        /// <summary>
+        /// Benachrichtigungen zum Monatsbeitrag (bestätigt, Erinnerung)
+        /// </summary>
+        public bool NotifyPayments { get; set; } = true;
+
+        /// <summary>
         /// Zeitpunkt der Erstellung
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.Now;
