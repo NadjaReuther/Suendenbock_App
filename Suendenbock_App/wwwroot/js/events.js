@@ -213,8 +213,9 @@ async function loadEventForEdit(eventId) {
         const months = { 'Jan': '01', 'Feb': '02', 'Mär': '03', 'Apr': '04', 'Mai': '05', 'Jun': '06',
                         'Jul': '07', 'Aug': '08', 'Sep': '09', 'Okt': '10', 'Nov': '11', 'Dez': '12' };
         const month = months[monthText] || '01';
-        const year = new Date().getFullYear(); // Assume current year
-        const dateString = `${year}-${month}-${day.padStart(2, '0')}`;
+        const year = new Date().getFullYear(); // Fallback, falls data-date fehlt
+        // Echtes Datum aus data-date (sonst würde z.B. ein Januar-Termin im Dezember ins falsche Jahr rutschen)
+        const dateString = eventCard.dataset.date || `${year}-${month}-${day.padStart(2, '0')}`;
 
         // Set form values
         document.getElementById('eventTitle').value = title;
@@ -233,12 +234,19 @@ async function loadEventForEdit(eventId) {
             if (choreMatrix) {
                 const choreItems = choreMatrix.querySelectorAll('.chore-item');
                 choreItems.forEach(item => {
-                    const choreName = item.querySelector('.chore-name')?.textContent.trim().replace('priority_high', '').replace('Aufgabe', '').trim();
-                    const assignedTo = item.querySelector('.chore-assigned')?.textContent.trim();
+                    // Werte aus data-Attributen lesen. Früher wurde der sichtbare Text gelesen,
+                    // der auch Symbol-Namen wie "info" enthält. Dann passte kein Feld und
+                    // beim Speichern wurden alle Dienste auf "Offen" gesetzt.
+                    const choreName = item.dataset.chore;
+                    const assignedTo = (item.dataset.assigned || '').trim();
 
                     if (choreName) {
                         const input = document.getElementById(`chore_${choreName.replace(/ /g, '_')}`);
                         if (input && assignedTo && assignedTo !== 'Offen') {
+                            // Alte Einträge, die nicht in der Liste stehen, nicht verlieren
+                            if (input.tagName === 'SELECT' && ![...input.options].some(o => o.value === assignedTo)) {
+                                input.add(new Option(assignedTo, assignedTo));
+                            }
                             input.value = assignedTo;
                         }
                     }
