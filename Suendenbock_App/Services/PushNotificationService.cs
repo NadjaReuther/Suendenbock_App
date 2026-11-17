@@ -119,8 +119,8 @@ namespace Suendenbock_App.Services
                 title,
                 body = message,
                 url,
-                icon = "/images/logo.png",  // Anpassen an dein Logo
-                badge = "/images/badge.png" // Anpassen an dein Badge-Icon
+                icon = "/icons/icon-192.png",  // App-Icon (Wachssiegel)
+                badge = "/icons/badge-96.png" // kleines weißes Siegel für die Statusleiste (Android)
             });
 
             // 4. VAPID-Details laden
