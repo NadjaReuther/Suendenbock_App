@@ -212,7 +212,8 @@ namespace Suendenbock_App.Controllers
                         userId,
                         "✅ Beitrag erhalten",
                         $"Dein Monatsbeitrag für {monthName} ist eingegangen{method}. Danke!",
-                        "/Community"
+                        "/App",
+                        "Payment"
                     );
                 }
                 catch (Exception ex)

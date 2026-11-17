@@ -109,6 +109,8 @@ namespace Suendenbock_App.Controllers
                         NotifyForumReplies = true,
                         NotifyNews = true,
                         NotifyPolls = true,
+                        NotifyEvents = true,
+                        NotifyPayments = true,
                         CreatedAt = DateTime.Now,
                         UpdatedAt = DateTime.Now
                     };
@@ -185,7 +187,9 @@ namespace Suendenbock_App.Controllers
                     notifyForumThreads = true,
                     notifyForumReplies = true,
                     notifyNews = true,
-                    notifyPolls = true
+                    notifyPolls = true,
+                    notifyEvents = true,
+                    notifyPayments = true
                 });
             }
 
@@ -194,7 +198,9 @@ namespace Suendenbock_App.Controllers
                 notifyForumThreads = prefs.NotifyForumThreads,
                 notifyForumReplies = prefs.NotifyForumReplies,
                 notifyNews = prefs.NotifyNews,
-                notifyPolls = prefs.NotifyPolls
+                notifyPolls = prefs.NotifyPolls,
+                notifyEvents = prefs.NotifyEvents,
+                notifyPayments = prefs.NotifyPayments
             });
         }
 
@@ -225,6 +231,9 @@ namespace Suendenbock_App.Controllers
                 prefs.NotifyForumReplies = dto.NotifyForumReplies;
                 prefs.NotifyNews = dto.NotifyNews;
                 prefs.NotifyPolls = dto.NotifyPolls;
+                // Neue Schalter: nur übernehmen, wenn mitgeschickt (ältere Seiten kennen sie nicht)
+                if (dto.NotifyEvents.HasValue) prefs.NotifyEvents = dto.NotifyEvents.Value;
+                if (dto.NotifyPayments.HasValue) prefs.NotifyPayments = dto.NotifyPayments.Value;
                 prefs.UpdatedAt = DateTime.Now;
 
                 await _context.SaveChangesAsync();
@@ -290,5 +299,7 @@ namespace Suendenbock_App.Controllers
         public bool NotifyForumReplies { get; set; }
         public bool NotifyNews { get; set; }
         public bool NotifyPolls { get; set; }
+        public bool? NotifyEvents { get; set; }
+        public bool? NotifyPayments { get; set; }
     }
 }

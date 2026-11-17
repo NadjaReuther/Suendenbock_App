@@ -72,7 +72,7 @@ namespace Suendenbock_App.Services
             }
         }
 
-        public async Task SendToUserAsync(string userId, string title, string message, string url)
+        public async Task SendToUserAsync(string userId, string title, string message, string url, string? notificationType = null)
         {
             if (string.IsNullOrEmpty(userId))
             {
@@ -84,6 +84,20 @@ namespace Suendenbock_App.Services
 
             try
             {
+                // Schalter in den Einstellungen beachten (Termine / Monatsbeitrag)
+                if (notificationType != null)
+                {
+                    var prefs = await context.NotificationPreferences
+                        .FirstOrDefaultAsync(np => np.UserId == userId);
+                    if (prefs != null &&
+                        ((notificationType == "Event" && !prefs.NotifyEvents) ||
+                         (notificationType == "Payment" && !prefs.NotifyPayments)))
+                    {
+                        _logger.LogInformation($"User {userId} hat {notificationType}-Benachrichtigungen ausgeschaltet");
+                        return;
+                    }
+                }
+
                 // Nur die Geräte dieses einen Benutzers
                 var subscriptions = await context.PushSubscriptions
                     .Where(ps => ps.UserId == userId && ps.IsActive)
@@ -205,6 +219,8 @@ namespace Suendenbock_App.Services
                 "ForumReply" => query.Where(np => np.NotifyForumReplies),
                 "News" => query.Where(np => np.NotifyNews),
                 "Poll" => query.Where(np => np.NotifyPolls),
+                "Event" => query.Where(np => np.NotifyEvents),
+                "Payment" => query.Where(np => np.NotifyPayments),
                 _ => query
             };
 
