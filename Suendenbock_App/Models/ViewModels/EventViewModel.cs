@@ -41,5 +41,8 @@
     {
         public List<EventViewModel> Events { get; set; } = new List<EventViewModel>();
         public bool IsAdmin { get; set; }
+
+        /// <summary>Namen für die Dienst-Auswahl (Dropdown)</summary>
+        public List<string> ChoreAssignees { get; set; } = new List<string>();
     }
 }

@@ -305,10 +305,22 @@ namespace Suendenbock_App.Controllers
                 };
             }).ToList();
 
+            // Namen für die Dienst-Dropdowns: Name des Kontos, sonst Login ohne Domain.
+            // Dieselben Namen erkennt die Termin-Erinnerung ("Dein Dienst").
+            var choreAssignees = (await _context.Users
+                    .Select(u => new { u.Name, u.UserName })
+                    .ToListAsync())
+                .Select(u => !string.IsNullOrWhiteSpace(u.Name) ? u.Name!.Trim() : (u.UserName ?? "").Split('@')[0])
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(n => n)
+                .ToList();
+
             var viewModel = new EventsPageViewModel
             {
                 Events = eventViewModels,
-                IsAdmin = User.IsInRole("Gott")
+                IsAdmin = User.IsInRole("Gott"),
+                ChoreAssignees = choreAssignees
             };
 
             return View(viewModel);

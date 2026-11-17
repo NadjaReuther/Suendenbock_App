@@ -36,7 +36,7 @@
         {
             @foreach (var evt in Model.Events)
             {
-                <div class="event-card @(evt.IsPast ? "event-card-past" : "")" data-event-id="@evt.Id">
+                <div class="event-card @(evt.IsPast ? "event-card-past" : "")" data-event-id="@evt.Id" data-date="@evt.Date.ToString("yyyy-MM-dd")">
                     <!-- Edit/Delete Buttons (nur für Creator oder Gott) -->
                     @if(evt.CanEdit)
                     {
@@ -151,7 +151,7 @@
                                         ? Suendenbock_App.Models.Domain.ChoreNames.Descriptions[choreName]
                                         : new string[0];
 
-                                    <div class="chore-item @(isSpecial ? "special" : "") chore-tooltip-container">
+                                    <div class="chore-item @(isSpecial ? "special" : "") chore-tooltip-container" data-chore="@choreName" data-assigned="@assignedTo">
                                         <div class="chore-name">
                                             @if(isSpecial)
                                             {
@@ -277,11 +277,15 @@
                                         <span class="material-symbols-outlined chore-info-icon">info</span>
                                     }
                                 </label>
-                                <input type="text"
-                                       id="chore_@choreName.Replace(" ", "_")"
-                                       name="chore_@choreName"
-                                       placeholder="Name oder 'Offen'"
-                                       class="form-control chore-input">
+                                <select id="chore_@choreName.Replace(" ", "_")"
+                                        name="chore_@choreName"
+                                        class="form-select chore-input">
+                                    <option value="Offen">Offen</option>
+                                    @foreach (var person in Model.ChoreAssignees)
+                                    {
+                                        <option value="@person">@person</option>
+                                    }
+                                </select>
                                 @if(descriptions.Any())
                                 {
                                     <div class="chore-tooltip">
