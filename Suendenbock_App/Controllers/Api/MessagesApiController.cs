@@ -123,12 +123,12 @@ namespace Suendenbock_App.Controllers.Api
                 {
                     try
                     {
-                        await _pushService.SendNotificationAsync(
-                            "Message",
+                        // Nur an den Empfänger (vorher ging es an alle außer ihm)
+                        await _pushService.SendToUserAsync(
+                            request.ReceiverUserId!,
                             $"📬 Neue Nachricht von {notificationSenderName}",
                             request.Subject,
-                            "/Messages/Inbox",
-                            request.ReceiverUserId!
+                            "/Messages/Inbox"
                         );
                     }
                     catch (Exception ex)
@@ -184,12 +184,12 @@ namespace Suendenbock_App.Controllers.Api
                         {
                             try
                             {
-                                await _pushService.SendNotificationAsync(
-                                    "Message",
+                                // Nur an den Spieler dieses Charakters
+                                await _pushService.SendToUserAsync(
+                                    rcvUserId,
                                     $"📬 Neue Nachricht von {notificationSenderName}",
                                     request.Subject,
-                                    "/Messages/Inbox",
-                                    rcvUserId
+                                    "/Messages/Inbox"
                                 );
                             }
                             catch (Exception ex)
