@@ -200,8 +200,12 @@ namespace Suendenbock_App.Controllers
             var userId = _userManager?.GetUserId(User);
             var isGod = User.IsInRole("Gott");
 
+            // Magie, Lebenspunkte und Pokus darf nur Gott ändern.
+            // Spieler bekommen diese Felder deaktiviert angezeigt, sie werden also nicht mitgeschickt.
+            var canEditMagic = isGod;
+
             // Validierung: Prüfe Pflichtfelder und Magie-Auswahl
-            if (!ValidateStep1(character, selectedMagicClasses, selectedObermagien))
+            if (!ValidateStep1(character, selectedMagicClasses, selectedObermagien, validateMagic: canEditMagic))
             {
                 LoadFormViewBagData();
                 SetSelectedMagicClassesViewBag(selectedMagicClasses, selectedSpecializations);
@@ -279,10 +283,13 @@ namespace Suendenbock_App.Controllers
                             }
                         }
 
-                        // Unbegabt-Status aktualisieren
-                        const int unbegabtId = 16;
-                        existingCharacter.IsUnbegabt = selectedObermagien != null &&
-                                                selectedObermagien.Contains(unbegabtId);
+                        // Unbegabt-Status aktualisieren (nur Gott)
+                        if (canEditMagic)
+                        {
+                            const int unbegabtId = 16;
+                            existingCharacter.IsUnbegabt = selectedObermagien != null &&
+                                                    selectedObermagien.Contains(unbegabtId);
+                        }
                         
                         //Gott kann User zuweisen
                         if (isGod)
@@ -290,12 +297,15 @@ namespace Suendenbock_App.Controllers
                             existingCharacter.UserId = character.UserId;
                             existingCharacter.UserColor = character.UserColor;
                         }
-                        UpdateCharacterStep1(existingCharacter, character);
+                        UpdateCharacterStep1(existingCharacter, character, canEditMagic);
                     }
                 }
 
-                //Magieklassen und Spezialisierung speichern
-                await SaveCharacterMagicClasses(character.Id, selectedMagicClasses, selectedSpecializations);
+                //Magieklassen und Spezialisierung speichern (nur Gott)
+                if (canEditMagic)
+                {
+                    await SaveCharacterMagicClasses(character.Id, selectedMagicClasses, selectedSpecializations);
+                }
                 TempData["Success"] = "Schritt 1 erfolgreich gespeichert!";
 
                 // Achievement-Check durchführen
@@ -645,7 +655,7 @@ namespace Suendenbock_App.Controllers
         /// <param name="selectedMagicClasses"></param>
         /// <param name="selectedObermagien"></param>
         /// <returns></returns>
-        private bool ValidateStep1(Character character, int[] selectedMagicClasses, int[] selectedObermagien)
+        private bool ValidateStep1(Character character, int[] selectedMagicClasses, int[] selectedObermagien, bool validateMagic = true)
         {
             // Basisfelder prüfen
             if (string.IsNullOrWhiteSpace(character.Vorname) ||
@@ -659,7 +669,10 @@ namespace Suendenbock_App.Controllers
                 return false;
             }
 
-            // Magie-Validierung
+            // Magie-Validierung (entfällt, wenn der Benutzer Magie nicht ändern darf)
+            if (!validateMagic)
+                return true;
+
             const int unbegabtId = 16;
             bool isUnbegabt = selectedObermagien != null &&
                               selectedObermagien.Contains(unbegabtId);
@@ -678,7 +691,7 @@ namespace Suendenbock_App.Controllers
         /// </summary>
         /// <param name="existingCharacter"></param>
         /// <param name="newCharacter"></param>
-        private void UpdateCharacterStep1(Character existingCharacter, Character newCharacter)
+        private void UpdateCharacterStep1(Character existingCharacter, Character newCharacter, bool canEditMagic)
         {
             existingCharacter.Vorname = newCharacter.Vorname;
             existingCharacter.Nachname = newCharacter.Nachname;
@@ -691,10 +704,15 @@ namespace Suendenbock_App.Controllers
             existingCharacter.VaterId = newCharacter.VaterId;
             existingCharacter.MutterId = newCharacter.MutterId;
             existingCharacter.PartnerId = newCharacter.PartnerId;
+
+            // Magie-Status, HP und Pokus nur für Gott.
+            // Bei Spielern sind diese Felder nicht im Formular und kämen sonst
+            // mit Standardwerten an (z.B. 50 LP), die die echten Werte überschreiben.
+            if (!canEditMagic)
+                return;
+
             existingCharacter.Profan = newCharacter.Profan;
             existingCharacter.Beschraenkt = newCharacter.Beschraenkt;
-
-            // HP und Pokus (nur für Gott)
             existingCharacter.CurrentHealth = newCharacter.CurrentHealth;
             existingCharacter.BaseMaxHealth = newCharacter.BaseMaxHealth;
             existingCharacter.CastedSpellsCount = newCharacter.CastedSpellsCount;
