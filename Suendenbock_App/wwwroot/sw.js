@@ -43,7 +43,8 @@ self.addEventListener('push', (event) => {
             url: data.url || '/'
         },
         vibrate: [200, 100, 200],
-        tag: 'suendenbock-notification',
+        // Eigener Tag pro Benachrichtigung, sonst ersetzt jede neue die vorherige
+        tag: data.tag || ('suendenbock-' + Date.now()),
         requireInteraction: false,
         actions: [
             {

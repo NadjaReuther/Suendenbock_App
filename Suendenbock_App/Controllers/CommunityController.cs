@@ -164,10 +164,7 @@ namespace Suendenbock_App.Controllers
                 .ToListAsync();
 
             // Berechne Zielmonat: Bis 19. → aktueller Monat, ab 20. → nächster Monat
-            var now = DateTime.Now;
-            var paymentDate = now.Day < 20 ? now : now.AddMonths(1);
-            var paymentYear = paymentDate.Year;
-            var paymentMonth = paymentDate.Month;
+            var (paymentYear, paymentMonth) = PaymentPeriod.GetTargetMonth(DateTime.Now);
 
             // Monatsnamen auf Deutsch
             var monthNames = new[] { "Januar", "Februar", "März", "April", "Mai", "Juni",
