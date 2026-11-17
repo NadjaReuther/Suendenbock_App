@@ -87,7 +87,26 @@ namespace Suendenbock_App.Controllers
                 .OrderBy(mp => mp.PlayerName)
                 .ToListAsync();
 
-            return Ok(filteredPayments);
+            // Echten Namen mitgeben (Anzeige), PlayerName bleibt der Login
+            var realNames = allUsers
+                .Where(u => !string.IsNullOrWhiteSpace(u.Name) && u.UserName != null)
+                .ToDictionary(u => u.UserName!, u => u.Name!, StringComparer.OrdinalIgnoreCase);
+
+            var result = filteredPayments.Select(mp => new
+            {
+                mp.Id,
+                mp.PlayerName,
+                DisplayName = realNames.TryGetValue(mp.PlayerName, out var realName) ? realName : null,
+                mp.Year,
+                mp.Month,
+                mp.Status,
+                mp.PaymentMethod,
+                mp.PaidAt,
+                mp.CreatedAt,
+                mp.UpdatedAt
+            });
+
+            return Ok(result);
         }
 
         // POST: api/payments

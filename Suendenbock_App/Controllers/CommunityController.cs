@@ -172,18 +172,26 @@ namespace Suendenbock_App.Controllers
             var paymentMonthDisplay = $"{monthNames[paymentMonth - 1]} {paymentYear}";
 
             // Lade Monatsbeiträge
-            var monthlyPayments = await _context.MonthlyPayments
+            var paymentRows = await _context.MonthlyPayments
                 .Where(mp => mp.Year == paymentYear && mp.Month == paymentMonth)
-                .OrderBy(mp => mp.PlayerName)
+                .ToListAsync();
+
+            // Echte Namen der Spieler (PlayerName = Login)
+            var realNames = await GetRealNamesByUserNameAsync();
+
+            var monthlyPayments = paymentRows
                 .Select(mp => new MonthlyPaymentViewModel
                 {
                     Id = mp.Id,
-                    PlayerName = mp.PlayerName.Replace("@suendenbock.lore", ""),
+                    PlayerName = realNames.TryGetValue(mp.PlayerName, out var realName)
+                        ? realName
+                        : mp.PlayerName.Replace("@suendenbock.lore", ""),
                     Status = mp.Status,
                     PaymentMethod = mp.PaymentMethod,
                     PaidAtDisplay = mp.PaidAt.HasValue ? mp.PaidAt.Value.ToString("dd.MM.yyyy") : null
                 })
-                .ToListAsync();
+                .OrderBy(mp => mp.PlayerName)
+                .ToList();
 
             // Lade die neuesten 5 Tickets
             var recentTickets = await _context.Tickets
@@ -291,7 +299,11 @@ namespace Suendenbock_App.Controllers
                     Participants = e.RSVPs
                         .Select(r => new RsvpParticipantViewModel
                         {
-                            Name = r.Character?.Vorname ?? r.User?.UserName ?? "Unbekannt",
+                            // Echter Name zuerst, dann Charakter, dann Login
+                            Name = (string.IsNullOrWhiteSpace(r.User?.Name) ? null : r.User!.Name)
+                                   ?? r.Character?.Vorname
+                                   ?? r.User?.UserName
+                                   ?? "Unbekannt",
                             Status = r.Status
                         })
                         .OrderBy(p => p.Status == "yes" ? 0 : p.Status == "maybe" ? 1 : 2)
@@ -324,6 +336,19 @@ namespace Suendenbock_App.Controllers
             };
 
             return View(viewModel);
+        }
+
+        /// <summary>
+        /// Login → echter Name, für alle Benutzer mit eingetragenem Namen
+        /// </summary>
+        private async Task<Dictionary<string, string>> GetRealNamesByUserNameAsync()
+        {
+            var users = await _context.Users
+                .Where(u => u.UserName != null && u.Name != null && u.Name != "")
+                .Select(u => new { u.UserName, u.Name })
+                .ToListAsync();
+
+            return users.ToDictionary(u => u.UserName!, u => u.Name!, StringComparer.OrdinalIgnoreCase);
         }
 
         // ==== FORUM ====

@@ -23,7 +23,11 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddRoles<IdentityRole>() // Role Support
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddControllersWithViews()
+builder.Services.AddControllersWithViews(options =>
+{
+    // Beim ersten Login nach dem echten Namen fragen
+    options.Filters.Add<Suendenbock_App.Filters.RequireRealNameFilter>();
+})
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
