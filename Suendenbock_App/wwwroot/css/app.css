@@ -404,3 +404,13 @@ details.acc .inner { padding: 0 0 14px; }
 @media (prefers-reduced-motion: reduce) {
     #intro * { animation-duration: .01s !important; animation-delay: 0s !important; }
 }
+
+/* ---- Nachrichten (Gesprächsverlauf) ---- */
+.msgs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.bubble {
+    max-width: 86%; align-self: flex-start; background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px 16px 16px 4px; padding: 10px 12px;
+}
+.bubble.mine { align-self: flex-end; background: #efe3c4; border-color: #e0cfa6; border-radius: 16px 16px 4px 16px; }
+.bubble .who { font-size: 11.5px; color: var(--muted); margin-bottom: 3px; }
+.bubble .text { font-size: 15px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }

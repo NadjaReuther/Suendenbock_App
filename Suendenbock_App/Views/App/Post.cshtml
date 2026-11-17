@@ -3,9 +3,17 @@
     ViewData["Title"] = "Post";
 }
 
-<h2 class="sec"><span class="ms">mail</span>Posteingang @(Model.UnreadCount > 0 ? $"· {Model.UnreadCount} neu" : "")</h2>
+<h2 class="sec"><span class="ms">mail</span>Post</h2>
 
-<a href="/Messages/Compose" class="btn-gold" style="margin-bottom:12px"><span class="ms">edit</span>Neue Nachricht</a>
+<div class="chiprow" role="navigation" aria-label="Ordner">
+    <a class="fchip @(Model.IsSentFolder ? "" : "on")" href="/App/Post"><span class="ms">inbox</span>Eingang@(Model.UnreadCount > 0 ? $" · {Model.UnreadCount}" : "")</a>
+    <a class="fchip @(Model.IsSentFolder ? "on" : "")" href="/App/Post?ordner=gesendet"><span class="ms">send</span>Gesendet</a>
+</div>
+
+@if (Model.HasCharacter)
+{
+    <a href="/App/NeueNachricht" class="btn-gold" style="margin-bottom:12px"><span class="ms">edit</span>Neue Nachricht</a>
+}
 
 <div class="card">
     @if (!Model.HasCharacter)
@@ -14,14 +22,14 @@
     }
     else if (!Model.Messages.Any())
     {
-        <p class="empty"><span class="ms">drafts</span>Dein Posteingang ist leer.</p>
+        <p class="empty"><span class="ms">drafts</span>@(Model.IsSentFolder ? "Du hast noch nichts gesendet." : "Dein Posteingang ist leer.")</p>
     }
     else
     {
         @foreach (var m in Model.Messages)
         {
             var unread = !m.IsRead || m.UnreadCount > 0;
-            <a class="item" href="/Messages/Read/@m.Id">
+            <a class="item" href="/App/Nachricht/@m.Id">
                 <div class="ic" style="border-radius:50%;font-weight:600" aria-hidden="true">@(string.IsNullOrEmpty(m.OtherCharacterName) ? "?" : m.OtherCharacterName.Substring(0, 1).ToUpper())</div>
                 <div class="body">
                     <h4>
@@ -29,7 +37,7 @@
                         {
                             <span class="udot" aria-label="ungelesen"></span>
                         }
-                        @m.OtherCharacterName
+                        @(Model.IsSentFolder ? "An " : "")@m.OtherCharacterName
                         <span class="muted" style="margin-left:auto;font-weight:400;font-size:11.5px" data-ago="@(new DateTimeOffset(m.SentAt).ToUnixTimeMilliseconds())"></span>
                     </h4>
                     <p style="color:var(--ink);@(unread ? "font-weight:600" : "")">
@@ -45,5 +53,3 @@
         }
     }
 </div>
-
-<a href="/Messages/Sent" class="link-more">Gesendete Nachrichten <span class="ms" style="font-size:18px">chevron_right</span></a>

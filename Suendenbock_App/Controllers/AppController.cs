@@ -509,25 +509,33 @@ namespace Suendenbock_App.Controllers
         // POST (Postfach)
         // ================================================================
 
-        // GET /App/Post
-        public async Task<IActionResult> Post()
+        // GET /App/Post  bzw. /App/Post?ordner=gesendet
+        public async Task<IActionResult> Post(string? ordner)
         {
             var user = await GetUserAsync();
             if (user == null) return Challenge();
             await SetShellAsync(user, "post");
 
-            var myCharacterIds = await _context.Characters
-                .Where(c => c.UserId == user.Id)
-                .Select(c => c.Id)
-                .ToListAsync();
+            var sent = ordner == "gesendet";
+            var isStaff = User.IsInRole("Gott") || User.IsInRole("Moderator");
+            var myCharacterIds = await MyCharacterIdsAsync(user);
 
-            var allMessages = await _context.Messages
-                .Include(m => m.SenderCharacter)
-                .Where(m => !m.IsDeletedByReceiver &&
-                            (m.ReceiverUserId == user.Id ||
-                             (m.ReceiverCharacterId != null && myCharacterIds.Contains(m.ReceiverCharacterId.Value))))
-                .OrderByDescending(m => m.SentAt)
-                .ToListAsync();
+            var query = _context.Messages.Include(m => m.SenderCharacter).Include(m => m.ReceiverCharacter).AsQueryable();
+            query = sent
+                ? query.Where(m => !m.IsDeletedBySender &&
+                                   (m.SenderUserId == user.Id ||
+                                    (m.SenderCharacterId != null && myCharacterIds.Contains(m.SenderCharacterId.Value))))
+                : query.Where(m => !m.IsDeletedByReceiver &&
+                                   (m.ReceiverUserId == user.Id ||
+                                    (m.ReceiverCharacterId != null && myCharacterIds.Contains(m.ReceiverCharacterId.Value))));
+
+            var allMessages = await query.OrderByDescending(m => m.SentAt).ToListAsync();
+
+            // Für "Gesendet": Namen von Gott/Moderator als Empfänger
+            var receiverUserIds = allMessages.Where(m => m.ReceiverUserId != null).Select(m => m.ReceiverUserId!).Distinct().ToList();
+            var receiverUsers = await _context.Users
+                .Where(u => receiverUserIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => DisplayName(u));
 
             var list = allMessages
                 .GroupBy(m => m.ThreadId)
@@ -538,13 +546,13 @@ namespace Suendenbock_App.Controllers
                     {
                         Id = latest.Id,
                         ThreadId = latest.ThreadId,
-                        OtherCharacterName = SenderName(latest),
+                        OtherCharacterName = sent ? ReceiverName(latest, receiverUsers) : SenderName(latest),
                         Subject = latest.Subject,
                         ContentPreview = Shorten(StripHtml(latest.Content), 110),
                         SentAt = latest.SentAt,
-                        IsRead = latest.IsRead,
+                        IsRead = sent || latest.IsRead,
                         MessageCount = g.Count(),
-                        UnreadCount = g.Count(m => !m.IsRead)
+                        UnreadCount = sent ? 0 : g.Count(m => !m.IsRead)
                     };
                 })
                 .OrderByDescending(m => m.SentAt)
@@ -553,9 +561,157 @@ namespace Suendenbock_App.Controllers
             return View(new AppPostViewModel
             {
                 Messages = list,
-                UnreadCount = allMessages.Count(m => !m.IsRead),
-                HasCharacter = myCharacterIds.Any() || User.IsInRole("Gott") || User.IsInRole("Moderator")
+                UnreadCount = sent ? 0 : allMessages.Count(m => !m.IsRead),
+                HasCharacter = myCharacterIds.Any() || isStaff,
+                IsSentFolder = sent
             });
+        }
+
+        // GET /App/Nachricht/5  (Gesprächsverlauf, markiert als gelesen)
+        public async Task<IActionResult> Nachricht(int id)
+        {
+            var user = await GetUserAsync();
+            if (user == null) return Challenge();
+            await SetShellAsync(user, "post");
+
+            var myCharacterIds = await MyCharacterIdsAsync(user);
+            bool IsMineSent(Message m) => m.SenderUserId == user.Id ||
+                                          (m.SenderCharacterId != null && myCharacterIds.Contains(m.SenderCharacterId.Value));
+            bool IsMineReceived(Message m) => m.ReceiverUserId == user.Id ||
+                                              (m.ReceiverCharacterId != null && myCharacterIds.Contains(m.ReceiverCharacterId.Value));
+
+            var message = await _context.Messages.FirstOrDefaultAsync(m => m.Id == id);
+            if (message == null) return NotFound();
+
+            // Nur Absender oder Empfänger (wie auf der Website)
+            var isSender = IsMineSent(message);
+            var isReceiver = IsMineReceived(message);
+            if (!isSender && !isReceiver) return Forbid();
+            if ((isSender && !isReceiver && message.IsDeletedBySender) || (isReceiver && !isSender && message.IsDeletedByReceiver))
+                return NotFound();
+
+            var thread = await _context.Messages
+                .Include(m => m.SenderCharacter)
+                .Include(m => m.ReceiverCharacter)
+                .Where(m => m.ThreadId == message.ThreadId)
+                .OrderBy(m => m.SentAt)
+                .ToListAsync();
+
+            // Alles, was ich in diesem Gespräch bekommen habe, ist jetzt gelesen
+            var unread = thread.Where(m => !m.IsRead && IsMineReceived(m)).ToList();
+            if (unread.Any())
+            {
+                foreach (var m in unread) m.IsRead = true;
+                await _context.SaveChangesAsync();
+                await SetShellAsync(user, "post");   // Zähler in der Leiste aktualisieren
+            }
+
+            var receiverUserIds = thread.Where(m => m.ReceiverUserId != null).Select(m => m.ReceiverUserId!).Distinct().ToList();
+            var receiverUsers = await _context.Users
+                .Where(u => receiverUserIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => DisplayName(u));
+
+            // Antwort an: Absender der letzten Nachricht, die nicht von mir ist.
+            // Gibt es keine (ich habe das Gespräch begonnen), an den ursprünglichen Empfänger.
+            var lastFromOther = thread.LastOrDefault(m => !IsMineSent(m));
+            var first = thread.First();
+            var vm = new AppMessageThreadViewModel
+            {
+                Id = message.Id,
+                Subject = first.Subject,
+                ParentMessageId = thread.Last().Id,
+                ReplySubject = first.Subject.StartsWith("Re:", StringComparison.OrdinalIgnoreCase) ? first.Subject : "Re: " + first.Subject,
+                Messages = thread
+                    .Where(m => !(IsMineReceived(m) && !IsMineSent(m) && m.IsDeletedByReceiver))
+                    .Select(m => new AppMessageItem
+                    {
+                        SenderName = SenderName(m),
+                        IsMine = IsMineSent(m),
+                        SentAt = m.SentAt,
+                        Content = m.Content
+                    })
+                    .ToList()
+            };
+
+            if (lastFromOther != null)
+            {
+                vm.OtherName = SenderName(lastFromOther);
+                if (lastFromOther.SenderType == MessageSenderType.Character && lastFromOther.SenderCharacterId.HasValue)
+                    vm.ReplyCharacterId = lastFromOther.SenderCharacterId;
+                else if (!string.IsNullOrEmpty(lastFromOther.SenderUserId))
+                {
+                    vm.ReplyUserId = lastFromOther.SenderUserId;
+                    vm.ReplyType = (int)lastFromOther.SenderType;
+                }
+            }
+            else
+            {
+                vm.OtherName = ReceiverName(first, receiverUsers);
+                if (first.ReceiverCharacterId.HasValue)
+                    vm.ReplyCharacterId = first.ReceiverCharacterId;
+                else if (!string.IsNullOrEmpty(first.ReceiverUserId))
+                {
+                    vm.ReplyUserId = first.ReceiverUserId;
+                    vm.ReplyType = (int)(first.ReceiverType ?? MessageSenderType.Gott);
+                }
+            }
+
+            vm.CanReply = vm.ReplyCharacterId.HasValue || !string.IsNullOrEmpty(vm.ReplyUserId);
+            return View(vm);
+        }
+
+        // GET /App/NeueNachricht
+        public async Task<IActionResult> NeueNachricht()
+        {
+            var user = await GetUserAsync();
+            if (user == null) return Challenge();
+            await SetShellAsync(user, "post");
+
+            var isStaff = User.IsInRole("Gott") || User.IsInRole("Moderator");
+            var myCharacterIds = await MyCharacterIdsAsync(user);
+            var vm = new AppComposeViewModel();
+
+            if (!isStaff)
+            {
+                // Spieler schreiben als ihr Charakter (wie auf der Website: der erste zugeordnete)
+                var senderCharacter = await _context.Characters.FirstOrDefaultAsync(c => c.UserId == user.Id);
+                if (senderCharacter == null)
+                {
+                    TempData["AppError"] = "Für Nachrichten braucht dein Konto einen Charakter.";
+                    return RedirectToAction(nameof(Post));
+                }
+                vm.SenderName = senderCharacter.Vorname;
+            }
+
+            // Charaktere mit Spieler (nicht die eigenen)
+            var characters = await _context.Characters
+                .Where(c => c.UserId != null && c.UserId != "" && !myCharacterIds.Contains(c.Id))
+                .OrderBy(c => c.Vorname)
+                .Select(c => new { c.Id, c.Vorname, c.Nachname })
+                .ToListAsync();
+            vm.Receivers.AddRange(characters.Select(c => new AppReceiverOption
+            {
+                Value = $"char:{c.Id}",
+                Name = $"{c.Vorname} {c.Nachname}".Trim(),
+                Group = "Charaktere"
+            }));
+
+            // Spielleitung: Götter und Moderatoren (nicht man selbst)
+            foreach (var (role, type) in new[] { ("Gott", MessageSenderType.Gott), ("Moderator", MessageSenderType.Moderator) })
+            {
+                var staff = await _userManager.GetUsersInRoleAsync(role);
+                vm.Receivers.AddRange(staff
+                    .Where(u => u.Id != user.Id)
+                    .OrderBy(u => DisplayName(u))
+                    .Select(u => new AppReceiverOption
+                    {
+                        Value = $"user:{u.Id}:{(int)type}",
+                        Name = $"{DisplayName(u)} ({role})",
+                        Group = "Spielleitung"
+                    }));
+            }
+
+            return View(vm);
         }
 
         // ================================================================
@@ -617,6 +773,16 @@ namespace Suendenbock_App.Controllers
         /// <summary>Echter Name des Autors, sonst wie auf der Website (Charakter oder Login)</summary>
         private static string AuthorDisplayName(ApplicationUser? author, string fallback) =>
             !string.IsNullOrWhiteSpace(author?.Name) ? author!.Name!.Trim() : fallback.Split('@')[0];
+
+        private async Task<List<int>> MyCharacterIdsAsync(ApplicationUser user) =>
+            await _context.Characters.Where(c => c.UserId == user.Id).Select(c => c.Id).ToListAsync();
+
+        private static string ReceiverName(Message m, Dictionary<string, string> users)
+        {
+            if (m.ReceiverCharacter != null) return m.ReceiverCharacter.Vorname;
+            if (!string.IsNullOrEmpty(m.ReceiverUserId) && users.TryGetValue(m.ReceiverUserId, out var name)) return name;
+            return "Unbekannt";
+        }
 
         private static string SenderName(Message m) =>
             m.SenderType == MessageSenderType.Character
@@ -733,7 +899,7 @@ namespace Suendenbock_App.Controllers
             {
                 Kind = "msg", Label = "Nachricht", Icon = "mail",
                 Title = SenderName(m), Text = m.Subject,
-                Url = $"/Messages/Read/{m.Id}", Timestamp = ToUnixMs(m.SentAt)
+                Url = $"/App/Nachricht/{m.Id}", Timestamp = ToUnixMs(m.SentAt)
             }));
 
             // News
