@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
+using Suendenbock_App.Services;
 
 namespace Suendenbock_App.Controllers
 {
@@ -12,75 +13,39 @@ namespace Suendenbock_App.Controllers
     public class PaymentsApiController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IPushNotificationService _pushService;
 
-        public PaymentsApiController(ApplicationDbContext context)
+        public PaymentsApiController(ApplicationDbContext context, IPushNotificationService pushService)
         {
             _context = context;
+            _pushService = pushService;
         }
 
         // GET: api/payments?year=2025&month=1
         [HttpGet]
         public async Task<IActionResult> GetPayments([FromQuery] int? year, [FromQuery] int? month)
         {
-            // Berechne Zielmonat: Stichtag ist der 20.
-            DateTime targetDate;
+            // Berechne Zielmonat: Stichtag ist der 20. (siehe PaymentPeriod)
+            int targetYear, targetMonth;
             if (year.HasValue && month.HasValue)
             {
                 // Wenn explizit angegeben, verwende diese Werte
-                targetDate = new DateTime(year.Value, month.Value, 1);
+                targetYear = year.Value;
+                targetMonth = month.Value;
             }
             else
             {
-                var now = DateTime.Now;
-                // Bis 19. → aktueller Monat, ab 20. → nächster Monat
-                if (now.Day < 20)
-                {
-                    targetDate = now; // aktueller Monat
-                }
-                else
-                {
-                    targetDate = now.AddMonths(1); // nächster Monat
-                }
+                (targetYear, targetMonth) = PaymentPeriod.GetTargetMonth(DateTime.Now);
             }
-
-            var targetYear = targetDate.Year;
-            var targetMonth = targetDate.Month;
 
             // Lade alle existierenden Payments für diesen Monat
             var existingPayments = await _context.MonthlyPayments
                 .Where(mp => mp.Year == targetYear && mp.Month == targetMonth)
                 .ToListAsync();
 
-            // Lade alle User und filtere: NUR Rolle "Spieler", OHNE "Mamoschka"
-            var allUsers = await _context.Users
-                .OrderBy(u => u.UserName)
-                .ToListAsync();
-
+            // Alle zahlenden Spieler (ohne Götter, Mamoschka und Biene, siehe PaymentPeriod)
             var userManager = HttpContext.RequestServices.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>();
-            var filteredUsers = new List<ApplicationUser>();
-
-            foreach (var user in allUsers)
-            {
-                var userName = user.UserName ?? "";
-
-                // Skip Mamoschka
-                if (userName.Contains("Mamoschka", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                // Skip Biene
-                if (userName.Contains("Biene", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                // Skip User mit Rolle "Gott" (nur Spieler nehmen)
-                var roles = await userManager.GetRolesAsync(user);
-                if (roles.Contains("Gott"))
-                    continue;
-
-                // Alle anderen User hinzufügen
-                filteredUsers.Add(user);
-            }
-
-            allUsers = filteredUsers;
+            var allUsers = await PaymentPeriod.GetPayingPlayersAsync(userManager);
 
             // Für jeden User: Prüfe ob Payment existiert, wenn nicht -> erstelle eines
             var newPayments = new List<MonthlyPayment>();
@@ -193,7 +158,49 @@ namespace Suendenbock_App.Controllers
 
             await _context.SaveChangesAsync();
 
+            // Spieler benachrichtigen, wenn sein Beitrag gerade als bezahlt markiert wurde
+            if (request.Status == "paid" && oldStatus != "paid")
+            {
+                await NotifyPaymentReceivedAsync(payment);
+            }
+
             return Ok(payment);
+        }
+
+        /// <summary>
+        /// Schickt dem Spieler (PlayerName = UserName) eine Bestätigung aufs Handy
+        /// </summary>
+        private async Task NotifyPaymentReceivedAsync(MonthlyPayment payment)
+        {
+            var userId = await _context.Users
+                .Where(u => u.UserName == payment.PlayerName)
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return;
+            }
+
+            var monthName = PaymentPeriod.GetMonthName(payment.Month);
+            var method = string.IsNullOrEmpty(payment.PaymentMethod) ? "" : $" ({payment.PaymentMethod})";
+
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _pushService.SendToUserAsync(
+                        userId,
+                        "✅ Beitrag erhalten",
+                        $"Dein Monatsbeitrag für {monthName} ist eingegangen{method}. Danke!",
+                        "/Community"
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending payment push notification: {ex.Message}");
+                }
+            });
         }
 
         // DELETE: api/payments/{id}

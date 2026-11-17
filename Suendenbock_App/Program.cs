@@ -48,6 +48,8 @@ builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<GameService>();
 // Push Notification Service
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
+// Tägliche Erinnerungen (Monatsbeitrag, später Termine)
+builder.Services.AddHostedService<ReminderBackgroundService>();
 
 // SignalR für Real-time Combat
 builder.Services.AddSignalR(options =>
