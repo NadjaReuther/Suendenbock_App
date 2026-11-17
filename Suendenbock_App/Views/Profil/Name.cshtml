@@ -1,0 +1,135 @@
+@{
+    var isFirstTime = ViewBag.IsFirstTime == true;
+    ViewData["Title"] = isFirstTime ? "Willkommen" : "Dein Name";
+}
+
+<div class="realname-wrapper">
+    <div class="realname-card">
+        <span class="material-symbols-outlined realname-icon">waving_hand</span>
+
+        @if (isFirstTime)
+        {
+            <h1>Willkommen!</h1>
+            <p class="realname-text">
+                Bevor es losgeht: Wie heißt du im echten Leben?
+                Der Name wird zum Beispiel bei Diensten, Zusagen und Monatsbeiträgen angezeigt.
+            </p>
+        }
+        else
+        {
+            <h1>Dein Name</h1>
+            <p class="realname-text">
+                So wirst du bei Diensten, Zusagen und Monatsbeiträgen angezeigt.
+            </p>
+        }
+
+        <form method="post" asp-controller="Profil" asp-action="Name">
+            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+            <label for="realname" class="realname-label">Dein Vorname</label>
+            <input type="text"
+                   id="realname"
+                   name="name"
+                   value="@ViewBag.CurrentName"
+                   maxlength="40"
+                   autocomplete="given-name"
+                   autocapitalize="words"
+                   placeholder="z. B. Luca"
+                   required
+                   autofocus
+                   class="realname-input" />
+
+            @if (ViewBag.Error != null)
+            {
+                <p class="realname-error">@ViewBag.Error</p>
+            }
+
+            <button type="submit" class="realname-button">
+                @(isFirstTime ? "Los geht's" : "Speichern")
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .realname-wrapper {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .realname-card {
+            width: 100%;
+            max-width: 420px;
+            background: #FFFCF7;
+            border: 1px solid #DCCEB0;
+            border-radius: 18px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(45, 36, 30, 0.08);
+        }
+
+        .realname-icon {
+            font-size: 2.5rem;
+            color: #B89E68;
+        }
+
+        .realname-card h1 {
+            font-family: 'Cinzel', serif;
+            color: #B89E68;
+            font-size: 1.8rem;
+            margin: 0.5rem 0;
+        }
+
+        .realname-text {
+            color: #5a4d40;
+            margin-bottom: 1.5rem;
+        }
+
+        .realname-label {
+            display: block;
+            text-align: left;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #7a6d5e;
+            margin-bottom: 0.35rem;
+        }
+
+        .realname-input {
+            width: 100%;
+            font-size: 1.1rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid #DCCEB0;
+            border-radius: 12px;
+            background: #fff;
+            outline: none;
+        }
+
+        .realname-input:focus {
+            border-color: #B89E68;
+        }
+
+        .realname-error {
+            color: #b91c1c;
+            font-size: 0.9rem;
+            margin: 0.6rem 0 0;
+            text-align: left;
+        }
+
+        .realname-button {
+            width: 100%;
+            margin-top: 1.25rem;
+            border: 0;
+            border-radius: 12px;
+            background: #B89E68;
+            color: #2D241E;
+            font-weight: 600;
+            font-size: 1.05rem;
+            padding: 0.8rem;
+            cursor: pointer;
+        }
+    </style>
+}
