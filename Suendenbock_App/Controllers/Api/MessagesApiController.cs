@@ -117,6 +117,7 @@ namespace Suendenbock_App.Controllers.Api
                 await _context.SaveChangesAsync();
 
                 createdMessageIds.Add(message.Id);
+                var pushMessageId = message.Id;
 
                 // Push-Benachrichtigung
                 _ = Task.Run(async () =>
@@ -128,7 +129,7 @@ namespace Suendenbock_App.Controllers.Api
                             request.ReceiverUserId!,
                             $"📬 Neue Nachricht von {notificationSenderName}",
                             request.Subject,
-                            "/App/Post"
+                            $"/App/Nachricht/{pushMessageId}"
                         );
                     }
                     catch (Exception ex)
@@ -180,6 +181,7 @@ namespace Suendenbock_App.Controllers.Api
                     if (!string.IsNullOrEmpty(receiverCharacter.UserId))
                     {
                         var rcvUserId = receiverCharacter.UserId;
+                        var pushMessageId = message.Id;
                         _ = Task.Run(async () =>
                         {
                             try
@@ -189,7 +191,7 @@ namespace Suendenbock_App.Controllers.Api
                                     rcvUserId,
                                     $"📬 Neue Nachricht von {notificationSenderName}",
                                     request.Subject,
-                                    "/App/Post"
+                                    $"/App/Nachricht/{pushMessageId}"
                                 );
                             }
                             catch (Exception ex)

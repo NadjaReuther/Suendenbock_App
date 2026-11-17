@@ -341,6 +341,71 @@
         });
     }
 
+    // ---------- Nachrichten: antworten und neu schreiben ----------
+    // Nutzt dieselbe Schnittstelle wie die Website (/api/messages), daher automatisch synchron.
+    function sendMessage(data) {
+        return fetch('/api/messages', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(function (r) {
+            if (!r.ok) return r.text().then(function (t) { throw new Error(t || 'Fehler'); });
+            return r.json();
+        });
+    }
+    function receiverData(value) {
+        // "char:12" oder "user:<id>:<typ>"
+        if (!value) return null;
+        if (value.indexOf('char:') === 0) return { receiverCharacterIds: [parseInt(value.slice(5), 10)] };
+        var parts = value.split(':');
+        return { receiverUserId: parts[1], receiverType: parseInt(parts[2], 10) };
+    }
+    function initMessages() {
+        // Im Gesprächsverlauf direkt zur neuesten Nachricht springen
+        if ($('.msgs') && $('#replyForm')) window.scrollTo(0, document.body.scrollHeight);
+        var reply = $('#replyForm');
+        if (reply) reply.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var ta = reply.querySelector('textarea'), btn = reply.querySelector('button');
+            var text = ta.value.trim();
+            if (!text) return;
+            var data = {
+                subject: reply.getAttribute('data-subject'),
+                content: text,
+                parentMessageId: parseInt(reply.getAttribute('data-parent'), 10)
+            };
+            var ch = reply.getAttribute('data-char'), us = reply.getAttribute('data-user');
+            if (ch) data.receiverCharacterIds = [parseInt(ch, 10)];
+            else { data.receiverUserId = us; data.receiverType = parseInt(reply.getAttribute('data-type') || '1', 10); }
+            btn.disabled = true;
+            sendMessage(data).then(function () {
+                location.reload();
+            }).catch(function (err) {
+                btn.disabled = false;
+                toast('Senden hat nicht geklappt: ' + (err.message || 'Fehler'));
+            });
+        });
+
+        var compose = $('#composeForm');
+        if (compose) compose.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var to = receiverData($('#cTo').value);
+            var subject = $('#cSubject').value.trim(), text = $('#cText').value.trim();
+            if (!to || !subject || !text) { toast('Bitte Empfänger, Betreff und Nachricht ausfüllen.'); return; }
+            var btn = compose.querySelector('button[type=submit]');
+            btn.disabled = true;
+            var data = { subject: subject, content: text };
+            for (var k in to) data[k] = to[k];
+            sendMessage(data).then(function (res) {
+                var id = res && res.ids && res.ids[0];
+                location.href = id ? '/App/Nachricht/' + id : '/App/Post?ordner=gesendet';
+            }).catch(function (err) {
+                btn.disabled = false;
+                toast('Senden hat nicht geklappt: ' + (err.message || 'Fehler'));
+            });
+        });
+    }
+
     // ---------- Neues Thema ----------
     function initNewThread() {
         var open = $('#newThreadBtn'), box = $('#newThread');
@@ -361,6 +426,7 @@
         initComposer();
         initCharacter();
         initNewThread();
+        initMessages();
 
         var sb = $('#searchBtn'); if (sb) sb.addEventListener('click', openSearch);
         var sc = $('#searchClose'); if (sc) sc.addEventListener('click', closeSearch);

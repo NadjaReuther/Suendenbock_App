@@ -103,6 +103,46 @@ namespace Suendenbock_App.Models.ViewModels
         public List<MessageListItem> Messages { get; set; } = new();
         public int UnreadCount { get; set; }
         public bool HasCharacter { get; set; } = true;
+        public bool IsSentFolder { get; set; }
+    }
+
+    /// <summary>Gesprächsverlauf einer Nachricht</summary>
+    public class AppMessageThreadViewModel
+    {
+        public int Id { get; set; }
+        public string Subject { get; set; } = string.Empty;
+        public string OtherName { get; set; } = string.Empty;
+        public List<AppMessageItem> Messages { get; set; } = new();
+
+        // Antwort geht an …
+        public int? ReplyCharacterId { get; set; }
+        public string? ReplyUserId { get; set; }
+        public int? ReplyType { get; set; }               // MessageSenderType bei Gott/Moderator
+        public int ParentMessageId { get; set; }
+        public string ReplySubject { get; set; } = string.Empty;
+        public bool CanReply { get; set; }
+    }
+
+    public class AppMessageItem
+    {
+        public string SenderName { get; set; } = string.Empty;
+        public bool IsMine { get; set; }
+        public DateTime SentAt { get; set; }
+        public string Content { get; set; } = string.Empty;   // reiner Text wie auf der Website
+    }
+
+    /// <summary>Neue Nachricht</summary>
+    public class AppComposeViewModel
+    {
+        public List<AppReceiverOption> Receivers { get; set; } = new();
+        public string? SenderName { get; set; }
+    }
+
+    public class AppReceiverOption
+    {
+        public string Value { get; set; } = string.Empty;     // "char:12" oder "user:<id>:1"
+        public string Name { get; set; } = string.Empty;
+        public string Group { get; set; } = string.Empty;     // "Charaktere" / "Spielleitung"
     }
 
     public class AppOption

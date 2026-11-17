@@ -1,0 +1,36 @@
+@model Suendenbock_App.Models.ViewModels.AppMessageThreadViewModel
+@{
+    ViewData["Title"] = Model.Subject;
+    long Ts(DateTime d) => new DateTimeOffset(d).ToUnixTimeMilliseconds();
+}
+
+<a class="back" href="/App/Post"><span class="ms">chevron_left</span>Post</a>
+
+<div class="card post">
+    <div class="catlbl">Gespräch mit @Model.OtherName</div>
+    <h2>@Model.Subject</h2>
+</div>
+
+<section class="msgs" aria-label="Nachrichten">
+    @foreach (var m in Model.Messages)
+    {
+        <div class="bubble @(m.IsMine ? "mine" : "")">
+            <div class="who">@(m.IsMine ? "Du" : m.SenderName) · <time data-ago="@Ts(m.SentAt)"></time></div>
+            @* Nachrichten sind reiner Text; Zeilenumbrüche bleiben erhalten (white-space: pre-wrap) *@
+            <div class="text">@m.Content</div>
+        </div>
+    }
+</section>
+
+@if (Model.CanReply)
+{
+    <form class="composer" id="replyForm"
+          data-subject="@Model.ReplySubject"
+          data-parent="@Model.ParentMessageId"
+          data-char="@Model.ReplyCharacterId"
+          data-user="@Model.ReplyUserId"
+          data-type="@Model.ReplyType">
+        <textarea name="content" rows="1" placeholder="Antwort an @Model.OtherName …" aria-label="Antwort schreiben" required></textarea>
+        <button type="submit" aria-label="Antwort senden" disabled><span class="ms">send</span></button>
+    </form>
+}
