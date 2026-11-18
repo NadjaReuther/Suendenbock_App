@@ -1,0 +1,22 @@
+@model Suendenbock_App.Models.ViewModels.AppTermineViewModel
+@{
+    ViewData["Title"] = "Termine";
+}
+
+<h2 class="sec"><span class="ms">event</span>Akt-Planung</h2>
+
+@if (!Model.Events.Any())
+{
+    <div class="card"><p class="empty"><span class="ms">event_busy</span>Gerade ist kein Termin geplant.</p></div>
+}
+else
+{
+    @foreach (var e in Model.Events)
+    {
+        <div class="card">
+            <partial name="_EventCard" model="e" view-data='new ViewDataDictionary(ViewData) { { "ShowAllChores", true } }' />
+        </div>
+    }
+}
+
+<a href="/Community/Events" class="link-more">Kalender auf der Website <span class="ms" style="font-size:18px">open_in_new</span></a>

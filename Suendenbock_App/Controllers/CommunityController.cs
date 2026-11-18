@@ -164,10 +164,7 @@ namespace Suendenbock_App.Controllers
                 .ToListAsync();
 
             // Berechne Zielmonat: Bis 19. → aktueller Monat, ab 20. → nächster Monat
-            var now = DateTime.Now;
-            var paymentDate = now.Day < 20 ? now : now.AddMonths(1);
-            var paymentYear = paymentDate.Year;
-            var paymentMonth = paymentDate.Month;
+            var (paymentYear, paymentMonth) = PaymentPeriod.GetTargetMonth(DateTime.Now);
 
             // Monatsnamen auf Deutsch
             var monthNames = new[] { "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -175,18 +172,26 @@ namespace Suendenbock_App.Controllers
             var paymentMonthDisplay = $"{monthNames[paymentMonth - 1]} {paymentYear}";
 
             // Lade Monatsbeiträge
-            var monthlyPayments = await _context.MonthlyPayments
+            var paymentRows = await _context.MonthlyPayments
                 .Where(mp => mp.Year == paymentYear && mp.Month == paymentMonth)
-                .OrderBy(mp => mp.PlayerName)
+                .ToListAsync();
+
+            // Echte Namen der Spieler (PlayerName = Login)
+            var realNames = await GetRealNamesByUserNameAsync();
+
+            var monthlyPayments = paymentRows
                 .Select(mp => new MonthlyPaymentViewModel
                 {
                     Id = mp.Id,
-                    PlayerName = mp.PlayerName.Replace("@suendenbock.lore", ""),
+                    PlayerName = realNames.TryGetValue(mp.PlayerName, out var realName)
+                        ? realName
+                        : mp.PlayerName.Replace("@suendenbock.lore", ""),
                     Status = mp.Status,
                     PaymentMethod = mp.PaymentMethod,
                     PaidAtDisplay = mp.PaidAt.HasValue ? mp.PaidAt.Value.ToString("dd.MM.yyyy") : null
                 })
-                .ToListAsync();
+                .OrderBy(mp => mp.PlayerName)
+                .ToList();
 
             // Lade die neuesten 5 Tickets
             var recentTickets = await _context.Tickets
@@ -294,7 +299,11 @@ namespace Suendenbock_App.Controllers
                     Participants = e.RSVPs
                         .Select(r => new RsvpParticipantViewModel
                         {
-                            Name = r.Character?.Vorname ?? r.User?.UserName ?? "Unbekannt",
+                            // Echter Name zuerst, dann Charakter, dann Login
+                            Name = (string.IsNullOrWhiteSpace(r.User?.Name) ? null : r.User!.Name)
+                                   ?? r.Character?.Vorname
+                                   ?? r.User?.UserName
+                                   ?? "Unbekannt",
                             Status = r.Status
                         })
                         .OrderBy(p => p.Status == "yes" ? 0 : p.Status == "maybe" ? 1 : 2)
@@ -308,13 +317,38 @@ namespace Suendenbock_App.Controllers
                 };
             }).ToList();
 
+            // Namen für die Dienst-Dropdowns: Name des Kontos, sonst Login ohne Domain.
+            // Dieselben Namen erkennt die Termin-Erinnerung ("Dein Dienst").
+            var choreAssignees = (await _context.Users
+                    .Select(u => new { u.Name, u.UserName })
+                    .ToListAsync())
+                .Select(u => !string.IsNullOrWhiteSpace(u.Name) ? u.Name!.Trim() : (u.UserName ?? "").Split('@')[0])
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(n => n)
+                .ToList();
+
             var viewModel = new EventsPageViewModel
             {
                 Events = eventViewModels,
-                IsAdmin = User.IsInRole("Gott")
+                IsAdmin = User.IsInRole("Gott"),
+                ChoreAssignees = choreAssignees
             };
 
             return View(viewModel);
+        }
+
+        /// <summary>
+        /// Login → echter Name, für alle Benutzer mit eingetragenem Namen
+        /// </summary>
+        private async Task<Dictionary<string, string>> GetRealNamesByUserNameAsync()
+        {
+            var users = await _context.Users
+                .Where(u => u.UserName != null && u.Name != null && u.Name != "")
+                .Select(u => new { u.UserName, u.Name })
+                .ToListAsync();
+
+            return users.ToDictionary(u => u.UserName!, u => u.Name!, StringComparer.OrdinalIgnoreCase);
         }
 
         // ==== FORUM ====
@@ -451,8 +485,14 @@ namespace Suendenbock_App.Controllers
 
         // POST: /Community/CreateThread
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateThread(CreateThreadViewModel vm)
+        public async Task<IActionResult> CreateThread(CreateThreadViewModel vm, bool plainText = false, bool app = false)
         {
+            // Aus der Handy-App kommt reiner Text statt Editor-HTML
+            if (plainText && !string.IsNullOrWhiteSpace(vm.Content))
+            {
+                vm.Content = PlainTextToHtml(vm.Content);
+            }
+
             if (!ModelState.IsValid)
             {
                 // Kategorien neu laden, da sie beim POST nicht mitgeschickt werden
@@ -496,7 +536,7 @@ namespace Suendenbock_App.Controllers
                         "ForumThread",
                         $"📝 Neuer Forumsbeitrag: {threadTitle}",
                         $"In {category?.Name ?? "Forum"}: {threadTitle}",
-                        $"/Community/ThreadDetail/{threadId}",
+                        $"/App/Thema/{threadId}",
                         currentUserId
                     );
                 }
@@ -506,13 +546,24 @@ namespace Suendenbock_App.Controllers
                 }
             });
 
+            if (app)
+            {
+                return Redirect($"/App/Thema/{thread.Id}");
+            }
+
             return RedirectToAction(nameof(ThreadDetail), new { id = thread.Id });
         }
 
         // POST: /Community/PostReply
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> PostReply(int threadId, string content)
+        public async Task<IActionResult> PostReply(int threadId, string content, bool plainText = false, string? returnUrl = null)
         {
+            // Aus der Handy-App kommt reiner Text statt Editor-HTML
+            if (plainText && !string.IsNullOrWhiteSpace(content))
+            {
+                content = PlainTextToHtml(content);
+            }
+
             if (!string.IsNullOrWhiteSpace(content))
             {
                 var reply = new ForumReply
@@ -546,7 +597,7 @@ namespace Suendenbock_App.Controllers
                                 "ForumReply",
                                 $"💬 Neue Antwort: {threadTitle}",
                                 $"Jemand hat auf \"{threadTitle}\" geantwortet",
-                                $"/Community/ThreadDetail/{threadId}",
+                                $"/App/Thema/{threadId}",
                                 currentUserId
                             );
                         }
@@ -558,7 +609,25 @@ namespace Suendenbock_App.Controllers
                 }
             }
 
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
+            }
+
             return RedirectToAction(nameof(ThreadDetail), new { id = threadId });
+        }
+
+        /// <summary>
+        /// Reiner Text (z.B. aus der Handy-App) → sicheres HTML wie aus dem Editor:
+        /// HTML wird maskiert, Leerzeilen werden Absätze, Zeilenumbrüche &lt;br&gt;.
+        /// </summary>
+        private static string PlainTextToHtml(string text)
+        {
+            var normalized = text.Replace("\r\n", "\n").Trim();
+            var paragraphs = System.Text.RegularExpressions.Regex.Split(normalized, @"\n\s*\n")
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Select(p => "<p>" + System.Net.WebUtility.HtmlEncode(p.Trim()).Replace("\n", "<br>") + "</p>");
+            return string.Join("", paragraphs);
         }
 
         // POST: /Community/DeleteThread/5

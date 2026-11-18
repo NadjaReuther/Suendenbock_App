@@ -22,8 +22,8 @@ self.addEventListener('push', (event) => {
     let data = {
         title: 'Neue Benachrichtigung',
         body: 'Du hast eine neue Nachricht erhalten',
-        icon: '/images/logo.png',
-        badge: '/images/badge.png',
+        icon: '/icons/icon-192.png',
+        badge: '/icons/badge-96.png',
         url: '/'
     };
 
@@ -37,13 +37,14 @@ self.addEventListener('push', (event) => {
 
     const options = {
         body: data.body,
-        icon: data.icon || '/images/logo.png',
-        badge: data.badge || '/images/badge.png',
+        icon: data.icon || '/icons/icon-192.png',
+        badge: data.badge || '/icons/badge-96.png',
         data: {
             url: data.url || '/'
         },
         vibrate: [200, 100, 200],
-        tag: 'suendenbock-notification',
+        // Eigener Tag pro Benachrichtigung, sonst ersetzt jede neue die vorherige
+        tag: data.tag || ('suendenbock-' + Date.now()),
         requireInteraction: false,
         actions: [
             {

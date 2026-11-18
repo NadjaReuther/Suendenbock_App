@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
 using Suendenbock_App.Models.Domain;
+using Suendenbock_App.Services;
 using System.Security.Claims;
 
 namespace Suendenbock_App.Controllers.Api
@@ -13,9 +14,11 @@ namespace Suendenbock_App.Controllers.Api
     public class EventApiController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public EventApiController(ApplicationDbContext context)
+        private readonly IPushNotificationService _pushService;
+        public EventApiController(ApplicationDbContext context, IPushNotificationService pushService)
         {
             _context = context;
+            _pushService = pushService;
         }
         // POST /api/events/rsvp
         [HttpPost("rsvp")]
@@ -111,6 +114,21 @@ namespace Suendenbock_App.Controllers.Api
                 await _context.SaveChangesAsync();
             }
 
+            // Push an alle (außer dem, der den Termin angelegt hat)
+            var title = $"📅 Neuer Termin: {evt.Title}";
+            var body = $"{evt.Type} am {EventNotificationTexts.FormatWhen(evt)} – bist du dabei?";
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _pushService.SendNotificationAsync("Event", title, body, EventNotificationTexts.EventsUrl, userId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sending event push notification: {ex.Message}");
+                }
+            });
+
             return Ok(new {success = true, EventId = evt.Id});
         }
 
@@ -127,6 +145,11 @@ namespace Suendenbock_App.Controllers.Api
             {
                 return NotFound(new { error = "Event nicht gefunden" });
             }
+
+            // Alte Werte merken, um zu erkennen ob sich Datum oder Uhrzeit ändern
+            var oldDate = evt.Date.Date;
+            var oldStart = evt.StartTime;
+            var oldEnd = evt.EndTime;
 
             //Update Event
             evt.Title = request.Title;
@@ -157,6 +180,18 @@ namespace Suendenbock_App.Controllers.Api
             }
 
             await _context.SaveChangesAsync();
+
+            // Nur bei geändertem Datum oder geänderter Uhrzeit benachrichtigen
+            // (nicht bei Tippfehlern im Titel oder geänderten Diensten)
+            var whenChanged = oldDate != evt.Date.Date || oldStart != evt.StartTime || oldEnd != evt.EndTime;
+            if (whenChanged)
+            {
+                var recipients = await GetAttendingUserIdsAsync(evt.Id);
+                await NotifyUsersAsync(recipients,
+                    $"✏️ Termin geändert: {evt.Title}",
+                    $"Jetzt: {EventNotificationTexts.FormatWhen(evt)}");
+            }
+
             return Ok(new { success = true });
         }
 
@@ -175,12 +210,60 @@ namespace Suendenbock_App.Controllers.Api
                 return NotFound(new { error = "Event nicht gefunden" });
             }
 
+            // Vor dem Löschen merken, wer zugesagt hatte (nur kommende Termine)
+            var recipients = evt.Date.Date >= DateTime.Today
+                ? await GetAttendingUserIdsAsync(evt.Id)
+                : new List<string>();
+            var cancelTitle = $"❌ Termin abgesagt: {evt.Title}";
+            var cancelBody = $"{evt.Type} am {EventNotificationTexts.FormatWhen(evt)} findet nicht statt.";
+
             _context.EventRSVPs.RemoveRange(evt.RSVPs);
             _context.EventChores.RemoveRange(evt.Chores);
             _context.MonthlyEvents.Remove(evt);
 
             await _context.SaveChangesAsync();
+
+            await NotifyUsersAsync(recipients, cancelTitle, cancelBody);
+
             return Ok(new { success = true });
+        }
+
+        /// <summary>
+        /// Benutzer, die zugesagt oder "vielleicht" gesagt haben
+        /// </summary>
+        private async Task<List<string>> GetAttendingUserIdsAsync(int eventId)
+        {
+            return await _context.EventRSVPs
+                .Where(r => r.EventId == eventId && r.UserId != null && (r.Status == "yes" || r.Status == "maybe"))
+                .Select(r => r.UserId!)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Schickt im Hintergrund an jeden Benutzer einzeln
+        /// </summary>
+        private Task NotifyUsersAsync(List<string> userIds, string title, string body)
+        {
+            if (!userIds.Any())
+                return Task.CompletedTask;
+
+            _ = Task.Run(async () =>
+            {
+                foreach (var id in userIds)
+                {
+                    try
+                    {
+                        await _pushService.SendToUserAsync(id, title, body, EventNotificationTexts.EventsUrl, "Event");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error sending event push notification: {ex.Message}");
+                    }
+                }
+            });
+
+            return Task.CompletedTask;
         }
 
         // Helper

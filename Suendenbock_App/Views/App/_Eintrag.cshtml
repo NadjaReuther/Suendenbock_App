@@ -1,0 +1,40 @@
+@model Suendenbock_App.Models.ViewModels.AppEntryViewModel
+
+<article class="entry">
+    @if (!string.IsNullOrEmpty(Model.ImagePath))
+    {
+        <img class="img" src="@Model.ImagePath" alt="Bild: @Model.Title" loading="lazy" />
+    }
+    <div class="pad">
+        <div class="catlbl">@Model.TypeLabel</div>
+        <h3>@Model.Title</h3>
+        @if (!string.IsNullOrEmpty(Model.Subtitle))
+        {
+            <div class="subt">@Model.Subtitle</div>
+        }
+        @if (!string.IsNullOrEmpty(Model.Quote))
+        {
+            <blockquote>
+                „@Model.Quote“
+                @if (!string.IsNullOrEmpty(Model.QuoteBy))
+                {
+                    <footer>– @Model.QuoteBy</footer>
+                }
+            </blockquote>
+        }
+        @if (!string.IsNullOrEmpty(Model.Notice))
+        {
+            <p class="ro">@Model.Notice</p>
+        }
+        @if (!string.IsNullOrEmpty(Model.DescriptionHtml))
+        {
+            @* Inhalt wie auf der Website (dort ebenfalls mit Html.Raw gerendert) *@
+            <div class="rich">@Html.Raw(Model.DescriptionHtml)</div>
+        }
+        else if (string.IsNullOrEmpty(Model.Notice))
+        {
+            <p class="muted" style="font-size:14px">Zu diesem Eintrag gibt es noch keinen Text.</p>
+        }
+        <a href="@Model.FullPageUrl" class="btn-line" style="margin-top:14px"><span class="ms">open_in_new</span>Ganze Seite öffnen</a>
+    </div>
+</article>

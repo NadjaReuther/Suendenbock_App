@@ -23,7 +23,19 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddRoles<IdentityRole>() // Role Support
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddControllersWithViews()
+// Anmeldung: 14 Tage gültig, jeder Besuch verlängert sie wieder.
+// Wer 14 Tage nicht vorbeischaut, wird aus Sicherheitsgründen abgemeldet.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = true;
+});
+
+builder.Services.AddControllersWithViews(options =>
+{
+    // Beim ersten Login nach dem echten Namen fragen
+    options.Filters.Add<Suendenbock_App.Filters.RequireRealNameFilter>();
+})
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
@@ -48,6 +60,8 @@ builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<GameService>();
 // Push Notification Service
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
+// Tägliche Erinnerungen (Monatsbeitrag, später Termine)
+builder.Services.AddHostedService<ReminderBackgroundService>();
 
 // SignalR für Real-time Combat
 builder.Services.AddSignalR(options =>

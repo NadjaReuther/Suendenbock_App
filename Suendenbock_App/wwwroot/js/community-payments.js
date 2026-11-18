@@ -130,7 +130,8 @@ function renderPayments(payments) {
 
     paymentsList.innerHTML = filteredPayments.map(payment => {
         // Entferne @suendenbock.lore vom Namen
-        const displayName = (payment.playerName || "").replace("@suendenbock.lore", "");
+        // Echter Name, falls eingetragen, sonst Login ohne Domain
+        const displayName = payment.displayName || (payment.playerName || "").replace("@suendenbock.lore", "");
 
         return `
         <div class="payment-management-item" data-payment-id="${payment.id}">
