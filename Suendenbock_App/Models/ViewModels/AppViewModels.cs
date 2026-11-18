@@ -50,6 +50,8 @@ namespace Suendenbock_App.Models.ViewModels
     public class AppStartViewModel
     {
         public string DisplayName { get; set; } = string.Empty;
+        /// <summary>Nur für die Spielleitung: "5 von 8 bezahlt"</summary>
+        public AppPaymentSummary? AdminPayments { get; set; }
         public AppEventViewModel? NextEvent { get; set; }
         public AppPaymentViewModel? Payment { get; set; }
         public List<AppFeedItem> Feed { get; set; } = new();
@@ -58,6 +60,41 @@ namespace Suendenbock_App.Models.ViewModels
     public class AppTermineViewModel
     {
         public List<AppEventViewModel> Events { get; set; } = new();
+        public bool IsAdmin { get; set; }
+    }
+
+    public class AppPaymentSummary
+    {
+        public string MonthName { get; set; } = string.Empty;
+        public int Paid { get; set; }
+        public int Total { get; set; }
+    }
+
+    /// <summary>Termin anlegen/bearbeiten (Spielleitung)</summary>
+    public class AppEventEditViewModel
+    {
+        public int? Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Type { get; set; } = "Spieltag";
+        public DateTime Date { get; set; } = DateTime.Today;
+        public string StartTime { get; set; } = "14:00";
+        public string EndTime { get; set; } = "22:00";
+        public string Description { get; set; } = string.Empty;
+        public List<AppChoreViewModel> Chores { get; set; } = new();
+        public List<string> Assignees { get; set; } = new();
+        public static readonly string[] Types = { "Spieltag", "Vorbereitung", "Ausflug", "Massage" };
+    }
+
+    /// <summary>Thema oder Antwort bearbeiten</summary>
+    public class AppPostEditViewModel
+    {
+        public int Id { get; set; }
+        public int ThreadId { get; set; }
+        public bool IsThread { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public int CategoryId { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public List<ForumCategoryViewModel> Categories { get; set; } = new();
     }
 
     public class AppForumViewModel
@@ -82,6 +119,7 @@ namespace Suendenbock_App.Models.ViewModels
     public class AppThreadViewModel
     {
         public int Id { get; set; }
+        public bool CanEdit { get; set; }
         public string Title { get; set; } = string.Empty;
         public string CategoryName { get; set; } = string.Empty;
         public string AuthorName { get; set; } = string.Empty;
@@ -92,6 +130,8 @@ namespace Suendenbock_App.Models.ViewModels
 
     public class AppReplyItem
     {
+        public int Id { get; set; }
+        public bool CanEdit { get; set; }
         public string AuthorName { get; set; } = string.Empty;
         public bool IsMine { get; set; }
         public DateTime CreatedAt { get; set; }

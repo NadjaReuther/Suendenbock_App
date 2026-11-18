@@ -269,9 +269,61 @@ namespace Suendenbock_App.Controllers
 
             return Ok(payments);
         }
+
+        // POST: api/payments/remind
+        // Erinnert sofort alle Spieler mit offenem Beitrag (oder nur einen, wenn PlayerName gesetzt ist)
+        [HttpPost("remind")]
+        public async Task<IActionResult> Remind([FromBody] RemindRequest request)
+        {
+            var userManager = HttpContext.RequestServices.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<ApplicationUser>>();
+            var players = await PaymentPeriod.GetPayingPlayersAsync(userManager);
+
+            int year, month;
+            if (request.Year.HasValue && request.Month.HasValue)
+            {
+                year = request.Year.Value;
+                month = request.Month.Value;
+            }
+            else
+            {
+                (year, month) = PaymentPeriod.GetTargetMonth(DateTime.Now);
+            }
+
+            var paidUserNames = await _context.MonthlyPayments
+                .Where(mp => mp.Year == year && mp.Month == month && mp.Status == "paid")
+                .Select(mp => mp.PlayerName)
+                .ToListAsync();
+
+            var open = players
+                .Where(u => !paidUserNames.Contains(u.UserName ?? ""))
+                .Where(u => string.IsNullOrEmpty(request.PlayerName) || u.UserName == request.PlayerName)
+                .ToList();
+
+            var monthName = PaymentPeriod.GetMonthName(month);
+            foreach (var player in open)
+            {
+                await _pushService.SendToUserAsync(
+                    player.Id,
+                    $"💰 Monatsbeitrag {monthName} offen",
+                    "Kurze Erinnerung: Dein Beitrag ist noch nicht eingegangen.",
+                    "/App",
+                    "Payment"
+                );
+            }
+
+            return Ok(new { reminded = open.Count });
+        }
     }
 
     // Request Models
+    public class RemindRequest
+    {
+        public int? Year { get; set; }
+        public int? Month { get; set; }
+        /// <summary>Optional: nur diesen Spieler erinnern (Login, wie PlayerName)</summary>
+        public string? PlayerName { get; set; }
+    }
+
     public class CreatePaymentRequest
     {
         public string PlayerName { get; set; } = string.Empty;

@@ -5,6 +5,11 @@
 
 <h2 class="sec"><span class="ms">event</span>Akt-Planung</h2>
 
+@if (Model.IsAdmin)
+{
+    <a href="/App/TerminBearbeiten" class="newbtn" style="text-decoration:none"><span class="ms">add</span>Neuer Termin</a>
+}
+
 @if (!Model.Events.Any())
 {
     <div class="card"><p class="empty"><span class="ms">event_busy</span>Gerade ist kein Termin geplant.</p></div>
@@ -15,6 +20,10 @@ else
     {
         <div class="card">
             <partial name="_EventCard" model="e" view-data='new ViewDataDictionary(ViewData) { { "ShowAllChores", true } }' />
+            @if (Model.IsAdmin)
+            {
+                <a href="/App/TerminBearbeiten/@e.Id" class="btn-line" style="margin-top:10px"><span class="ms">edit_calendar</span>Bearbeiten</a>
+            }
         </div>
     }
 }

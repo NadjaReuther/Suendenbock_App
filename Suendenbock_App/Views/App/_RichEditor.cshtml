@@ -1,0 +1,19 @@
+@model string
+@* Einfacher Editor für Forumsbeiträge: behält die Formatierung (HTML wie aus dem Website-Editor) *@
+<div class="fld">
+    <label id="reLabel">Inhalt</label>
+    <div class="rich-wrap">
+        <div class="tb" role="toolbar" aria-label="Formatierung">
+            <button type="button" data-rcmd="bold" aria-label="Fett"><span class="ms">format_bold</span></button>
+            <button type="button" data-rcmd="italic" aria-label="Kursiv"><span class="ms">format_italic</span></button>
+            <span class="sep"></span>
+            <button type="button" data-rcmd="insertUnorderedList" aria-label="Liste"><span class="ms">format_list_bulleted</span></button>
+            <button type="button" data-rcmd="insertOrderedList" aria-label="Nummerierte Liste"><span class="ms">format_list_numbered</span></button>
+            <span class="sep"></span>
+            <button type="button" data-rcmd="undo" aria-label="Rückgängig"><span class="ms">undo</span></button>
+        </div>
+        @* Inhalt wie auf der Website (dort ebenfalls mit Html.Raw gerendert) *@
+        <div class="rich rich-edit" id="richEd" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="reLabel">@Html.Raw(Model)</div>
+    </div>
+    <input type="hidden" name="Content" id="richValue" value="@Model" />
+</div>
