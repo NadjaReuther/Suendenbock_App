@@ -355,9 +355,9 @@ namespace Suendenbock_App.Controllers
                 return View("KeinCharakter");
             }
 
-            var selectedId = id
-                ?? (myCharacters.Any(c => c.Id == user.CurrentCharacterId) ? user.CurrentCharacterId : null)
-                ?? myCharacters.First().Id;
+            // Ohne Angabe: der eigene Hauptcharakter (Begleiter stehen durch die Sortierung hinten).
+            // Die frühere Spalte CurrentCharacterId gibt es seit dem Rückbau des Tenant-Systems nicht mehr.
+            var selectedId = id ?? myCharacters.First().Id;
 
             // Nur eigene Charaktere
             if (!myCharacters.Any(c => c.Id == selectedId))
@@ -727,7 +727,9 @@ namespace Suendenbock_App.Controllers
 
             ViewBag.Email = user.Email ?? user.UserName;
             ViewBag.ActiveCharacter = await _context.Characters
-                .Where(c => c.Id == user.CurrentCharacterId)
+                .Where(c => c.UserId == user.Id)
+                .OrderBy(c => c.IsCompanion)
+                .ThenBy(c => c.Vorname)
                 .Select(c => c.Vorname + " " + c.Nachname)
                 .FirstOrDefaultAsync();
 

@@ -27,8 +27,9 @@ namespace Suendenbock_App.Filters
             {
                 var request = context.HttpContext.Request;
                 var returnUrl = request.Path + request.QueryString;
+                // area = "": sonst würde aus Hesparis heraus /Hesparis/Profil/Name erzeugt (gibt es nicht)
                 context.Result = new RedirectToActionResult(
-                    nameof(ProfilController.Name), "Profil", new { returnUrl });
+                    nameof(ProfilController.Name), "Profil", new { area = "", returnUrl });
                 return;
             }
 
