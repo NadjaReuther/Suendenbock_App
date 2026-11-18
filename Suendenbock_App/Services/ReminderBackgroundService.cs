@@ -139,9 +139,17 @@ namespace Suendenbock_App.Services
                     .ToList();
 
                 var users = await context.Users
-                    .Include(u => u.CurrentCharacter)
                     .Where(u => userIds.Contains(u.Id))
                     .ToListAsync();
+
+                // Eigener Charakter je Spieler (für die Suche nach "Dein Dienst"), Begleiter zählen nicht
+                var hauptcharaktere = (await context.Characters
+                        .Where(c => c.UserId != null && userIds.Contains(c.UserId))
+                        .OrderBy(c => c.IsCompanion)
+                        .ThenBy(c => c.Vorname)
+                        .ToListAsync())
+                    .GroupBy(c => c.UserId!)
+                    .ToDictionary(g => g.Key, g => g.First());
 
                 _logger.LogInformation($"Vortag-Erinnerung '{evt.Title}': {users.Count} Empfänger");
 
@@ -152,7 +160,7 @@ namespace Suendenbock_App.Services
                     if (!string.IsNullOrEmpty(time))
                         parts.Add($"{time} Uhr");
 
-                    var chore = EventNotificationTexts.FindChoreFor(user, evt.Chores);
+                    var chore = EventNotificationTexts.FindChoreFor(user, evt.Chores, hauptcharaktere.GetValueOrDefault(user.Id));
                     if (chore != null)
                         parts.Add($"Dein Dienst: {chore.ChoreName}");
 

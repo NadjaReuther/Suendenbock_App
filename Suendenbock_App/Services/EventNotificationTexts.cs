@@ -34,16 +34,17 @@ namespace Suendenbock_App.Services
 
         /// <summary>
         /// Dienste werden als freier Text eingetragen. Wir suchen den Dienst,
-        /// dessen Name zum Benutzer passt (Name, Login ohne Domain, Vor- oder Rufname des aktiven Charakters).
+        /// dessen Name zum Benutzer passt (Name, Login ohne Domain, Vor- oder Rufname des eigenen Charakters).
+        /// Den Charakter gibt der Aufrufer mit (siehe HauptcharakterAsync), weil ApplicationUser keinen Verweis darauf hat.
         /// </summary>
-        public static EventChore? FindChoreFor(ApplicationUser user, IEnumerable<EventChore> chores)
+        public static EventChore? FindChoreFor(ApplicationUser user, IEnumerable<EventChore> chores, Character? hauptcharakter)
         {
             var names = new List<string?>
             {
                 user.Name,
                 user.UserName?.Split('@')[0],
-                user.CurrentCharacter?.Vorname,
-                user.CurrentCharacter?.Rufname
+                hauptcharakter?.Vorname,
+                hauptcharakter?.Rufname
             };
 
             var candidates = names
