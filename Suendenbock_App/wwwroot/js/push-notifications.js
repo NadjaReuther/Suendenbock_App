@@ -6,12 +6,56 @@ class PushNotificationManager {
         this.swRegistration = null;
         this.isSubscribed = false;
         this.publicKey = null;
+        this._initPromise = null;
     }
 
     /**
-     * Initialisiert den Push-Service
+     * Kann dieses Gerät Push überhaupt?
+     * iPhone/iPad: nur in der App vom Home-Bildschirm (ab iOS 16.4), nicht im Safari-Tab.
+     * @returns {{supported: boolean, reason: string|null, message: string|null}}
      */
-    async init() {
+    getSupportStatus() {
+        const ua = navigator.userAgent || '';
+        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const isStandalone = window.navigator.standalone === true ||
+            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+
+        if (isIOS && !isStandalone) {
+            return {
+                supported: false, reason: 'ios-browser',
+                message: 'Auf dem iPhone funktionieren Benachrichtigungen nur in der App: Seite über „Teilen → Zum Home-Bildschirm“ hinzufügen und die App dann über das Icon öffnen.'
+            };
+        }
+        if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+            return {
+                supported: false, reason: 'unsupported',
+                message: isIOS
+                    ? 'Dein iPhone braucht mindestens iOS 16.4 für Benachrichtigungen. Bitte unter Einstellungen → Allgemein → Softwareupdate aktualisieren.'
+                    : 'Dieser Browser unterstützt keine Push-Benachrichtigungen.'
+            };
+        }
+        if (Notification.permission === 'denied') {
+            return {
+                supported: false, reason: 'denied',
+                message: isIOS
+                    ? 'Benachrichtigungen wurden abgelehnt. Erlauben kannst du sie in den iPhone-Einstellungen → Mitteilungen → Sündenbock.'
+                    : 'Benachrichtigungen wurden abgelehnt. Erlaube sie in den Website-Einstellungen deines Browsers (Schloss-Symbol neben der Adresse).'
+            };
+        }
+        return { supported: true, reason: null, message: null };
+    }
+
+    /**
+     * Initialisiert den Push-Service (nur einmal, weitere Aufrufe warten auf denselben Vorgang)
+     */
+    init() {
+        if (!this._initPromise) {
+            this._initPromise = this._init();
+        }
+        return this._initPromise;
+    }
+
+    async _init() {
         try {
             // Prüfe ob Service Worker unterstützt wird
             if (!('serviceWorker' in navigator)) {
@@ -65,6 +109,7 @@ class PushNotificationManager {
      */
     async checkSubscriptionStatus() {
         try {
+            if (!this.swRegistration) { this.isSubscribed = false; return false; }
             const subscription = await this.swRegistration.pushManager.getSubscription();
             this.isSubscribed = subscription !== null;
             console.log('Subscription-Status:', this.isSubscribed);
@@ -80,6 +125,26 @@ class PushNotificationManager {
      */
     async subscribe() {
         try {
+            const support = this.getSupportStatus();
+            if (!support.supported) {
+                return { success: false, message: support.message };
+            }
+
+            // WICHTIG fürs iPhone: Die Erlaubnis-Abfrage muss direkt aus dem Tipp kommen,
+            // also VOR jedem anderen await. Sonst zeigt Safari keine Abfrage an.
+            const permission = await Notification.requestPermission();
+
+            if (permission !== 'granted') {
+                console.log('Benachrichtigungsberechtigung abgelehnt');
+                return { success: false, message: this.getSupportStatus().message || 'Berechtigung wurde nicht erteilt.' };
+            }
+
+            // Falls die Vorbereitung im Hintergrund noch läuft (schnell getippt): darauf warten
+            await this.init();
+            if (!this.swRegistration) {
+                return { success: false, message: 'Der Hintergrunddienst konnte nicht gestartet werden. Bitte die App einmal schließen und neu öffnen.' };
+            }
+
             // Prüfe ob Public Key geladen wurde
             if (!this.publicKey || this.publicKey === 'GENERATE_ME') {
                 console.error('VAPID Public Key nicht konfiguriert');
@@ -87,14 +152,6 @@ class PushNotificationManager {
                     success: false,
                     message: 'Server-Konfigurationsfehler: VAPID-Keys fehlen. Bitte informiere den Administrator.'
                 };
-            }
-
-            // Fordere Berechtigung an
-            const permission = await Notification.requestPermission();
-
-            if (permission !== 'granted') {
-                console.log('Benachrichtigungsberechtigung abgelehnt');
-                return { success: false, message: 'Berechtigung wurde abgelehnt' };
             }
 
             // Erstelle Subscription
