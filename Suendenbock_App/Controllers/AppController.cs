@@ -745,10 +745,20 @@ namespace Suendenbock_App.Controllers
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId)) return null;
 
-            return await _context.Users
-                .Include(u => u.CurrentCharacter)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            // Eigener Charakter (ohne Begleiter), z. B. für "Dein Dienst" bei den Terminen
+            _hauptcharakter = await _context.Characters
+                .Where(c => c.UserId == userId)
+                .OrderBy(c => c.IsCompanion)
+                .ThenBy(c => c.Vorname)
+                .FirstOrDefaultAsync();
+
+            return user;
         }
+
+        /// <summary>Wird in GetUserAsync gesetzt (ersetzt das frühere user.CurrentCharacter).</summary>
+        private Character? _hauptcharakter;
 
         /// <summary>Daten für Kopfleiste und Tab-Leiste</summary>
         private async Task SetShellAsync(ApplicationUser user, string activeTab)
@@ -807,7 +817,7 @@ namespace Suendenbock_App.Controllers
         private AppEventViewModel ToEventViewModel(MonthlyEvent e, ApplicationUser user)
         {
             var myRsvp = e.RSVPs.FirstOrDefault(r => r.UserId == user.Id);
-            var myChore = EventNotificationTexts.FindChoreFor(user, e.Chores);
+            var myChore = EventNotificationTexts.FindChoreFor(user, e.Chores, _hauptcharakter);
 
             return new AppEventViewModel
             {

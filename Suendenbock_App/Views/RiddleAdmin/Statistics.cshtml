@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Rätsel-Statistiken";
     var users = ViewBag.Users as Dictionary<string, ApplicationUser>;
+    var spielerNamen = ViewBag.SpielerNamen as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 
 <header class="antique-header">
@@ -191,7 +192,7 @@
                                     var medal = rank == 1 ? "🥇" : rank == 2 ? "🥈" : rank == 3 ? "🥉" : rank.ToString();
 
                                     var user = users != null && users.ContainsKey(player.UserId) ? users[player.UserId] : null;
-                                    var playerName = user?.CurrentCharacter?.Vorname ?? user?.UserName ?? "Unbekannt";
+                                    var playerName = spielerNamen.GetValueOrDefault(player.UserId) ?? user?.UserName ?? "Unbekannt";
 
                                     <tr>
                                         <td><strong>@medal</strong></td>

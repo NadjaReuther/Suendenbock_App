@@ -150,10 +150,19 @@ namespace Suendenbock_App.Controllers
 
             var users = await _context.Users
                 .Where(u => allUserIds.Contains(u.Id))
-                .Include(u => u.CurrentCharacter)
                 .ToDictionaryAsync(u => u.Id);
 
+            // Vorname des eigenen Charakters je Spieler (Begleiter zählen nicht)
+            var spielerNamen = (await _context.Characters
+                    .Where(c => c.UserId != null && allUserIds.Contains(c.UserId))
+                    .OrderBy(c => c.IsCompanion)
+                    .ThenBy(c => c.Vorname)
+                    .ToListAsync())
+                .GroupBy(c => c.UserId!)
+                .ToDictionary(g => g.Key, g => g.First().Vorname);
+
             ViewBag.Users = users;
+            ViewBag.SpielerNamen = spielerNamen;
 
             return View(doors);
         }
