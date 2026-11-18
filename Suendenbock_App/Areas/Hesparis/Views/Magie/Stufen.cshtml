@@ -1,0 +1,281 @@
+@model StufenViewModel
+@{
+    var kopf = Model.Kopf;
+    var fach = Model.Auswahl;
+    ViewData["Title"] = "Magiestufen";
+    ViewData["Bereich"] = "Stufen";
+    ViewData["FigurId"] = kopf.AktiveFigurId;
+
+    // Fächer mit freien Fachpunkten für die Punkte-Karte
+    var fachpunkteFrei = Model.Faecher.Where(f => f.FachpunkteFrei > 0).ToList();
+    var noten = new[] { "S", "A", "B", "C", "D", "E", "alt" };
+
+    // Innere Kreise leuchten, sobald ihr Abschnitt offen ist
+    var kreisAnger = "rg-circ rg-c1";
+    if (Model.Abschnitt >= 2)
+    {
+        kreisAnger += " open";
+    }
+    var kreisGarten = "rg-circ rg-c2";
+    if (Model.Abschnitt >= 3)
+    {
+        kreisGarten += " open";
+    }
+}
+
+<div class="rg-head">
+    <div>
+        <div class="armory-eyebrow">Magiestufen · @Model.AbschnittName</div>
+        <h1 class="armory-title">Der Weg nach innen</h1>
+        <p class="armory-sub">Vom Hafen über den Anger in den Garten, bis zum Dom in der Mitte. Je weiter ein Fach nach innen reicht, desto höher die Stufe.</p>
+    </div>
+</div>
+
+<partial name="_FigurKopf" model="kopf" />
+
+<div class="rg-grid">
+    @* ------------------------------------------------------------ Ring *@
+    <div class="rg-stage">
+        <div class="rg-ring">
+            <div class="rg-circ rg-c0"></div>
+            <div class="@kreisAnger"></div>
+            <div class="@kreisGarten"></div>
+            <div class="rg-circ rg-core">
+                <span>Dom</span>
+                @if (Model.Abschnitt >= 4)
+                {
+                    <small>offen</small>
+                }
+                else
+                {
+                    <small>verhüllt</small>
+                }
+            </div>
+
+            @foreach (var tor in Model.Tore)
+            {
+                if (tor.Offen)
+                {
+                    <span class="rg-gate open" style="left:@tor.Links;top:@tor.Oben">✓ @tor.Name</span>
+                }
+                else
+                {
+                    <span class="rg-gate" style="left:@tor.Links;top:@tor.Oben">@tor.Name</span>
+                }
+            }
+
+            <svg class="rg-svg" viewBox="0 0 720 720" aria-hidden="true">
+                @foreach (var l in Model.Speichen)
+                {
+                    <line x1="@l.X1" y1="@l.Y1" x2="@l.X2" y2="@l.Y2" class="rg-spoke"></line>
+                }
+                <polygon points="@Model.Polygon" class="rg-poly"></polygon>
+                @foreach (var l in Model.Pfade)
+                {
+                    <line x1="@l.X1" y1="@l.Y1" x2="@l.X2" y2="@l.Y2" class="rg-path"></line>
+                }
+            </svg>
+
+            @* Punkte: ein Klick wählt das Fach aus *@
+            @foreach (var p in Model.Punkte)
+            {
+                <a class="@p.Klasse" style="left:@p.Links;top:@p.Oben" title="@p.Beschriftung" aria-label="@p.Beschriftung"
+                   asp-action="Stufen" asp-route-id="@kopf.AktiveFigurId" asp-route-fach="@p.FachId"></a>
+            }
+
+            @foreach (var b in Model.Beschriftungen)
+            {
+                var klasse = "rg-label";
+                if (b.Aktiv)
+                {
+                    klasse += " on";
+                }
+                <a class="@klasse" style="left:@b.Links;top:@b.Oben"
+                   asp-action="Stufen" asp-route-id="@kopf.AktiveFigurId" asp-route-fach="@b.FachId">
+                    <span>@b.Name</span><em>Stufe @b.Stufe</em>
+                </a>
+            }
+        </div>
+    </div>
+
+    @* ------------------------------------------------------------ Seitenleiste *@
+    <aside class="rg-side">
+        <div class="rg-card rg-points">
+            <div class="rg-orb"><b>@Model.PunkteFrei</b></div>
+            <div>
+                <div class="rg-lbl">Punkte frei</div>
+                <div class="rg-pts-sub">
+                    @Model.PunkteVerbraucht von @Model.PunkteGesamt verteilt
+                    @if (fachpunkteFrei.Any())
+                    {
+                        <text> · ✦ Fachpunkte: @string.Join(", ", fachpunkteFrei.Select(f => f.Name + " " + f.FachpunkteFrei))</text>
+                    }
+                </div>
+                <div class="rg-pts-src">Start @HesparisRegeln.StartPunkte · Spielleitung @Model.Bonuspunkte · Abschlüsse @Model.AbschlussPunkte</div>
+            </div>
+        </div>
+
+        <div class="rg-card rg-detail">
+            <div class="rg-dhead">
+                <div>
+                    <div class="rg-lbl">@kopf.Aktiv.Name</div>
+                    <h3>@fach.Name</h3>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Beschreibung))
+            {
+                <p class="rg-note">@Model.Beschreibung</p>
+            }
+            <div class="rg-dlv">Stufe <b>@fach.Stufe</b> <span>von 10</span></div>
+
+            <ol class="rg-steps">
+                @foreach (var s in Model.Schritte)
+                {
+                    <li class="@s.Status"><b>@s.Stufe</b><span>@s.Text</span></li>
+                }
+            </ol>
+
+            @foreach (var perk in Model.Perks)
+            {
+                var klasse = "rg-perk";
+                if (perk.Erhalten)
+                {
+                    klasse += " has";
+                }
+                <div class="@klasse">
+                    <div class="rg-lbl">@perk.Tor · @perk.Hinweis</div>
+                    @if (perk.Erhalten)
+                    {
+                        <div class="rg-perk-name">@perk.Name</div>
+                    }
+                    else
+                    {
+                        <div class="rg-perk-name"><span class="rg-veil">@perk.Name</span></div>
+                    }
+                    @if (!string.IsNullOrEmpty(perk.Text))
+                    {
+                        <p>@perk.Text</p>
+                    }
+                </div>
+            }
+
+            @if (fach.Stufe >= Model.MaxStufe && Model.MaxStufe < 10)
+            {
+                var naechster = HesparisRegeln.Abschnitte[Model.Abschnitt];
+                var tor = HesparisRegeln.Abschnitte[Model.Abschnitt - 1].Tor;
+                <p class="rg-note">Ab Stufe @(Model.MaxStufe + 1) geht es mit der @naechster.Name weiter. Sie wird mit der Prüfung zur @tor frei.</p>
+            }
+
+            @if (kopf.DarfBearbeiten)
+            {
+                <div class="rg-actions">
+                    @if (fach.Stufe < 10)
+                    {
+                        if (Model.KannWaehlen)
+                        {
+                            @* Bei "… ODER …" eine Karte je Möglichkeit, sonst ein Knopf *@
+                            foreach (var option in Model.Optionen)
+                            {
+                                <form asp-action="StufeWaehlen" method="post">
+                                    <input type="hidden" name="id" value="@kopf.AktiveFigurId" />
+                                    <input type="hidden" name="fachId" value="@fach.Id" />
+                                    <input type="hidden" name="stufe" value="@(fach.Stufe + 1)" />
+                                    <input type="hidden" name="wahl" value="@option" />
+                                    @if (Model.Optionen.Count > 1)
+                                    {
+                                        <button type="submit" class="rg-opt">
+                                            <small>Stufe @(fach.Stufe + 1) · Möglichkeit</small>
+                                            <span>@option</span>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="rg-buy">Stufe @(fach.Stufe + 1) wählen</button>
+                                    }
+                                </form>
+                            }
+                        }
+                        else
+                        {
+                            <button type="button" class="rg-buy" disabled>Stufe @(fach.Stufe + 1) · @Model.Grund</button>
+                        }
+                    }
+                    @if (fach.Stufe > 0)
+                    {
+                        <form asp-action="StufeZuruecknehmen" method="post" class="rg-undo-form">
+                            <input type="hidden" name="id" value="@kopf.AktiveFigurId" />
+                            <input type="hidden" name="fachId" value="@fach.Id" />
+                            <button type="submit" class="icon-btn rg-undo">Stufe @fach.Stufe zurücknehmen</button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (kopf.IstSpielleitung)
+        {
+            <details class="rg-card rg-sl">
+                <summary>Spielleitung</summary>
+                <div class="rg-sl-row">
+                    <span>Punkte für @kopf.Aktiv.Name</span>
+                    <span class="rg-step">
+                        <form asp-action="Bonuspunkte" method="post" class="inline">
+                            <input type="hidden" name="id" value="@kopf.AktiveFigurId" />
+                            <input type="hidden" name="fach" value="@fach.Id" />
+                            <button type="submit" name="aenderung" value="-1" aria-label="Einen Punkt abziehen">−</button>
+                        </form>
+                        <b>@Model.Bonuspunkte</b>
+                        <form asp-action="Bonuspunkte" method="post" class="inline">
+                            <input type="hidden" name="id" value="@kopf.AktiveFigurId" />
+                            <input type="hidden" name="fach" value="@fach.Id" />
+                            <button type="submit" name="aenderung" value="1" aria-label="Einen Punkt vergeben">+</button>
+                        </form>
+                    </span>
+                </div>
+                <form asp-action="Bonuspunkte" method="post">
+                    <input type="hidden" name="id" value="@kopf.AktiveFigurId" />
+                    <input type="hidden" name="fach" value="@fach.Id" />
+                    <input type="hidden" name="alle" value="true" />
+                    <button type="submit" class="icon-btn rg-sl-btn">+1 Punkt für alle</button>
+                </form>
+
+                <div class="rg-lbl">Abschlüsse von @kopf.Aktiv.Name</div>
+                @foreach (var a in HesparisRegeln.Abschnitte)
+                {
+                    var aktuell = Model.Abschluesse[a.Schluessel];
+                    <form asp-action="Abschluss" method="post" class="rg-sl-row">
+                        <input type="hidden" name="id" value="@kopf.AktiveFigurId" />
+                        <input type="hidden" name="fach" value="@fach.Id" />
+                        <input type="hidden" name="abschnitt" value="@a.Schluessel" />
+                        <span>@a.Tor</span>
+                        <select name="wert" class="hes-select rg-abs" onchange="this.form.submit()">
+                            <option value="">–</option>
+                            @foreach (var n in noten)
+                            {
+                                if (n == aktuell)
+                                {
+                                    <option value="@n" selected>@n</option>
+                                }
+                                else
+                                {
+                                    <option value="@n">@n</option>
+                                }
+                            }
+                        </select>
+                    </form>
+                }
+                <p class="rg-note">Ein bestandener Abschluss (nicht E) öffnet den nächsten Abschnitt und bringt 3 Punkte plus Notenbonus. „alt“ öffnet nur, ohne Punkte. Die Zahl bei „Punkte“ zählt nur, was du von Hand zu den 6 Startpunkten dazugibst.</p>
+            </details>
+        }
+
+        <details class="rg-card rg-legend">
+            <summary>Abkürzungen</summary>
+            <div class="rg-leg-list">
+                @foreach (var a in HesparisRegeln.Abkuerzungen)
+                {
+                    <span><b>@a.Kurz</b> @a.Lang</span>
+                }
+            </div>
+        </details>
+    </aside>
+</div>

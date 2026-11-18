@@ -1,0 +1,161 @@
+@model SonderzauberViewModel
+@{
+    ViewData["Title"] = "Sonderzauber";
+    ViewData["Bereich"] = "Sonder";
+    var a = Model.Auswahl;
+    var farbe = "--cc:" + a.Aussehen.Farbe + ";--cc-rgb:" + a.Aussehen.Rgb + ";";
+
+    // Zahl oder Haken in den drei Schritten
+    string Marke(string zustand, string nummer)
+    {
+        if (zustand == "done")
+        {
+            return "✓";
+        }
+        return nummer;
+    }
+}
+
+<div id="sonderList">
+    <div class="sz-head">
+        <div class="armory-eyebrow">Sonderzauber</div>
+        <h1 class="armory-title">Vier Karten, eine Wahl</h1>
+        <p class="armory-sub">Zwei der vier Zauber dürfen aufgedeckt und gelesen werden. Danach muss einer davon endgültig gewählt werden. Die übrigen zwei bleiben für immer verborgen.</p>
+    </div>
+
+    @* ------------------------------------------------------------ Figurenleiste *@
+    <div class="sz-chars" role="tablist" aria-label="Figur wählen">
+        @foreach (var f in Model.Figuren)
+        {
+            var klasse = "sz-char s-" + f.StatusKlasse;
+            if (f.Code == a.Code)
+            {
+                klasse += " active";
+            }
+            <a class="@klasse" asp-action="Sonderzauber" asp-route-zauber="@f.Code" role="tab"
+               style="--cc:@f.Aussehen.Farbe;--cc-rgb:@f.Aussehen.Rgb;">
+                <span class="sz-medal">@f.Person.Substring(0, 1)</span>
+                <span class="sz-char-body">
+                    <span class="sz-char-name">@f.Person</span>
+                    <span class="sz-char-elem">@f.Element</span>
+                    <span class="sz-char-status">@f.StatusText</span>
+                </span>
+            </a>
+        }
+    </div>
+
+    @* ------------------------------------------------------------ Kartentisch *@
+    <div class="sz-stage a-panel" style="@farbe">
+        <div class="sz-stage-head">
+            <div>
+                <div class="sz-for">Für @a.Person</div>
+                <div class="sz-title">@a.Titel</div>
+            </div>
+            <ol class="sz-steps">
+                <li class="sz-step @Model.Schritt1"><b>@Marke(Model.Schritt1, "1")</b>Aufdecken @Math.Min(Model.Aufgedeckt, 2)/2</li>
+                <li class="sz-step-sep" aria-hidden="true"></li>
+                <li class="sz-step @Model.Schritt2"><b>@Marke(Model.Schritt2, "2")</b>Einen wählen</li>
+                <li class="sz-step-sep" aria-hidden="true"></li>
+                <li class="sz-step @Model.Schritt3"><b>@Marke(Model.Schritt3, "3")</b>Gebunden</li>
+            </ol>
+        </div>
+
+        <div class="sz-cards">
+            @foreach (var k in Model.Karten)
+            {
+                var o = k.Option;
+                <div class="@k.Klasse" style="--n:@k.Position">
+                    @if (k.KannAufdecken)
+                    {
+                        @* Verdeckte Karte: die ganze Karte ist der Knopf zum Aufdecken *@
+                        <form asp-action="SonderzauberAufdecken" method="post">
+                            <input type="hidden" name="zauber" value="@a.Code" />
+                            <input type="hidden" name="position" value="@k.Position" />
+                            <button type="submit" class="sz-inner" aria-label="Karte @k.Roemisch aufdecken">
+                                <div class="sz-face sz-front"></div>
+                                <partial name="_SonderzauberRueckseite" model="k" />
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="sz-inner">
+                            <div class="sz-face sz-front">
+                                @if (k.IstAufgedeckt)
+                                {
+                                    if (k.IstGewaehlt)
+                                    {
+                                        <div class="sz-chosen-badge">✦ Gewählter Zauber</div>
+                                    }
+                                    <div class="sz-front-top">
+                                        <span class="sz-num">@k.Roemisch</span>
+                                        <span class="sz-slots" title="@o.Slots Slots">
+                                            @for (int i = 0; i < (o.Slots ?? 0); i++)
+                                            {
+                                                <i></i>
+                                            }
+                                            <em>@o.Slots Slots</em>
+                                        </span>
+                                    </div>
+                                    <div class="sz-name">@o.Name</div>
+                                    <div class="sz-orn" aria-hidden="true"><span></span><i></i><span></span></div>
+                                    <div class="sz-wirkung">@o.Wirkung</div>
+                                    <div class="sz-meta"><span class="sz-chip">@o.Anwendung</span></div>
+                                    <div class="sz-effect">
+                                        <div class="sz-effect-lbl">Im Spiel</div>
+                                        <div class="sz-effect-txt">@o.Schaden</div>
+                                    </div>
+
+                                    if (!Model.Gewaehlt && Model.DarfBearbeiten)
+                                    {
+                                        @* Zweimal klicken: erst "Endgültig wählen?", dann wird gespeichert *@
+                                        <form asp-action="SonderzauberWaehlen" method="post">
+                                            <input type="hidden" name="zauber" value="@a.Code" />
+                                            <input type="hidden" name="position" value="@k.Position" />
+                                            <button type="submit" class="sz-choose" data-zweistufig>Diesen wählen</button>
+                                        </form>
+                                    }
+                                    if (Model.Gewaehlt && !k.IstGewaehlt)
+                                    {
+                                        <div class="sz-notchosen">nicht gewählt</div>
+                                    }
+                                }
+                            </div>
+                            <partial name="_SonderzauberRueckseite" model="k" />
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (Model.IstSpielleitung && Model.Aufgedeckt > 0)
+    {
+        <form asp-action="SonderzauberZuruecksetzen" method="post" class="sz-reset">
+            <input type="hidden" name="zauber" value="@a.Code" />
+            <button type="submit" class="icon-btn danger" data-zweistufig data-frage="Wirklich alles verdecken?">Spielleitung: Karten von @a.Person zurücksetzen</button>
+        </form>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Wie in der HTML: Der erste Klick fragt nach ("Endgültig wählen?"), erst der zweite speichert.
+        // Nach gut 3 Sekunden ohne zweiten Klick steht wieder der alte Text da.
+        document.querySelectorAll('[data-zweistufig]').forEach(function (knopf) {
+            var alt = knopf.textContent;
+            var frage = knopf.dataset.frage || 'Endgültig wählen?';
+            var timer = null;
+            knopf.addEventListener('click', function (e) {
+                if (knopf.classList.contains('armed')) return;
+                e.preventDefault();
+                knopf.classList.add('armed');
+                knopf.textContent = frage;
+                timer = setTimeout(function () {
+                    knopf.classList.remove('armed');
+                    knopf.textContent = alt;
+                }, 3200);
+            });
+        });
+    </script>
+}

@@ -1,0 +1,14 @@
+@model SonderzauberKarte
+@* Rückseite einer Sonderzauber-Karte: Siegel, römische Zahl, nach der Wahl ein Schloss *@
+<div class="sz-face sz-back">
+    <span class="sz-corner tl"></span><span class="sz-corner tr"></span><span class="sz-corner bl"></span><span class="sz-corner br"></span>
+    <div class="sz-back-art">
+        <div class="sz-seal"><span class="sz-sigil">✦</span></div>
+        <div class="sz-numeral">@Model.Roemisch</div>
+        @if (Model.Versiegelt)
+        {
+            <svg class="sz-lock ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+        }
+    </div>
+    <div class="sz-back-hint">@Model.Hinweis</div>
+</div>

@@ -43,7 +43,7 @@ public static partial class HesparisModell
     {
         "Text", "Notiz", "Beschreibung", "Wirkung", "Stil", "Ziel", "Auftrag", "Rueckmeldung",
         "Motiv", "SchwarzmarktRaetsel", "Sagt", "Eindruck", "Diagnose", "Behandlung", "Malus",
-        "Grund", "Strafe", "Aufgaben", "Geheimnis", "WunderPunkt", "SoPunktetMan", "LadenNotiz",
+        "Grund", "Strafe", "Aufgaben", "Geheimnis", "WunderPunkt", "SoPunktetMan", "LadenNotiz", "HafenText",
     };
 
     /// <summary>

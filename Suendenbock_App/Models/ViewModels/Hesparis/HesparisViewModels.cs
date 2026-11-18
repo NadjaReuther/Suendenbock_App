@@ -28,24 +28,76 @@ public class FigurKurz
     public bool Eigene { get; set; }
 }
 
-// ------------------------------------------------------------------ Startseite
+// ------------------------------------------------------------------ Übersicht (Türme)
 
-public class HesparisIndexViewModel
+/// <summary>Gruppenbildschirm nach dem Startbild: ein Turm je Spielfigur, darunter die Detailleiste.</summary>
+public class UebersichtViewModel
 {
     public FigurKopfViewModel Kopf { get; set; } = null!;
-    public List<FigurUebersicht> Karten { get; set; } = new();
+    public List<Turm> Tuerme { get; set; } = new();
+    public Turm Auswahl => Tuerme.First(t => t.Id == Kopf.AktiveFigurId);
+
+    /// <summary>true, wenn eine Figur angeklickt wurde: dann steigen die Türme nicht erneut auf.</summary>
+    public bool Ruhig { get; set; }
 }
 
-public class FigurUebersicht
+public class Turm
 {
-    public FigurKurz Figur { get; set; } = null!;
-    public int LebenspunkteAktuell { get; set; }
-    public int LebenspunkteMax { get; set; }
-    public int Geld { get; set; }
+    public int Id { get; set; }
+    public string Vorname { get; set; } = "";
+    public string VollerName { get; set; } = "";
+    public bool Eigene { get; set; }
+
+    /// <summary>Element aus dem Sonderzauber, z. B. "Fauna/Ichtyo".</summary>
+    public string Element { get; set; } = "";
+    public string? Rolle { get; set; }
+    public HesparisSigille.Aussehen Aussehen { get; set; } = HesparisSigille.Standard;
+
+    public int LpAktuell { get; set; }
+    public int LpMax { get; set; }
+
     public double? Notenschnitt { get; set; }
-    public Dictionary<string, int> Kopfwerte { get; set; } = new();
-    public int Gegenstaende { get; set; }
-    public int AktiveWirkungen { get; set; }
+    public int BenoteteFaecher { get; set; }
+    public string? Lieblingsfach { get; set; }
+    public string? AgName { get; set; }
+    public string? AgBonus { get; set; }
+    public string? Sonderzauber { get; set; }
+
+    /// <summary>Fach mit der höchsten Magiestufe (für den Link "Magiestufen").</summary>
+    public int? BestesFachId { get; set; }
+    public string? BestesFach { get; set; }
+    public int BesteStufe { get; set; }
+
+    /// <summary>Segmente der Lebensbalken (JS: ptLpBar): gefüllte Anzahl und Zustand "", "mid", "low".</summary>
+    public int LpGefuellt(int segmente)
+    {
+        if (LpMax <= 0)
+        {
+            return 0;
+        }
+        return (int)Math.Ceiling((double)LpAktuell / LpMax * segmente - 0.0001);
+    }
+
+    public string LpZustand
+    {
+        get
+        {
+            double anteil = 0;
+            if (LpMax > 0)
+            {
+                anteil = (double)LpAktuell / LpMax;
+            }
+            if (anteil <= 0.25)
+            {
+                return "low";
+            }
+            if (anteil <= 0.5)
+            {
+                return "mid";
+            }
+            return "";
+        }
+    }
 }
 
 // ------------------------------------------------------------------ Talente
@@ -206,4 +258,165 @@ public class CharakterFormularViewModel
     public List<Charakterart> Arten { get; set; } = new();
     public List<ApplicationUser> Spieler { get; set; } = new();
     public List<Character> SuendenbockCharacters { get; set; } = new();
+}
+
+// ------------------------------------------------------------------ Magiestufen
+
+public class StufenViewModel
+{
+    public FigurKopfViewModel Kopf { get; set; } = null!;
+
+    /// <summary>Abschnitt 1–4 (Unterstufe … Domstufe) und höchste wählbare Stufe darin.</summary>
+    public int Abschnitt { get; set; }
+    public string AbschnittName { get; set; } = "";
+    public int MaxStufe { get; set; }
+
+    public int PunkteGesamt { get; set; }
+    public int PunkteVerbraucht { get; set; }
+    public int PunkteFrei => PunkteGesamt - PunkteVerbraucht;
+    public int Bonuspunkte { get; set; }
+    public int AbschlussPunkte { get; set; }
+
+    public List<StufenFach> Faecher { get; set; } = new();
+    public StufenFach Auswahl { get; set; } = null!;
+    public string? Beschreibung { get; set; }
+    public List<StufenSchritt> Schritte { get; set; } = new();
+    public List<StufenPerk> Perks { get; set; } = new();
+
+    /// <summary>Wahlmöglichkeiten für die nächste Stufe (mehrere bei "… ODER …").</summary>
+    public List<string> Optionen { get; set; } = new();
+    public bool KannWaehlen { get; set; }
+    public string? Grund { get; set; }
+
+    /// <summary>Abschlüsse (hafen, anger, garten, dom) → Note, für Gott.</summary>
+    public Dictionary<string, string?> Abschluesse { get; set; } = new();
+
+    // Ring
+    public string Polygon { get; set; } = "";
+    public List<RingPunkt> Punkte { get; set; } = new();
+    public List<RingBeschriftung> Beschriftungen { get; set; } = new();
+    public List<RingLinie> Speichen { get; set; } = new();
+    public List<RingLinie> Pfade { get; set; } = new();
+    public List<RingTor> Tore { get; set; } = new();
+}
+
+/// <summary>Linie im SVG des Rings (Koordinaten im 720er Raster).</summary>
+public class RingLinie
+{
+    public string X1 { get; set; } = "";
+    public string Y1 { get; set; } = "";
+    public string X2 { get; set; } = "";
+    public string Y2 { get; set; } = "";
+}
+
+/// <summary>Beschriftung eines Tors zwischen zwei Abschnitten (Hafenaufsicht, Angerwacht, Gartenhüter).</summary>
+public class RingTor
+{
+    public string Name { get; set; } = "";
+    public string Links { get; set; } = "";
+    public string Oben { get; set; } = "";
+    public bool Offen { get; set; }
+}
+
+public class StufenFach
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public int Stufe { get; set; }
+    public int Fachpunkte { get; set; }
+    public int FachpunkteFrei => Math.Max(0, Fachpunkte - Stufe);
+}
+
+public class StufenSchritt
+{
+    public int Stufe { get; set; }
+    public string Text { get; set; } = "";
+
+    /// <summary>"got" = erreicht, "next" = jetzt wählbar, "" = noch verdeckt.</summary>
+    public string Status { get; set; } = "";
+}
+
+public class StufenPerk
+{
+    public string Tor { get; set; } = "";
+    public string Name { get; set; } = "";
+    public bool Erhalten { get; set; }
+    public string Hinweis { get; set; } = "";
+    public string? Text { get; set; }
+}
+
+public class RingPunkt
+{
+    public int FachId { get; set; }
+    public int Stufe { get; set; }
+    public string Links { get; set; } = "";
+    public string Oben { get; set; } = "";
+    public string Klasse { get; set; } = "";
+    public string Beschriftung { get; set; } = "";
+}
+
+public class RingBeschriftung
+{
+    public int FachId { get; set; }
+    public string Name { get; set; } = "";
+    public int Stufe { get; set; }
+    public string Links { get; set; } = "";
+    public string Oben { get; set; } = "";
+    public bool Aktiv { get; set; }
+}
+
+// ------------------------------------------------------------------ Sonderzauber
+
+/// <summary>Kartentisch "Vier Karten, eine Wahl": je Figur vier verdeckte Zauber, zwei aufdecken, einen wählen.</summary>
+public class SonderzauberViewModel
+{
+    public List<SonderzauberFigur> Figuren { get; set; } = new();
+    public SonderzauberFigur Auswahl { get; set; } = null!;
+    public List<SonderzauberKarte> Karten { get; set; } = new();
+
+    public int Aufgedeckt { get; set; }
+    public bool Gewaehlt { get; set; }
+
+    public bool DarfBearbeiten { get; set; }
+    public bool IstSpielleitung { get; set; }
+
+    /// <summary>Zustand der drei Schritte oben rechts: "done", "active" oder "".</summary>
+    public string Schritt1 { get; set; } = "";
+    public string Schritt2 { get; set; } = "";
+    public string Schritt3 { get; set; } = "";
+}
+
+/// <summary>Knopf in der Figurenleiste (JS: sz-char).</summary>
+public class SonderzauberFigur
+{
+    public string Code { get; set; } = "";
+    public string Person { get; set; } = "";
+    public string Titel { get; set; } = "";
+    public string Element { get; set; } = "";
+    public HesparisSigille.Aussehen Aussehen { get; set; } = HesparisSigille.Standard;
+
+    /// <summary>Spielfigur dieser Person (für die Navigation), falls es sie gibt.</summary>
+    public int? FigurId { get; set; }
+
+    /// <summary>"open", "progress" oder "done" und der Text darunter (JS: sonderStatus).</summary>
+    public string StatusKlasse { get; set; } = "open";
+    public string StatusText { get; set; } = "";
+}
+
+/// <summary>Eine der vier Karten (JS: sonderCardHtml).</summary>
+public class SonderzauberKarte
+{
+    public int Position { get; set; }
+    public string Roemisch { get; set; } = "";
+    public SonderzauberOption Option { get; set; } = null!;
+
+    /// <summary>CSS-Klassen der Karte, z. B. "sz-card is-revealed is-chosen".</summary>
+    public string Klasse { get; set; } = "";
+    public bool IstAufgedeckt { get; set; }
+    public bool IstGewaehlt { get; set; }
+    public bool KannAufdecken { get; set; }
+
+    /// <summary>Wahl getroffen: verdeckte Karten bekommen ein Schloss.</summary>
+    public bool Versiegelt { get; set; }
+    public string Hinweis { get; set; } = "";
 }

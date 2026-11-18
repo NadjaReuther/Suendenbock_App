@@ -23,9 +23,14 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
         {
         }
 
-        /// <summary>Für das Layout: der eigene Hesparis-Charakter (oben rechts angezeigt).</summary>
+        /// <summary>Für das Layout: der eigene Hesparis-Charakter (oben rechts) und der Spieltag (Kopfleiste).</summary>
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            ViewBag.Spieltag = await _context.Kampagnen
+                .OrderBy(k => k.Id)
+                .Select(k => (DateOnly?)k.Spieltag)
+                .FirstOrDefaultAsync();
+
             var userId = GetUserId();
             if (!string.IsNullOrEmpty(userId))
             {
