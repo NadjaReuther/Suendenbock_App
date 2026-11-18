@@ -385,9 +385,6 @@ namespace Suendenbock_App.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("CurrentCharacterId")
-                        .HasColumnType("int");
-
                     b.Property<string>("CustomTrigger")
                         .HasColumnType("nvarchar(max)");
 
@@ -438,8 +435,6 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CurrentCharacterId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -692,41 +687,6 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("StandId");
 
                     b.ToTable("CharacterDetails");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterGameWorld", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AddedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CharacterId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("GameWorldId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsOriginWorld")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GameWorldId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("CharacterId", "GameWorldId")
-                        .IsUnique();
-
-                    b.ToTable("CharacterGameWorlds");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
@@ -988,48 +948,6 @@ namespace Suendenbock_App.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("ForumThreads");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.GameWorld", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ColorCode")
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Era")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsOriginWorld")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("GameWorlds");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Gildenlizenz", b =>
@@ -1923,12 +1841,34 @@ namespace Suendenbock_App.Migrations
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
+                    b.Property<string>("Beschreibung")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HafenText")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Kurzname")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PerkAnger")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PerkDom")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PerkGarten")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PerkHafen")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -1943,62 +1883,114 @@ namespace Suendenbock_App.Migrations
                         new
                         {
                             Id = 0,
+                            Beschreibung = "Die Kunst, Zauberkraft direkt in Stoff und Rüstung einzuweben. Wer hier lernt, veredelt die eigene Robe mit jeder Stufe zu einem widerstandsfähigeren, magisch durchwirkten Gewand.",
                             Kurzname = "Pokusweben",
-                            Name = "Pokusweben"
+                            Name = "Pokusweben",
+                            PerkAnger = "Robe für Verbündete",
+                            PerkDom = "Robe der Zuflucht",
+                            PerkGarten = "Lebende Robe",
+                            PerkHafen = "Eigene Robe"
                         },
                         new
                         {
                             Id = 1,
+                            Beschreibung = "Lehre der magischen Schwingungen. Resonanzkundige lernen, fremde Kräfte zu bündeln (Auritieren) oder zu bannen (Silizieren) — ein Fach für alle, die Magie eher lenken als bekämpfen wollen.",
                             Kurzname = "Resonanzkunde",
-                            Name = "Resonanzkunde"
+                            Name = "Resonanzkunde",
+                            PerkAnger = "Resonanzfeld",
+                            PerkDom = "Stille",
+                            PerkGarten = "Resonanzfeld",
+                            PerkHafen = "Schöpfen"
                         },
                         new
                         {
                             Id = 2,
+                            Beschreibung = "Einklang mit den Elementen stärkt Körper und Widerstandskraft. Wer die Harmonie beherrscht, gewinnt entweder an Lebenskraft oder an Rüstung — und mit der Zeit an echter Resistenz.",
                             Kurzname = "Elementarharmonie",
-                            Name = "Elementarharmonie"
+                            Name = "Elementarharmonie",
+                            PerkAnger = "Wundverschiebung (-20)",
+                            PerkDom = "Unversehrt",
+                            PerkGarten = "Elementwechsel",
+                            PerkHafen = "Wundverschiebung (-10)"
                         },
                         new
                         {
                             Id = 3,
+                            Beschreibung = "Das Lesen der Sterne schärft die Wahrnehmung für Magie und für das Spürbare zugleich. Astronomen orientieren sich nicht nur im Raum, sondern auch im Unsichtbaren.",
                             Kurzname = "Astr. Orientierung",
-                            Name = "Astronomische Orientierung"
+                            Name = "Astronomische Orientierung",
+                            PerkAnger = "Sternenweg",
+                            PerkDom = "Himmelskarte",
+                            PerkGarten = "Vorzeichen",
+                            PerkHafen = "Liminales Sehen"
                         },
                         new
                         {
                             Id = 4,
+                            Beschreibung = "Die Kunde der Karten und Wege. Kartopäden kennen jede Abkürzung und jeden Rückweg — das verschafft ihnen mehr Reichweite und macht sie zu verlässlichen Helfern im Team.",
                             Kurzname = "Kartopädie",
-                            Name = "Kartopädie"
+                            Name = "Kartopädie",
+                            PerkAnger = "Kartograph der Akademie",
+                            PerkDom = "Geheimgang",
+                            PerkGarten = "Wegmarke",
+                            PerkHafen = "Schneller oder Präziser"
                         },
                         new
                         {
                             Id = 5,
+                            Beschreibung = "Wer den richtigen Moment erkennt, trifft öfter ins Schwarze. Chronotaktiker studieren Timing und Rhythmus des Gefechts, was sich in höheren Kritischen Erfolgen niederschlägt.",
+                            HafenText = "Schaltet Meisterschaften frei: ab jetzt dürfen in allen Talenten Meisterschaften gewählt werden.",
                             Kurzname = "Chronotaktik",
-                            Name = "Chronotaktik"
+                            Name = "Chronotaktik",
+                            PerkAnger = "Taktgeber",
+                            PerkDom = "Stillstand",
+                            PerkGarten = "Zeitschleife",
+                            PerkHafen = "Meisterschaft"
                         },
                         new
                         {
                             Id = 6,
+                            Beschreibung = "Fechtkunst mit ätherisch geladenen Klingen. Ätherfechter trainieren Präzision und Talentwert im Kampf gegen sichtbare wie unsichtbare Gegner.",
+                            HafenText = "Gebundene Waffe: eine feste Ätherwaffe aus einer Kategorie. Würfeln bleibt erlaubt.",
                             Kurzname = "Ätherfechten",
-                            Name = "Ätherfechten"
+                            Name = "Ätherfechten",
+                            PerkAnger = "Zweite Form",
+                            PerkDom = "Klingentanz",
+                            PerkGarten = "Klinge leihen",
+                            PerkHafen = "Form der Waffe"
                         },
                         new
                         {
                             Id = 7,
+                            Beschreibung = "Theorie der Schwellen und Übergänge — zwischen den Welten, aber auch zwischen Aktion und Reaktion. Wer sie meistert, reagiert schneller und sicherer auf plötzliche Gefahr.",
                             Kurzname = "Liminaltheorie",
-                            Name = "Liminaltheorie"
+                            Name = "Liminaltheorie",
+                            PerkAnger = "Schwellenschritt",
+                            PerkDom = "Schwelle öffnen",
+                            PerkGarten = "Zwischenraum",
+                            PerkHafen = "Gelegenheitsangriff"
                         },
                         new
                         {
                             Id = 8,
+                            Beschreibung = "Alchemie an der Grenze des Machbaren. Grenzchemiker brauen Tränke, die weiter reichen als gewöhnlich, und verbessern nebenbei ihre Widerstandskraft gegen Verderbnis.",
                             Kurzname = "Grenzchemie",
-                            Name = "Grenzchemie"
+                            Name = "Grenzchemie",
+                            PerkAnger = "Reisebraukit",
+                            PerkDom = "Grenztrank",
+                            PerkGarten = "Eigenes Rezept",
+                            PerkHafen = "Erstes Braukit"
                         },
                         new
                         {
                             Id = 9,
+                            Beschreibung = "Die Grundlagenlehre der Zauberei selbst. Magiatur schärft das Verständnis für die eigene Kraft: Mit jeder Stufe lässt sich wählen, ob man lieber einen neuen Zauber erlernt oder die Zahl der Zauberslots erweitert.",
                             Kurzname = "Magiatur",
-                            Name = "Magiatur"
+                            Name = "Magiatur",
+                            PerkAnger = "Zauberbuch",
+                            PerkDom = "Eigener Zauber",
+                            PerkGarten = "3 Slots",
+                            PerkHafen = "2 Slots"
                         });
                 });
 
@@ -6427,9 +6419,6 @@ namespace Suendenbock_App.Migrations
                     b.Property<int>("Bonuspunkte")
                         .HasColumnType("int");
 
-                    b.Property<int?>("CharacterId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Geld")
                         .HasColumnType("int");
 
@@ -6461,8 +6450,6 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("rowversion");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CharacterId");
 
                     b.HasIndex("HesparisCharakterId")
                         .IsUnique()
@@ -8155,6 +8142,9 @@ namespace Suendenbock_App.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("NotifyEvents")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("NotifyForumReplies")
                         .HasColumnType("bit");
 
@@ -8162,6 +8152,9 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("NotifyNews")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyPayments")
                         .HasColumnType("bit");
 
                     b.Property<bool>("NotifyPolls")
@@ -9131,16 +9124,6 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Act");
                 });
 
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.ApplicationUser", b =>
-                {
-                    b.HasOne("Suendenbock_App.Models.Domain.Character", "CurrentCharacter")
-                        .WithMany()
-                        .HasForeignKey("CurrentCharacterId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("CurrentCharacter");
-                });
-
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Biom", b =>
                 {
                     b.HasOne("Suendenbock_App.Models.Domain.LightCard", "LightCard")
@@ -9275,32 +9258,6 @@ namespace Suendenbock_App.Migrations
                     b.Navigation("Herkunftsland");
 
                     b.Navigation("Stand");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterGameWorld", b =>
-                {
-                    b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
-                        .WithMany("CharacterGameWorlds")
-                        .HasForeignKey("CharacterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Suendenbock_App.Models.Domain.GameWorld", "GameWorld")
-                        .WithMany("CharacterGameWorlds")
-                        .HasForeignKey("GameWorldId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Suendenbock_App.Models.Domain.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Character");
-
-                    b.Navigation("GameWorld");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.CharacterMagicClass", b =>
@@ -11159,11 +11116,6 @@ namespace Suendenbock_App.Migrations
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", b =>
                 {
-                    b.HasOne("Suendenbock_App.Models.Domain.Character", "Character")
-                        .WithMany()
-                        .HasForeignKey("CharacterId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("Suendenbock_App.Models.Domain.Hesparis.HesparisCharakter", "HesparisCharakter")
                         .WithOne("Spielfigur")
                         .HasForeignKey("Suendenbock_App.Models.Domain.Hesparis.Spielfigur", "HesparisCharakterId")
@@ -11174,8 +11126,6 @@ namespace Suendenbock_App.Migrations
                         .HasForeignKey("KampagneId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Character");
 
                     b.Navigation("HesparisCharakter");
 
@@ -12095,8 +12045,6 @@ namespace Suendenbock_App.Migrations
                 {
                     b.Navigation("Affiliation");
 
-                    b.Navigation("CharacterGameWorlds");
-
                     b.Navigation("CharacterMagicClasses");
 
                     b.Navigation("Details");
@@ -12117,11 +12065,6 @@ namespace Suendenbock_App.Migrations
             modelBuilder.Entity("Suendenbock_App.Models.Domain.ForumThread", b =>
                 {
                     b.Navigation("Replies");
-                });
-
-            modelBuilder.Entity("Suendenbock_App.Models.Domain.GameWorld", b =>
-                {
-                    b.Navigation("CharacterGameWorlds");
                 });
 
             modelBuilder.Entity("Suendenbock_App.Models.Domain.Guild", b =>

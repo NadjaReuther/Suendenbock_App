@@ -1,0 +1,47 @@
+@model Suendenbock_App.Models.ViewModels.AppEventViewModel
+@{
+    var showAllChores = ViewData["ShowAllChores"] as bool? ?? false;
+    string Sel(string s) => Model.MyRsvp == s ? "sel-" + s : "";
+    string Pressed(string s) => Model.MyRsvp == s ? "true" : "false";
+}
+<div data-event-id="@Model.Id" data-my-rsvp="@(Model.MyRsvp ?? "")">
+    <div class="ev">
+        <div class="badge-date @(Model.Type == "Spieltag" ? "" : "other")" aria-hidden="true">
+            <div class="m">@Model.Month</div>
+            <div class="d">@Model.Day</div>
+        </div>
+        <div style="flex:1;min-width:0">
+            <h3>@Model.Title</h3>
+            <div class="meta">@Model.Type · @Model.When</div>
+            <div class="meta" style="margin-top:2px"><span class="ms" style="font-size:16px">group</span> <span data-yes-count="@Model.YesCount">@Model.YesCount dabei</span></div>
+            @if (showAllChores && !string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="desc">@Model.Description</div>
+            }
+        </div>
+    </div>
+
+    <div class="rsvp" role="group" aria-label="Bist du dabei?">
+        <button type="button" data-rsvp="yes" class="@Sel("yes")" aria-pressed="@Pressed("yes")"><span class="ms">check</span>Dabei</button>
+        <button type="button" data-rsvp="maybe" class="@Sel("maybe")" aria-pressed="@Pressed("maybe")"><span class="ms">help</span>Vielleicht</button>
+        <button type="button" data-rsvp="no" class="@Sel("no")" aria-pressed="@Pressed("no")"><span class="ms">close</span>Nein</button>
+    </div>
+
+    @if (showAllChores && Model.Chores.Any())
+    {
+        <div class="chips">
+            @foreach (var chore in Model.Chores)
+            {
+                <span class="chip @(chore.IsMine ? "me" : "")">
+                    <span class="ms">@(chore.IsMine ? "person" : "task_alt")</span>@chore.Name: @chore.AssignedTo
+                </span>
+            }
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(Model.MyChore))
+    {
+        <div class="chips">
+            <span class="chip me"><span class="ms">person</span>Dein Dienst: @Model.MyChore</span>
+        </div>
+    }
+</div>

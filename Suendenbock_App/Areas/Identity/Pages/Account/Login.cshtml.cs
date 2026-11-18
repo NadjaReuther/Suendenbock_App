@@ -112,7 +112,10 @@ namespace Suendenbock_App.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                // Immer "angemeldet bleiben": Das Cookie gilt 14 Tage und verlängert sich bei
+                // jedem Besuch (siehe ConfigureApplicationCookie in Program.cs). Ohne das war man
+                // nach dem Schließen von Browser oder App sofort abgemeldet.
+                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, isPersistent: true, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");

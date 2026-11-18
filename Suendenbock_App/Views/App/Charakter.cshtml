@@ -1,0 +1,205 @@
+@model Suendenbock_App.Models.ViewModels.AppCharacterViewModel
+@{
+    ViewData["Title"] = "Charakter";
+    var fullName = $"{Model.Vorname} {Model.Nachname}".Trim();
+    int Words(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return 0;
+        var text = System.Text.RegularExpressions.Regex.Replace(html, "<[^>]+>", " ").Replace("&nbsp;", " ").Trim();
+        return string.IsNullOrEmpty(text) ? 0 : System.Text.RegularExpressions.Regex.Split(text, @"\s+").Length;
+    }
+}
+
+<form id="charForm" asp-action="CharakterSpeichern" method="post" enctype="multipart/form-data" data-character-id="@Model.Id">
+    <input type="hidden" name="Id" value="@Model.Id" />
+
+    <div class="card">
+        <div class="hero">
+            <div class="portrait" id="portrait">
+                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                {
+                    <img id="portraitImg" src="@Model.ImagePath" alt="Bild von @fullName" />
+                }
+                else
+                {
+                    <span id="portraitIni" aria-hidden="true">@(string.IsNullOrEmpty(Model.Vorname) ? "?" : Model.Vorname.Substring(0, 1))</span>
+                }
+                <label class="cam" title="Bild ändern">
+                    <span class="ms">photo_camera</span>
+                    <input type="file" id="bildInput" name="bild" accept="image/*" hidden aria-label="Bild ändern" />
+                </label>
+            </div>
+            <div style="min-width:0">
+                <h3>@fullName</h3>
+                <p>@(Model.IsCompanion ? "Begleiter" : "Spielercharakter")@(string.IsNullOrEmpty(Model.Beruf) ? "" : " · " + Model.Beruf)</p>
+                @if (Model.MyCharacters.Count > 1)
+                {
+                    <select class="switch-char" id="charSwitch" aria-label="Charakter wechseln">
+                        @foreach (var c in Model.MyCharacters)
+                        {
+                            <option value="@c.Id" selected="@(c.Id == Model.Id)">@c.Name</option>
+                        }
+                    </select>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <details class="acc" open>
+            <summary><span class="ms">badge</span><strong>Steckbrief</strong><span class="ms chev">expand_more</span></summary>
+            <div class="inner">
+                <div class="row2">
+                    <div class="fld"><label for="Vorname">Vorname</label><input id="Vorname" name="Vorname" value="@Model.Vorname" required /></div>
+                    <div class="fld"><label for="Nachname">Nachname</label><input id="Nachname" name="Nachname" value="@Model.Nachname" /></div>
+                </div>
+                <div class="row2">
+                    <div class="fld"><label for="Rufname">Rufname</label><input id="Rufname" name="Rufname" value="@Model.Rufname" required /></div>
+                    <div class="fld"><label for="Geburtsdatum">Geburtsdatum</label><input id="Geburtsdatum" name="Geburtsdatum" value="@Model.Geburtsdatum" /></div>
+                </div>
+                <div class="row2">
+                    <div class="fld"><label for="Beruf">Beruf</label><input id="Beruf" name="Beruf" value="@Model.Beruf" /></div>
+                    <div class="fld"><label for="BodyHeight">Größe (cm)</label><input id="BodyHeight" name="BodyHeight" type="number" inputmode="numeric" min="0" max="400" value="@Model.BodyHeight" /></div>
+                </div>
+                <div class="fld">
+                    <label for="HerkunftslandId">Herkunftsland</label>
+                    <select id="HerkunftslandId" name="HerkunftslandId">
+                        <option value="">– keins –</option>
+                        @foreach (var o in Model.Herkunftslaender) { <option value="@o.Id" selected="@(o.Id == Model.HerkunftslandId)">@o.Name</option> }
+                    </select>
+                </div>
+                <div class="row2">
+                    <div class="fld">
+                        <label for="StandId">Stand</label>
+                        <select id="StandId" name="StandId">
+                            <option value="">– keiner –</option>
+                            @foreach (var o in Model.Staende) { <option value="@o.Id" selected="@(o.Id == Model.StandId)">@o.Name</option> }
+                        </select>
+                    </div>
+                    <div class="fld">
+                        <label for="BlutgruppeId">Blutgruppe</label>
+                        <select id="BlutgruppeId" name="BlutgruppeId">
+                            <option value="">– keine –</option>
+                            @foreach (var o in Model.Blutgruppen) { <option value="@o.Id" selected="@(o.Id == Model.BlutgruppeId)">@o.Name</option> }
+                        </select>
+                    </div>
+                </div>
+                <div class="fld">
+                    <label for="HausId">Haus</label>
+                    <select id="HausId" name="HausId">
+                        <option value="">– keins –</option>
+                        @foreach (var o in Model.Haeuser) { <option value="@o.Id" selected="@(o.Id == Model.HausId)">@o.Name</option> }
+                    </select>
+                </div>
+            </div>
+        </details>
+
+        <details class="acc">
+            <summary><span class="ms">format_quote</span><strong>Zitat &amp; Beschreibung</strong><span class="ms chev">expand_more</span></summary>
+            <div class="inner">
+                <div class="fld"><label for="Quote">Zitat</label><textarea id="Quote" name="Quote" style="min-height:70px">@Model.Quote</textarea></div>
+                <div class="fld"><label for="Urheber">Urheber</label><input id="Urheber" name="Urheber" value="@Model.Urheber" /></div>
+                <div class="fld">
+                    <label id="descLabel">Beschreibung</label>
+                    <input type="hidden" id="Description" name="Description" value="@Model.Description" />
+                    <div class="descprev" data-writer-open role="button" tabindex="0" aria-labelledby="descLabel">
+                        <div class="txt rich" id="descPreview">
+                            @if (string.IsNullOrWhiteSpace(Model.Description))
+                            {
+                                <i class="muted">Noch keine Beschreibung – tippen zum Schreiben</i>
+                            }
+                            else
+                            {
+                                @Html.Raw(Model.Description)
+                            }
+                        </div>
+                        <div class="meta"><span id="descCount">@Words(Model.Description) Wörter</span><b><span class="ms" style="font-size:17px">edit</span>Im Vollbild schreiben</b></div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="acc">
+            <summary><span class="ms">shield</span><strong>Zugehörigkeit</strong><span class="ms chev">expand_more</span></summary>
+            <div class="inner">
+                <div class="fld">
+                    <label for="GuildId">Gilde</label>
+                    <select id="GuildId" name="GuildId">
+                        <option value="">– keine –</option>
+                        @foreach (var o in Model.Guilds) { <option value="@o.Id" selected="@(o.Id == Model.GuildId)">@o.Name</option> }
+                    </select>
+                </div>
+                <div class="row2">
+                    <div class="fld">
+                        <label for="RegimentId">Regiment</label>
+                        <select id="RegimentId" name="RegimentId">
+                            <option value="">– keins –</option>
+                            @foreach (var o in Model.Regiments) { <option value="@o.Id" selected="@(o.Id == Model.RegimentId)">@o.Name</option> }
+                        </select>
+                    </div>
+                    <div class="fld">
+                        <label for="InfanterierangId">Rang</label>
+                        <select id="InfanterierangId" name="InfanterierangId">
+                            <option value="">– keiner –</option>
+                            @foreach (var o in Model.Infanterieraenge) { <option value="@o.Id" selected="@(o.Id == Model.InfanterierangId)">@o.Name</option> }
+                        </select>
+                    </div>
+                </div>
+                <div class="fld">
+                    <label for="ReligionId">Religion</label>
+                    <select id="ReligionId" name="ReligionId">
+                        <option value="">– keine –</option>
+                        @foreach (var o in Model.Religions) { <option value="@o.Id" selected="@(o.Id == Model.ReligionId)">@o.Name</option> }
+                    </select>
+                </div>
+            </div>
+        </details>
+
+        <details class="acc">
+            <summary><span class="ms">auto_awesome</span><strong>Magie</strong><span class="ms chev">expand_more</span></summary>
+            <div class="inner">
+                @if (Model.Magic.Any())
+                {
+                    <div class="chips" style="margin:0 0 10px">
+                        @foreach (var m in Model.Magic) { <span class="chip">@m</span> }
+                    </div>
+                }
+                else
+                {
+                    <p class="ro" style="margin:0 0 10px">Keine Magie eingetragen.</p>
+                }
+                <div class="ro"><span class="ms" style="font-size:18px">lock</span>Magie legt die Spielleitung fest.</div>
+            </div>
+        </details>
+    </div>
+
+    <a href="/Character/CharacterSheet/@Model.Id" class="link-more">Ganzen Charakterbogen ansehen <span class="ms" style="font-size:18px">open_in_new</span></a>
+
+    <div class="savebar" id="savebar" hidden>
+        <div class="inner"><button type="submit" class="btn-gold"><span class="ms">save</span>Änderungen speichern</button></div>
+    </div>
+</form>
+
+<!-- Schreibmodus für die Beschreibung -->
+<div id="writer" role="dialog" aria-modal="true" aria-label="Beschreibung schreiben">
+    <header>
+        <button type="button" id="wCancel">Abbrechen</button>
+        <h3>Beschreibung</h3>
+        <button type="button" class="done" id="wDone">Fertig</button>
+    </header>
+    <div class="tb" role="toolbar" aria-label="Formatierung">
+        <button type="button" data-cmd="formatBlock" data-val="H3" aria-label="Überschrift"><span class="ms">title</span></button>
+        <button type="button" data-cmd="formatBlock" data-val="P" aria-label="Absatz"><span class="ms">notes</span></button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="bold" aria-label="Fett"><span class="ms">format_bold</span></button>
+        <button type="button" data-cmd="italic" aria-label="Kursiv"><span class="ms">format_italic</span></button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="insertUnorderedList" aria-label="Liste"><span class="ms">format_list_bulleted</span></button>
+        <button type="button" data-cmd="insertOrderedList" aria-label="Nummerierte Liste"><span class="ms">format_list_numbered</span></button>
+        <span class="sep"></span>
+        <button type="button" data-cmd="undo" aria-label="Rückgängig"><span class="ms">undo</span></button>
+        <button type="button" data-cmd="redo" aria-label="Wiederholen"><span class="ms">redo</span></button>
+    </div>
+    <div id="wEd" contenteditable="true" data-ph="Erzähl die Geschichte deines Charakters …" role="textbox" aria-multiline="true"></div>
+    <div class="wfoot"><span id="wDraft">Entwurf wird automatisch gesichert</span><span id="wCount">0 Wörter</span></div>
+</div>

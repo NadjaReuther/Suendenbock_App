@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Profil";
+}
+
+<h2 class="sec"><span class="ms">person</span>Konto</h2>
+<div class="card">
+    <div class="hero">
+        <div class="avatar" style="width:52px;height:52px;font-size:20px" aria-hidden="true">@ViewBag.AppUserInitial</div>
+        <div style="min-width:0">
+            <h3 style="font-family:Inter,sans-serif;font-size:16px">@ViewBag.AppUserName</h3>
+            <p>@ViewBag.Email</p>
+            @if (!string.IsNullOrEmpty(ViewBag.ActiveCharacter as string))
+            {
+                <p>Aktiver Charakter: @ViewBag.ActiveCharacter</p>
+            }
+        </div>
+    </div>
+    <a href="/Profil/Name?returnUrl=%2FApp%2FProfil" class="btn-line" style="margin-top:12px"><span class="ms">edit</span>Namen ändern</a>
+</div>
+
+<h2 class="sec"><span class="ms">notifications</span>Benachrichtigungen</h2>
+<div class="card">
+    <a class="item" href="/Community/NotificationSettings">
+        <div class="ic"><span class="ms">tune</span></div>
+        <div class="body"><h4>Push-Benachrichtigungen</h4><p>Einschalten und auswählen, was du bekommen möchtest</p></div>
+        <span class="ms muted">chevron_right</span>
+    </a>
+</div>
+
+<h2 class="sec"><span class="ms">public</span>Website</h2>
+<div class="card">
+    <a class="item" href="/Community"><div class="ic"><span class="ms">account_balance</span></div><div class="body"><h4>Versammlungshalle</h4><p>Die volle Website</p></div><span class="ms muted">chevron_right</span></a>
+    <a class="item" href="/Achievement"><div class="ic"><span class="ms">emoji_events</span></div><div class="body"><h4>Achievements</h4></div><span class="ms muted">chevron_right</span></a>
+</div>
+
+<form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/App" method="post">
+    <button type="submit" class="btn-line danger"><span class="ms">logout</span>Abmelden</button>
+</form>

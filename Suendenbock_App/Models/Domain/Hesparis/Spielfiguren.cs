@@ -19,13 +19,6 @@ public class Spielfigur : IKampagnenDaten
     public int? HesparisCharakterId { get; set; }
     public HesparisCharakter? HesparisCharakter { get; set; }
 
-    /// <summary>
-    /// ALT: Verweis auf den Sündenbock-Character aus der Zeit vor der eigenen Hesparis-Tabelle.
-    /// Wird nur noch von HesparisUmzug gelesen und im nächsten Schritt entfernt.
-    /// </summary>
-    public int? CharacterId { get; set; }
-    public Character? Character { get; set; }
-
     /// <summary>Meilenstein 2/3 der Magiestufen erreicht (JS: m2, m3).</summary>
     public bool Meilenstein2 { get; set; }
     public bool Meilenstein3 { get; set; }

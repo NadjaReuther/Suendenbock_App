@@ -23,7 +23,19 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddRoles<IdentityRole>() // Role Support
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
-builder.Services.AddControllersWithViews()
+// Anmeldung: 14 Tage gültig, jeder Besuch verlängert sie wieder.
+// Wer 14 Tage nicht vorbeischaut, wird aus Sicherheitsgründen abgemeldet.
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = true;
+});
+
+builder.Services.AddControllersWithViews(options =>
+{
+    // Beim ersten Login nach dem echten Namen fragen
+    options.Filters.Add<Suendenbock_App.Filters.RequireRealNameFilter>();
+})
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
@@ -48,6 +60,8 @@ builder.Services.AddScoped<IAchievementService, AchievementService>();
 builder.Services.AddScoped<GameService>();
 // Push Notification Service
 builder.Services.AddScoped<IPushNotificationService, PushNotificationService>();
+// Tägliche Erinnerungen (Monatsbeitrag, später Termine)
+builder.Services.AddHostedService<ReminderBackgroundService>();
 
 // SignalR für Real-time Combat
 builder.Services.AddSignalR(options =>
@@ -79,12 +93,6 @@ using(var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
     await CreateDefaultUser(userManager, "Gott", "gott@suendenbock.lore", "Adrijan1618!");
-
-    // Hesparis: Characters aus der alten Spielwelt "Hesparis" in die eigene Hesparis-Tabelle umziehen
-    // (läuft nur, solange es die alten GameWorld-Tabellen noch gibt; danach entfernen)
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    var umzugLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("HesparisUmzug");
-    await Suendenbock_App.Data.Hesparis.HesparisUmzug.AusfuehrenAsync(dbContext, umzugLogger);
 }
 
 async Task CreateDefaultUser(UserManager<ApplicationUser> userManager, string roleName, string userName, string password)
@@ -137,10 +145,13 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-// Areas (z.B. /Hesparis → Areas/Hesparis, eigene Webseite im selben Projekt)
-app.MapControllerRoute(
-    name: "areas",
-    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+// Hesparis: eigene Webseite im selben Projekt unter /Hesparis (Areas/Hesparis).
+// Bewusst NUR für diese eine Area: Eine allgemeine {area:exists}-Route würde auch
+// "Identity" (Login-Seiten) treffen und Links wie /Identity/Community erzeugen.
+app.MapAreaControllerRoute(
+    name: "hesparis",
+    areaName: "Hesparis",
+    pattern: "Hesparis/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",

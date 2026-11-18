@@ -34,7 +34,8 @@ public static class HesparisAkademie
             string listenVorname = name.Split(' ')[0];
             string listenNachname = name.Substring(listenVorname.Length).Trim();
 
-            bool vornamePasst = string.Equals(vorname?.Trim(), listenVorname, StringComparison.OrdinalIgnoreCase);
+            // Nur der erste Vorname zählt ("Svea Marie" passt zu "Svea")
+            bool vornamePasst = string.Equals(HesparisCharakter.ErsterName(vorname), listenVorname, StringComparison.OrdinalIgnoreCase);
             bool nachnamePasst = string.IsNullOrWhiteSpace(nachname)
                                  || listenNachname.Contains(nachname.Trim(), StringComparison.OrdinalIgnoreCase);
             if (vornamePasst && nachnamePasst)

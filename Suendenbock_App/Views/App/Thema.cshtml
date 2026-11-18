@@ -1,0 +1,41 @@
+@model Suendenbock_App.Models.ViewModels.AppThreadViewModel
+@{
+    ViewData["Title"] = Model.Title;
+    long Ts(DateTime d) => new DateTimeOffset(d).ToUnixTimeMilliseconds();
+}
+
+<a class="back" href="/App/Forum"><span class="ms">chevron_left</span>Forum</a>
+
+<article class="card post">
+    <div class="catlbl">@Model.CategoryName</div>
+    <h2>@Model.Title</h2>
+    <div class="by">@Model.AuthorName · <span data-ago="@Ts(Model.CreatedAt)"></span></div>
+    @* Inhalt wie auf der Website (dort ebenfalls mit Html.Raw gerendert) *@
+    <div class="rich">@Html.Raw(Model.Content)</div>
+</article>
+
+<section class="card" aria-label="Antworten">
+    <div class="card-label" style="margin-bottom:4px"><span class="ms">chat_bubble</span>@Model.Replies.Count Antwort@(Model.Replies.Count == 1 ? "" : "en")</div>
+    @if (!Model.Replies.Any())
+    {
+        <p class="muted" style="font-size:13px;margin:6px 0">Noch keine Antworten – schreib die erste.</p>
+    }
+    @foreach (var r in Model.Replies)
+    {
+        <div class="reply">
+            <div class="av @(r.IsMine ? "me" : "")" aria-hidden="true">@(string.IsNullOrEmpty(r.AuthorName) ? "?" : r.AuthorName.Substring(0, 1).ToUpper())</div>
+            <div style="flex:1;min-width:0">
+                <b>@r.AuthorName</b><time data-ago="@Ts(r.CreatedAt)"></time>
+                <div class="rich">@Html.Raw(r.Content)</div>
+            </div>
+        </div>
+    }
+</section>
+
+<form asp-controller="Community" asp-action="PostReply" method="post" class="composer">
+    <input type="hidden" name="threadId" value="@Model.Id" />
+    <input type="hidden" name="plainText" value="true" />
+    <input type="hidden" name="returnUrl" value="/App/Thema/@Model.Id" />
+    <textarea name="content" rows="1" placeholder="Antworten …" aria-label="Antwort schreiben" required></textarea>
+    <button type="submit" aria-label="Antwort senden" disabled><span class="ms">send</span></button>
+</form>

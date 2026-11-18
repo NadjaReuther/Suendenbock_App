@@ -1,0 +1,78 @@
+@model Suendenbock_App.Models.ViewModels.AppForumViewModel
+@{
+    ViewData["Title"] = "Forum";
+}
+
+<h2 class="sec"><span class="ms">forum</span>Forum &amp; Absprachen</h2>
+
+<div class="chiprow" role="navigation" aria-label="Bereiche">
+    <a class="fchip @(string.IsNullOrEmpty(Model.ActiveCategory) ? "on" : "")" href="/App/Forum">Alle</a>
+    @foreach (var c in Model.Categories)
+    {
+        <a class="fchip @(Model.ActiveCategory == c.Name ? "on" : "")" href="/App/Forum?kategorie=@Uri.EscapeDataString(c.Name)">
+            <span class="ms">@c.Icon</span>@c.Name
+        </a>
+    }
+</div>
+
+<button type="button" class="newbtn" id="newThreadBtn"><span class="ms">add</span>Neues Thema</button>
+
+<div class="card" id="newThread" hidden>
+    <form asp-controller="Community" asp-action="CreateThread" method="post">
+        <input type="hidden" name="plainText" value="true" />
+        <input type="hidden" name="app" value="true" />
+        <div class="fld">
+            <label for="ntTitle">Titel</label>
+            <input id="ntTitle" name="Title" maxlength="200" required placeholder="Worum geht's?" />
+        </div>
+        <div class="fld">
+            <label for="ntCat">Bereich</label>
+            <select id="ntCat" name="CategoryId" required>
+                @foreach (var c in Model.Categories)
+                {
+                    <option value="@c.Id" selected="@(Model.ActiveCategory == c.Name)">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="fld">
+            <label for="ntText">Beitrag</label>
+            <textarea id="ntText" name="Content" required placeholder="Schreib hier …"></textarea>
+        </div>
+        <div class="row2">
+            <button type="button" class="btn-line" id="ntCancel">Abbrechen</button>
+            <button type="submit" class="btn-gold">Veröffentlichen</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    @if (!Model.Threads.Any())
+    {
+        <p class="empty"><span class="ms">forum</span>Noch keine Themen in diesem Bereich.</p>
+    }
+    else
+    {
+        @foreach (var t in Model.Threads)
+        {
+            var ts = new DateTimeOffset(t.LastActivity).ToUnixTimeMilliseconds();
+            <a class="th" href="/App/Thema/@t.Id">
+                <div class="ic"><span class="ms">@(string.IsNullOrEmpty(t.CategoryIcon) ? "chat" : t.CategoryIcon)</span></div>
+                <div style="flex:1;min-width:0">
+                    <div class="catlbl">@t.CategoryName</div>
+                    <h4 data-new-ts="@ts">
+                        @if (t.IsPinned)
+                        {
+                            <span class="ms pin" aria-label="angepinnt">push_pin</span>
+                        }
+                        @t.Title
+                    </h4>
+                    <div class="meta">
+                        <span><span class="ms">person</span>@t.AuthorName</span>
+                        <span><span class="ms">chat_bubble</span>@t.ReplyCount</span>
+                        <span><span class="ms">schedule</span><span data-ago="@ts"></span></span>
+                    </div>
+                </div>
+            </a>
+        }
+    }
+</div>

@@ -24,9 +24,6 @@ public static partial class HesparisModell
             // verschwinden auch Talente, Noten, Tasche … (Kaskade, siehe HesparisModell.Kaskaden).
             e.HasOne(x => x.HesparisCharakter).WithOne(h => h.Spielfigur).HasForeignKey<Spielfigur>(x => x.HesparisCharakterId);
             e.HasIndex(x => x.HesparisCharakterId).IsUnique();
-
-            // ALT: Verweis auf den Sündenbock-Character, nur noch für den Umzug (HesparisUmzug)
-            e.HasOne(x => x.Character).WithMany().HasForeignKey(x => x.CharacterId);
         });
 
         mb.Entity<SpielfigurFachStufe>(e =>

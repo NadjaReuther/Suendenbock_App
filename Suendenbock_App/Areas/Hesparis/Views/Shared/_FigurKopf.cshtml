@@ -3,6 +3,10 @@
     Figurenwahl wie in der HTML (note-chars): ein Knopf je Spielfigur, führt zur selben Seite.
     ✦ markiert die eigenen Figuren.
 *@
+@{
+    // Umschalten bleibt im selben Bereich (Figur, Magie, …)
+    var controller = ViewContext.RouteData.Values["controller"] as string ?? "Figur";
+}
 <div class="note-chars">
     @foreach (var f in Model.Figuren)
     {
@@ -15,7 +19,7 @@
         {
             klasse += " mine";
         }
-        <a class="@klasse" asp-controller="Figur" asp-action="@Model.Aktion" asp-route-id="@f.Id">@f.Name</a>
+        <a class="@klasse" asp-controller="@controller" asp-action="@Model.Aktion" asp-route-id="@f.Id">@f.Name</a>
     }
 </div>
 @if (!Model.DarfBearbeiten)

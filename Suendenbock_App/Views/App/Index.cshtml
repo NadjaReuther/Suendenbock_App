@@ -1,0 +1,68 @@
+@model Suendenbock_App.Models.ViewModels.AppStartViewModel
+@{
+    ViewData["Title"] = "Start";
+    var feedTop = Model.Feed.Take(6).ToList();
+}
+
+<div class="hello">Willkommen zurück, @Model.DisplayName</div>
+<p class="sub">Hier ist alles, was gerade wichtig ist.</p>
+
+<div class="card">
+    <div class="card-label"><span class="ms">event</span>Nächster Termin</div>
+    @if (Model.NextEvent != null)
+    {
+        <partial name="_EventCard" model="Model.NextEvent" />
+        <a href="/App/Termine" class="link-more">Alle Termine <span class="ms" style="font-size:18px">chevron_right</span></a>
+    }
+    else
+    {
+        <p class="empty"><span class="ms">event_busy</span>Gerade ist kein Termin geplant.</p>
+    }
+</div>
+
+@if (Model.Payment != null)
+{
+    var p = Model.Payment;
+    <div class="card">
+        <div class="card-label"><span class="ms">token</span>Monatsbeitrag @p.MonthName</div>
+        <div class="pay @(p.IsPaid ? "paid" : "open")">
+            <div class="pay-ic"><span class="ms fill">@(p.IsPaid ? "check_circle" : "hourglass_top")</span></div>
+            <div>
+                <h3>@(p.IsPaid ? "Bezahlt" : "Noch offen")</h3>
+                <p>
+                    @if (p.IsPaid)
+                    {
+                        <text>@(string.IsNullOrEmpty(p.PaymentMethod) ? "" : $"per {p.PaymentMethod} · ")@p.PaidAt</text>
+                    }
+                    else
+                    {
+                        <text>Bitte per PayPal oder Überweisung</text>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-label"><span class="ms">auto_awesome</span>Was ist neu</div>
+    @if (!feedTop.Any())
+    {
+        <p class="empty">In den letzten 30 Tagen ist nichts Neues passiert.</p>
+    }
+    else
+    {
+        @foreach (var f in feedTop)
+        {
+            <a class="item" href="@f.Url">
+                <div class="ic"><span class="ms">@f.Icon</span></div>
+                <div class="body">
+                    <div class="label">@f.Label · <span data-ago="@f.Timestamp"></span></div>
+                    <h4 data-new-ts="@f.Timestamp">@f.Title</h4>
+                    <p>@f.Text</p>
+                </div>
+            </a>
+        }
+    }
+    <a href="/Community/News" class="link-more">Alle News &amp; Ankündigungen <span class="ms" style="font-size:18px">chevron_right</span></a>
+</div>

@@ -117,18 +117,19 @@ namespace Suendenbock_App.Controllers.Api
                 await _context.SaveChangesAsync();
 
                 createdMessageIds.Add(message.Id);
+                var pushMessageId = message.Id;
 
                 // Push-Benachrichtigung
                 _ = Task.Run(async () =>
                 {
                     try
                     {
-                        await _pushService.SendNotificationAsync(
-                            "Message",
+                        // Nur an den Empfänger (vorher ging es an alle außer ihm)
+                        await _pushService.SendToUserAsync(
+                            request.ReceiverUserId!,
                             $"📬 Neue Nachricht von {notificationSenderName}",
                             request.Subject,
-                            "/Messages/Inbox",
-                            request.ReceiverUserId!
+                            $"/App/Nachricht/{pushMessageId}"
                         );
                     }
                     catch (Exception ex)
@@ -180,16 +181,17 @@ namespace Suendenbock_App.Controllers.Api
                     if (!string.IsNullOrEmpty(receiverCharacter.UserId))
                     {
                         var rcvUserId = receiverCharacter.UserId;
+                        var pushMessageId = message.Id;
                         _ = Task.Run(async () =>
                         {
                             try
                             {
-                                await _pushService.SendNotificationAsync(
-                                    "Message",
+                                // Nur an den Spieler dieses Charakters
+                                await _pushService.SendToUserAsync(
+                                    rcvUserId,
                                     $"📬 Neue Nachricht von {notificationSenderName}",
                                     request.Subject,
-                                    "/Messages/Inbox",
-                                    rcvUserId
+                                    $"/App/Nachricht/{pushMessageId}"
                                 );
                             }
                             catch (Exception ex)
