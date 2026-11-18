@@ -77,13 +77,19 @@ builder.Services.AddSignalR(options =>
 
 var app = builder.Build();
 
-// Statische Dateien für Angular-Build (ohne RequestPath = alle Dateien unter root)
-app.UseStaticFiles(new StaticFileOptions
+// Statische Dateien für Angular-Build (ohne RequestPath = alle Dateien unter root).
+// Nur einbinden, wenn der Build-Ordner existiert: PhysicalFileProvider wirft sonst beim Start
+// eine DirectoryNotFoundException, und die ganze Seite startet nicht (z. B. im Docker-Container,
+// wo ClientApp/dist nicht mit veröffentlicht wird).
+var angularOrdner = Path.Combine(builder.Environment.ContentRootPath, "ClientApp", "dist", "client-app", "browser");
+if (Directory.Exists(angularOrdner))
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "ClientApp/dist/client-app/browser")),
-    RequestPath = "" // Leerer Pfad = Dateien direkt unter root verfügbar
-});
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(angularOrdner),
+        RequestPath = "" // Leerer Pfad = Dateien direkt unter root verfügbar
+    });
+}
     
 using(var scope = app.Services.CreateScope())
 {
