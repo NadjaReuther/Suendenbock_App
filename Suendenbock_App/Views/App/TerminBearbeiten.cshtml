@@ -1,0 +1,65 @@
+@model Suendenbock_App.Models.ViewModels.AppEventEditViewModel
+@{
+    var isNew = !Model.Id.HasValue;
+    ViewData["Title"] = isNew ? "Neuer Termin" : "Termin bearbeiten";
+}
+
+<a class="back" href="/App/Termine"><span class="ms">chevron_left</span>Termine</a>
+
+<h2 class="sec"><span class="ms">@(isNew ? "add_circle" : "edit_calendar")</span>@ViewData["Title"]</h2>
+
+<form class="card" id="eventForm" data-event-id="@Model.Id">
+    <div class="fld">
+        <label for="evTitle">Titel</label>
+        <input id="evTitle" name="title" value="@Model.Title" maxlength="200" required placeholder="z. B. Akt 10 – Salzburg" />
+    </div>
+    <div class="fld">
+        <label for="evType">Art</label>
+        <select id="evType" name="type" required>
+            @foreach (var t in Suendenbock_App.Models.ViewModels.AppEventEditViewModel.Types)
+            {
+                <option value="@t" selected="@(t == Model.Type)">@t</option>
+            }
+        </select>
+    </div>
+    <div class="fld">
+        <label for="evDate">Datum</label>
+        <input id="evDate" name="date" type="date" value="@Model.Date.ToString("yyyy-MM-dd")" required />
+    </div>
+    <div class="row2">
+        <div class="fld"><label for="evStart">Beginn</label><input id="evStart" name="startTime" type="time" value="@Model.StartTime" /></div>
+        <div class="fld"><label for="evEnd">Ende</label><input id="evEnd" name="endTime" type="time" value="@Model.EndTime" /></div>
+    </div>
+    <div class="fld">
+        <label for="evDesc">Beschreibung</label>
+        <textarea id="evDesc" name="description" placeholder="Optional">@Model.Description</textarea>
+    </div>
+
+    <div id="evChores" hidden="@(Model.Type != "Spieltag")">
+        <div class="card-label" style="margin:14px 0 8px"><span class="ms">task_alt</span>Dienste (nur Spieltag)</div>
+        @foreach (var c in Model.Chores)
+        {
+            <div class="fld">
+                <label for="chore_@c.Name.Replace(" ", "_")">@c.Name</label>
+                <select id="chore_@c.Name.Replace(" ", "_")" data-chore="@c.Name">
+                    <option value="Offen">Offen</option>
+                    @foreach (var p in Model.Assignees)
+                    {
+                        <option value="@p" selected="@(string.Equals(p, c.AssignedTo, StringComparison.OrdinalIgnoreCase))">@p</option>
+                    }
+                </select>
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn-gold" style="margin-top:6px"><span class="ms">save</span>@(isNew ? "Termin anlegen" : "Speichern")</button>
+    @if (!isNew)
+    {
+        <button type="button" class="btn-line danger" id="evDelete" style="margin-top:10px"><span class="ms">delete</span>Termin löschen</button>
+    }
+    <p class="muted" style="font-size:12.5px;margin:10px 2px 0">
+        @(isNew
+            ? "Alle bekommen eine Benachrichtigung über den neuen Termin."
+            : "Bei geändertem Datum oder geänderter Uhrzeit bekommen alle mit Zusage eine Benachrichtigung. Beim Löschen ebenso.")
+    </p>
+</form>

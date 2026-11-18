@@ -59,7 +59,8 @@ namespace Suendenbock_App.Controllers
                 DisplayName = DisplayName(user),
                 NextEvent = (await LoadEventsAsync(user, onlyNext: true)).FirstOrDefault(),
                 Payment = await LoadPaymentAsync(user),
-                Feed = await BuildFeedAsync(user)
+                Feed = await BuildFeedAsync(user),
+                AdminPayments = User.IsInRole("Gott") ? await LoadPaymentSummaryAsync() : null
             };
 
             return View(vm);
@@ -85,7 +86,11 @@ namespace Suendenbock_App.Controllers
             if (user == null) return Challenge();
             await SetShellAsync(user, "termine");
 
-            return View(new AppTermineViewModel { Events = await LoadEventsAsync(user, onlyNext: false) });
+            return View(new AppTermineViewModel
+            {
+                Events = await LoadEventsAsync(user, onlyNext: false),
+                IsAdmin = User.IsInRole("Gott")
+            });
         }
 
         // ================================================================
@@ -166,9 +171,12 @@ namespace Suendenbock_App.Controllers
 
             if (thread == null) return NotFound();
 
+            var isAdmin = User.IsInRole("Gott");
+
             return View(new AppThreadViewModel
             {
                 Id = thread.Id,
+                CanEdit = isAdmin || thread.AuthorUserId == user.Id,
                 Title = thread.Title,
                 CategoryName = thread.Category.Name,
                 AuthorName = AuthorDisplayName(thread.AuthorUser, thread.AuthorName),
@@ -178,6 +186,8 @@ namespace Suendenbock_App.Controllers
                     .OrderBy(r => r.CreatedAt)
                     .Select(r => new AppReplyItem
                     {
+                        Id = r.Id,
+                        CanEdit = isAdmin || r.AuthorUserId == user.Id,
                         AuthorName = AuthorDisplayName(r.AuthorUser, r.AuthorName),
                         IsMine = r.AuthorUserId == user.Id,
                         CreatedAt = r.CreatedAt,
@@ -213,6 +223,123 @@ namespace Suendenbock_App.Controllers
                 .ToListAsync();
 
             return Json(results);
+        }
+
+        // GET /App/ThemaBearbeiten/5  (Autor oder Spielleitung)
+        public async Task<IActionResult> ThemaBearbeiten(int id)
+        {
+            var user = await GetUserAsync();
+            if (user == null) return Challenge();
+
+            var thread = await _context.ForumThreads.FirstOrDefaultAsync(t => t.Id == id && !t.IsArchived);
+            if (thread == null) return NotFound();
+            if (thread.AuthorUserId != user.Id && !User.IsInRole("Gott")) return Forbid();
+
+            await SetShellAsync(user, "forum");
+            return View("BeitragBearbeiten", new AppPostEditViewModel
+            {
+                Id = thread.Id,
+                ThreadId = thread.Id,
+                IsThread = true,
+                Title = thread.Title,
+                CategoryId = thread.CategoryId,
+                Content = thread.Content,
+                Categories = await _context.ForumCategories
+                    .OrderBy(c => c.SortOrder)
+                    .Select(c => new ForumCategoryViewModel { Id = c.Id, Name = c.Name, Icon = c.Icon })
+                    .ToListAsync()
+            });
+        }
+
+        // GET /App/AntwortBearbeiten/7  (Autor oder Spielleitung)
+        public async Task<IActionResult> AntwortBearbeiten(int id)
+        {
+            var user = await GetUserAsync();
+            if (user == null) return Challenge();
+
+            var reply = await _context.forumReplies.FirstOrDefaultAsync(r => r.Id == id && !r.IsArchived);
+            if (reply == null) return NotFound();
+            if (reply.AuthorUserId != user.Id && !User.IsInRole("Gott")) return Forbid();
+
+            await SetShellAsync(user, "forum");
+            return View("BeitragBearbeiten", new AppPostEditViewModel
+            {
+                Id = reply.Id,
+                ThreadId = reply.ThreadId,
+                IsThread = false,
+                Content = reply.Content
+            });
+        }
+
+        // ================================================================
+        // SPIELLEITUNG: Termine und Beiträge
+        // ================================================================
+
+        // GET /App/TerminBearbeiten  bzw. /App/TerminBearbeiten/5
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> TerminBearbeiten(int? id)
+        {
+            var user = await GetUserAsync();
+            if (user == null) return Challenge();
+            await SetShellAsync(user, "termine");
+
+            var vm = new AppEventEditViewModel { Assignees = await ChoreAssigneesAsync() };
+
+            Dictionary<string, string> assigned = new();
+            if (id.HasValue)
+            {
+                var evt = await _context.MonthlyEvents.Include(e => e.Chores).FirstOrDefaultAsync(e => e.Id == id.Value);
+                if (evt == null) return NotFound();
+                vm.Id = evt.Id;
+                vm.Title = evt.Title;
+                vm.Type = evt.Type;
+                vm.Date = evt.Date;
+                vm.StartTime = evt.StartTime;
+                vm.EndTime = evt.EndTime;
+                vm.Description = evt.Description ?? "";
+                assigned = evt.Chores
+                    .GroupBy(c => c.ChoreName)
+                    .ToDictionary(g => g.Key, g => g.First().AssignedToName ?? "Offen");
+            }
+
+            vm.Chores = ChoreNames.All
+                .Select(n => new AppChoreViewModel
+                {
+                    Name = n,
+                    AssignedTo = assigned.TryGetValue(n, out var who) && !string.IsNullOrWhiteSpace(who) ? who : "Offen"
+                })
+                .ToList();
+
+            // Alte Freitext-Einträge, die nicht in der Liste stehen, nicht verlieren
+            foreach (var c in vm.Chores)
+            {
+                if (c.AssignedTo != "Offen" && !vm.Assignees.Contains(c.AssignedTo, StringComparer.OrdinalIgnoreCase))
+                    vm.Assignees.Add(c.AssignedTo);
+            }
+
+            return View(vm);
+        }
+
+        // GET /App/Beitraege?jahr=2026&monat=12
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> Beitraege(int? jahr, int? monat)
+        {
+            var user = await GetUserAsync();
+            if (user == null) return Challenge();
+            await SetShellAsync(user, "start");
+
+            var (year, month) = (jahr.HasValue && monat is >= 1 and <= 12)
+                ? (jahr.Value, monat.Value)
+                : PaymentPeriod.GetTargetMonth(DateTime.Now);
+
+            ViewBag.Year = year;
+            ViewBag.Month = month;
+            ViewBag.MonthName = PaymentPeriod.GetMonthName(month);
+            var prev = new DateTime(year, month, 1).AddMonths(-1);
+            var next = new DateTime(year, month, 1).AddMonths(1);
+            ViewBag.PrevUrl = $"/App/Beitraege?jahr={prev.Year}&monat={prev.Month}";
+            ViewBag.NextUrl = $"/App/Beitraege?jahr={next.Year}&monat={next.Month}";
+            return View();
         }
 
         // ================================================================
@@ -726,6 +853,7 @@ namespace Suendenbock_App.Controllers
             await SetShellAsync(user, "profil");
 
             ViewBag.Email = user.Email ?? user.UserName;
+            ViewBag.IsAdmin = User.IsInRole("Gott");
             ViewBag.ActiveCharacter = await _context.Characters
                 .Where(c => c.UserId == user.Id)
                 .OrderBy(c => c.IsCompanion)
@@ -785,6 +913,28 @@ namespace Suendenbock_App.Controllers
         /// <summary>Echter Name des Autors, sonst wie auf der Website (Charakter oder Login)</summary>
         private static string AuthorDisplayName(ApplicationUser? author, string fallback) =>
             !string.IsNullOrWhiteSpace(author?.Name) ? author!.Name!.Trim() : fallback.Split('@')[0];
+
+        /// <summary>Namen für die Dienst-Dropdowns (wie auf der Website)</summary>
+        private async Task<List<string>> ChoreAssigneesAsync()
+        {
+            return (await _context.Users.Select(u => new { u.Name, u.UserName }).ToListAsync())
+                .Select(u => !string.IsNullOrWhiteSpace(u.Name) ? u.Name!.Trim() : (u.UserName ?? "").Split('@')[0])
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(n => n)
+                .ToList();
+        }
+
+        /// <summary>Für die Spielleitung: wie viele haben im aktuellen Beitragsmonat bezahlt</summary>
+        private async Task<AppPaymentSummary> LoadPaymentSummaryAsync()
+        {
+            var (year, month) = PaymentPeriod.GetTargetMonth(DateTime.Now);
+            var players = await PaymentPeriod.GetPayingPlayersAsync(_userManager);
+            var names = players.Select(p => p.UserName ?? "").ToList();
+            var paid = await _context.MonthlyPayments
+                .CountAsync(p => p.Year == year && p.Month == month && p.Status == "paid" && names.Contains(p.PlayerName));
+            return new AppPaymentSummary { MonthName = PaymentPeriod.GetMonthName(month), Paid = paid, Total = players.Count };
+        }
 
         private async Task<List<int>> MyCharacterIdsAsync(ApplicationUser user) =>
             await _context.Characters.Where(c => c.UserId == user.Id).Select(c => c.Id).ToListAsync();

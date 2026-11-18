@@ -632,7 +632,7 @@ namespace Suendenbock_App.Controllers
 
         // POST: /Community/DeleteThread/5
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteThread(int id)
+        public async Task<IActionResult> DeleteThread(int id, string? returnUrl = null)
         {
             var thread = await _context.ForumThreads.FindAsync(id);
             if (thread == null) return NotFound();
@@ -646,12 +646,15 @@ namespace Suendenbock_App.Controllers
             thread.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
 
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
+
             return RedirectToAction(nameof(Forum));
         }
 
         // POST: /Community/DeleteReply/5
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteReply(int id, int threadId)
+        public async Task<IActionResult> DeleteReply(int id, int threadId, string? returnUrl = null)
         {
             var reply = await _context.forumReplies.FindAsync(id);
             if (reply == null) return NotFound();
@@ -663,6 +666,9 @@ namespace Suendenbock_App.Controllers
             reply.IsArchived = true;
             reply.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
 
             return RedirectToAction(nameof(ThreadDetail), new { id = threadId });
         }
@@ -895,7 +901,8 @@ namespace Suendenbock_App.Controllers
             if (thread == null) return NotFound();
 
             // Nur der Autor darf bearbeiten
-            if (thread.AuthorUserId != GetUserId()) return Forbid();
+            // Autor oder Spielleitung
+            if (thread.AuthorUserId != GetUserId() && !User.IsInRole("Gott")) return Forbid();
 
             var categories = await _context.ForumCategories
                 .OrderBy(c => c.SortOrder)
@@ -915,11 +922,12 @@ namespace Suendenbock_App.Controllers
 
         // POST: /Community/EditThread/5
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditThread(int id, CreateThreadViewModel vm)
+        public async Task<IActionResult> EditThread(int id, CreateThreadViewModel vm, string? returnUrl = null)
         {
             var thread = await _context.ForumThreads.FindAsync(id);
             if (thread == null) return NotFound();
-            if (thread.AuthorUserId != GetUserId()) return Forbid();
+            // Autor oder Spielleitung
+            if (thread.AuthorUserId != GetUserId() && !User.IsInRole("Gott")) return Forbid();
 
             if (!ModelState.IsValid)
             {
@@ -936,16 +944,21 @@ namespace Suendenbock_App.Controllers
             thread.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
+
             return RedirectToAction(nameof(ThreadDetail), new { id });
         }
 
         // POST: /Community/EditReply  (inline, kein eigener View nötig)
         [HttpPost, ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditReply(int id, int threadId, string content)
+        public async Task<IActionResult> EditReply(int id, int threadId, string content, string? returnUrl = null)
         {
             var reply = await _context.forumReplies.FindAsync(id);
             if (reply == null) return NotFound();
-            if (reply.AuthorUserId != GetUserId()) return Forbid();
+            // Autor oder Spielleitung
+            if (reply.AuthorUserId != GetUserId() && !User.IsInRole("Gott")) return Forbid();
 
             if (!string.IsNullOrWhiteSpace(content))
             {
@@ -953,6 +966,9 @@ namespace Suendenbock_App.Controllers
                 reply.UpdatedAt = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return LocalRedirect(returnUrl);
 
             return RedirectToAction(nameof(ThreadDetail), new { id = threadId });
         }
