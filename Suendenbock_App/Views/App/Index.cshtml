@@ -20,6 +20,18 @@
     }
 </div>
 
+@if (Model.AdminPayments != null)
+{
+    var a = Model.AdminPayments;
+    <a class="card" href="/App/Beitraege" style="display:block;text-decoration:none">
+        <div class="card-label"><span class="ms">admin_panel_settings</span>Spielleitung · Beiträge @a.MonthName</div>
+        <div class="paysum">
+            <div><strong>@a.Paid von @a.Total bezahlt</strong><p class="muted">Tippen zum Verwalten und Erinnern</p></div>
+            <div class="paybar" aria-hidden="true"><i style="width:@(a.Total == 0 ? 0 : a.Paid * 100 / a.Total)%"></i></div>
+        </div>
+    </a>
+}
+
 @if (Model.Payment != null)
 {
     var p = Model.Payment;

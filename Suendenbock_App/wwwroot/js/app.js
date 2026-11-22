@@ -406,6 +406,149 @@
         });
     }
 
+    // ---------- Spielleitung: Beiträge verwalten ----------
+    function api(method, url, body) {
+        return fetch(url, {
+            method: method, credentials: 'same-origin',
+            headers: body ? { 'Content-Type': 'application/json' } : {},
+            body: body ? JSON.stringify(body) : undefined
+        }).then(function (r) {
+            if (!r.ok) return r.text().then(function (t) { throw new Error(t || ('Fehler ' + r.status)); });
+            var ct = r.headers.get('content-type') || '';
+            return ct.indexOf('json') >= 0 ? r.json() : null;
+        });
+    }
+
+    function initPayAdmin() {
+        var root = $('#payAdmin');
+        if (!root) return;
+        var year = parseInt(root.getAttribute('data-year'), 10), month = parseInt(root.getAttribute('data-month'), 10);
+        var list = $('#payList'), remindAll = $('#remindAll');
+        var payments = [];
+
+        function name(p) { return p.displayName || (p.playerName || '').split('@')[0]; }
+        function render() {
+            var paid = payments.filter(function (p) { return p.status === 'paid'; }).length;
+            $('#paySum').textContent = paid + ' von ' + payments.length + ' bezahlt';
+            $('#paySumText').textContent = payments.length - paid > 0 ? (payments.length - paid) + ' noch offen' : 'Alle haben bezahlt';
+            $('#payBar').style.width = (payments.length ? Math.round(paid * 100 / payments.length) : 0) + '%';
+            remindAll.disabled = payments.length - paid === 0;
+
+            if (!payments.length) { list.innerHTML = '<p class="empty">Keine zahlenden Spieler gefunden.</p>'; return; }
+            list.innerHTML = payments.map(function (p, i) {
+                var isPaid = p.status === 'paid';
+                var when = p.paidAt ? new Date(p.paidAt).toLocaleDateString('de-DE') : '';
+                return '<div class="prow" data-i="' + i + '">' +
+                    '<div class="top"><strong>' + esc(name(p)) + '</strong>' +
+                    '<span class="state ' + (isPaid ? 'paid' : 'open') + '">' + (isPaid ? 'Bezahlt' : 'Offen') + '</span></div>' +
+                    (isPaid ? '<div class="meta">' + esc(p.paymentMethod || '') + (when ? ' · ' + when : '') + '</div>' : '') +
+                    '<div class="acts">' +
+                    (isPaid
+                        ? '<select data-act="method" aria-label="Zahlart">' + ['PayPal', 'Überweisung', 'Bar'].map(function (m) {
+                            return '<option' + (p.paymentMethod === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' +
+                          '<button type="button" class="minibtn" data-act="open"><span class="ms">undo</span>Doch offen</button>'
+                        : '<button type="button" class="minibtn ok" data-act="paid"><span class="ms">check</span>Bezahlt</button>' +
+                          '<button type="button" class="minibtn" data-act="remind"><span class="ms">notifications</span>Erinnern</button>') +
+                    '<button type="button" class="minibtn danger" data-act="delete" aria-label="Eintrag löschen"><span class="ms">delete</span></button>' +
+                    '</div></div>';
+            }).join('');
+        }
+        function load() {
+            api('GET', '/api/payments?year=' + year + '&month=' + month).then(function (data) {
+                payments = data || []; render();
+            }).catch(function (e) { list.innerHTML = '<p class="empty">Konnte nicht geladen werden: ' + esc(e.message) + '</p>'; });
+        }
+        list.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-act]');
+            if (!btn || btn.tagName === 'SELECT') return;
+            var p = payments[parseInt(btn.closest('.prow').getAttribute('data-i'), 10)];
+            var act = btn.getAttribute('data-act');
+            btn.disabled = true;
+            var done;
+            if (act === 'paid') done = api('PUT', '/api/payments/' + p.id, { status: 'paid', paymentMethod: 'PayPal' }).then(function () { toast(name(p) + ': bezahlt ✓ (Push verschickt)'); });
+            else if (act === 'open') done = api('PUT', '/api/payments/' + p.id, { status: 'unpaid', paymentMethod: null }).then(function () { toast(name(p) + ': wieder offen'); });
+            else if (act === 'remind') done = api('POST', '/api/payments/remind', { year: year, month: month, playerName: p.playerName }).then(function (r) { toast(r && r.reminded ? name(p) + ' wurde erinnert' : 'Keine Erinnerung nötig'); });
+            else if (act === 'delete') {
+                if (!confirm('Eintrag von ' + name(p) + ' löschen?')) { btn.disabled = false; return; }
+                done = api('DELETE', '/api/payments/' + p.id).then(function () { toast('Eintrag gelöscht'); });
+            }
+            done.then(load).catch(function (err) { btn.disabled = false; toast('Hat nicht geklappt: ' + err.message); });
+        });
+        list.addEventListener('change', function (e) {
+            if (e.target.getAttribute('data-act') !== 'method') return;
+            var p = payments[parseInt(e.target.closest('.prow').getAttribute('data-i'), 10)];
+            api('PUT', '/api/payments/' + p.id, { status: 'paid', paymentMethod: e.target.value })
+                .then(function () { toast('Zahlart gespeichert'); load(); })
+                .catch(function (err) { toast('Hat nicht geklappt: ' + err.message); });
+        });
+        remindAll.addEventListener('click', function () {
+            var open = payments.filter(function (p) { return p.status !== 'paid'; }).length;
+            if (!confirm(open + ' Spieler mit offenem Beitrag jetzt erinnern?')) return;
+            remindAll.disabled = true;
+            api('POST', '/api/payments/remind', { year: year, month: month })
+                .then(function (r) { toast((r && r.reminded) + ' Spieler erinnert ✓'); })
+                .catch(function (err) { toast('Hat nicht geklappt: ' + err.message); })
+                .then(function () { remindAll.disabled = false; });
+        });
+        load();
+    }
+
+    // ---------- Spielleitung: Termin anlegen / bearbeiten ----------
+    function initEventForm() {
+        var form = $('#eventForm');
+        if (!form) return;
+        var id = form.getAttribute('data-event-id');
+        var type = $('#evType'), chores = $('#evChores');
+        type.addEventListener('change', function () { chores.hidden = type.value !== 'Spieltag'; });
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var data = {
+                title: $('#evTitle').value.trim(), type: type.value, date: $('#evDate').value,
+                startTime: $('#evStart').value, endTime: $('#evEnd').value, description: $('#evDesc').value.trim()
+            };
+            if (!data.title || !data.date) { toast('Bitte Titel und Datum ausfüllen.'); return; }
+            if (data.type === 'Spieltag') {
+                data.chores = {};
+                $all('[data-chore]', chores).forEach(function (s) { data.chores[s.getAttribute('data-chore')] = s.value; });
+            }
+            var btn = form.querySelector('button[type=submit]'); btn.disabled = true;
+            api(id ? 'PUT' : 'POST', id ? '/api/events/' + id : '/api/events', data)
+                .then(function () { location.href = '/App/Termine'; })
+                .catch(function (err) { btn.disabled = false; toast('Speichern hat nicht geklappt: ' + err.message); });
+        });
+
+        var del = $('#evDelete');
+        if (del) del.addEventListener('click', function () {
+            if (!confirm('Termin wirklich löschen? Alle mit Zusage bekommen eine Absage.')) return;
+            del.disabled = true;
+            api('DELETE', '/api/events/' + id)
+                .then(function () { location.href = '/App/Termine'; })
+                .catch(function (err) { del.disabled = false; toast('Löschen hat nicht geklappt: ' + err.message); });
+        });
+    }
+
+    // ---------- Forum: Beitrag bearbeiten (Editor mit Formatierung) ----------
+    function initRichEditor() {
+        var ed = $('#richEd'), val = $('#richValue'), form = $('#postEditForm');
+        if (!ed || !val || !form) return;
+        $all('[data-rcmd]').forEach(function (b) {
+            b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+            b.addEventListener('click', function () { document.execCommand(b.getAttribute('data-rcmd'), false, null); ed.focus(); });
+        });
+        form.addEventListener('submit', function (e) {
+            val.value = ed.innerHTML.trim();
+            if (!ed.textContent.trim()) { e.preventDefault(); toast('Der Beitrag darf nicht leer sein.'); }
+        });
+    }
+
+    // Formulare mit Sicherheitsabfrage (Löschen)
+    function initConfirmForms() {
+        $all('form[data-confirm]').forEach(function (f) {
+            f.addEventListener('submit', function (e) { if (!confirm(f.getAttribute('data-confirm'))) e.preventDefault(); });
+        });
+    }
+
     // ---------- Neues Thema ----------
     function initNewThread() {
         var open = $('#newThreadBtn'), box = $('#newThread');
@@ -427,6 +570,10 @@
         initCharacter();
         initNewThread();
         initMessages();
+        initPayAdmin();
+        initEventForm();
+        initRichEditor();
+        initConfirmForms();
 
         var sb = $('#searchBtn'); if (sb) sb.addEventListener('click', openSearch);
         var sc = $('#searchClose'); if (sc) sc.addEventListener('click', closeSearch);

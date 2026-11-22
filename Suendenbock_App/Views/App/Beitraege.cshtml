@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Beiträge verwalten";
+}
+
+<a class="back" href="/App/Profil"><span class="ms">chevron_left</span>Profil</a>
+
+<div class="monthnav">
+    <a href="@ViewBag.PrevUrl" class="hbtn" aria-label="Vorheriger Monat"><span class="ms">chevron_left</span></a>
+    <h2>@ViewBag.MonthName @ViewBag.Year</h2>
+    <a href="@ViewBag.NextUrl" class="hbtn" aria-label="Nächster Monat"><span class="ms">chevron_right</span></a>
+</div>
+
+<div id="payAdmin" data-year="@ViewBag.Year" data-month="@ViewBag.Month">
+    <div class="card">
+        <div class="paysum">
+            <div><strong id="paySum">…</strong><p class="muted" id="paySumText">Lade Beiträge …</p></div>
+            <div class="paybar" aria-hidden="true"><i id="payBar" style="width:0"></i></div>
+        </div>
+        <button type="button" class="btn-gold" id="remindAll" style="margin-top:12px" disabled>
+            <span class="ms">notifications_active</span>Offene erinnern
+        </button>
+    </div>
+
+    <div class="card" id="payList">
+        <p class="empty">Lade …</p>
+    </div>
+
+    <p class="muted" style="font-size:12.5px;margin:0 4px">
+        Ab dem 20. gilt der nächste Monat. Gelöschte Einträge von zahlenden Spielern werden beim nächsten Öffnen automatisch wieder als „offen“ angelegt.
+    </p>
+</div>

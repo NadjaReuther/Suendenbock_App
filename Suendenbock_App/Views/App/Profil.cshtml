@@ -18,6 +18,16 @@
     <a href="/Profil/Name?returnUrl=%2FApp%2FProfil" class="btn-line" style="margin-top:12px"><span class="ms">edit</span>Namen ändern</a>
 </div>
 
+@if (ViewBag.IsAdmin == true)
+{
+    <h2 class="sec"><span class="ms">admin_panel_settings</span>Spielleitung</h2>
+    <div class="card">
+        <a class="item" href="/App/Beitraege"><div class="ic"><span class="ms">payments</span></div><div class="body"><h4>Beiträge verwalten</h4><p>Wer hat bezahlt, bearbeiten, erinnern</p></div><span class="ms muted">chevron_right</span></a>
+        <a class="item" href="/App/TerminBearbeiten"><div class="ic"><span class="ms">add_circle</span></div><div class="body"><h4>Neuer Termin</h4><p>Bearbeiten direkt unter „Termine“</p></div><span class="ms muted">chevron_right</span></a>
+        <a class="item" href="/App/Forum"><div class="ic"><span class="ms">forum</span></div><div class="body"><h4>Forum moderieren</h4><p>Jedes Thema und jede Antwort hat „Bearbeiten“</p></div><span class="ms muted">chevron_right</span></a>
+    </div>
+}
+
 <h2 class="sec"><span class="ms">notifications</span>Benachrichtigungen</h2>
 <div class="card">
     <a class="item" href="/Community/NotificationSettings">

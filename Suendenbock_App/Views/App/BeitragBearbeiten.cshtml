@@ -1,0 +1,57 @@
+@model Suendenbock_App.Models.ViewModels.AppPostEditViewModel
+@{
+    ViewData["Title"] = Model.IsThread ? "Thema bearbeiten" : "Antwort bearbeiten";
+    var back = $"/App/Thema/{Model.ThreadId}";
+}
+
+<a class="back" href="@back"><span class="ms">chevron_left</span>Zurück zum Thema</a>
+
+<h2 class="sec"><span class="ms">edit</span>@ViewData["Title"]</h2>
+
+@if (Model.IsThread)
+{
+    <form class="card" id="postEditForm" method="post" action="/Community/EditThread/@Model.Id">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@back" />
+        <div class="fld">
+            <label for="peTitle">Titel</label>
+            <input id="peTitle" name="Title" value="@Model.Title" maxlength="200" required />
+        </div>
+        <div class="fld">
+            <label for="peCat">Bereich</label>
+            <select id="peCat" name="CategoryId" required>
+                @foreach (var c in Model.Categories)
+                {
+                    <option value="@c.Id" selected="@(c.Id == Model.CategoryId)">@c.Name</option>
+                }
+            </select>
+        </div>
+        <partial name="_RichEditor" model="Model.Content" />
+        <button type="submit" class="btn-gold"><span class="ms">save</span>Speichern</button>
+    </form>
+
+    <form method="post" action="/Community/DeleteThread/@Model.Id" data-confirm="Thema wirklich löschen? Es verschwindet mit allen Antworten aus dem Forum.">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="/App/Forum" />
+        <button type="submit" class="btn-line danger"><span class="ms">delete</span>Thema löschen</button>
+    </form>
+}
+else
+{
+    <form class="card" id="postEditForm" method="post" action="/Community/EditReply">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <input type="hidden" name="threadId" value="@Model.ThreadId" />
+        <input type="hidden" name="returnUrl" value="@back" />
+        <partial name="_RichEditor" model="Model.Content" />
+        <button type="submit" class="btn-gold"><span class="ms">save</span>Speichern</button>
+    </form>
+
+    <form method="post" action="/Community/DeleteReply" data-confirm="Antwort wirklich löschen?">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <input type="hidden" name="threadId" value="@Model.ThreadId" />
+        <input type="hidden" name="returnUrl" value="@back" />
+        <button type="submit" class="btn-line danger"><span class="ms">delete</span>Antwort löschen</button>
+    </form>
+}
