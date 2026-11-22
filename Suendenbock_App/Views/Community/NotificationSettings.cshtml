@@ -157,6 +157,17 @@
         const saveBtn = document.getElementById('savePreferencesBtn');
         const testBtn = document.getElementById('sendTestBtn');
 
+        // Meldung anzeigen (SweetAlert, sonst einfacher Hinweis)
+        function notify(icon, title, text, autoClose) {
+            if (window.Swal) {
+                return Swal.fire(autoClose
+                    ? { icon, title, text, timer: 2000, showConfirmButton: false }
+                    : { icon, title, text });
+            }
+            alert(title + (text ? '\n\n' + text : ''));
+            return Promise.resolve();
+        }
+
         // Warte bis pushManager initialisiert ist
         async function initPage() {
             await window.pushManager.init();
@@ -166,6 +177,22 @@
 
         async function updateUI() {
             const isSubscribed = window.pushManager.isSubscribed;
+            const support = window.pushManager.getSupportStatus();
+            toggleBtn.disabled = false;
+
+            if (!isSubscribed && !support.supported) {
+                // Gerät/Browser kann (noch) nicht: klar sagen, warum und was zu tun ist
+                statusIcon.textContent = 'info';
+                statusTitle.textContent = support.reason === 'denied'
+                    ? 'Benachrichtigungen sind blockiert'
+                    : 'Hier noch nicht möglich';
+                statusDescription.textContent = support.message;
+                toggleBtn.innerHTML = '<span class="material-symbols-outlined">help</span> Wie geht das?';
+                toggleBtn.classList.add('btn-activate');
+                toggleBtn.classList.remove('btn-deactivate');
+                preferencesEl.style.display = 'none';
+                return;
+            }
 
             if (isSubscribed) {
                 statusIcon.textContent = 'notifications_active';
@@ -203,42 +230,46 @@
         toggleBtn.addEventListener('click', async () => {
             const isSubscribed = window.pushManager.isSubscribed;
 
-            if (isSubscribed) {
-                // Deaktivieren
-                const result = await window.pushManager.unsubscribe();
-                if (result.success) {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'Deaktiviert',
-                        text: result.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    await updateUI();
-                }
-            } else {
-                // Aktivieren
-                const result = await window.pushManager.subscribe();
-                if (result.success) {
-                    // Banner permanent verstecken nach erfolgreicher Aktivierung
-                    localStorage.setItem('notificationBannerDismissed', 'true');
+            // Geht auf diesem Gerät nicht: Erklärung anzeigen statt still nichts zu tun
+            const support = window.pushManager.getSupportStatus();
+            if (!isSubscribed && !support.supported) {
+                await notify('info', 'So aktivierst du Benachrichtigungen', support.message);
+                return;
+            }
 
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'Aktiviert!',
-                        text: result.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    await updateUI();
-                    await loadPreferences();
+            // Sichtbare Rückmeldung beim Tippen
+            const originalHtml = toggleBtn.innerHTML;
+            toggleBtn.disabled = true;
+            toggleBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Einen Moment …';
+
+            try {
+                if (isSubscribed) {
+                    // Deaktivieren
+                    const result = await window.pushManager.unsubscribe();
+                    if (result.success) {
+                        await notify('success', 'Deaktiviert', result.message, true);
+                        await updateUI();
+                    }
                 } else {
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Fehler',
-                        text: result.message
-                    });
+                    // Aktivieren
+                    const result = await window.pushManager.subscribe();
+                    if (result.success) {
+                        // Banner permanent verstecken nach erfolgreicher Aktivierung
+                        localStorage.setItem('notificationBannerDismissed', 'true');
+
+                        await notify('success', 'Aktiviert!', result.message, true);
+                        await updateUI();
+                        await loadPreferences();
+                    } else {
+                        await notify('error', 'Nicht aktiviert', result.message);
+                    }
                 }
+            } catch (error) {
+                console.error('Fehler beim Umschalten der Benachrichtigungen:', error);
+                await notify('error', 'Fehler', 'Das hat nicht geklappt: ' + (error && error.message ? error.message : 'Unbekannter Fehler'));
+            } finally {
+                toggleBtn.innerHTML = originalHtml;
+                await updateUI();
             }
         });
 
