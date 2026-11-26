@@ -197,6 +197,14 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             }
 
             var schnitte = model.Faecher.Where(f => f.Schnitt.HasValue).Select(f => f.Schnitt!.Value).ToList();
+
+            // Protokollhefte dieses Schuljahres zählen wie ein weiteres Fach (JS: phAvg)
+            var heftNoten = (await HeftNotenAsync(figur, figur.Kampagne.Schuljahr))
+                .Select(ProtokollheftRegeln.NoteAus).Where(n => n.HasValue).Select(n => n!.Value).ToList();
+            model.HeftSchnitt = HesparisRegeln.Schnitt(heftNoten);
+            model.HeftAnzahl = heftNoten.Count;
+            if (model.HeftSchnitt.HasValue) schnitte.Add(model.HeftSchnitt.Value);
+
             model.Gesamtschnitt = schnitte.Count > 0 ? schnitte.Average() : null;
             model.FachpunkteGesamt = model.Faecher.Sum(f => f.Fachpunkte);
             model.FachpunkteFrei = model.Faecher.Sum(f => f.FachpunkteFrei);

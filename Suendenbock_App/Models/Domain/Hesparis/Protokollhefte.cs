@@ -10,6 +10,9 @@ public class Protokollheft : IKampagnenDaten
     public Kampagne Kampagne { get; set; } = null!;
     public int Nummer { get; set; }
 
+    /// <summary>Schuljahr, in dem das Heft geschrieben wurde; nur dessen Noten zählen im Zeugnis (JS: sj).</summary>
+    public int Schuljahr { get; set; } = 1;
+
     /// <summary>Noch nicht ausgegeben (JS: draft).</summary>
     public bool Entwurf { get; set; }
     public string Titel { get; set; } = "";
@@ -30,6 +33,7 @@ public class Protokollheft : IKampagnenDaten
     public int? SchreiberMitschuelerId { get; set; }
     public Mitschueler? SchreiberMitschueler { get; set; }
 
+    /// <summary>Spieltag der Abgabe (JS: abgegeben, ein Kalendertag der Spielwelt).</summary>
     public DateTime? AbgegebenAm { get; set; }
     public string? Note { get; set; }
     public string? Rueckmeldung { get; set; }
@@ -132,7 +136,9 @@ public class HeftPerson
     public string? Rolle { get; set; }
     public string? Sagt { get; set; }
     public string? Eindruck { get; set; }
-    public bool Wichtig { get; set; }
+
+    /// <summary>Wie wichtig für den Auftrag, 0–3 Sterne (JS: wichtig).</summary>
+    public int Wichtig { get; set; }
 }
 
 /// <summary>Beitrag je Person/Schlüssel (JS: jeder[key]).</summary>

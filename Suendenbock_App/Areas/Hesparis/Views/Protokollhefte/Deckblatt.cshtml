@@ -1,0 +1,175 @@
+@model ProtokollheftViewModel
+@{
+    var a = Model.Heft!;
+    var h = a.Heft;
+    ViewData["Title"] = "Deckblatt · Heft " + h.Nummer;
+    ViewData["Bereich"] = "Hefte";
+    var darf = Model.DarfBearbeiten;
+    var schreibKringel = "<svg viewBox=\"0 0 120 40\" preserveAspectRatio=\"none\" aria-hidden=\"true\"><ellipse cx=\"60\" cy=\"20\" rx=\"56\" ry=\"17\" transform=\"rotate(-3 60 20)\" /></svg>";
+    var achtet = h.Schwerpunkte.Select(s => s.Text).ToHashSet();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-schuljahr.css" asp-append-version="true" />
+}
+
+<div class="md-wrap" id="md-hefte">
+    <div class="@(Model.Frisch == null ? "ph-root ph-anim" : "ph-root")">
+        <div class="ph-top">
+            @if (h.Entwurf)
+            {
+                <form class="ph-inline" asp-action="Verwerfen" asp-route-id="@h.Id" method="post"><button type="submit" class="ph-back">‹ Abbrechen</button></form>
+            }
+            else
+            {
+                <a class="ph-back" asp-action="Heft" asp-route-id="@h.Id">‹ Zum Heft</a>
+            }
+            <div>
+                <div class="armory-eyebrow">@(h.Entwurf ? "Neues Protokollheft" : "Protokollheft Nr. " + h.Nummer)</div>
+                <h2 class="armory-title">Deckblatt ausfüllen</h2>
+            </div>
+        </div>
+
+        <div class="ph-below">
+            <div class="ph-page">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-height:68px">
+                    <div><div class="ph-mute">Akademie Hesparis · Außeneinsatz</div><div class="ph-h" style="font-size:40px">Protokollheft Nr. @h.Nummer</div></div>
+                    <span class="ph-gnote">Note<br>der<br>Lehrkraft</span>
+                </div>
+                <label class="ph-f"><span>Auftrag</span><input data-feld="titel" maxlength="80" value="@h.Titel" placeholder="@(TempData["Error"] != null ? "Bitte zuerst einen Titel eintragen!" : "z. B. Sternwarte Norrvik")" readonly="@(!darf)" autofocus="@(TempData["Error"] != null)" /></label>
+                <label class="ph-f">
+                    <span>Lehrkraft</span>
+                    <select data-feld="lehrer" disabled="@(!darf)">
+                        <option value="">– bitte wählen –</option>
+                        @foreach (var t in Model.Lehrkraefte)
+                        {
+                            <option value="@t.Name" selected="@(t.Name == h.Lehrer)">@t.Name@(string.IsNullOrEmpty(t.Faecher) ? "" : " (" + t.Faecher + ")")</option>
+                        }
+                        @if (!string.IsNullOrEmpty(h.Lehrer) && Model.Lehrkraefte.All(t => t.Name != h.Lehrer))
+                        {
+                            <option value="@h.Lehrer" selected>@h.Lehrer</option>
+                        }
+                    </select>
+                </label>
+                <label class="ph-f"><span>Ort</span><input data-feld="ort" maxlength="80" value="@h.Ort" placeholder="Wohin geht es?" readonly="@(!darf)" /></label>
+                <div class="ph-f2">
+                    <label class="ph-f"><span>Unterwegs ab</span><input type="date" data-feld="von" value="@h.Von?.ToString("yyyy-MM-dd")" readonly="@(!darf)" /></label>
+                    <label class="ph-f"><span>bis</span><input type="date" data-feld="bis" value="@h.Bis?.ToString("yyyy-MM-dd")" readonly="@(!darf)" /></label>
+                </div>
+                <label class="ph-f"><span>Abgabe bis</span><input type="date" data-feld="abgabe" value="@h.Abgabe?.ToString("yyyy-MM-dd")" style="color:var(--red)" readonly="@(!darf)" /></label>
+                <label class="ph-f" style="align-items:start"><span style="padding-top:12px">Auftragstext</span><textarea data-feld="auftrag" rows="3" maxlength="800" placeholder="So, wie die Schule ihn ausgegeben hat …" readonly="@(!darf)">@h.Auftrag</textarea></label>
+                <div class="ph-f" style="align-items:center;min-height:68px">
+                    <span style="padding:0">Lehrkraft achtet auf</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0">
+                        @foreach (var t in ProtokollheftRegeln.Achtet)
+                        {
+                            var an = achtet.Contains(t);
+                            <form class="ph-inline" asp-action="Achtet" asp-route-id="@h.Id" method="post">
+                                <input type="hidden" name="text" value="@t" />
+                                <button type="submit" class="@(an ? "ph-chip on" : "ph-chip")" aria-pressed="@(an ? "true" : "false")" disabled="@(!darf)">@t</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+
+                <div class="ph-line" style="justify-content:space-between;margin-top:34px">
+                    <span class="ph-mute" style="padding-bottom:6px">Gruppenmitglieder · antippen, falls jemand fehlt</span>
+                    <span class="ph-mute" style="padding-bottom:6px">Schriftführer/in</span>
+                </div>
+                @foreach (var f in a.Figuren)
+                {
+                    var off = a.Fehlt(f.SpielfigurId!.Value);
+                    var on = a.Schreiber?.Schluessel == f.Schluessel;
+                    <div class="@(off ? "ph-m off" : "ph-m")">
+                        <form class="ph-inline" asp-action="Fehlt" asp-route-id="@h.Id" method="post">
+                            <input type="hidden" name="figur" value="@f.SpielfigurId" />
+                            <button type="submit" class="ph-boxbtn" aria-label="@f.Kurz@(off ? " ist dabei" : " fehlt")" aria-pressed="@(off ? "false" : "true")" disabled="@(!darf)">@Html.Raw(ProtokollheftRegeln.Haken(!off, Model.Frisch == "fehlt|" + f.SpielfigurId))</button>
+                        </form>
+                        <span class="ph-ink" style="--pc:@f.Farbe">@f.Name</span>
+                        @if (off)
+                        {
+                            <span></span>
+                        }
+                        else
+                        {
+                            <form class="ph-inline" asp-action="Schreiber" asp-route-id="@h.Id" method="post">
+                                <input type="hidden" name="wer" value="@f.Schluessel" />
+                                <button type="submit" class="ph-quill@(on ? " on" : "")@(on && Model.Frisch == "schreib" ? " fresh" : "")" aria-pressed="@(on ? "true" : "false")" disabled="@(!darf)">✎ @(on ? "schreibt" : "schreiben?")@if (on) { @Html.Raw(schreibKringel) }</button>
+                            </form>
+                        }
+                    </div>
+                }
+                @if (a.Begleiter is HeftMitglied plus)
+                {
+                    var on = a.Schreiber?.Schluessel == plus.Schluessel;
+                    <div class="ph-m">
+                        <form class="ph-inline" asp-action="Begleiter" asp-route-id="@h.Id" method="post">
+                            <input type="hidden" name="wert" value="@plus.Schluessel" />
+                            <button type="submit" class="ph-boxbtn" aria-label="@plus.Name wieder austragen" disabled="@(!darf)">@Html.Raw(ProtokollheftRegeln.Haken(true, Model.Frisch == "plus"))</button>
+                        </form>
+                        <span><span class="ph-hl" style="padding:0 4px">@plus.Name</span> <span class="ph-mute">+1 aus der Klasse</span></span>
+                        <form class="ph-inline" asp-action="Schreiber" asp-route-id="@h.Id" method="post">
+                            <input type="hidden" name="wer" value="@plus.Schluessel" />
+                            <button type="submit" class="ph-quill@(on ? " on" : "")@(on && Model.Frisch == "schreib" ? " fresh" : "")" aria-pressed="@(on ? "true" : "false")" disabled="@(!darf)">✎ @(on ? "schreibt" : "schreiben?")@if (on) { @Html.Raw(schreibKringel) }</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <div class="ph-m"><span class="ph-box" style="margin-bottom:8px;opacity:.4"></span><span style="color:rgba(34,48,106,0.5)">+1 aus der Klasse: rechts auswählen</span><span></span></div>
+                }
+            </div>
+
+            @* ------------------------------------------------ rechte Spalte: Klassenliste, Vorschlag, Knopf *@
+            <div class="ph-stickies" style="align-items:stretch;flex-basis:330px;gap:26px;padding-top:16px">
+                <div class="ph-clip">
+                    <div class="ph-mute" style="margin-bottom:2px">Klassenliste · wer kommt mit?</div>
+                    <input type="search" data-phsearch placeholder="Name suchen …" aria-label="Mitschüler suchen" />
+                    <div class="ph-clhead"><span>Name</span><span>war dabei</span><span>Gruppe</span></div>
+                    <div class="ph-clwrap">
+                        @foreach (var k in Model.Klasse)
+                        {
+                            var klasse = "ph-cl";
+                            if (k.Gewaehlt) klasse += " on";
+                            if (k.Unterwegs) klasse += " busy";
+                            string strich = k.Unterwegs ? "unterwegs" : k.WarDabei > 0 ? new string('I', Math.Min(k.WarDabei, 5)) + (k.WarDabei > 5 ? "+" : "") : "–";
+                            string herz = k.Herzen > 0 ? new string('♥', Math.Min(k.Herzen, 5)) : k.Herzen < 0 ? new string('✕', Math.Min(-k.Herzen, 3)) : "·";
+                            <form class="ph-inline" asp-action="Begleiter" asp-route-id="@h.Id" method="post">
+                                <input type="hidden" name="wert" value="@k.Wert" />
+                                <button type="submit" class="@klasse" data-name="@k.Name.ToLowerInvariant()" aria-pressed="@(k.Gewaehlt ? "true" : "false")" title="@(k.Unterwegs ? "ist gerade mit einem anderen Heft unterwegs" : null)" disabled="@(!darf)">
+                                    <span>@k.Name@(k.Gewaehlt ? " ✓" : "")</span>
+                                    <span class="@(k.Unterwegs ? "tally small" : "tally")">@strich</span>
+                                    <span class="@(k.Herzen < 0 ? "hz neg" : "hz")" aria-label="Beziehung zur Gruppe @k.Herzen">@herz</span>
+                                </button>
+                            </form>
+                        }
+                        @if (Model.Klasse.Count == 0)
+                        {
+                            <div class="ph-mute" style="padding:8px">Noch keine Mitschüler angelegt.</div>
+                        }
+                    </div>
+                </div>
+                @if (Model.Vorschlag is HeftMitglied v && darf)
+                {
+                    <div class="ph-sticky" style="align-self:flex-end;transform:rotate(-3deg)">
+                        <span class="ph-mute">Vorschlag</span>
+                        @v.Kurz war @if (Model.VorschlagMal > 0) { <text>erst @(Model.VorschlagMal)× </text> } else { <text>noch <u>nie</u> </text> }Schriftführer.
+                        <form class="ph-inline" asp-action="Schreiber" asp-route-id="@h.Id" method="post"><input type="hidden" name="wer" value="@v.Schluessel" /><button type="submit">@v.Kurz schreibt!</button></form>
+                    </div>
+                }
+                @if (h.Entwurf)
+                {
+                    <form class="ph-inline" asp-action="Anlegen" asp-route-id="@h.Id" method="post"><button type="submit" class="ph-btn" data-anlegen>Heft anlegen →</button></form>
+                }
+                else
+                {
+                    <a class="ph-btn" asp-action="Heft" asp-route-id="@h.Id">Fertig, zum Heft →</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_HeftSkript" model="Model" />
+}

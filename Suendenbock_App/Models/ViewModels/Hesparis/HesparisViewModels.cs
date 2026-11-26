@@ -163,6 +163,10 @@ public class ZeugnisViewModel
     public double? Gesamtschnitt { get; set; }
     public int FachpunkteGesamt { get; set; }
     public int FachpunkteFrei { get; set; }
+
+    /// <summary>Schnitt der benoteten Protokollhefte dieses Schuljahres (JS: phAvg), zählt im Gesamtwert mit.</summary>
+    public double? HeftSchnitt { get; set; }
+    public int HeftAnzahl { get; set; }
 }
 
 public class ZeugnisFach
@@ -276,6 +280,12 @@ public class StufenViewModel
     public int PunkteFrei => PunkteGesamt - PunkteVerbraucht;
     public int Bonuspunkte { get; set; }
     public int AbschlussPunkte { get; set; }
+
+    /// <summary>Freipunkte aus Protokollheften in Zehnteln (JS: sjHeftZ).</summary>
+    public int HeftZehntel { get; set; }
+
+    /// <summary>Angefangene Zehntel bis zum nächsten Punkt (JS: sjFreiZ % 10).</summary>
+    public int RestZehntel { get; set; }
 
     public List<StufenFach> Faecher { get; set; } = new();
     public StufenFach Auswahl { get; set; } = null!;
