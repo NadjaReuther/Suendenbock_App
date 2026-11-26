@@ -1,0 +1,34 @@
+@model WaffenKarte
+@{
+    // Karte einer Waffe auf dem Altar (JS: weaponCardHtml): Würfel, Schaden, Wucht-Balken
+    var (wuerfel, bonus) = WaffenRegeln.SchadenLesen(Model.Waffe.Schaden);
+    var klasse = "w-card";
+    if (Model.Vergangen)
+    {
+        klasse += " past";
+    }
+}
+<div class="@klasse">
+    @if (Model.Vergangen)
+    {
+        <div class="w-past">zuletzt beschworen</div>
+    }
+    <div class="w-tag">@Html.Raw(Model.Kategorie.Symbol)@Model.Kategorie.Name</div>
+    <div class="w-name">@Model.Waffe.Name</div>
+    <div class="w-dice" aria-hidden="true">
+        @for (int i = 0; i < wuerfel; i++)
+        {
+            <svg class="d10" viewBox="0 0 30 34" aria-hidden="true"><polygon points="15,1 29,13 15,33 1,13" /><polyline points="1,13 15,19 29,13" fill="none" /><line x1="15" y1="19" x2="15" y2="33" /></svg>
+        }
+        @if (bonus > 0)
+        {
+            <span class="w-bonus">+@bonus</span>
+        }
+    </div>
+    <div class="w-dmg">@Model.Waffe.Schaden Schaden</div>
+    @if (!string.IsNullOrEmpty(Model.Waffe.Notiz))
+    {
+        <div class="w-note">@Model.Waffe.Notiz</div>
+    }
+    <div class="w-power"><span>Wucht</span><div class="w-bar"><i style="width:@WaffenRegeln.Wucht(Model.Waffe.Schaden)%"></i></div><b>Ø @WaffenRegeln.DurchschnittText(Model.Waffe.Schaden)</b></div>
+</div>

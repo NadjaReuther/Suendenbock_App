@@ -1,0 +1,268 @@
+@model WaffenViewModel
+@{
+    ViewData["Title"] = "Ätherwaffen";
+    ViewData["Bereich"] = "Waffen";
+    var k = Model.Kategorie;
+    var arsenal = Model.Arsenal;
+
+    string chronikText = "";
+    if (Model.Chronik.Count == 1)
+    {
+        chronikText = "1 Wurf";
+    }
+    else if (Model.Chronik.Count > 1)
+    {
+        chronikText = Model.Chronik.Count + " Würfe";
+    }
+}
+
+<div class="armory" id="armory" data-cat="@k.Code">
+    <div class="armory-head">
+        <div class="armory-eyebrow">Ätherwaffen</div>
+        <h1 class="armory-title">Der Zauberstab entscheidet</h1>
+        <p class="armory-sub">Noch keine feste Ätherwaffe: bei jedem Zauber formt der Zufall den Stab neu. Kategorie wählen, beschwören.</p>
+    </div>
+
+    <div class="armory-grid">
+        @* ------------------------------------------------------------ Kategorie *@
+        <div class="cat-col a-panel">
+            <div class="col-label">Kategorie</div>
+            <div class="cat-list" role="radiogroup" aria-label="Kategorie">
+                @for (int i = 0; i < WaffenRegeln.Kategorien.Length; i++)
+                {
+                    var c = WaffenRegeln.Kategorien[i];
+                    var klasse = "cat-card c-" + c.Code;
+                    string aktiv = "false";
+                    if (c.Code == k.Code)
+                    {
+                        klasse += " active";
+                        aktiv = "true";
+                    }
+                    <a class="@klasse" role="radio" aria-checked="@aktiv" data-taste="@(i + 1)" asp-action="Waffen" asp-route-art="@c.Code">
+                        <span class="cat-icon">@Html.Raw(c.Symbol)</span>
+                        <span class="cat-body"><span class="cat-name">@c.Name</span><span class="cat-desc">@c.Beschreibung</span></span>
+                        <span class="cat-key">@(i + 1)</span>
+                    </a>
+                }
+            </div>
+            <div class="cat-tip">Tasten <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> wechseln die Kategorie, <kbd>Leertaste</kbd> beschwört.</div>
+        </div>
+
+        @* ------------------------------------------------------------ Altar *@
+        <div class="altar-col a-panel">
+            <div class="altar" id="altar">
+                <div class="altar-glow"></div>
+                <svg class="altar-rings" viewBox="0 0 400 400" aria-hidden="true">
+                    <g class="ar-boost">
+                        <g class="ar1" fill="none" stroke="currentColor">
+                            <circle cx="200" cy="200" r="192" stroke-opacity="0.55" stroke-width="1.4" />
+                            <circle cx="200" cy="200" r="182" stroke-opacity="0.35" stroke-width="6" stroke-dasharray="1.5 13.5" />
+                            <circle cx="200" cy="200" r="174" stroke-opacity="0.2" stroke-width="0.8" />
+                            <polygon points="200,0 208,10 200,20 192,10" fill="currentColor" stroke="none" />
+                            <polygon points="200,380 208,390 200,400 192,390" fill="currentColor" stroke="none" />
+                            <polygon points="0,200 10,192 20,200 10,208" fill="#e7d6a3" stroke="none" fill-opacity="0.8" />
+                            <polygon points="380,200 390,192 400,200 390,208" fill="#e7d6a3" stroke="none" fill-opacity="0.8" />
+                        </g>
+                    </g>
+                    <g class="ar-boost-r">
+                        <g class="ar2" fill="none" stroke="currentColor" stroke-opacity="0.4">
+                            <circle cx="200" cy="200" r="156" stroke-width="0.9" stroke-dasharray="2 7" />
+                            <circle cx="200" cy="200" r="142" stroke-width="0.9" stroke-dasharray="22 10 4 10" />
+                        </g>
+                    </g>
+                    <g class="ar-boost">
+                        <g class="ar3" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="1">
+                            <polygon points="200,76 307,262 93,262" />
+                            <polygon points="200,324 93,138 307,138" />
+                            <circle cx="200" cy="200" r="124" stroke-opacity="0.22" />
+                        </g>
+                    </g>
+                </svg>
+                <div class="altar-burst" id="altarBurst"></div>
+                <div class="altar-core" id="altarCore">
+                    @if (Model.Neu.HasValue)
+                    {
+                        @* Gerade beschworen: das Skript spielt erst das Glücksrad ab *@
+                        <div class="core-roll"><div class="roll-name" id="rollName"></div><div class="roll-sub">Der Äther formt sich …</div></div>
+                    }
+                    else if (Model.Letzte != null)
+                    {
+                        <partial name="_WaffenKarte" model="new WaffenKarte(k, Model.Letzte, true)" />
+                    }
+                    else
+                    {
+                        <div class="core-idle">
+                            <div class="core-icon">@Html.Raw(k.Symbol)</div>
+                            <div class="core-title">Bereit</div>
+                            <div class="core-sub">@k.Name · @arsenal.Length Formen</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (Model.DarfBeschwoeren)
+            {
+                <form asp-action="WaffeBeschwoeren" method="post" class="summon-form" id="summonForm">
+                    <input type="hidden" name="art" value="@k.Code" />
+                    <button type="submit" class="summon-btn" id="summonBtn">✦ Beschwören ✦</button>
+                </form>
+                <div class="summon-hint">oder Leertaste drücken</div>
+            }
+        </div>
+
+        @* ------------------------------------------------------------ Chronik *@
+        <aside class="chronik a-panel">
+            <div class="col-label chron-head">
+                Chronik <span>@chronikText</span>
+                @if (Model.Chronik.Count > 0 && Model.DarfBeschwoeren)
+                {
+                    <form asp-action="ChronikLeeren" method="post">
+                        <input type="hidden" name="art" value="@k.Code" />
+                        <button type="submit" class="chron-clear" data-zweistufig data-frage="wirklich leeren?">leeren</button>
+                    </form>
+                }
+            </div>
+            <div class="chronik-list" id="weaponHistory">
+                @if (Model.Chronik.Count == 0)
+                {
+                    <div class="chron-empty"><span class="rune">✦</span>Noch nichts beschworen.</div>
+                }
+                @for (int i = 0; i < Model.Chronik.Count; i++)
+                {
+                    var h = Model.Chronik[i];
+                    var hk = WaffenRegeln.KategorieVon(h.Waffenart);
+                    var klasse = "chron-item c-" + hk.Code;
+                    if (i == 0)
+                    {
+                        klasse += " latest";
+                    }
+                    <div class="@klasse" style="--age:@i">
+                        <span class="ci-icon">@Html.Raw(hk.Symbol)</span>
+                        <div class="ci-body"><div class="ci-name">@h.Name</div><div class="ci-meta">@hk.Name · @h.Schaden</div></div>
+                    </div>
+                }
+            </div>
+        </aside>
+    </div>
+
+    @* ------------------------------------------------------------ Arsenal *@
+    <div class="arsenal a-panel">
+        <div class="arsenal-head"><span class="arsenal-title">Arsenal · @k.Name</span><span class="arsenal-count">@arsenal.Length mögliche Formen</span></div>
+        <div class="arsenal-grid" id="arsenalGrid">
+            @for (int i = 0; i < arsenal.Length; i++)
+            {
+                var w = arsenal[i];
+                var istLetzte = Model.Letzte != null && Model.Letzte.Name == w.Name && !Model.Neu.HasValue;
+                var klasse = "arm-tile";
+                if (istLetzte)
+                {
+                    klasse += " last";
+                }
+                <div class="@klasse" style="--i:@i" data-name="@w.Name">
+                    <div class="at-top"><span class="at-icon">@Html.Raw(k.Symbol)</span><span class="at-dmg">@w.Schaden</span></div>
+                    <div class="at-name">@w.Name</div>
+                    @if (!string.IsNullOrEmpty(w.Notiz))
+                    {
+                        <div class="at-note">@w.Notiz</div>
+                    }
+                    @if (istLetzte)
+                    {
+                        <span class="at-badge">zuletzt</span>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.Neu.HasValue)
+{
+    @* Die gezogene Waffe, die das Skript nach dem Glücksrad auf den Altar legt *@
+    <template id="waffeNeu" data-index="@Model.Neu.Value">
+        <partial name="_WaffenKarte" model="new WaffenKarte(k, arsenal[Model.Neu.Value], false)" />
+    </template>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Tasten 1, 2, 3 wechseln die Kategorie, Leertaste beschwört (wie in der HTML)
+            document.addEventListener('keydown', function (e) {
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                var t = e.target;
+                if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+                var link = document.querySelector('.cat-card[data-taste="' + e.key + '"]');
+                if (link) { link.click(); return; }
+                if (e.key === ' ' || e.code === 'Space') {
+                    var form = document.getElementById('summonForm');
+                    if (form) { e.preventDefault(); form.requestSubmit(); }
+                }
+            });
+
+            // Beim Absenden: Knopf sperren, Altar dreht schneller
+            var form = document.getElementById('summonForm');
+            if (form) form.addEventListener('submit', function () {
+                document.getElementById('summonBtn').disabled = true;
+                document.getElementById('altar').classList.add('rolling');
+            });
+
+            // Erst nachfragen, dann leeren
+            document.querySelectorAll('[data-zweistufig]').forEach(function (knopf) {
+                var alt = knopf.textContent;
+                knopf.addEventListener('click', function (e) {
+                    if (knopf.classList.contains('armed')) return;
+                    e.preventDefault();
+                    knopf.classList.add('armed');
+                    knopf.textContent = knopf.dataset.frage;
+                    setTimeout(function () { knopf.classList.remove('armed'); knopf.textContent = alt; }, 2800);
+                });
+            });
+
+            // Gerade beschworen: Glücksrad über das Arsenal, zuletzt die gezogene Waffe (JS: rollWeapon)
+            var neu = document.getElementById('waffeNeu');
+            if (!neu) return;
+            var ziel = +neu.dataset.index;
+            var altar = document.getElementById('altar'), core = document.getElementById('altarCore');
+            var tiles = Array.prototype.slice.call(document.getElementById('arsenalGrid').children);
+            var nameEl = document.getElementById('rollName');
+
+            function fertig() {
+                tiles.forEach(function (t) { t.classList.remove('scan'); });
+                core.innerHTML = neu.innerHTML;
+                altar.classList.remove('rolling');
+                if (reduce) return;
+                core.firstElementChild.classList.add('fresh');
+                var burst = document.getElementById('altarBurst');
+                burst.classList.remove('go'); void burst.offsetWidth; burst.classList.add('go');
+                if (tiles[ziel]) tiles[ziel].classList.add('hit');
+                var erste = document.querySelector('.chron-item.latest');
+                if (erste) erste.classList.add('fresh');
+            }
+            if (reduce) { fertig(); return; }
+
+            altar.classList.add('rolling');
+            var schritte = 15 + Math.floor(Math.random() * 4), folge = [], vorher = -1;
+            for (var i = 0; i < schritte - 1; i++) {
+                var r;
+                do { r = Math.floor(Math.random() * tiles.length); }
+                while (r === vorher || (i === schritte - 2 && r === ziel));
+                folge.push(r); vorher = r;
+            }
+            folge.push(ziel);
+
+            var n = 0;
+            (function tick() {
+                tiles.forEach(function (t) { t.classList.remove('scan'); });
+                var k = folge[n];
+                if (tiles[k]) tiles[k].classList.add('scan');
+                nameEl.textContent = tiles[k].dataset.name;
+                nameEl.classList.remove('flick'); void nameEl.offsetWidth; nameEl.classList.add('flick');
+                n++;
+                if (n < folge.length) setTimeout(tick, 45 + Math.pow(n / folge.length, 3) * 300);
+                else setTimeout(fertig, 380);
+            })();
+        })();
+    </script>
+}

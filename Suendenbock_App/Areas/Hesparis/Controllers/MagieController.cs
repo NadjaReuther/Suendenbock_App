@@ -10,7 +10,7 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
 {
     /// <summary>
     /// Gruppe "Magie" (/Hesparis/Magie/…): Magiestufen ("Der Weg nach innen"), Sonderzauber ("Vier Karten, eine Wahl")
-    /// und Trankküche.
+    /// , Ätherwaffen und Trankküche.
     /// Stufen wählen und Karten aufdecken dürfen alle Spieler; Bonuspunkte, Abschlüsse und Zurücksetzen nur Gott.
     /// </summary>
     public class MagieController : HesparisBaseController
@@ -594,6 +594,96 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             }
             stand.Sonderzauber = sonderzauber;
             return stand;
+        }
+
+        // =====================================================================
+        // Ätherwaffen
+        // =====================================================================
+
+        /// <summary>
+        /// Ätherwaffen (JS: renderArmory). art = nah, fern oder vert.
+        /// Gezogen wird auf dem Server; die Seite spielt danach nur die Glücksrad-Animation ab.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Waffen(string? art)
+        {
+            var kampagne = await AkademieLadenAsync();
+            var kategorie = WaffenRegeln.KategorieAus(art);
+            var chronik = await _context.Waffenwuerfe
+                .Where(w => w.KampagneId == kampagne.Id)
+                .OrderByDescending(w => w.Position)
+                .ToListAsync();
+
+            var model = new WaffenViewModel
+            {
+                Kategorie = kategorie,
+                Chronik = chronik,
+                DarfBeschwoeren = DarfBearbeiten(),
+            };
+
+            // Zuletzt beschworene Waffe dieser Kategorie steht auf dem Altar (JS: lastOf)
+            var letzte = chronik.FirstOrDefault(w => w.Waffenart == kategorie.Art);
+            if (letzte != null)
+            {
+                model.Letzte = model.Arsenal.FirstOrDefault(w => w.Name == letzte.Name);
+            }
+
+            if (TempData["WaffeNeu"] is int neu && neu >= 0 && neu < model.Arsenal.Length)
+            {
+                model.Neu = neu;
+            }
+            return View(model);
+        }
+
+        /// <summary>Eine Waffe beschwören (JS: rollWeapon): zufällige Form der Kategorie, oben in die Chronik.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> WaffeBeschwoeren(string art)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var kampagne = await AkademieLadenAsync();
+            var kategorie = WaffenRegeln.KategorieAus(art);
+            var liste = WaffenRegeln.Waffen[kategorie.Art];
+
+            int index = Random.Shared.Next(liste.Length);
+            var waffe = liste[index];
+
+            var alle = await _context.Waffenwuerfe
+                .Where(w => w.KampagneId == kampagne.Id)
+                .OrderByDescending(w => w.Position)
+                .ToListAsync();
+            int position = 0;
+            if (alle.Count > 0)
+            {
+                position = alle[0].Position + 1;
+            }
+            // Nur die letzten 8 behalten
+            _context.Waffenwuerfe.RemoveRange(alle.Skip(WaffenRegeln.ChronikMax - 1));
+            _context.Waffenwuerfe.Add(new Waffenwurf
+            {
+                KampagneId = kampagne.Id,
+                Position = position,
+                Waffenart = kategorie.Art,
+                Name = waffe.Name,
+                Schaden = waffe.Schaden,
+            });
+            await _context.SaveChangesAsync();
+
+            TempData["WaffeNeu"] = index;
+            return RedirectToAction(nameof(Waffen), new { art = kategorie.Code });
+        }
+
+        /// <summary>Chronik leeren (JS: chronikClear).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChronikLeeren(string? art)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var kampagne = await AkademieLadenAsync();
+            var alle = await _context.Waffenwuerfe.Where(w => w.KampagneId == kampagne.Id).ToListAsync();
+            _context.Waffenwuerfe.RemoveRange(alle);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Waffen), new { art });
         }
 
         // =====================================================================
