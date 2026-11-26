@@ -1126,3 +1126,124 @@ a.sz-char{color:var(--gold-dim) !important;}
 a.sz-char.active{color:var(--gold) !important;}
 .sz-card form{display:contents;}
 .sz-reset{display:flex;justify-content:center;margin-top:16px;}
+
+
+/* ====================================================================
+   Trankküche (md-*, bl-*) – aus der hesparis.html
+   ==================================================================== */
+.rg-players{display:flex;gap:8px;flex-wrap:wrap;}
+.rg-pl{font-family:'Cinzel Decorative', serif;font-size:13px;padding:9px 18px;border-radius:20px;cursor:pointer;
+  border:1px solid var(--line);background:rgba(10,6,23,0.55);color:var(--gold-dim);transition:all .2s ease;}
+.rg-pl:hover{color:var(--gold);border-color:rgba(var(--pc-rgb),0.7);}
+.rg-pl.on{color:var(--gold);border-color:var(--pc);background:rgba(var(--pc-rgb),0.16);box-shadow:0 0 16px rgba(var(--pc-rgb),0.3);}
+
+/* ===== Module: gemeinsame Bausteine ===== */
+.md-section{padding-top:22px;}
+.md-wrap{max-width:1240px;margin:0 auto;padding:0 18px 60px;}
+.md-head{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;margin:4px 0 20px;}
+.md-head .armory-sub{max-width:640px;margin-left:0;}
+.md-head .armory-eyebrow,.md-head .armory-title{text-align:left;}
+.md-players{display:flex;gap:8px;flex-wrap:wrap;}
+.md-card{position:relative;background:linear-gradient(160deg, rgba(36,21,66,0.92), rgba(18,11,36,0.92));border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 10px 30px rgba(0,0,0,0.25);min-width:0;}
+.md-grid{display:grid;gap:16px;align-items:start;}
+.md-g-tasche{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+.md-g-tasche .md-inv{grid-column:1 / -1;}
+.md-g-brew{grid-template-columns:minmax(220px,0.8fr) minmax(0,1.4fr) minmax(220px,0.9fr);}
+.md-g-ns{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);}
+.md-g-kal{grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr);}
+.md-g-wert{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);}
+.md-side{display:flex;flex-direction:column;gap:16px;min-width:0;}
+.md-hint{font-family:'IBM Plex Mono', monospace;font-size:10.5px;line-height:1.6;color:var(--gold-dim);margin:10px 0 0;opacity:0.85;}
+.md-empty{font-family:'Cormorant Garamond', serif;font-style:italic;font-size:16px;color:var(--gold-dim);margin:8px 0;}
+.md-empty-big{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:200px;text-align:center;font-family:'Cormorant Garamond', serif;font-style:italic;font-size:18px;color:var(--gold-dim);}
+.md-empty-big .rune{font-size:30px;color:var(--arcane);font-style:normal;}
+.md-tag{display:inline-block;font-family:'IBM Plex Mono', monospace;font-size:10px;letter-spacing:0.06em;padding:3px 9px;border-radius:10px;border:1px solid var(--line);color:var(--gold-dim);white-space:nowrap;}
+.md-tag.good{color:var(--ether);border-color:rgba(73,217,201,0.5);background:rgba(73,217,201,0.08);}
+.md-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
+.md-row-between{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.md-sec{margin:26px 0 12px;}
+.md-wrap input[type=text],.md-wrap input[type=number],.md-wrap input[type=date],.md-wrap input:not([type]),.md-wrap select,.md-wrap textarea{
+  background:rgba(10,6,23,0.7);border:1px solid var(--line);border-radius:10px;color:var(--gold);padding:9px 11px;font-family:'Cormorant Garamond', serif;font-size:16px;outline:none;min-width:0;width:100%;box-sizing:border-box;}
+.md-wrap select{font-family:'IBM Plex Mono', monospace;font-size:12px;}
+.md-wrap input[type=date]{font-family:'IBM Plex Mono', monospace;font-size:13px;color-scheme:dark;}
+.md-wrap textarea{resize:vertical;line-height:1.35;}
+.md-wrap input:focus,.md-wrap select:focus,.md-wrap textarea:focus{border-color:var(--arcane);box-shadow:0 0 0 3px rgba(138,92,240,0.2);}
+.md-field{display:flex;flex-direction:column;gap:5px;margin-top:10px;}
+.md-field > span{font-family:'IBM Plex Mono', monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold-dim);}
+.md-addform{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.md-addform > input,.md-addform > select{flex:1 1 140px;width:auto;}
+.md-addform > button{flex:0 0 auto;}
+.md-nsform{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+.md-nsform .btn-primary{align-self:flex-start;margin-top:6px;}
+.md-wrap .armed{border-color:var(--ember) !important;color:var(--ember) !important;}
+.md-wrap .rg-sl{margin-top:16px;}
+.md-wrap .rg-sl[open] summary{margin-bottom:6px;}
+.md-chipsel{display:flex;gap:6px;flex-wrap:wrap;}
+.md-chipsel .rg-pl{padding:7px 14px;font-size:12px;}
+/* Trankküche */
+.md-recipe{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;width:100%;text-align:left;background:rgba(10,6,23,0.4);border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-top:8px;cursor:pointer;color:var(--gold);}
+.md-recipe:hover{border-color:rgba(var(--pc-rgb),0.7);}
+.md-recipe.on{border-color:var(--pc);background:rgba(var(--pc-rgb),0.14);box-shadow:0 0 14px rgba(var(--pc-rgb),0.25);}
+.md-recipe b{font-family:'Cinzel Decorative', serif;font-size:13px;}
+.md-recipe em{font-style:normal;font-family:'IBM Plex Mono', monospace;font-size:10.5px;color:var(--gold-dim);}
+.md-recipe span{grid-column:1 / -1;font-family:'IBM Plex Mono', monospace;font-size:9.5px;color:#e58a98;}
+.md-recipe span.ok{color:var(--ether);}
+.md-brew h3{font-family:'Cinzel Decorative', serif;color:var(--gold);margin:4px 0 4px;font-size:22px;}
+.md-effect{font-size:17px;margin:0 0 12px;}
+.md-ings{display:flex;flex-wrap:wrap;gap:8px;}
+.md-ings span{border:1px solid var(--line);border-radius:10px;padding:5px 10px;font-size:15px;}
+.md-ings span.ok{border-color:rgba(73,217,201,0.5);}
+.md-ings span.miss{border-color:rgba(229,138,152,0.55);color:#e58a98;}
+.md-ings em{font-family:'IBM Plex Mono', monospace;font-style:normal;font-size:10px;color:var(--gold-dim);margin-left:4px;}
+.md-target{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 10px;align-items:stretch;}
+.md-target > div{border:1px solid var(--line);border-radius:12px;padding:8px 12px;display:flex;flex-direction:column;gap:2px;}
+.md-target span{font-family:'IBM Plex Mono', monospace;font-size:9.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-dim);}
+.md-target b{font-family:'Cinzel Decorative', serif;font-size:18px;color:var(--gold);}
+.md-target .md-target-sum{margin-left:auto;border-color:var(--pc);background:rgba(var(--pc-rgb),0.14);}
+.md-target-sum b{font-size:26px;color:#fff3cf;}
+.md-perks{display:flex;gap:6px;flex-wrap:wrap;}
+.md-brewbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:16px;}
+.md-brewbtns .rg-buy{width:auto;padding:10px 18px;}
+.md-brewbtns .rg-lbl{flex-basis:100%;}
+.md-krit{border-color:var(--ether) !important;color:var(--ether) !important;}
+.md-logrow{font-size:15.5px;padding:6px 0;border-bottom:1px solid rgba(60,44,99,0.45);}
+.md-logrow b{color:var(--gold);}
+.md-logrow.krit b{color:var(--ether);}
+.md-logrow.fail{color:#e58a98;}
+
+.bl-wrap{min-height:calc(100vh - 170px);display:flex;align-items:center;justify-content:center;padding:30px 0 50px;}
+.bl-door{display:flex;flex-direction:column;align-items:center;text-align:center;max-width:540px;gap:6px;}
+.bl-svg{width:min(240px, 62vw);height:auto;filter:drop-shadow(0 24px 40px rgba(0,0,0,0.65));margin:10px 0 14px;}
+.bl-glow{animation:blPulse 4.5s ease-in-out infinite;}
+@keyframes blPulse{0%,100%{opacity:0.45;}50%{opacity:1;}}
+.bl-door h2{margin:0;font-family:'Cinzel Decorative', serif;font-size:clamp(22px, 3vw, 30px);color:var(--gold);text-shadow:0 0 24px rgba(143,214,122,0.25);}
+.bl-door p{margin:4px 0 0;font-family:'Cormorant Garamond', serif;font-style:italic;font-size:19px;line-height:1.45;color:var(--gold-dim);}
+.bl-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 18px;padding:12px 16px;border-radius:14px;border:1px dashed rgba(73,217,201,0.45);background:rgba(73,217,201,0.06);}
+.bl-bar.on{border-color:rgba(229,96,106,0.6);background:rgba(229,96,106,0.08);}
+.bl-bar b{display:block;font-family:'Cinzel Decorative', serif;font-size:14px;color:var(--ether);}
+.bl-bar.on b{color:#ff9aa2;}
+.bl-bar span{font-family:'IBM Plex Mono', monospace;font-size:10.5px;color:var(--gold-dim);}
+.nav-item.is-locked::after{content:"gesperrt";margin-left:auto;padding-left:10px;font-family:'IBM Plex Mono', monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:#e5606a;}
+@media (prefers-reduced-motion: reduce){ .bl-glow{animation:none;} }
+@media (max-width:1100px){
+  .md-g-brew{grid-template-columns:minmax(0,0.8fr) minmax(0,1.3fr);}
+  .md-g-brew .md-brewlog{grid-column:1 / -1;}
+}
+@media (max-width:760px){
+  .md-wrap{padding:0 12px 50px;}
+  .md-g-brew{grid-template-columns:minmax(0,1fr);}
+}
+/* Anpassungen für die Web-App: Links und Formulare statt Knöpfen mit data-* */
+a.rg-pl, a.md-recipe{text-decoration:none;}
+a.rg-pl{color:var(--gold-dim) !important;}
+a.rg-pl.on, a.rg-pl:hover{color:var(--gold) !important;}
+a.md-recipe{color:var(--gold) !important;}
+.md-brewbtns form{display:contents;}
+.md-wrap{padding-left:0;padding-right:0;}
+/* Lila Hauptknopf (aus der hesparis.html) */
+.btn-primary{
+  font-family:'Cinzel Decorative', serif;font-size:13px;padding:9px 22px;border-radius:20px;cursor:pointer;
+  background:linear-gradient(180deg, rgba(138,92,240,0.3), rgba(28,18,54,0.85));
+  border:1px solid var(--arcane);color:var(--gold);box-shadow:0 0 14px rgba(138,92,240,0.25);transition:all .2s ease;
+}
+.btn-primary:hover{box-shadow:0 0 24px rgba(138,92,240,0.5);transform:translateY(-1px);}

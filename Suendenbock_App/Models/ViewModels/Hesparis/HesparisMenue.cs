@@ -28,7 +28,7 @@ public static class HesparisMenue
             new("Stufen", "Magiestufen", "✦", "Magie", "Stufen"),
             new("Waffen", "Ätherwaffen", "⚔", null, null),
             new("Sonder", "Sonderzauber", "☾", "Magie", "Sonderzauber"),
-            new("Brauen", "Trankküche", "⚗", null, null),
+            new("Brauen", "Trankküche", "⚗", "Magie", "Trankkueche"),
             new("Zirkel", "Zirkel der Priore", "✺", null, null),
         }),
         new("Alltag", "▦", new Eintrag[]

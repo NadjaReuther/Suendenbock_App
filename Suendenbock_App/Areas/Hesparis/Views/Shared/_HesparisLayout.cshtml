@@ -13,6 +13,7 @@
     var meinCharakter = ViewBag.MeinHesparisCharakter as HesparisCharakter;
     // Spieltag der Akademie (setzt HesparisBaseController), wie "Do, 3. September" in der HTML
     var spieltag = ViewBag.Spieltag as DateOnly?;
+    var brauenGesperrt = ViewBag.BrauenGesperrt as bool? ?? false;
 
     // Haus-Knopf: aktiv auf der Übersicht
     string StartKlasse()
@@ -87,6 +88,10 @@
                             if (bereich == e.Bereich)
                             {
                                 klasse += " active";
+                            }
+                            if (e.Bereich == "Brauen" && brauenGesperrt)
+                            {
+                                klasse += " is-locked";
                             }
 
                             if (e.Controller == null)

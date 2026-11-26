@@ -46,6 +46,9 @@ public static class HesparisRegeln
     /// <summary>Fach-Id von Chronotaktik: ab Stufe 3 sind Meisterschaften freigeschaltet (JS: mstUnlocked).</summary>
     public const int FachChronotaktik = 5;
 
+    /// <summary>Fach-Id von Grenzchemie: ab Stufe 3 haben gebraute Tränke 2 Schluck (JS: p.levels[8] >= 3).</summary>
+    public const int FachGrenzchemie = 8;
+
     /// <summary>Rundet wie JavaScript Math.round (bei ,5 immer nach oben, auch bei negativen Zahlen).</summary>
     public static int JsRunden(double wert) => (int)Math.Floor(wert + 0.5);
 
@@ -337,6 +340,54 @@ public static class HesparisRegeln
 
     /// <summary>Wie viele Geldbuchungen aufgehoben werden (JS: purseLog.slice(0, 5)).</summary>
     public const int GeldbuchungenMax = 5;
+
+    // ------------------------------------------------------------------ Trankküche
+
+    /// <summary>Rezepte, mit denen das Rezeptbuch beim ersten Öffnen gefüllt wird (JS: RECIPES_DEFAULT).</summary>
+    public static readonly (string Name, string Wirkung, int Modifikator, (string Zutat, int Menge)[] Zutaten)[] RezepteStandard =
+    {
+        ("Heiltrank", "Heilt 2W10 LP.", 0, new[] { ("Mondmoos", 1), ("Quellsalz", 1) }),
+        ("Wachtrank", "Eine Nacht ohne Schlaf, ohne Malus am nächsten Tag.", 0, new[] { ("Feuerwurz", 1) }),
+        ("Leuchttrank", "Die Haut leuchtet 1 Stunde wie eine Laterne.", 0, new[] { ("Glimmstaub", 1) }),
+        ("Mutsud", "Hebt Panik auf. Die nächste Probe +10.", -10, new[] { ("Feuerwurz", 1), ("Mondmoos", 1) }),
+        ("Flüstertrank", "1 Stunde lang ist die eigene Stimme nur in 2 Feldern hörbar.", -10, new[] { ("Nebelblüte", 1) }),
+        ("Klarsicht", "MAGW +10 für 1 Stunde.", -20, new[] { ("Nebelblüte", 1), ("Glimmstaub", 1) }),
+    };
+
+    /// <summary>Wählbare Schwierigkeiten beim Anlegen eines Rezepts.</summary>
+    public static readonly (int Wert, string Text)[] RezeptSchwierigkeiten =
+    {
+        (0, "leicht (±0)"), (-10, "mittel (−10)"), (-20, "schwer (−20)"), (-30, "sehr schwer (−30)"),
+    };
+
+    /// <summary>So viele Einträge behält das Braubuch (JS: brewLog.slice(0, 30)).</summary>
+    public const int BraubuchMax = 30;
+
+    /// <summary>
+    /// Zutaten aus einem Text lesen, z. B. "2 Mondmoos, 1 Quellsalz" oder "2× Mondmoos".
+    /// Ohne Zahl zählt eine Zutat einmal.
+    /// </summary>
+    public static List<(string Name, int Menge)> ZutatenLesen(string? text)
+    {
+        var liste = new List<(string Name, int Menge)>();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return liste;
+        }
+        foreach (var teil in text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(teil, @"^(\d+)\s*[x×]?\s*(.+)$");
+            if (m.Success)
+            {
+                liste.Add((m.Groups[2].Value.Trim(), Math.Max(1, int.Parse(m.Groups[1].Value))));
+            }
+            else
+            {
+                liste.Add((teil, 1));
+            }
+        }
+        return liste;
+    }
 }
 
 /// <summary>Ein Bonus auf ein Talent, egal woher (Magiestufe, AG, Tasche, Wirkung).</summary>
@@ -363,4 +414,5 @@ public class TalentBonus
     /// <summary>Id der Wirkung, damit man sie beenden kann.</summary>
     public int? WirkungId { get; set; }
     public bool Anwendungen { get; set; }
+
 }
