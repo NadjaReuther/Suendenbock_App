@@ -1571,6 +1571,9 @@ namespace Suendenbock_App.Migrations
                     b.Property<bool>("Erledigt")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("ErledigtAm")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("ErstelltAm")
                         .HasColumnType("datetime2");
 
@@ -5382,6 +5385,9 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("BearbeitetAm")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ErstelltAm")
                         .HasColumnType("datetime2");

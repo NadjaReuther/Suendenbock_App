@@ -54,7 +54,7 @@ public static class HesparisMenue
         {
             new("Missionen", "Questbrett", "✠", "Schuljahr", "Questbrett", MitFigur: false),
             new("Hefte", "Protokollhefte", "✎", null, null),
-            new("Protokoll", "Tagebuch", "❧", null, null),
+            new("Protokoll", "Tagebuch", "❧", "Schuljahr", "Tagebuch", MitFigur: false),
             new("Wertung", "Akademie-Wertung", "♛", null, null),
             new("Jahr", "Jahresabschluss", "⌛", null, null, NurGott: true),
         }),

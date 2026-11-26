@@ -7,10 +7,11 @@ using Suendenbock_App.Models.ViewModels.Hesparis;
 namespace Suendenbock_App.Areas.Hesparis.Controllers
 {
     /// <summary>
-    /// Gruppe "Schuljahr" (/Hesparis/Schuljahr/…): Questbrett. Weitere Seiten (Protokollhefte, Tagebuch,
+    /// Gruppe "Schuljahr" (/Hesparis/Schuljahr/…): Questbrett und Tagebuch. Weitere Seiten (Protokollhefte,
     /// Akademie-Wertung, Jahresabschluss) folgen.
     /// Questbrett: Notizen, Hinweise, Hauptquest wählen und Versiegeln dürfen alle Spieler;
     /// neue Quests anschlagen nur Gott (in der HTML: sl-only).
+    /// Tagebuch: Ausgaben und Kleinanzeigen schreiben dürfen alle Spieler und Gott.
     /// </summary>
     public class SchuljahrController : HesparisBaseController
     {
@@ -259,6 +260,263 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             await _context.SaveChangesAsync();
             return ZurueckZumBrett(true, mission.Id, null);
         }
+
+        // =====================================================================
+        // Tagebuch: „Der Hesparis-Bote“
+        // =====================================================================
+
+        /// <summary>
+        /// Jede Spielsitzung ist eine Ausgabe der Zeitung, rechts die Kleinanzeigen (= To-dos) (JS: renderProtokoll).
+        /// ausgabe: aufgeschlagene Ausgabe (sonst die neueste). neu: neue Ausgabe setzen. bearbeiten: Ausgabe überarbeiten.
+        /// frisch/frischAnzeige: gerade gedruckt, kommt mit Schwung herein. erledigt: Liste „Erledigt“ aufgeklappt.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Tagebuch(int? ausgabe, bool neu = false, bool bearbeiten = false,
+                                                  int? frisch = null, int? frischAnzeige = null, bool erledigt = false)
+        {
+            var akademie = await AkademieLadenAsync();
+            var eintraege = await _context.ProtokollEintraege
+                .Where(p => p.KampagneId == akademie.Id)
+                .Include(p => p.Beteiligte)
+                .OrderByDescending(p => p.ErstelltAm)
+                .ThenByDescending(p => p.Id)
+                .ToListAsync();
+
+            var model = new TagebuchViewModel
+            {
+                HeuteDatum = HesparisRegeln.TagebuchDatum(HesparisRegeln.Ortszeit(DateTime.UtcNow), akademie),
+                Spieltag = HesparisRegeln.TagUndMonat(akademie.Spieltag),
+                Figuren = await FigurChipsAsync(akademie.Id),
+                FrischAusgabeId = frisch,
+                FrischAnzeigeId = frischAnzeige,
+                ErledigtOffen = erledigt,
+                DarfBearbeiten = DarfBearbeiten(),
+            };
+
+            int n = eintraege.Count;
+            for (int i = 0; i < n; i++)
+            {
+                var e = eintraege[i];
+                var ortszeit = HesparisRegeln.Ortszeit(e.ErstelltAm);
+                model.Ausgaben.Add(new AusgabeZeile
+                {
+                    Id = e.Id,
+                    Nummer = n - i,
+                    Titel = e.Titel,
+                    Text = e.Text,
+                    Datum = HesparisRegeln.TagebuchDatum(ortszeit, akademie),
+                    Uhrzeit = ortszeit.ToString("HH:mm"),
+                    DatumKurz = HesparisRegeln.DatumKurz(ortszeit),
+                    Spieltag = e.Spieltag.HasValue ? HesparisRegeln.TagUndMonat(e.Spieltag.Value) : null,
+                    Ueberarbeitet = e.BearbeitetAm.HasValue,
+                    Dabei = e.Beteiligte.Select(b => b.SpielfigurId).ToHashSet(),
+                });
+            }
+
+            // Ohne Ausgaben oder auf Wunsch: neue Ausgabe setzen (JS: boSel = 'new')
+            if (!neu && n > 0)
+            {
+                model.Auswahl = model.Ausgaben.FirstOrDefault(a => a.Id == ausgabe) ?? model.Ausgaben[0];
+                model.Bearbeiten = bearbeiten && model.DarfBearbeiten;
+            }
+
+            // Kleinanzeigen: offene nach Dringlichkeit, dann Alter; erledigte zuletzt abgehakt zuerst
+            var aufgaben = await _context.Aufgaben.Where(a => a.KampagneId == akademie.Id).ToListAsync();
+            model.Offen = aufgaben.Where(a => !a.Erledigt)
+                .OrderBy(a => a.Prioritaet).ThenBy(a => a.ErstelltAm).ThenBy(a => a.Id)
+                .Select(AnzeigeZeileAus).ToList();
+            model.Erledigt = aufgaben.Where(a => a.Erledigt)
+                .OrderByDescending(a => a.ErledigtAm ?? DateTime.MinValue).ThenByDescending(a => a.Id)
+                .Select(AnzeigeZeileAus).ToList();
+
+            return View(model);
+        }
+
+        /// <summary>Neue Ausgabe in Druck geben (JS: boForm, mode new). Schlagzeile oder Bericht muss da sein.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AusgabeDrucken(string? titel, string? text, int[]? wer)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            titel = Kuerzen(titel?.Trim(), 80);
+            text = Kuerzen(text?.Trim(), 4000);
+            if (titel.Length == 0 && text.Length == 0)
+            {
+                return RedirectToAction(nameof(Tagebuch), new { neu = true });
+            }
+
+            var akademie = await AkademieLadenAsync();
+            var eintrag = new ProtokollEintrag
+            {
+                KampagneId = akademie.Id,
+                Titel = titel,
+                Text = LeerZuNull(text),
+                ErstelltAm = DateTime.UtcNow,
+                Spieltag = akademie.Spieltag,
+            };
+            foreach (var figurId in await GueltigeFigurenAsync(akademie.Id, wer))
+            {
+                eintrag.Beteiligte.Add(new ProtokollBeteiligter { SpielfigurId = figurId });
+            }
+            _context.ProtokollEintraege.Add(eintrag);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Tagebuch), new { ausgabe = eintrag.Id, frisch = eintrag.Id });
+        }
+
+        /// <summary>Ausgabe überarbeiten (JS: boForm, mode edit): Schlagzeile, Bericht und wer dabei war.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AusgabeSpeichern(int id, string? titel, string? text, int[]? wer)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var akademie = await AkademieLadenAsync();
+            var eintrag = await _context.ProtokollEintraege
+                .Include(p => p.Beteiligte)
+                .FirstOrDefaultAsync(p => p.Id == id && p.KampagneId == akademie.Id);
+            if (eintrag == null) return NotFound();
+
+            titel = Kuerzen(titel?.Trim(), 80);
+            text = Kuerzen(text?.Trim(), 4000);
+            if (titel.Length == 0 && text.Length == 0)
+            {
+                return RedirectToAction(nameof(Tagebuch), new { ausgabe = id, bearbeiten = true });
+            }
+
+            eintrag.Titel = titel;
+            eintrag.Text = LeerZuNull(text);
+            eintrag.BearbeitetAm = DateTime.UtcNow;
+
+            var neu = (await GueltigeFigurenAsync(akademie.Id, wer)).ToHashSet();
+            foreach (var b in eintrag.Beteiligte.Where(b => !neu.Contains(b.SpielfigurId)).ToList())
+            {
+                eintrag.Beteiligte.Remove(b);
+            }
+            foreach (var figurId in neu.Where(f => eintrag.Beteiligte.All(b => b.SpielfigurId != f)))
+            {
+                eintrag.Beteiligte.Add(new ProtokollBeteiligter { SpielfigurId = figurId });
+            }
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Tagebuch), new { ausgabe = id });
+        }
+
+        /// <summary>Ausgabe einstampfen (JS: data-bodel e:…). Danach ist die neueste aufgeschlagen.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AusgabeEinstampfen(int id)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var akademie = await AkademieLadenAsync();
+            var eintrag = await _context.ProtokollEintraege
+                .FirstOrDefaultAsync(p => p.Id == id && p.KampagneId == akademie.Id);
+            if (eintrag != null)
+            {
+                _context.ProtokollEintraege.Remove(eintrag);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Tagebuch));
+        }
+
+        /// <summary>Kleinanzeige aufgeben (JS: boAdForm).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AnzeigeAufgeben(string? text, string? prio, int? ausgabe, bool erledigt = false)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            text = Kuerzen(text?.Trim(), 140);
+            if (text.Length == 0)
+            {
+                return RedirectToAction(nameof(Tagebuch), new { ausgabe, erledigt });
+            }
+
+            var akademie = await AkademieLadenAsync();
+            var aufgabe = new Aufgabe
+            {
+                KampagneId = akademie.Id,
+                Text = text,
+                Prioritaet = HesparisRegeln.PrioAus(prio),
+                ErstelltAm = DateTime.UtcNow,
+            };
+            _context.Aufgaben.Add(aufgabe);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Tagebuch), new { ausgabe, erledigt, frischAnzeige = aufgabe.Id });
+        }
+
+        /// <summary>Kleinanzeige abhaken oder wieder öffnen (JS: data-bocheck).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AnzeigeAbhaken(int id, int? ausgabe, bool erledigt = false)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var aufgabe = await AufgabeLadenAsync(id);
+            if (aufgabe == null) return NotFound();
+
+            aufgabe.Erledigt = !aufgabe.Erledigt;
+            aufgabe.ErledigtAm = aufgabe.Erledigt ? DateTime.UtcNow : null;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Tagebuch), new { ausgabe, erledigt });
+        }
+
+        /// <summary>Dringlichkeit weiterschalten: Dringend → Gesucht → Irgendwann → Dringend (JS: data-boprio).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AnzeigePrio(int id, int? ausgabe, bool erledigt = false)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var aufgabe = await AufgabeLadenAsync(id);
+            if (aufgabe == null) return NotFound();
+
+            if (!aufgabe.Erledigt)
+            {
+                aufgabe.Prioritaet = HesparisRegeln.PrioNaechste(aufgabe.Prioritaet);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Tagebuch), new { ausgabe, erledigt });
+        }
+
+        /// <summary>Kleinanzeige entfernen (JS: data-bodel t:…).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AnzeigeEntfernen(int id, int? ausgabe, bool erledigt = false)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var aufgabe = await AufgabeLadenAsync(id);
+            if (aufgabe != null)
+            {
+                _context.Aufgaben.Remove(aufgabe);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Tagebuch), new { ausgabe, erledigt });
+        }
+
+        private async Task<Aufgabe?> AufgabeLadenAsync(int id)
+        {
+            var akademie = await AkademieLadenAsync();
+            return await _context.Aufgaben.FirstOrDefaultAsync(a => a.Id == id && a.KampagneId == akademie.Id);
+        }
+
+        /// <summary>Nur Spielfiguren dieser Akademie, jede einmal.</summary>
+        private async Task<List<int>> GueltigeFigurenAsync(int kampagneId, int[]? wer)
+        {
+            if (wer == null || wer.Length == 0) return new List<int>();
+            var erlaubt = await _context.Spielfiguren
+                .Where(f => f.KampagneId == kampagneId && wer.Contains(f.Id))
+                .Select(f => f.Id)
+                .ToListAsync();
+            return erlaubt.Distinct().ToList();
+        }
+
+        private static AnzeigeZeile AnzeigeZeileAus(Aufgabe a) => new()
+        {
+            Id = a.Id,
+            Text = a.Text,
+            Prio = HesparisRegeln.PrioSchluessel(a.Prioritaet),
+            PrioText = HesparisRegeln.PrioText(a.Prioritaet),
+            Erledigt = a.Erledigt,
+        };
 
         // ---------------------------------------------------------------- Hilfen
 

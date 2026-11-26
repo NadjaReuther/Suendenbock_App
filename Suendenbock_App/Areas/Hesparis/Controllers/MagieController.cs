@@ -942,30 +942,6 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             return rezepte;
         }
 
-        /// <summary>Figurenknöpfe mit Farbe aus dem Sonderzauber (JS: mdPlayers / plCol).</summary>
-        private async Task<List<FigurChip>> FigurChipsAsync(int kampagneId, int aktivId)
-        {
-            var figuren = await _context.Spielfiguren
-                .Where(f => f.KampagneId == kampagneId && f.HesparisCharakter != null)
-                .Include(f => f.HesparisCharakter)
-                .OrderBy(f => f.Position)
-                .ToListAsync();
-            var sonderzauber = await _context.Sonderzauber.ToListAsync();
-
-            return figuren.Select(f =>
-            {
-                var name = f.HesparisCharakter!.Anzeigename;
-                var zauber = sonderzauber.FirstOrDefault(z => z.Person == name);
-                return new FigurChip
-                {
-                    Id = f.Id,
-                    Name = name,
-                    Aussehen = HesparisSigille.Fuer(zauber?.Code),
-                    Aktiv = f.Id == aktivId,
-                };
-            }).ToList();
-        }
-
         private static int GrenzchemieStufe(Spielfigur figur) =>
             figur.FachStufen.FirstOrDefault(s => s.FachId == HesparisRegeln.FachGrenzchemie)?.Stufe ?? 0;
 

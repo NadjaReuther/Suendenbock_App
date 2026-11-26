@@ -405,6 +405,68 @@ public static class HesparisRegeln
 
     /// <summary>Kalenderdatum wie "3. September" (JS: kalFmt).</summary>
     public static string TagUndMonat(DateOnly tag) => tag.Day + ". " + MonateLang[tag.Month - 1];
+
+    private static readonly string[] WochentageLang =
+        { "Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag" };
+
+    /// <summary>Jahr, in dem die Geschichte spielt (JS: HES_STORY_YEAR).</summary>
+    public const int GeschichtsJahrStart = 1818;
+
+    /// <summary>
+    /// Echtes Datum ins Geschichtsjahr umgerechnet (JS: hesStoryYear): das erste Schuljahr spielt 1818,
+    /// jedes weitere ein Jahr später (höchstens bis zum 10.).
+    /// </summary>
+    public static int GeschichtsJahr(DateTime datum, Kampagne kampagne) =>
+        datum.Year - kampagne.Kalenderjahr + (Math.Min(10, Math.Max(1, kampagne.Schuljahr)) - 1) + GeschichtsJahrStart;
+
+    /// <summary>Datum wie "Donnerstag, 26. November 1818" (JS: boDay).</summary>
+    public static string TagebuchDatum(DateTime datum, Kampagne kampagne) =>
+        WochentageLang[(int)datum.DayOfWeek] + ", " + datum.Day + ". " + MonateLang[datum.Month - 1] + " " + GeschichtsJahr(datum, kampagne);
+
+    /// <summary>Kurzes Datum fürs Archiv wie "26. Nov." (JS: BO_MON[…].slice(0, 3)).</summary>
+    public static string DatumKurz(DateTime datum) => datum.Day + ". " + MonateLang[datum.Month - 1][..3] + ".";
+
+    private static readonly TimeZoneInfo Zeitzone = ZeitzoneLaden();
+
+    private static TimeZoneInfo ZeitzoneLaden()
+    {
+        // Wie im AdventCalendarController; unter Linux kennt .NET auch die Windows-Namen
+        try { return TimeZoneInfo.FindSystemTimeZoneById("Central Europe Standard Time"); }
+        catch (TimeZoneNotFoundException) { return TimeZoneInfo.Utc; }
+    }
+
+    /// <summary>Gespeicherte UTC-Zeit in deutsche Ortszeit.</summary>
+    public static DateTime Ortszeit(DateTime utc) =>
+        TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utc, DateTimeKind.Utc), Zeitzone);
+
+    /// <summary>Kleinanzeigen: Anzeige-Wörter und Reihenfolge der Prioritäten (JS: BO_PRIO, PRIO_NEXT).</summary>
+    public static string PrioText(Prioritaet p) => p switch
+    {
+        Prioritaet.Hoch => "Dringend",
+        Prioritaet.Spaeter => "Irgendwann",
+        _ => "Gesucht",
+    };
+
+    public static string PrioSchluessel(Prioritaet p) => p switch
+    {
+        Prioritaet.Hoch => "hoch",
+        Prioritaet.Spaeter => "spaeter",
+        _ => "normal",
+    };
+
+    public static Prioritaet PrioAus(string? schluessel) => schluessel switch
+    {
+        "hoch" => Prioritaet.Hoch,
+        "spaeter" => Prioritaet.Spaeter,
+        _ => Prioritaet.Normal,
+    };
+
+    public static Prioritaet PrioNaechste(Prioritaet p) => p switch
+    {
+        Prioritaet.Hoch => Prioritaet.Normal,
+        Prioritaet.Normal => Prioritaet.Spaeter,
+        _ => Prioritaet.Hoch,
+    };
 }
 
 /// <summary>Ein Bonus auf ein Talent, egal woher (Magiestufe, AG, Tasche, Wirkung).</summary>

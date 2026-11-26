@@ -1,0 +1,47 @@
+@model KleinanzeigeTeil
+@{
+    // Eine Kleinanzeige im Hesparis-Boten (JS: ad in renderProtokoll)
+    var t = Model.Zeile;
+    var klasse = "bo-ad p-" + t.Prio;
+    if (t.Erledigt)
+    {
+        klasse += " done";
+    }
+    if (Model.Frisch)
+    {
+        klasse += " fresh";
+    }
+}
+<div class="@klasse">
+    <form class="bo-inline" asp-action="AnzeigeAbhaken" method="post">
+        <input type="hidden" name="id" value="@t.Id" />
+        <input type="hidden" name="ausgabe" value="@Model.Ausgabe" />
+        <input type="hidden" name="erledigt" value="@(Model.ErledigtOffen ? "true" : "false")" data-erledigt-feld />
+        <button type="submit" class="bo-box" data-bocheck aria-label="@(t.Erledigt ? "Wieder öffnen" : "Als erledigt abhaken")" aria-pressed="@(t.Erledigt ? "true" : "false")" disabled="@(!Model.Darf)">@(t.Erledigt ? "✓" : "")</button>
+    </form>
+    <div class="bo-adtxt">
+        @if (!t.Erledigt)
+        {
+            <form class="bo-inline" asp-action="AnzeigePrio" method="post">
+                <input type="hidden" name="id" value="@t.Id" />
+                <input type="hidden" name="ausgabe" value="@Model.Ausgabe" />
+                <input type="hidden" name="erledigt" value="@(Model.ErledigtOffen ? "true" : "false")" data-erledigt-feld />
+                <button type="submit" class="bo-prio" title="Priorität ändern" disabled="@(!Model.Darf)">@(t.PrioText):</button>
+            </form>
+        }
+        @t.Text
+    </div>
+    @if (t.Erledigt)
+    {
+        <span class="bo-stamp">Erledigt</span>
+    }
+    @if (Model.Darf)
+    {
+        <form class="bo-inline" asp-action="AnzeigeEntfernen" method="post">
+            <input type="hidden" name="id" value="@t.Id" />
+            <input type="hidden" name="ausgabe" value="@Model.Ausgabe" />
+            <input type="hidden" name="erledigt" value="@(Model.ErledigtOffen ? "true" : "false")" data-erledigt-feld />
+            <button type="submit" class="bo-btn" data-zweistufig data-frage="Wirklich?">✕</button>
+        </form>
+    }
+</div>
