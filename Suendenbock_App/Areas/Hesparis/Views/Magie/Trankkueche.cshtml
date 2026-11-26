@@ -1,0 +1,206 @@
+@model TrankkuecheViewModel
+@{
+    ViewData["Title"] = "Trankküche";
+    ViewData["Bereich"] = "Brauen";
+    var kopf = Model.Kopf;
+    var aktiv = Model.Figuren.First(f => f.Aktiv);
+    var r = Model.Auswahl;
+
+    // Sperrleiste für die Spielleitung (JS: brewLockBar)
+    var sperrKlasse = "bl-bar";
+    var sperrTitel = "Für Spieler offen";
+    var sperrText = "Die Spieler können brauen.";
+    var sperrKnopf = "Trankküche sperren";
+    if (Model.Gesperrt)
+    {
+        sperrKlasse += " on";
+        sperrTitel = "Für Spieler gesperrt";
+        sperrText = "Die Spieler sehen nur die verschlossene Tür.";
+        sperrKnopf = "Trankküche öffnen";
+    }
+}
+
+<div class="md-wrap">
+    @if (kopf.IstSpielleitung)
+    {
+        <div class="@sperrKlasse">
+            <div><b>@sperrTitel</b><span>@sperrText</span></div>
+            <form asp-action="TrankkuecheSperren" method="post">
+                <input type="hidden" name="id" value="@aktiv.Id" />
+                <button type="submit" class="btn-primary">@sperrKnopf</button>
+            </form>
+        </div>
+    }
+
+    <div class="md-head">
+        <div>
+            <div class="armory-eyebrow">Magie · Trankküche</div>
+            <h1 class="armory-title">Die Trankküche</h1>
+            <p class="armory-sub">Gebraut wird mit einem Wurf auf Metallurgie, am Tisch mit echten Würfeln. Die Seite rechnet den Zielwert und packt die Tränke in die Tasche.</p>
+        </div>
+        <div class="md-players" role="tablist" aria-label="Figur wählen">
+            @foreach (var f in Model.Figuren)
+            {
+                var klasse = "rg-pl";
+                if (f.Aktiv)
+                {
+                    klasse += " on";
+                }
+                <a class="@klasse" role="tab" style="--pc:@f.Aussehen.Farbe;--pc-rgb:@f.Aussehen.Rgb"
+                   asp-action="Trankkueche" asp-route-id="@f.Id" asp-route-rezept="@r?.Id">@f.Name</a>
+            }
+        </div>
+    </div>
+
+    <div class="md-grid md-g-brew" style="--pc:@aktiv.Aussehen.Farbe;--pc-rgb:@aktiv.Aussehen.Rgb">
+        @* ------------------------------------------------------------ Rezeptbuch *@
+        <section class="md-card md-recipes">
+            <div class="rg-lbl">Rezeptbuch · @Model.Rezepte.Count</div>
+            @foreach (var x in Model.Rezepte)
+            {
+                var klasse = "md-recipe";
+                if (r != null && x.Id == r.Id)
+                {
+                    klasse += " on";
+                }
+                <a class="@klasse" asp-action="Trankkueche" asp-route-id="@aktiv.Id" asp-route-rezept="@x.Id">
+                    <b>@x.Name</b><em>@x.Schwierigkeit</em>
+                    @if (x.ZutatenDa)
+                    {
+                        <span class="ok">Zutaten da</span>
+                    }
+                    else
+                    {
+                        <span>Zutaten fehlen</span>
+                    }
+                </a>
+            }
+        </section>
+
+        @* ------------------------------------------------------------ Gewähltes Rezept *@
+        @if (r != null)
+        {
+            <section class="md-card md-brew">
+                <div class="rg-lbl">Rezept</div>
+                <h3>@r.Name</h3>
+                <p class="md-effect">@r.Wirkung</p>
+
+                <div class="md-ings">
+                    @foreach (var z in r.Zutaten)
+                    {
+                        var zk = "miss";
+                        if (z.Vorhanden >= z.Menge)
+                        {
+                            zk = "ok";
+                        }
+                        <span class="@zk">@(z.Menge)× @z.Name <em>@z.Vorhanden in der Tasche</em></span>
+                    }
+                </div>
+
+                <div class="md-target">
+                    <div><span>Metallurgie</span><b>@Model.Metallurgie</b></div>
+                    @if (Model.SaubererSud)
+                    {
+                        <div><span>Sauberer Sud</span><b>+20</b></div>
+                    }
+                    @if (r.Modifikator != 0)
+                    {
+                        <div><span>Rezept</span><b>@r.Schwierigkeit</b></div>
+                    }
+                    <div class="md-target-sum"><span>Gelingt bei W100 höchstens</span><b>@Model.Zielwert</b></div>
+                </div>
+
+                <div class="md-perks">
+                    @if (Model.DoppelterKessel)
+                    {
+                        <span class="md-tag good">Doppelter Kessel: 2 Tränke</span>
+                    }
+                    @if (Model.Meisterbrau)
+                    {
+                        <span class="md-tag good">Meisterbrau: Krit wirkt doppelt</span>
+                    }
+                    @if (Model.Schluck > 1)
+                    {
+                        <span class="md-tag good">Grenzchemie 3: 2 Schluck</span>
+                    }
+                </div>
+
+                @if (!r.ZutatenDa)
+                {
+                    <p class="md-empty">Es fehlen Zutaten. Die gibt es im Schulladen oder im Gewächshaus.</p>
+                }
+                else if (kopf.DarfBearbeiten)
+                {
+                    @* Ein Formular, drei Knöpfe: der gedrückte Knopf schickt sein "ergebnis" mit *@
+                    <form asp-action="Brauen" method="post" class="md-brewbtns">
+                        <input type="hidden" name="id" value="@aktiv.Id" />
+                        <input type="hidden" name="rezeptId" value="@r.Id" />
+                        <span class="rg-lbl">Ergebnis am Tisch</span>
+                        <button type="submit" name="ergebnis" value="ok" class="rg-buy">Gelungen</button>
+                        <button type="submit" name="ergebnis" value="krit" class="rg-buy md-krit">Kritisch</button>
+                        <button type="submit" name="ergebnis" value="fail" class="icon-btn">Misslungen</button>
+                    </form>
+                    <p class="md-hint">Die Zutaten werden in jedem Fall verbraucht.</p>
+                }
+
+                @if (kopf.IstSpielleitung)
+                {
+                    <form asp-action="RezeptLoeschen" method="post" class="md-row">
+                        <input type="hidden" name="id" value="@aktiv.Id" />
+                        <input type="hidden" name="rezeptId" value="@r.Id" />
+                        <button type="submit" class="icon-btn danger" data-zweistufig data-frage="Wirklich entfernen?">Rezept entfernen</button>
+                    </form>
+                }
+            </section>
+        }
+
+        @* ------------------------------------------------------------ Braubuch *@
+        <section class="md-card md-brewlog">
+            <div class="rg-lbl">Zuletzt gebraut</div>
+            @if (Model.Braubuch.Count == 0)
+            {
+                <p class="md-empty">Noch nichts gebraut.</p>
+            }
+            @foreach (var l in Model.Braubuch)
+            {
+                <div class="md-logrow @l.Ergebnis"><b>@l.Wer</b> @l.Text</div>
+            }
+
+            @if (kopf.IstSpielleitung)
+            {
+                <details class="rg-sl md-recipeadd">
+                    <summary>Spielleitung: Rezept hinzufügen</summary>
+                    <form asp-action="RezeptHinzufuegen" method="post" class="md-addform">
+                        <input type="hidden" name="id" value="@aktiv.Id" />
+                        <input type="text" name="name" maxlength="50" placeholder="Name" required aria-label="Name" />
+                        <input type="text" name="wirkung" maxlength="120" placeholder="Wirkung" required aria-label="Wirkung" />
+                        <select name="modifikator" aria-label="Schwierigkeit">
+                            @foreach (var (wert, text) in HesparisRegeln.RezeptSchwierigkeiten)
+                            {
+                                <option value="@wert">@text</option>
+                            }
+                        </select>
+                        <input type="text" name="zutaten" maxlength="160" placeholder="Zutaten, z. B. 2 Mondmoos, 1 Quellsalz" aria-label="Zutaten" />
+                        <button type="submit" class="btn-primary">Ins Rezeptbuch</button>
+                    </form>
+                </details>
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Erst nachfragen, dann löschen (wie beim Sonderzauber)
+        document.querySelectorAll('[data-zweistufig]').forEach(function (knopf) {
+            var alt = knopf.textContent;
+            knopf.addEventListener('click', function (e) {
+                if (knopf.classList.contains('armed')) return;
+                e.preventDefault();
+                knopf.classList.add('armed');
+                knopf.textContent = knopf.dataset.frage;
+                setTimeout(function () { knopf.classList.remove('armed'); knopf.textContent = alt; }, 3200);
+            });
+        });
+    </script>
+}

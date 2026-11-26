@@ -420,3 +420,83 @@ public class SonderzauberKarte
     public bool Versiegelt { get; set; }
     public string Hinweis { get; set; } = "";
 }
+
+// ------------------------------------------------------------------ Trankküche
+
+/// <summary>Trankküche: Rezeptbuch, Zielwert auf Metallurgie, Brauergebnis am Tisch (JS: MODS.brauen).</summary>
+public class TrankkuecheViewModel
+{
+    public FigurKopfViewModel Kopf { get; set; } = null!;
+    public List<FigurChip> Figuren { get; set; } = new();
+
+    /// <summary>Die Spielleitung hat die Trankküche für Spieler gesperrt (JS: brewLock).</summary>
+    public bool Gesperrt { get; set; }
+
+    public List<RezeptZeile> Rezepte { get; set; } = new();
+    public RezeptZeile? Auswahl { get; set; }
+
+    // Zielwert (JS: brewTarget)
+    public int Metallurgie { get; set; }
+    public bool SaubererSud { get; set; }
+    public int Zielwert { get; set; }
+
+    // Vorteile aus Meisterschaften und Magiestufen
+    public bool DoppelterKessel { get; set; }
+    public bool Meisterbrau { get; set; }
+    public int Schluck { get; set; } = 1;
+
+    public List<BrauZeile> Braubuch { get; set; } = new();
+}
+
+/// <summary>Knopf in der Figurenleiste mit der Farbe der Figur (JS: mdPlayers).</summary>
+public class FigurChip
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public HesparisSigille.Aussehen Aussehen { get; set; } = HesparisSigille.Standard;
+    public bool Aktiv { get; set; }
+}
+
+public class RezeptZeile
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public string? Wirkung { get; set; }
+    public int Modifikator { get; set; }
+    public List<ZutatZeile> Zutaten { get; set; } = new();
+    public bool ZutatenDa => Zutaten.All(z => z.Vorhanden >= z.Menge);
+
+    /// <summary>"leicht" bei 0, sonst z. B. "-10".</summary>
+    public string Schwierigkeit
+    {
+        get
+        {
+            if (Modifikator == 0)
+            {
+                return "leicht";
+            }
+            if (Modifikator > 0)
+            {
+                return "+" + Modifikator;
+            }
+            return Modifikator.ToString();
+        }
+    }
+}
+
+public class ZutatZeile
+{
+    public string Name { get; set; } = "";
+    public int Menge { get; set; }
+
+    /// <summary>So viele liegen in der Tasche der gewählten Figur.</summary>
+    public int Vorhanden { get; set; }
+}
+
+public class BrauZeile
+{
+    public string Wer { get; set; } = "";
+    /// <summary>ok, krit oder fail.</summary>
+    public string Ergebnis { get; set; } = "";
+    public string Text { get; set; } = "";
+}

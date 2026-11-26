@@ -326,7 +326,10 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
         /// <summary>Gegenstand anlegen oder ändern.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GegenstandSpeichern(int id, GegenstandFormular formular)
+        // [FromRoute]: Das Formular hat selbst ein Feld "Id" (die Gegenstand-Id). Ohne den Hinweis würde
+        // ASP.NET dieses Feld auch für die Figur-Id nehmen: neue Gegenstände landen dann bei Figur 0 (404),
+        // bearbeitete bei der Figur mit der Nummer des Gegenstands.
+        public async Task<IActionResult> GegenstandSpeichern([FromRoute] int id, GegenstandFormular formular)
         {
             var figur = await _context.Spielfiguren.Include(f => f.Gegenstaende).FirstOrDefaultAsync(f => f.Id == id);
             if (figur == null) return NotFound();
@@ -467,160 +470,6 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
         // =====================================================================
         // Hilfsmethoden
         // =====================================================================
-        private Task<Spielfigur?> FigurMitTalentenLadenAsync(int? id) => FigurLadenAsync(id, q => q
-            .Include(f => f.Talente)
-            .Include(f => f.TalentZiele)
-            .Include(f => f.FachStufen)
-            .Include(f => f.StufenWahlen)
-            .Include(f => f.Meisterschaften)
-            .Include(f => f.Gegenstaende)
-            .Include(f => f.Wirkungen));
-
-        /// <summary>
-        /// Rechnet den kompletten Talentbogen aus (JS: talCalc): Punkte, Kopfwerte und alle Boni.
-        /// Wird von der Talente-Seite und beim Wählen einer Meisterschaft benutzt.
-        /// </summary>
-        private async Task<TalenteViewModel> TalenteBerechnenAsync(Spielfigur figur)
-        {
-            var kampagne = figur.Kampagne;
-            var begabungen = await _context.Begabungen
-                .Include(b => b.Talente).ThenInclude(t => t.Meisterschaften)
-                .AsSplitQuery()
-                .ToListAsync();
-            var faecher = await _context.Faecher.Include(f => f.Stufen).ToListAsync();
-
-            // Alle Boni sammeln: Magiestufen, AGs, Tasche, Wirkungen (JS: talCalc)
-            var boni = HesparisRegeln.FachBoni(figur, faecher);
-            boni.AddRange(await AgBoniAsync(figur));
-            var (tascheBoni, vorteile) = await TascheBoniAsync(figur, kampagne);
-            boni.AddRange(tascheBoni);
-
-            var talentNamen = begabungen.SelectMany(b => b.Talente).ToDictionary(t => t.Code, t => t.Name);
-            var punkte = figur.Talente.ToDictionary(t => t.TalentCode, t => t.Wert);
-            var gewaehlt = figur.Meisterschaften.Select(m => m.MeisterschaftDefinitionId).ToHashSet();
-
-            var model = new TalenteViewModel
-            {
-                Kopf = await KopfFuerFigurAsync(figur, nameof(Talente)),
-                Boni = boni,
-                Vorteile = vorteile,
-                TalentNamen = talentNamen,
-                MeisterschaftenFreigeschaltet =
-                    (figur.FachStufen.FirstOrDefault(s => s.FachId == HesparisRegeln.FachChronotaktik)?.Stufe ?? 0) >= 3,
-            };
-
-            foreach (var b in begabungen.OrderBy(b => "hws".IndexOf(b.Code)))
-            {
-                var talente = b.Talente.OrderBy(t => t.Position).ToList();
-                int summe = talente.Sum(t => punkte.GetValueOrDefault(t.Code));
-                int kopfwert = HesparisRegeln.Kopfwert(summe);
-
-                var zeile = new BegabungZeile
-                {
-                    Code = b.Code,
-                    Name = b.Name,
-                    Farbe = HesparisRegeln.BegabungFarbe.GetValueOrDefault(b.Code, "#e7d6a3"),
-                    Summe = summe,
-                    Kopfwert = kopfwert,
-                    Geistesblitze = HesparisRegeln.Geistesblitze(kopfwert),
-                };
-
-                foreach (var t in talente)
-                {
-                    var talentBoni = boni.Where(x => x.Ziel == t.Code).ToList();
-                    int bonus = talentBoni.Sum(x => x.Betrag);
-                    int p = punkte.GetValueOrDefault(t.Code);
-                    zeile.Talente.Add(new TalentZeile
-                    {
-                        Code = t.Code,
-                        Name = t.Name,
-                        Punkte = p,
-                        Bonus = bonus,
-                        Boni = talentBoni,
-                        Gesamt = p + kopfwert + bonus,
-                        Meisterschaften = t.Meisterschaften.OrderBy(m => m.Position).Select(m => new MeisterschaftZeile
-                        {
-                            Id = m.Id,
-                            Name = m.Name,
-                            Beschreibung = m.Beschreibung,
-                            Gewaehlt = gewaehlt.Contains(m.Id),
-                        }).ToList(),
-                    });
-                }
-
-                model.Verteilt += summe;
-                model.Begabungen.Add(zeile);
-            }
-
-            return model;
-        }
-
-        /// <summary>Boni aus AGs, in denen die Figur Mitglied ist (JS: agBoni).</summary>
-        private async Task<List<TalentBonus>> AgBoniAsync(Spielfigur figur)
-        {
-            var ags = await _context.AgMitglieder
-                .Where(m => m.SpielfigurId == figur.Id && m.AgEintrag.KampagneId == figur.KampagneId)
-                .Select(m => m.AgEintrag.Ag)
-                .Where(a => a.BonusTalentCode != null && a.BonusWert != 0)
-                .ToListAsync();
-
-            return ags.Select(a => new TalentBonus
-            {
-                Quelle = a.Name,
-                Herkunft = "AG",
-                Betrag = a.BonusWert,
-                Beschriftung = "+" + a.BonusWert,
-                Kandidaten = new List<string> { a.BonusTalentCode! },
-                Ziel = a.BonusTalentCode,
-            }).ToList();
-        }
-
-        /// <summary>
-        /// Boni und Vorteile aus der Tasche (Bücher, Ausrüstung, Sonstiges) und aus laufenden Wirkungen
-        /// (JS: fxActive / itemBoni). Gegenstände ohne eigene Wirkung übernehmen die Wirkung der
-        /// gleichnamigen Ware im Schulladen.
-        /// </summary>
-        private async Task<(List<TalentBonus> Boni, List<TalentBonus> Vorteile)> TascheBoniAsync(Spielfigur figur, Kampagne kampagne)
-        {
-            var laden = await _context.LadenArtikel.Where(l => l.KampagneId == figur.KampagneId).ToListAsync();
-            var aktiv = new List<(string Name, Effekt Fx, Wirkung? Wirkung, string Herkunft)>();
-
-            foreach (var g in figur.Gegenstaende.Where(g => g.Menge > 0 && HesparisRegeln.PassiveKategorien.Contains(g.Kategorie)))
-            {
-                var fx = HesparisRegeln.EffektGueltig(g.Effekt) ? g.Effekt : laden.FirstOrDefault(l => l.Name == g.Name)?.Effekt;
-                if (HesparisRegeln.EffektGueltig(fx)) aktiv.Add((g.Name, fx!, null, "in der Tasche"));
-            }
-            foreach (var w in figur.Wirkungen.Where(w => HesparisRegeln.WirkungAktiv(w, kampagne.Spieltag)))
-                aktiv.Add((w.Name, w.Effekt, w, "wirkt gerade"));
-
-            var boni = new List<TalentBonus>();
-            var vorteile = new List<TalentBonus>();
-            foreach (var (name, fx, wirkung, herkunft) in aktiv)
-            {
-                var bonus = new TalentBonus
-                {
-                    Quelle = name,
-                    Herkunft = herkunft,
-                    WirkungId = wirkung?.Id,
-                    Anwendungen = fx.DauerArt == EffektDauerArt.Anwendungen,
-                    Dauer = wirkung != null ? HesparisRegeln.WirkungRest(wirkung, kampagne.Spieltag) : null,
-                };
-                if (fx.Art == EffektArt.Talent)
-                {
-                    bonus.Betrag = fx.Wert ?? 0;
-                    bonus.Kandidaten = new List<string> { fx.TalentCode! };
-                    bonus.Ziel = fx.TalentCode;
-                    boni.Add(bonus);
-                }
-                else
-                {
-                    bonus.Beschriftung = "Vorteil auf " + fx.VorteilAuf;
-                    vorteile.Add(bonus);
-                }
-            }
-            return (boni, vorteile);
-        }
-
         private async Task<Effekt?> EffektMitLadenAsync(Gegenstand g, int kampagneId)
         {
             if (HesparisRegeln.EffektGueltig(g.Effekt)) return g.Effekt;

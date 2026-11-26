@@ -9,7 +9,8 @@ using Suendenbock_App.Models.ViewModels.Hesparis;
 namespace Suendenbock_App.Areas.Hesparis.Controllers
 {
     /// <summary>
-    /// Gruppe "Magie" (/Hesparis/Magie/…): Magiestufen ("Der Weg nach innen") und Sonderzauber ("Vier Karten, eine Wahl").
+    /// Gruppe "Magie" (/Hesparis/Magie/…): Magiestufen ("Der Weg nach innen"), Sonderzauber ("Vier Karten, eine Wahl")
+    /// und Trankküche.
     /// Stufen wählen und Karten aufdecken dürfen alle Spieler; Bonuspunkte, Abschlüsse und Zurücksetzen nur Gott.
     /// </summary>
     public class MagieController : HesparisBaseController
@@ -593,6 +594,362 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             }
             stand.Sonderzauber = sonderzauber;
             return stand;
+        }
+
+        // =====================================================================
+        // Trankküche
+        // =====================================================================
+
+        /// <summary>
+        /// Rezeptbuch, Zielwert und Brauen (JS: MODS.brauen). Gebraut wird am Tisch mit echten Würfeln,
+        /// die Seite rechnet nur den Zielwert aus und packt die Tränke in die Tasche.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Trankkueche(int? id, int? rezept)
+        {
+            var figur = await FigurMitTalentenLadenAsync(id);
+            if (figur == null) return KeineFigur();
+
+            var kampagne = figur.Kampagne;
+            var model = new TrankkuecheViewModel { Gesperrt = kampagne.BrauenGesperrt };
+
+            // Gesperrt: Spieler sehen nur die verschlossene Tür, Gott sieht alles plus Schalter
+            if (model.Gesperrt && !IsGott())
+            {
+                ViewData["FigurId"] = figur.Id;
+                return View("TrankkuecheGesperrt");
+            }
+
+            // Talentbogen ausrechnen: daraus Metallurgie und die Meisterschaften
+            var bogen = await TalenteBerechnenAsync(figur, nameof(Trankkueche));
+            model.Kopf = bogen.Kopf;
+            var metallurgie = bogen.Begabungen.SelectMany(b => b.Talente).FirstOrDefault(t => t.Name == "Metallurgie");
+            if (metallurgie != null)
+            {
+                model.Metallurgie = metallurgie.AufDemBogen;
+                model.SaubererSud = metallurgie.Meisterschaften.Any(m => m.Gewaehlt && m.Name == "Sauberer Sud");
+                model.DoppelterKessel = metallurgie.Meisterschaften.Any(m => m.Gewaehlt && m.Name == "Doppelter Kessel");
+                model.Meisterbrau = metallurgie.Meisterschaften.Any(m => m.Gewaehlt && m.Name == "Meisterbrau");
+            }
+            if (GrenzchemieStufe(figur) >= 3)
+            {
+                model.Schluck = 2;
+            }
+
+            // Figurenleiste in den Farben der Figuren
+            model.Figuren = await FigurChipsAsync(kampagne.Id, figur.Id);
+
+            // Rezeptbuch (beim ersten Öffnen mit den Standardrezepten füllen)
+            var rezepte = await RezepteLadenAsync(kampagne.Id);
+            foreach (var r in rezepte)
+            {
+                model.Rezepte.Add(new RezeptZeile
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    Wirkung = r.Wirkung,
+                    Modifikator = r.Modifikator,
+                    Zutaten = r.Zutaten.OrderBy(z => z.Position).Select(z => new ZutatZeile
+                    {
+                        Name = z.Name,
+                        Menge = z.Menge,
+                        Vorhanden = AnzahlInTasche(figur, z.Name),
+                    }).ToList(),
+                });
+            }
+            model.Auswahl = model.Rezepte.FirstOrDefault(r => r.Id == rezept) ?? model.Rezepte.FirstOrDefault();
+
+            if (model.Auswahl != null)
+            {
+                int sud = 0;
+                if (model.SaubererSud)
+                {
+                    sud = 20;
+                }
+                // Ein W100 unter 1 gibt es nicht: mindestens 1 (JS: Math.max(1, t.val))
+                model.Zielwert = Math.Max(1, model.Metallurgie + sud + model.Auswahl.Modifikator);
+            }
+
+            // Braubuch: die letzten 8 Einträge
+            var eintraege = await _context.Braueintraege
+                .Where(b => b.KampagneId == kampagne.Id)
+                .Include(b => b.Spielfigur).ThenInclude(f => f!.HesparisCharakter)
+                .OrderByDescending(b => b.Position)
+                .Take(8)
+                .ToListAsync();
+            model.Braubuch = eintraege.Select(b => new BrauZeile
+            {
+                Wer = b.Spielfigur?.HesparisCharakter?.Anzeigename ?? "Jemand",
+                Ergebnis = b.Ergebnis ?? "ok",
+                Text = b.Text,
+            }).ToList();
+
+            return View(model);
+        }
+
+        /// <summary>
+        /// Ergebnis vom Tisch eintragen (JS: data-brew): ok = gelungen, krit = kritisch, fail = misslungen.
+        /// Die Zutaten werden in jedem Fall verbraucht.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Brauen(int id, int rezeptId, string ergebnis)
+        {
+            if (!DarfBearbeiten()) return Forbid();
+            var figur = await FigurMitTalentenLadenAsync(id);
+            if (figur == null) return NotFound();
+            if (figur.Kampagne.BrauenGesperrt && !IsGott()) return Forbid();
+            if (ergebnis != "ok" && ergebnis != "krit" && ergebnis != "fail") return BadRequest();
+
+            var rezept = await _context.Rezepte
+                .Include(r => r.Zutaten)
+                .FirstOrDefaultAsync(r => r.Id == rezeptId && r.KampagneId == figur.KampagneId);
+            if (rezept == null) return NotFound();
+
+            // Erst prüfen, ob alles da ist; sonst nichts verbrauchen
+            if (rezept.Zutaten.Any(z => AnzahlInTasche(figur, z.Name) < z.Menge))
+            {
+                TempData["Error"] = "Es fehlen Zutaten.";
+                return RedirectToAction(nameof(Trankkueche), new { id, rezept = rezeptId });
+            }
+            foreach (var z in rezept.Zutaten)
+            {
+                AusTascheNehmen(figur, z.Name, z.Menge);
+            }
+
+            // Meisterschaften für Doppelter Kessel und Meisterbrau
+            var bogen = await TalenteBerechnenAsync(figur, nameof(Trankkueche));
+            var metallurgie = bogen.Begabungen.SelectMany(b => b.Talente).FirstOrDefault(t => t.Name == "Metallurgie");
+            bool kessel = metallurgie?.Meisterschaften.Any(m => m.Gewaehlt && m.Name == "Doppelter Kessel") ?? false;
+            bool meisterbrau = metallurgie?.Meisterschaften.Any(m => m.Gewaehlt && m.Name == "Meisterbrau") ?? false;
+
+            int anzahl = 0;
+            if (ergebnis != "fail")
+            {
+                anzahl = 1;
+                if (kessel)
+                {
+                    anzahl = 2;
+                }
+            }
+            bool doppelt = ergebnis == "krit" && meisterbrau;
+
+            string text;
+            if (anzahl > 0)
+            {
+                string notiz = "1 Schluck";
+                if (GrenzchemieStufe(figur) >= 3)
+                {
+                    notiz = "2 Schluck";
+                }
+                if (doppelt)
+                {
+                    notiz += " · wirkt doppelt";
+                }
+                InTascheLegen(figur, rezept.Name, anzahl, notiz);
+
+                text = "braut " + anzahl + "× " + rezept.Name;
+                if (doppelt)
+                {
+                    text += ", doppelt wirksam";
+                }
+                text += ".";
+                TempData["Success"] = $"{figur.HesparisCharakter!.Anzeigename}: {anzahl}× {rezept.Name} liegt in der Tasche.";
+            }
+            else
+            {
+                text = "hat den " + rezept.Name + " verpatzt.";
+                TempData["Error"] = "Misslungen. Die Zutaten sind verbraucht.";
+            }
+
+            await BraubuchEintragenAsync(figur, ergebnis, text);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Trankkueche), new { id, rezept = rezeptId });
+        }
+
+        /// <summary>Gott: neues Rezept ins Rezeptbuch (JS: data-recipeadd).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> RezeptHinzufuegen(int id, string name, string wirkung, int modifikator, string? zutaten)
+        {
+            var kampagne = await AkademieLadenAsync();
+            if (string.IsNullOrWhiteSpace(name)) return RedirectToAction(nameof(Trankkueche), new { id });
+
+            var rezepte = await RezepteLadenAsync(kampagne.Id);
+            var rezept = new Rezept
+            {
+                KampagneId = kampagne.Id,
+                Position = rezepte.Count,
+                Name = name.Trim(),
+                Wirkung = wirkung?.Trim(),
+                Modifikator = Math.Clamp(modifikator, -30, 0),
+            };
+            int pos = 0;
+            foreach (var (zutat, menge) in HesparisRegeln.ZutatenLesen(zutaten))
+            {
+                rezept.Zutaten.Add(new RezeptZutat { Position = pos++, Name = zutat, Menge = menge });
+            }
+            _context.Rezepte.Add(rezept);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"„{rezept.Name}“ steht im Rezeptbuch.";
+            return RedirectToAction(nameof(Trankkueche), new { id, rezept = rezept.Id });
+        }
+
+        /// <summary>Gott: Rezept wieder entfernen.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> RezeptLoeschen(int id, int rezeptId)
+        {
+            var kampagne = await AkademieLadenAsync();
+            var rezept = await _context.Rezepte.FirstOrDefaultAsync(r => r.Id == rezeptId && r.KampagneId == kampagne.Id);
+            if (rezept != null)
+            {
+                _context.Rezepte.Remove(rezept);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"„{rezept.Name}“ ist aus dem Rezeptbuch entfernt.";
+            }
+            return RedirectToAction(nameof(Trankkueche), new { id });
+        }
+
+        /// <summary>Gott: Trankküche für Spieler sperren oder öffnen (JS: brewLock).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> TrankkuecheSperren(int? id)
+        {
+            var kampagne = await AkademieLadenAsync();
+            kampagne.BrauenGesperrt = !kampagne.BrauenGesperrt;
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Trankkueche), new { id });
+        }
+
+        /// <summary>Rezepte der Akademie; beim ersten Mal die Standardrezepte anlegen.</summary>
+        private async Task<List<Rezept>> RezepteLadenAsync(int kampagneId)
+        {
+            var rezepte = await _context.Rezepte
+                .Where(r => r.KampagneId == kampagneId)
+                .Include(r => r.Zutaten)
+                .OrderBy(r => r.Position)
+                .ToListAsync();
+            if (rezepte.Count > 0) return rezepte;
+
+            int pos = 0;
+            foreach (var (name, wirkung, mod, zutaten) in HesparisRegeln.RezepteStandard)
+            {
+                var r = new Rezept { KampagneId = kampagneId, Position = pos++, Name = name, Wirkung = wirkung, Modifikator = mod };
+                int zp = 0;
+                foreach (var (zutat, menge) in zutaten)
+                {
+                    r.Zutaten.Add(new RezeptZutat { Position = zp++, Name = zutat, Menge = menge });
+                }
+                _context.Rezepte.Add(r);
+                rezepte.Add(r);
+            }
+            await _context.SaveChangesAsync();
+            return rezepte;
+        }
+
+        /// <summary>Figurenknöpfe mit Farbe aus dem Sonderzauber (JS: mdPlayers / plCol).</summary>
+        private async Task<List<FigurChip>> FigurChipsAsync(int kampagneId, int aktivId)
+        {
+            var figuren = await _context.Spielfiguren
+                .Where(f => f.KampagneId == kampagneId && f.HesparisCharakter != null)
+                .Include(f => f.HesparisCharakter)
+                .OrderBy(f => f.Position)
+                .ToListAsync();
+            var sonderzauber = await _context.Sonderzauber.ToListAsync();
+
+            return figuren.Select(f =>
+            {
+                var name = f.HesparisCharakter!.Anzeigename;
+                var zauber = sonderzauber.FirstOrDefault(z => z.Person == name);
+                return new FigurChip
+                {
+                    Id = f.Id,
+                    Name = name,
+                    Aussehen = HesparisSigille.Fuer(zauber?.Code),
+                    Aktiv = f.Id == aktivId,
+                };
+            }).ToList();
+        }
+
+        private static int GrenzchemieStufe(Spielfigur figur) =>
+            figur.FachStufen.FirstOrDefault(s => s.FachId == HesparisRegeln.FachGrenzchemie)?.Stufe ?? 0;
+
+        /// <summary>Wie viele Stück mit diesem Namen in der Tasche liegen (JS: itemCount).</summary>
+        private static int AnzahlInTasche(Spielfigur figur, string name) =>
+            figur.Gegenstaende.Where(g => g.Name == name).Sum(g => g.Menge);
+
+        /// <summary>Menge aus der Tasche nehmen, leere Stapel verschwinden (JS: takeItem).</summary>
+        private void AusTascheNehmen(Spielfigur figur, string name, int menge)
+        {
+            int rest = menge;
+            foreach (var g in figur.Gegenstaende.Where(g => g.Name == name).OrderBy(g => g.Id).ToList())
+            {
+                if (rest <= 0) break;
+                int weg = Math.Min(rest, g.Menge);
+                g.Menge -= weg;
+                rest -= weg;
+                if (g.Menge <= 0)
+                {
+                    figur.Gegenstaende.Remove(g);
+                    _context.Gegenstaende.Remove(g);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Trank in die Tasche legen; gleicher Trank mit gleicher Notiz und ohne eigene Wirkung
+        /// kommt auf denselben Stapel (JS: addItem).
+        /// </summary>
+        private static void InTascheLegen(Spielfigur figur, string name, int menge, string notiz)
+        {
+            var stapel = figur.Gegenstaende.FirstOrDefault(g =>
+                g.Name == name && g.Kategorie == "Trank" && (g.Notiz ?? "") == notiz && !HesparisRegeln.EffektGueltig(g.Effekt));
+            if (stapel != null)
+            {
+                stapel.Menge += menge;
+                stapel.Neu = true;
+                return;
+            }
+            figur.Gegenstaende.Add(new Gegenstand
+            {
+                Name = name,
+                Kategorie = "Trank",
+                Menge = menge,
+                Notiz = notiz,
+                Quelle = "brau",
+                Neu = true,
+            });
+        }
+
+        /// <summary>Neuer Eintrag oben ins Braubuch, ältere über 30 fallen weg.</summary>
+        private async Task BraubuchEintragenAsync(Spielfigur figur, string ergebnis, string text)
+        {
+            var alle = await _context.Braueintraege
+                .Where(b => b.KampagneId == figur.KampagneId)
+                .OrderByDescending(b => b.Position)
+                .ToListAsync();
+            int neuePosition = 0;
+            if (alle.Count > 0)
+            {
+                neuePosition = alle[0].Position + 1;
+            }
+            foreach (var alt in alle.Skip(HesparisRegeln.BraubuchMax - 1))
+            {
+                _context.Braueintraege.Remove(alt);
+            }
+            _context.Braueintraege.Add(new Braueintrag
+            {
+                KampagneId = figur.KampagneId,
+                Position = neuePosition,
+                SpielfigurId = figur.Id,
+                Ergebnis = ergebnis,
+                Text = text,
+            });
         }
 
         // =====================================================================
