@@ -1,0 +1,71 @@
+@model KalenderViewModel
+@{
+    ViewData["Title"] = "Schulkalender";
+    ViewData["Bereich"] = "Kalender";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-alltag.css" asp-append-version="true" />
+}
+
+@* Das Panorama (Jahreszeiten, Laternen, Zoom) zeichnet hesparis-kalender.js aus diesen Daten *@
+<div class="md-wrap">
+<script type="application/json" id="kpDaten">@Html.Raw(Model.PanoramaJson)</script>
+<div id="kpWrap">
+    <noscript><p class="md-hint">Der Kalender braucht JavaScript.</p></noscript>
+</div>
+
+@if (Model.IstSpielleitung)
+{
+    @* ------------------------------------------------------------ Spielleitung: Termine verwalten *@
+    <details class="kp-sl" open="@Model.Verwalten">
+        <summary>Spielleitung · Termine verwalten</summary>
+        <div class="kp-sl-in">
+            @* Tag der Spielwelt (in der HTML oben links über das Datum) *@
+            <form class="kp-tag" asp-action="Spieltag" method="post">
+                <button type="submit" class="icon-btn" name="tage" value="-1" aria-label="Einen Tag zurück">‹</button>
+                <input type="date" name="tag" value="@Model.Heute.ToString("yyyy-MM-dd")" aria-label="Tag der Spielwelt" onchange="this.form.requestSubmit()">
+                <button type="submit" class="icon-btn" name="tage" value="1" aria-label="Einen Tag vor">›</button>
+                <span class="md-hint" style="margin:0">Tag der Spielwelt</span>
+            </form>
+
+            <form class="md-nsform kp-add" asp-action="TerminHinzufuegen" method="post">
+                <input type="date" name="datum" value="@Model.Heute.ToString("yyyy-MM-dd")" required aria-label="Datum">
+                <input name="titel" maxlength="80" required placeholder="Was passiert?" aria-label="Titel">
+                <select name="typ" aria-label="Art">
+                    @foreach (var a in AlltagRegeln.TerminArten)
+                    {
+                        <option value="@a.Code">@a.Name</option>
+                    }
+                </select>
+                <button type="submit" class="btn-primary">Eintragen</button>
+            </form>
+
+            <div class="kp-list">
+                @foreach (var t in Model.Termine)
+                {
+                    string klasse = "kp-li";
+                    if (t.Datum < Model.Heute)
+                    {
+                        klasse = "kp-li past";
+                    }
+                    <div class="@klasse" style="--lc:@t.Art.Farbe">
+                        <i></i>
+                        <span>@AlltagRegeln.Datum(t.Datum)</span>
+                        <b>@t.Titel</b>
+                        <em>@t.Art.Name</em>
+                        <form asp-action="TerminLoeschen" asp-route-id="@t.Id" method="post">
+                            <button type="submit" class="icon-btn" aria-label="Termin löschen">✕</button>
+                        </form>
+                    </div>
+                }
+            </div>
+            <p class="md-hint">Der Tag der Spielwelt steuert „Heute“ im Kalender und oben in der Leiste.</p>
+        </div>
+    </details>
+}
+</div>
+
+@section Scripts {
+    <script src="~/js/hesparis-kalender.js" asp-append-version="true"></script>
+}

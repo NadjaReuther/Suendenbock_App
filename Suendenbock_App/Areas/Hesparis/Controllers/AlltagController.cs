@@ -1,12 +1,15 @@
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Suendenbock_App.Data;
+using Suendenbock_App.Models.Domain.Hesparis;
 using Suendenbock_App.Models.ViewModels.Hesparis;
 
 namespace Suendenbock_App.Areas.Hesparis.Controllers
 {
     /// <summary>
-    /// Gruppe "Alltag" (/Hesparis/Alltag/…): Stundenplan, später Kalender, Essensplan, AGs und Nachsitzen.
+    /// Gruppe "Alltag" (/Hesparis/Alltag/…): Stundenplan und Kalender, später Essensplan, AGs und Nachsitzen.
     /// </summary>
     public class AlltagController : HesparisBaseController
     {
@@ -74,6 +77,140 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             }
 
             return View(model);
+        }
+
+        // =====================================================================
+        // Kalender
+        // =====================================================================
+
+        /// <summary>
+        /// Schulkalender (JS: MODS.kalender): September bis Juli als Landschaft, Termine als Laternen.
+        /// Das Panorama zeichnet hesparis-kalender.js; Termine und Spieltag verwaltet hier Gott.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> Kalender(bool verwalten = false)
+        {
+            var kampagne = await AkademieLadenAsync();
+            var termine = await TermineLadenAsync(kampagne);
+            int jahr = AlltagRegeln.Schuljahresbeginn(kampagne.Spieltag);
+
+            var model = new KalenderViewModel
+            {
+                Jahr = jahr,
+                Heute = kampagne.Spieltag,
+                IstSpielleitung = IsGott(),
+                Verwalten = verwalten,
+                Termine = termine.Select(t => new KalenderZeile
+                {
+                    Id = t.Id,
+                    Datum = t.Datum,
+                    Titel = t.Titel,
+                    Art = AlltagRegeln.Art(t.Typ),
+                }).ToList(),
+            };
+
+            model.PanoramaJson = JsonSerializer.Serialize(new
+            {
+                year = jahr,
+                heute = kampagne.Spieltag.ToString("yyyy-MM-dd"),
+                events = model.Termine.Select(t => new { date = t.Datum.ToString("yyyy-MM-dd"), title = t.Titel, type = t.Art.Code }),
+                types = AlltagRegeln.TerminArten.ToDictionary(a => a.Code, a => new[] { a.Name, a.Farbe }),
+                monate = AlltagRegeln.Monate,
+            });
+            return View(model);
+        }
+
+        /// <summary>Gott: neuer Termin (JS: data-ksubmit).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> TerminHinzufuegen(DateOnly datum, string titel, string typ)
+        {
+            var kampagne = await AkademieLadenAsync();
+            if (!string.IsNullOrWhiteSpace(titel))
+            {
+                var art = AlltagRegeln.TerminArten.FirstOrDefault(a => a.Code == typ) ?? AlltagRegeln.TerminArten[^1];
+                _context.KalenderTermine.Add(new KalenderTermin
+                {
+                    KampagneId = kampagne.Id,
+                    Datum = datum,
+                    Titel = titel.Trim(),
+                    Typ = art.Typ,
+                });
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "„" + titel.Trim() + "“ steht am " + AlltagRegeln.Datum(datum) + " im Kalender.";
+            }
+            return RedirectToAction(nameof(Kalender), new { verwalten = true });
+        }
+
+        /// <summary>Gott: Termin löschen (JS: data-kdel).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> TerminLoeschen(int id)
+        {
+            var kampagne = await AkademieLadenAsync();
+            var termin = await _context.KalenderTermine.FirstOrDefaultAsync(t => t.Id == id && t.KampagneId == kampagne.Id);
+            if (termin != null)
+            {
+                _context.KalenderTermine.Remove(termin);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction(nameof(Kalender), new { verwalten = true });
+        }
+
+        /// <summary>
+        /// Gott: Tag der Spielwelt setzen (JS: data-kheute) oder um Tage verschieben (JS: data-kday1).
+        /// Davon hängen Wirkungen, Essensplan und das Schuljahr im Kalender ab.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Gott")]
+        public async Task<IActionResult> Spieltag(DateOnly? tag, int? tage, string? zurueck)
+        {
+            var kampagne = await AkademieLadenAsync();
+            // Die Pfeile schicken "tage" mit, das Datumsfeld allein schickt nur "tag"
+            if (tage.HasValue)
+            {
+                kampagne.Spieltag = kampagne.Spieltag.AddDays(tage.Value);
+            }
+            else if (tag.HasValue)
+            {
+                kampagne.Spieltag = tag.Value;
+            }
+            kampagne.Kalenderjahr = AlltagRegeln.Schuljahresbeginn(kampagne.Spieltag);
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(zurueck) && Url.IsLocalUrl(zurueck))
+            {
+                return LocalRedirect(zurueck);
+            }
+            return RedirectToAction(nameof(Kalender), new { verwalten = true });
+        }
+
+        /// <summary>Termine der Akademie; beim ersten Öffnen die Termine aus der HTML anlegen.</summary>
+        private async Task<List<KalenderTermin>> TermineLadenAsync(Kampagne kampagne)
+        {
+            var termine = await _context.KalenderTermine
+                .Where(t => t.KampagneId == kampagne.Id)
+                .OrderBy(t => t.Datum)
+                .ToListAsync();
+            if (termine.Count > 0) return termine;
+
+            int jahr = AlltagRegeln.Schuljahresbeginn(kampagne.Spieltag);
+            foreach (var (monat, tag, titel, typ) in AlltagRegeln.TermineStandard)
+            {
+                int j = jahr;
+                if (monat < 9)
+                {
+                    j = jahr + 1;
+                }
+                var t = new KalenderTermin { KampagneId = kampagne.Id, Datum = new DateOnly(j, monat, tag), Titel = titel, Typ = typ };
+                _context.KalenderTermine.Add(t);
+                termine.Add(t);
+            }
+            await _context.SaveChangesAsync();
+            return termine.OrderBy(t => t.Datum).ToList();
         }
     }
 }

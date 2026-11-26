@@ -1,3 +1,5 @@
+using Suendenbock_App.Models.Domain.Hesparis;
+
 namespace Suendenbock_App.Models.ViewModels.Hesparis;
 
 /// <summary>
@@ -105,5 +107,63 @@ public static class AlltagRegeln
         int minuten = jetzt.Hour * 60 + jetzt.Minute;
         int zeile = Array.FindIndex(Zeilen, z => minuten >= Minuten(z.Von) && minuten < Minuten(z.Bis));
         return (tag, zeile);
+    }
+
+    // ------------------------------------------------------------------ Kalender
+
+    public record TerminArt(Termintyp Typ, string Code, string Name, string Farbe);
+
+    /// <summary>Arten von Terminen mit Farbe der Laterne (JS: KAL_TYPES).</summary>
+    public static readonly TerminArt[] TerminArten =
+    {
+        new(Termintyp.Rat, "rat", "Schülerrat", "#f4e8c0"),
+        new(Termintyp.Pruefung, "pruefung", "Prüfung", "#e5606a"),
+        new(Termintyp.Glimrack, "glimrack", "Glimrack", "#49d9c9"),
+        new(Termintyp.Wettbewerb, "wettbewerb", "Wettbewerb", "#d9a24a"),
+        new(Termintyp.Feiertag, "feiertag", "Feiertag", "#f08fbf"),
+        new(Termintyp.Ferien, "ferien", "Ferien", "#8fd67a"),
+        new(Termintyp.Schule, "schule", "Schule", "#ad8ff7"),
+        new(Termintyp.Sonstiges, "sonstiges", "Sonstiges", "#a89568"),
+    };
+
+    public static TerminArt Art(Termintyp typ) => TerminArten.FirstOrDefault(a => a.Typ == typ) ?? TerminArten[^1];
+
+    /// <summary>
+    /// Termine, mit denen der Kalender beim ersten Öffnen gefüllt wird (JS: kalData).
+    /// Monat ab September gehört zum Startjahr, Januar bis August zum Folgejahr.
+    /// </summary>
+    public static readonly (int Monat, int Tag, string Titel, Termintyp Typ)[] TermineStandard =
+    {
+        (9, 1, "Erster Schultag", Termintyp.Schule),
+        (10, 5, "Herbst-Cup: Auftakt", Termintyp.Glimrack),
+        (11, 12, "Hiro-Tag: Fest des heiligen Hiro", Termintyp.Feiertag),
+        (11, 21, "Braumeisterschaft", Termintyp.Wettbewerb),
+        (12, 19, "Beginn der Winterferien", Termintyp.Ferien),
+        (1, 7, "Unterricht beginnt wieder", Termintyp.Schule),
+        (1, 23, "Duellturnier", Termintyp.Wettbewerb),
+        (3, 20, "Sternenrallye", Termintyp.Wettbewerb),
+        (4, 10, "Frühjahrs-Cup: Auftakt", Termintyp.Glimrack),
+        (5, 8, "Rededuell", Termintyp.Wettbewerb),
+        (6, 22, "Abschlussprüfungen", Termintyp.Pruefung),
+        (7, 10, "Letzter Schultag", Termintyp.Schule),
+    };
+
+    public static readonly string[] Monate =
+    {
+        "Januar", "Februar", "März", "April", "Mai", "Juni",
+        "Juli", "August", "September", "Oktober", "November", "Dezember",
+    };
+
+    /// <summary>"3. September" (JS: kalFmt).</summary>
+    public static string Datum(DateOnly tag) => tag.Day + ". " + Monate[tag.Month - 1];
+
+    /// <summary>Startjahr des Schuljahres: ab August das laufende Jahr, sonst das Vorjahr.</summary>
+    public static int Schuljahresbeginn(DateOnly tag)
+    {
+        if (tag.Month >= 8)
+        {
+            return tag.Year;
+        }
+        return tag.Year - 1;
     }
 }
