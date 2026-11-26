@@ -3803,8 +3803,8 @@ namespace Suendenbock_App.Migrations
                     b.Property<string>("Sagt")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Wichtig")
-                        .HasColumnType("bit");
+                    b.Property<int>("Wichtig")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -5467,6 +5467,9 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("SchreiberSpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Schuljahr")
                         .HasColumnType("int");
 
                     b.Property<string>("Titel")

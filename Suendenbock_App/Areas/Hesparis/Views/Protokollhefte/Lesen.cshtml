@@ -1,0 +1,97 @@
+@model ProtokollheftViewModel
+@{
+    var a = Model.Heft!;
+    var h = a.Heft;
+    ViewData["Title"] = "Protokollheft " + h.Nummer + " lesen";
+    ViewData["Bereich"] = "Hefte";
+    var sch = a.Schreiber;
+    var abschnitte = ProtokollheftRegeln.Abschnitte;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-schuljahr.css" asp-append-version="true" />
+}
+
+<div class="md-wrap" id="md-hefte">
+    <div class="ph-root ph-anim">
+        <div class="ph-top">
+            <a class="ph-back" asp-action="Heft" asp-route-id="@h.Id">‹ Zum Heft</a>
+            <div>
+                <div class="armory-eyebrow">Protokollheft Nr. @h.Nummer</div>
+                <h2 class="armory-title">Das ganze Heft</h2>
+            </div>
+            <div class="ph-actions">
+                <button type="button" class="ph-ghost" data-kopieren>Als Text kopieren</button>
+                <button type="button" class="ph-ghost" data-drucken>Drucken</button>
+            </div>
+        </div>
+        <article class="ph-page ph-read">
+            <div class="ph-mute">Akademie Hesparis · Protokoll eines Außeneinsatzes</div>
+            <div class="ph-h" style="font-size:40px;margin-top:0">@a.Titel@Html.Raw(ProtokollheftRegeln.Unterstrich())</div>
+            <div class="ph-f2" style="margin-top:20px">
+                <div class="ph-f"><span>Lehrkraft</span><span class="ph-line">@(h.Lehrer ?? "–")</span></div>
+                <div class="ph-f"><span>Ort</span><span class="ph-line">@(h.Ort ?? "–")</span></div>
+                <div class="ph-f"><span>Unterwegs</span><span class="ph-line">@a.Zeitraum</span></div>
+                <div class="ph-f"><span>Protokoll</span><span class="ph-line">@if (sch != null) {<span class="ph-ink" style="--pc:@sch.Farbe">@sch.Name</span>} else {<text>–</text>}</span></div>
+            </div>
+            <div class="ph-f"><span>Team</span><span class="ph-line" style="flex-wrap:wrap;column-gap:12px">@foreach (var m in a.Team) {<span class="ph-ink" style="--pc:@m.Farbe">@m.Name</span>}</span></div>
+
+            @for (int i = 0; i < abschnitte.Length; i++)
+            {
+                var s = abschnitte[i];
+                if (s.Art == "kopf") continue;
+                <div class="ph-h">@(i + 1). @s.Titel</div>
+                if (s.Art == "ablauf")
+                {
+                    var zeilen = a.AblaufSortiert;
+                    if (zeilen.Count == 0)
+                    {
+                        <p class="txt empty">noch leer</p>
+                    }
+                    foreach (var r in zeilen)
+                    {
+                        <div class="ph-line"><span style="flex:none;width:120px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--red);padding-bottom:6px">@((r.Datum.HasValue ? HeftAnsicht.Datum(r.Datum) + " " : "") + (r.Uhrzeit ?? ""))</span><span>@r.Text@if (!string.IsNullOrEmpty(r.Wer)) {<text> </text><span style="color:var(--mute)">(@r.Wer)</span>}@if (r.Wichtig) {<text> </text><span style="color:#d9a24a">★</span>}</span></div>
+                    }
+                }
+                else if (s.Art == "personen")
+                {
+                    var personen = a.PersonenSortiert;
+                    if (personen.Count == 0)
+                    {
+                        <p class="txt empty">noch leer</p>
+                    }
+                    foreach (var p in personen)
+                    {
+                        <p class="txt"><b>@(string.IsNullOrEmpty(p.Name) ? "?" : p.Name)</b>@(string.IsNullOrEmpty(p.Rolle) ? "" : ", " + p.Rolle)@if (!string.IsNullOrEmpty(p.Sagt)) {@("\n" + p.Sagt)}@if (!string.IsNullOrEmpty(p.Eindruck)) {@("\n")<span style="color:var(--mute)">Eindruck: @p.Eindruck</span>}</p>
+                    }
+                }
+                else if (s.Art == "jeder")
+                {
+                    foreach (var m in a.Team)
+                    {
+                        var t = a.Jeder(m.Schluessel);
+                        <p class="txt"><span class="ph-ink" style="--pc:@m.Farbe">@m.Name</span>: @(string.IsNullOrEmpty(t) ? "–" : t)</p>
+                    }
+                }
+                else
+                {
+                    var t = a.Text(s.Schluessel);
+                    <p class="@(string.IsNullOrEmpty(t) ? "txt empty" : "txt")">@(string.IsNullOrEmpty(t) ? "noch leer" : t)</p>
+                }
+            }
+            @if (!string.IsNullOrEmpty(h.Note))
+            {
+                <div class="ph-h" style="color:var(--red)">Note: @h.Note</div>
+                @if (!string.IsNullOrEmpty(h.Rueckmeldung))
+                {
+                    <p class="txt" style="color:var(--red)">@h.Rueckmeldung</p>
+                }
+            }
+        </article>
+        <textarea id="phText" hidden>@Model.AlsText</textarea>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_HeftSkript" model="Model" />
+}

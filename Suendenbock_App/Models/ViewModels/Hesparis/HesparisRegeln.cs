@@ -229,12 +229,24 @@ public static class HesparisRegeln
             .Where(a => Bestanden(a.Wert) && a.Wert != "alt")
             .Sum(a => 30 + JsRunden(Staffel.GetValueOrDefault(a.Wert, 0) * 10));
 
+    /// <summary>Freipunkte in Zehnteln für eine Note (JS: SJ_STAFFEL × 10), z. B. B = 15.</summary>
+    public static int StaffelZehntel(string? note) => JsRunden(Staffel.GetValueOrDefault(note ?? "", 0) * 10);
+
     /// <summary>
-    /// Punkte für Magiestufen: 6 + Punkte der Spielleitung + je 10 Zehntel aus Abschlüssen einer (JS: cap).
-    /// Der Anteil aus Protokollheften (JS: sjHeftZ) kommt mit dem Bereich "Spieltisch" dazu.
+    /// Freipunkte aus Protokollheften in Zehnteln (JS: sjHeftZ): jedes benotete Heft, bei dem die Figur
+    /// nicht gefehlt hat, bringt die Staffel seiner Note.
     /// </summary>
-    public static int PunkteGesamt(Spielfigur figur, IEnumerable<SchuljahrAbschnitt> abschluesse) =>
-        StartPunkte + figur.Bonuspunkte + AbschlussZehntel(abschluesse) / 10;
+    public static int HeftZehntel(IEnumerable<string?> heftNoten) => heftNoten.Sum(StaffelZehntel);
+
+    /// <summary>
+    /// Punkte für Magiestufen: 6 + Punkte der Spielleitung + je 10 Zehntel aus Heften und Abschlüssen einer (JS: cap).
+    /// </summary>
+    public static int PunkteGesamt(Spielfigur figur, IEnumerable<SchuljahrAbschnitt> abschluesse, int heftZehntel = 0) =>
+        StartPunkte + figur.Bonuspunkte + (AbschlussZehntel(abschluesse) + heftZehntel) / 10;
+
+    /// <summary>Zehntel als Text wie "1,5" (JS: sjFmt).</summary>
+    public static string ZehntelText(int zehntel) =>
+        (zehntel / 10.0).ToString("0.#", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
 
     /// <summary>
     /// Fachpunkte eines Fachs: je A oder S in den Abschlussprüfungen ein Punkt (JS: fachPunkte).

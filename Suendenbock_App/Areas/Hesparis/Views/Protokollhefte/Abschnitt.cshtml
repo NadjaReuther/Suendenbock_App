@@ -1,0 +1,274 @@
+@model ProtokollheftViewModel
+@{
+    var a = Model.Heft!;
+    var h = a.Heft;
+    var abschnitte = ProtokollheftRegeln.Abschnitte;
+    int k = Model.Abschnitt;
+    var s = abschnitte[k];
+    ViewData["Title"] = (k + 1) + ". " + s.Titel + " · Heft " + h.Nummer;
+    ViewData["Bereich"] = "Hefte";
+    var darf = Model.DarfBearbeiten;
+    var sch = a.Schreiber;
+    bool ok = a.Erfuellt(s);
+    bool raster = s.Art == "ablauf";
+    string mindestens = s.Art switch
+    {
+        "kopf" => "Wird automatisch abgehakt, sobald das Deckblatt ausgefüllt ist.",
+        "ablauf" => "Mindestens " + s.Minimum + " Einträge mit Uhrzeit.",
+        "personen" => "Mindestens ein vollständiger Steckbrief.",
+        "jeder" => "Mindestens " + s.Minimum + " Wörter pro Person.",
+        _ => "Mindestens " + s.Minimum + " Wörter.",
+    };
+    string[] wochentage = { "Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag" };
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-schuljahr.css" asp-append-version="true" />
+}
+
+<div class="md-wrap" id="md-hefte">
+    <div class="@(Model.Animieren ? "ph-root ph-anim" : "ph-root")">
+        <div class="ph-top">
+            <a class="ph-back" asp-action="Heft" asp-route-id="@h.Id">‹ Inhalt</a>
+            <div>
+                <div class="armory-eyebrow">Heft Nr. @h.Nummer · @h.Titel@(sch != null ? " · ✎ " + sch.Kurz : "")</div>
+                <h2 class="armory-title">@(k + 1). @s.Titel</h2>
+            </div>
+            @if (a.AbgabeHinweis is string due)
+            {
+                <div class="ph-actions"><span class="@(a.AbgabeUeberfaellig ? "ph-due late" : "ph-due")">@due</span></div>
+            }
+        </div>
+        <div class="ph-strip">
+            @for (int i = 0; i < abschnitte.Length; i++)
+            {
+                var fertig = a.Erfuellt(abschnitte[i]);
+                <a class="@(i == k ? "now" : fertig ? "ok" : "")" asp-action="Abschnitt" asp-route-id="@h.Id" asp-route-k="@i" aria-label="Abschnitt @(i + 1): @abschnitte[i].Titel@(fertig ? " (fertig)" : "")"></a>
+            }
+        </div>
+        <div style="height:18px"></div>
+
+        <div class="ph-spread">
+            @* ================================================ links: schreiben *@
+            <section class="@(raster ? "ph-page l grid" : "ph-page l")">
+                <div class="ph-pno">Abschnitt @(k + 1) von @abschnitte.Length</div>
+                <div class="ph-h">@(k + 1). @s.Titel@Html.Raw(ProtokollheftRegeln.Unterstrich())</div>
+                @if (!raster && s.Art != "personen")
+                {
+                    <span class="ph-margin" style="top:150px">@s.Rand</span>
+                }
+
+                @if (s.Art == "kopf")
+                {
+                    @* ---- Kopfdaten kommen vom Deckblatt *@
+                    <div style="height:34px"></div>
+                    void Zeile(string l, string? v)
+                    {
+                        <div class="ph-f"><span>@l</span><span style="font-family:'Caveat',cursive;font-size:24px">@if (string.IsNullOrEmpty(v)) {<span style="color:var(--red)">fehlt noch</span>} else {@v}</span></div>
+                    }
+                    Zeile("Auftrag", h.Titel);
+                    Zeile("Lehrkraft", h.Lehrer);
+                    Zeile("Ort", h.Ort);
+                    Zeile("Unterwegs", h.Von.HasValue ? a.Zeitraum : null);
+                    Zeile("Abgabe bis", h.Abgabe.HasValue ? HeftAnsicht.Datum(h.Abgabe) : null);
+                    <div class="ph-f"><span>Team</span><span style="font-family:'Caveat',cursive;font-size:24px">@for (int i = 0; i < a.Team.Count; i++) {@if (i > 0) {<text>, </text>}<span class="ph-ink" style="--pc:@a.Team[i].Farbe">@a.Team[i].Kurz</span>}</span></div>
+                    <div class="ph-f"><span>Protokoll</span><span style="font-family:'Caveat',cursive;font-size:24px">@if (sch != null) {<span class="ph-ink" style="--pc:@sch.Farbe">@sch.Name</span>} else {<span style="color:var(--red)">fehlt noch</span>}</span></div>
+                    <div class="ph-line" style="margin-top:34px"><a class="ph-link" asp-action="Deckblatt" asp-route-id="@h.Id">Deckblatt bearbeiten</a></div>
+                }
+                else if (s.Art == "ablauf")
+                {
+                    @* ---- Ablauf-Tabelle mit Tageszeilen *@
+                    var zeilen = a.AblaufSortiert;
+                    <div class="ph-red" style="margin-top:6px">→ ein Satz pro Zeile, in der Vergangenheit, immer mit Uhrzeit und wer dabei war</div>
+                    <table class="ph-table">
+                        <thead><tr><th style="width:84px">Uhrzeit</th><th>Was ist passiert?</th><th style="width:118px">Wer?</th><th style="width:44px"><span class="ph-sr">Aktionen</span></th></tr></thead>
+                        <tbody>
+                            @{ DateOnly? tag = null; bool erster = true; int n = 0; }
+                            @foreach (var r in zeilen)
+                            {
+                                if (erster || r.Datum != tag)
+                                {
+                                    erster = false; tag = r.Datum;
+                                    <tr class="day" style="--i:@(n++)"><td colspan="4">@(r.Datum.HasValue ? wochentage[(int)r.Datum.Value.DayOfWeek] + ", " + HeftAnsicht.Datum(r.Datum) : "ohne Datum")</td></tr>
+                                }
+                                <tr style="--i:@(n++)">
+                                    <td><input type="time" value="@r.Uhrzeit" data-feld="ab:@r.Id:uhrzeit" data-neu-laden aria-label="Uhrzeit" readonly="@(!darf)" /></td>
+                                    <td><input value="@r.Text" data-feld="ab:@r.Id:text" maxlength="200" aria-label="Was ist passiert?" readonly="@(!darf)" /></td>
+                                    <td><input value="@r.Wer" data-feld="ab:@r.Id:wer" maxlength="80" list="phWer" aria-label="Wer war beteiligt?" readonly="@(!darf)" /></td>
+                                    <td style="white-space:nowrap">
+                                        <form class="ph-inline" asp-action="AblaufStern" asp-route-id="@h.Id" method="post"><input type="hidden" name="zeileId" value="@r.Id" /><button type="submit" class="@(r.Wichtig ? "ph-star on" : "ph-star")" aria-pressed="@(r.Wichtig ? "true" : "false")" aria-label="Wichtiger Moment" disabled="@(!darf)">★</button></form>
+                                        @if (darf)
+                                        {
+                                            <form class="ph-inline" asp-action="AblaufLoeschen" asp-route-id="@h.Id" method="post"><input type="hidden" name="zeileId" value="@r.Id" /><button type="submit" class="ph-x-btn" aria-label="Eintrag löschen" data-zweistufig data-frage="?">✕</button></form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    @if (darf)
+                    {
+                        var letzter = zeilen.Count > 0 ? zeilen[^1].Datum : (h.Von ?? a.Heute);
+                        <form asp-action="AblaufNeu" asp-route-id="@h.Id" method="post" autocomplete="off" id="neu">
+                            <table class="ph-table" style="margin-top:0">
+                                <tbody>
+                                    <tr class="newrow">
+                                        <td style="width:84px"><input type="time" name="uhrzeit" aria-label="Uhrzeit" autofocus="@(Context.Request.Query.ContainsKey("ruhig") && zeilen.Count > 0)" /></td>
+                                        <td><input name="text" maxlength="200" placeholder="Was ist dann passiert?" aria-label="Neuer Eintrag" required /></td>
+                                        <td style="width:118px"><input name="wer" maxlength="80" list="phWer" placeholder="Wer?" aria-label="Beteiligte" /></td>
+                                        <td style="width:44px"><button type="submit" class="add">+ eintragen</button></td>
+                                    </tr>
+                                    <tr class="newrow"><td colspan="4" style="border-left:none"><label class="ph-mute" style="display:flex;align-items:center;gap:8px">Tag <input type="date" name="datum" value="@letzter?.ToString("yyyy-MM-dd")" style="width:150px" /></label></td></tr>
+                                </tbody>
+                            </table>
+                        </form>
+                    }
+                    <datalist id="phWer"><option value="alle"></option>@foreach (var m in a.Team) {<option value="@m.Kurz"></option>}</datalist>
+                    var nichtDrin = h.Notizen.Count(x => x.Uebernommen.All(u => u.Abschnitt != "ablauf"));
+                    <div class="ph-line" style="margin-top:16px;justify-content:space-between;flex-wrap:wrap">
+                        @Html.Raw(ProtokollheftRegeln.Zaehler(a.AblaufEintraege, s.Minimum, "Einträgen"))
+                        @if (nichtDrin > 0 && darf)
+                        {
+                            <form class="ph-inline" asp-action="NotizenInAblauf" asp-route-id="@h.Id" method="post"><button type="submit" class="ph-link" style="font-family:'Caveat',cursive;font-size:21px">+ @nichtDrin Notiz@(nichtDrin == 1 ? "" : "en") als Einträge übernehmen</button></form>
+                        }
+                    </div>
+                }
+                else if (s.Art == "personen")
+                {
+                    @* ---- Steckbriefe *@
+                    var personen = a.PersonenSortiert;
+                    <div class="ph-red" style="margin-top:6px">→ wörtliche Aussagen in „Anführungszeichen“, eigene Eindrücke getrennt</div>
+                    <div>
+                        @for (int i = 0; i < personen.Count; i++)
+                        {
+                            var p = personen[i];
+                            var buchstabe = string.IsNullOrWhiteSpace(p.Name) ? "?" : p.Name.Trim()[..1].ToUpperInvariant();
+                            bool letzte = i == personen.Count - 1 && Model.Frisch == "padd";
+                            <div class="ph-steck" style="--i:@i">
+                                <span class="ph-pin"></span><span class="ph-foto" aria-hidden="true">@buchstabe</span>
+                                <div>
+                                    <label class="ph-fl"><span>Name</span><input value="@p.Name" data-feld="p:@p.Id:name" maxlength="80" placeholder="Wie heißt die Person?" readonly="@(!darf)" autofocus="@(letzte)" /></label>
+                                    <label class="ph-fl"><span>Rolle</span><input value="@p.Rolle" data-feld="p:@p.Id:rolle" maxlength="80" placeholder="z. B. Turmwärter" readonly="@(!darf)" /></label>
+                                    <label class="ph-fl" style="align-items:start"><span style="padding-top:10px">Sagt / tut</span><textarea data-feld="p:@p.Id:sagt" rows="2" maxlength="600" placeholder="„Wörtliche Aussage“ oder was sie gezeigt hat" readonly="@(!darf)">@p.Sagt</textarea></label>
+                                    <label class="ph-fl" style="align-items:start"><span style="padding-top:10px">Eindruck</span><textarea data-feld="p:@p.Id:eindruck" rows="2" maxlength="400" placeholder="Wie wirkte die Person auf euch?" readonly="@(!darf)">@p.Eindruck</textarea></label>
+                                    <div class="ph-fl">
+                                        <span>Wichtig</span>
+                                        <span class="ph-stars">
+                                            @for (int n = 1; n <= 3; n++)
+                                            {
+                                                <form class="ph-inline" asp-action="PersonSterne" asp-route-id="@h.Id" method="post"><input type="hidden" name="personId" value="@p.Id" /><input type="hidden" name="n" value="@n" /><button type="submit" class="@(p.Wichtig >= n ? "on" : "")" aria-label="@n von 3" disabled="@(!darf)">★</button></form>
+                                            }
+                                        </span>
+                                    </div>
+                                </div>
+                                @if (darf)
+                                {
+                                    <form class="ph-inline" asp-action="PersonLoeschen" asp-route-id="@h.Id" method="post"><input type="hidden" name="personId" value="@p.Id" /><button type="submit" class="ph-x-btn" aria-label="Steckbrief löschen" data-zweistufig data-frage="Löschen?">✕</button></form>
+                                }
+                            </div>
+                        }
+                    </div>
+                    @if (darf)
+                    {
+                        <form class="ph-inline" asp-action="PersonNeu" asp-route-id="@h.Id" method="post"><button type="submit" class="ph-addcard">+ neuen Steckbrief anlegen</button></form>
+                    }
+                    <div class="ph-line" style="margin-top:12px">@Html.Raw(ProtokollheftRegeln.Zaehler(a.Steckbriefe, s.Minimum, "Steckbriefen"))</div>
+                }
+                else if (s.Art == "jeder")
+                {
+                    @* ---- jeder schreibt selbst *@
+                    <div class="ph-red" style="margin-top:6px">→ jeder schreibt seinen Teil selbst</div>
+                    @foreach (var m in a.Team)
+                    {
+                        var t = a.Jeder(m.Schluessel);
+                        <div class="ph-jeder" data-zaehlbereich>
+                            <div class="nm"><span class="ph-ink" style="--pc:@m.Farbe">@m.Name</span>@Html.Raw(ProtokollheftRegeln.Zaehler(ProtokollheftRegeln.Woerter(t), s.Minimum))</div>
+                            <textarea data-feld="jeder:@m.Schluessel" data-zaehlt rows="3" maxlength="2000" aria-label="Was @m.Kurz gelernt hat" placeholder="@m.Kurz schreibt hier …" readonly="@(!darf)">@t</textarea>
+                        </div>
+                    }
+                }
+                else
+                {
+                    @* ---- Freitext *@
+                    var t = a.Text(s.Schluessel);
+                    <div data-zaehlbereich>
+                        <label class="ph-sr" for="phw">Dein Text für Abschnitt @(k + 1)</label>
+                        <textarea id="phw" class="ph-write" data-feld="txt:@s.Schluessel" data-zaehlt maxlength="8000" placeholder="Hier schreiben … rechts stehen die Fragen, die du beantworten sollst." readonly="@(!darf)">@t</textarea>
+                        <div style="display:flex;justify-content:flex-end;margin-top:6px">@Html.Raw(ProtokollheftRegeln.Zaehler(ProtokollheftRegeln.Woerter(t), s.Minimum))</div>
+                    </div>
+                }
+
+                @if (k > 0)
+                {
+                    <a class="ph-curl prev" asp-action="Abschnitt" asp-route-id="@h.Id" asp-route-k="@(k - 1)">‹ @abschnitte[k - 1].Titel</a>
+                }
+            </section>
+
+            @* ================================================ rechts: Anleitung *@
+            <section class="ph-page r grid">
+                <partial name="_Reiter" model="(h.Id, (int?)k)" />
+                <div class="ph-pno">Hilfe zu Abschnitt @(k + 1)</div>
+                <div class="ph-help">
+                    <span class="ph-tape" style="top:-12px;left:30px;transform:rotate(-4deg)"></span>
+                    <h4>So schreibst du diesen Abschnitt</h4>
+                    <p>@s.Einleitung</p>
+                    @for (int n = 0; n < s.Fragen.Length; n++)
+                    {
+                        var an = a.Frage(s.Schluessel, n);
+                        <form class="ph-inline" asp-action="Frage" asp-route-id="@h.Id" method="post">
+                            <input type="hidden" name="k" value="@k" /><input type="hidden" name="n" value="@n" />
+                            <button type="submit" class="ph-q" aria-pressed="@(an ? "true" : "false")" disabled="@(!darf)">@Html.Raw(ProtokollheftRegeln.Haken(an, Model.Frisch == "q|" + s.Schluessel + "|" + n))<span>@s.Fragen[n]</span></button>
+                        </form>
+                    }
+                    <div class="min">@mindestens Fragen antippen, wenn du sie beantwortet hast.</div>
+                </div>
+                <div class="ph-ex">
+                    <div class="ph-exi"><small>So nicht</small>@s.Schlecht<svg class="ph-x" viewBox="0 0 100 60" preserveAspectRatio="none" aria-hidden="true"><path d="M6 8 L94 52 M94 8 L6 52" /></svg></div>
+                    <div class="ph-exi"><small>So besser</small>@s.Gut<span class="ph-ok">✓ gut!</span></div>
+                </div>
+                <div class="ph-red" style="margin-top:22px">@s.Tipp</div>
+                @if (h.Schwerpunkte.Count > 0)
+                {
+                    <div class="ph-red">@(h.Lehrer ?? "Die Lehrkraft") achtet auf: @string.Join(", ", ProtokollheftRegeln.Achtet.Where(x => h.Schwerpunkte.Any(sp => sp.Text == x)))!</div>
+                }
+                @if (h.Notizen.Count > 0 && s.Art != "kopf" && s.Art != "personen" && s.Art != "jeder")
+                {
+                    <div class="ph-notes">
+                        <div class="ph-mute" style="margin-bottom:4px">Aus euren Notizen von unterwegs</div>
+                        @foreach (var n in a.NotizenSortiert)
+                        {
+                            var drin = n.Uebernommen.Any(u => u.Abschnitt == s.Schluessel);
+                            <div class="ph-ni">
+                                <time>@n.Uhrzeit</time><span>@n.Text</span>
+                                @if (drin)
+                                {
+                                    <span class="done">✓ drin</span>
+                                }
+                                else if (darf)
+                                {
+                                    <form class="ph-inline" asp-action="NotizUebernehmen" asp-route-id="@h.Id" method="post"><input type="hidden" name="notizId" value="@n.Id" /><input type="hidden" name="k" value="@k" /><button type="submit" class="ph-link">+ übernehmen</button></form>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                @if (k < abschnitte.Length - 1)
+                {
+                    <a class="ph-curl next" asp-action="Abschnitt" asp-route-id="@h.Id" asp-route-k="@(k + 1)">@abschnitte[k + 1].Titel ›</a>
+                }
+                else
+                {
+                    <a class="ph-curl next" asp-action="Abgabe" asp-route-id="@h.Id">Zur Abgabe ›</a>
+                }
+            </section>
+        </div>
+        @if (ok)
+        {
+            <div class="ph-actions" style="justify-content:flex-end;margin:22px 34px 0 0"><span class="ph-due" style="color:#8fd67a">✓ Abschnitt erfüllt</span></div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_HeftSkript" model="Model" />
+}

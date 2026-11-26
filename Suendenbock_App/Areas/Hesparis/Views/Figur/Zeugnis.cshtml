@@ -48,6 +48,10 @@
                 <text>noch keine Fachpunkte</text>
             }
         </div>
+        @if (Model.HeftSchnitt.HasValue)
+        {
+            <em class="zt-ph">✎ Protokollhefte @HesparisRegeln.NotenBuchstabe(Model.HeftSchnitt.Value) · @Model.HeftAnzahl @(Model.HeftAnzahl == 1 ? "Heft" : "Hefte"), zählt mit</em>
+        }
     </div>
     @if (Model.Gesamtschnitt.HasValue)
     {

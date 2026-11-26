@@ -153,6 +153,12 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             var termin = await _context.KalenderTermine.FirstOrDefaultAsync(t => t.Id == id && t.KampagneId == kampagne.Id);
             if (termin != null)
             {
+                // Abgabetermin eines Protokollhefts: Verknüpfung lösen, sonst verweigert die Datenbank das Löschen
+                foreach (var heft in await _context.Protokollhefte.Where(h => h.KalenderTerminId == termin.Id).ToListAsync())
+                {
+                    heft.KalenderTerminId = null;
+                    heft.KalenderTermin = null;
+                }
                 _context.KalenderTermine.Remove(termin);
                 await _context.SaveChangesAsync();
             }
@@ -186,31 +192,6 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
                 return LocalRedirect(zurueck);
             }
             return RedirectToAction(nameof(Kalender), new { verwalten = true });
-        }
-
-        /// <summary>Termine der Akademie; beim ersten Öffnen die Termine aus der HTML anlegen.</summary>
-        private async Task<List<KalenderTermin>> TermineLadenAsync(Kampagne kampagne)
-        {
-            var termine = await _context.KalenderTermine
-                .Where(t => t.KampagneId == kampagne.Id)
-                .OrderBy(t => t.Datum)
-                .ToListAsync();
-            if (termine.Count > 0) return termine;
-
-            int jahr = AlltagRegeln.Schuljahresbeginn(kampagne.Spieltag);
-            foreach (var (monat, tag, titel, typ) in AlltagRegeln.TermineStandard)
-            {
-                int j = jahr;
-                if (monat < 9)
-                {
-                    j = jahr + 1;
-                }
-                var t = new KalenderTermin { KampagneId = kampagne.Id, Datum = new DateOnly(j, monat, tag), Titel = titel, Typ = typ };
-                _context.KalenderTermine.Add(t);
-                termine.Add(t);
-            }
-            await _context.SaveChangesAsync();
-            return termine.OrderBy(t => t.Datum).ToList();
         }
     }
 }

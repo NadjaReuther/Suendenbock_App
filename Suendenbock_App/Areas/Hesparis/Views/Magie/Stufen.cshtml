@@ -111,7 +111,7 @@
                         <text> · ✦ Fachpunkte: @string.Join(", ", fachpunkteFrei.Select(f => f.Name + " " + f.FachpunkteFrei))</text>
                     }
                 </div>
-                <div class="rg-pts-src">Start @HesparisRegeln.StartPunkte · Spielleitung @Model.Bonuspunkte · Abschlüsse @Model.AbschlussPunkte</div>
+                <div class="rg-pts-src">Start @HesparisRegeln.StartPunkte · Spielleitung @Model.Bonuspunkte · Hefte @HesparisRegeln.ZehntelText(Model.HeftZehntel) · Abschlüsse @Model.AbschlussPunkte@(Model.RestZehntel > 0 ? " · noch " + HesparisRegeln.ZehntelText(10 - Model.RestZehntel) + " bis zum nächsten Punkt" : "")</div>
             </div>
         </div>
 
