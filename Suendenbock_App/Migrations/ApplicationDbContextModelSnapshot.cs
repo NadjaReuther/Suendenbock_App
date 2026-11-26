@@ -7328,9 +7328,19 @@ namespace Suendenbock_App.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("DientNr")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DientSeite")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<string>("Figur")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("GeheimeNotiz")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Geschlecht")
                         .HasMaxLength(200)
@@ -7354,6 +7364,14 @@ namespace Suendenbock_App.Migrations
                         .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Treue")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Vorname")
                         .HasMaxLength(200)
