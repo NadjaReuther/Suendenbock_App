@@ -1,0 +1,145 @@
+@model StundenplanViewModel
+@{
+    ViewData["Title"] = "Stundenplan";
+    ViewData["Bereich"] = "Stundenplan";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-alltag.css" asp-append-version="true" />
+}
+
+<div class="sp-wrap" id="spWrap">
+    <div class="sp-head">
+        <div class="armory-eyebrow">Stundenplan</div>
+        <h1 class="armory-title">Die Schulwoche</h1>
+        <p class="armory-sub">Ein Fach antippen hebt alle seine Stunden hervor. Mit der Maus über ein Fach fahren zeigt sie ebenfalls.</p>
+    </div>
+
+    @* ------------------------------------------------------------ Fächer-Übersicht *@
+    <div class="sp-faecher a-panel">
+        @foreach (var f in Model.Faecher)
+        {
+            <button type="button" class="sp-fach" data-pin="@f.Id" style="--fc:@f.Farbe;--fc-rgb:@f.Rgb">
+                <i></i>
+                <span class="sp-fach-name">@f.Name</span>
+                <span class="sp-fach-meta">
+                    @f.Orte
+                    @if (!string.IsNullOrEmpty(f.Lehrkraft))
+                    {
+                        <text> · @f.Lehrkraft</text>
+                    }
+                </span>
+            </button>
+        }
+    </div>
+
+    @* ------------------------------------------------------------ Wochenraster *@
+    <div class="sp-scroll a-panel">
+        <div class="sp-grid" id="spGrid">
+            <div class="sp-corner">Stunde</div>
+            @for (int d = 0; d < AlltagRegeln.Tage.Length; d++)
+            {
+                if (d == Model.HeuteTag)
+                {
+                    <div class="sp-day today">@AlltagRegeln.Tage[d]<small>heute</small></div>
+                }
+                else
+                {
+                    <div class="sp-day">@AlltagRegeln.Tage[d]</div>
+                }
+            }
+
+            @for (int ri = 0; ri < AlltagRegeln.Zeilen.Length; ri++)
+            {
+                var z = AlltagRegeln.Zeilen[ri];
+                var jetzt = "";
+                if (ri == Model.JetztZeile)
+                {
+                    jetzt = " now";
+                }
+
+                if (z.Pause != null)
+                {
+                    <div class="sp-time pause@(jetzt)"><span>@z.Von–@z.Bis</span></div>
+                    <div class="sp-pause@(jetzt)"><span>@z.Pause</span></div>
+                    continue;
+                }
+
+                <div class="sp-time@(jetzt)"><b>@(z.Nr).</b><span>@z.Von–@z.Bis</span></div>
+                var k = Array.IndexOf(AlltagRegeln.Stunden, z.Nr!.Value);
+                for (int d = 0; d < AlltagRegeln.Tage.Length; d++)
+                {
+                    var (fachId, raum) = AlltagRegeln.Plan[d][k];
+                    var f = Model.Fach(fachId);
+                    var klasse = "sp-cell";
+                    if (d == Model.HeuteTag)
+                    {
+                        klasse += " today";
+                        if (ri == Model.JetztZeile)
+                        {
+                            klasse += " now";
+                        }
+                    }
+                    var raumKurz = raum;
+                    if (raum == "T")
+                    {
+                        raumKurz = "Trainingsplatz";
+                    }
+                    <button type="button" class="@klasse" data-fach="@f.Id" style="--fc:@f.Farbe;--fc-rgb:@f.Rgb"
+                            title="@f.Name · @AlltagRegeln.RaumText(raum)">
+                        <span class="sp-name">@f.Kurzname</span>
+                        <span class="sp-meta">
+                            <em class="sp-room">@raumKurz</em>
+                            @if (!string.IsNullOrEmpty(f.Lehrkraft))
+                            {
+                                <span class="sp-teacher">@f.Lehrkraft</span>
+                            }
+                        </span>
+                    </button>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Fach hervorheben: antippen heftet es an, Maus darüber zeigt es kurz (JS: spHighlight)
+        (function () {
+            var wrap = document.getElementById('spWrap'), grid = document.getElementById('spGrid');
+            var angeheftet = null;
+
+            function zeigen(fach) {
+                if (fach === null) fach = angeheftet;
+                grid.classList.toggle('hl', fach !== null);
+                grid.querySelectorAll('.sp-cell').forEach(function (c) {
+                    c.classList.toggle('match', fach !== null && +c.dataset.fach === fach);
+                });
+            }
+
+            wrap.addEventListener('click', function (e) {
+                var b = e.target.closest('[data-pin], .sp-cell');
+                if (!b) return;
+                var fach = +(b.dataset.pin || b.dataset.fach);
+                if (angeheftet === fach) {
+                    angeheftet = null;
+                }
+                else {
+                    angeheftet = fach;
+                }
+                wrap.querySelectorAll('.sp-fach').forEach(function (x) { x.classList.toggle('pinned', +x.dataset.pin === angeheftet); });
+                zeigen(null);
+            });
+
+            if (window.matchMedia && !window.matchMedia('(hover: hover)').matches) return;
+            wrap.addEventListener('mouseover', function (e) {
+                var b = e.target.closest('.sp-cell, .sp-fach');
+                if (b) zeigen(+(b.dataset.fach || b.dataset.pin));
+            });
+            wrap.addEventListener('mouseleave', function () { zeigen(null); });
+            wrap.addEventListener('mouseout', function (e) {
+                if (e.target.closest('.sp-cell, .sp-fach') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.sp-cell, .sp-fach'))) zeigen(null);
+            });
+        })();
+    </script>
+}

@@ -1,0 +1,92 @@
+/* ====================================================================
+   Hesparis · Alltag (Stundenplan, Kalender, Essensplan, AGs, Nachsitzen)
+   Eigene Datei, damit sie sich nicht mit anderen Bereichen in hesparis.css überschneidet.
+   Die Regeln stammen unverändert aus der hesparis.html.
+   ==================================================================== */
+
+/* ---- Stundenplan ---- */
+.sp-wrap{
+  width:min(1360px, calc(100vw - 40px));
+  margin-left:calc(50% - min(680px, 50vw - 20px));
+}
+.sp-head{text-align:center;margin:4px 0 18px;}
+.sp-faecher{display:grid;grid-template-columns:repeat(5, minmax(0,1fr));gap:8px;padding:12px;margin-bottom:16px;}
+.sp-fach{
+  position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;min-width:0;
+  padding:8px 10px 8px 22px;border-radius:10px;border:1px solid var(--line);background:rgba(10,6,23,0.45);
+  cursor:pointer;font:inherit;color:var(--gold);transition:all .2s ease;
+}
+.sp-fach i{position:absolute;left:9px;top:13px;width:7px;height:7px;transform:rotate(45deg);background:var(--fc);box-shadow:0 0 8px rgba(var(--fc-rgb),0.8);}
+.sp-fach:hover{border-color:rgba(var(--fc-rgb),0.7);background:rgba(var(--fc-rgb),0.08);}
+.sp-fach.pinned{border-color:var(--fc);background:rgba(var(--fc-rgb),0.16);box-shadow:0 0 16px rgba(var(--fc-rgb),0.3);}
+.sp-fach-name{font-family:'Cormorant Garamond', serif;font-weight:600;font-size:15.5px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sp-fach-meta{font-family:'IBM Plex Mono', monospace;font-size:9.5px;color:var(--gold-dim);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.sp-scroll{overflow-x:auto;padding:12px;}
+.sp-grid{display:grid;grid-template-columns:104px repeat(5, minmax(150px,1fr));gap:6px;min-width:860px;}
+.sp-corner,.sp-day{
+  font-family:'Cinzel Decorative', serif;font-size:14px;color:var(--gold);text-align:center;padding:10px 6px;border-radius:10px;
+  background:rgba(10,6,23,0.5);border:1px solid var(--line);
+}
+.sp-corner{font-family:'IBM Plex Mono', monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold-dim);display:flex;align-items:center;justify-content:center;}
+.sp-day small{display:block;margin-top:2px;font-family:'IBM Plex Mono', monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ether);}
+.sp-day.today{border-color:var(--ether);background:rgba(73,217,201,0.1);box-shadow:0 0 16px rgba(73,217,201,0.25);}
+.sp-time{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px;border-radius:10px;
+  background:rgba(10,6,23,0.35);border:1px solid rgba(60,44,99,0.5);
+}
+.sp-time b{font-family:'Cinzel Decorative', serif;font-size:16px;color:var(--ember);}
+.sp-time span{font-family:'IBM Plex Mono', monospace;font-size:10.5px;color:var(--gold-dim);}
+.sp-time.pause{padding:4px;}
+.sp-time.now{border-color:var(--ether);box-shadow:0 0 12px rgba(73,217,201,0.35);}
+.sp-pause{
+  grid-column:2 / -1;display:flex;align-items:center;justify-content:center;gap:12px;padding:7px;border-radius:10px;
+  border:1px dashed rgba(168,149,104,0.4);background:repeating-linear-gradient(135deg, rgba(168,149,104,0.05) 0 10px, transparent 10px 20px);
+  font-family:'Cinzel Decorative', serif;font-size:13px;letter-spacing:0.1em;color:var(--gold-dim);
+}
+.sp-pause::before,.sp-pause::after{content:"";width:60px;height:1px;background:linear-gradient(90deg, transparent, rgba(168,149,104,0.5));}
+.sp-pause::after{background:linear-gradient(270deg, transparent, rgba(168,149,104,0.5));}
+.sp-pause.now{border-color:var(--ether);color:var(--ether);}
+
+.sp-cell{
+  position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:6px;min-height:74px;text-align:left;
+  padding:9px 10px 8px 13px;border-radius:12px;cursor:pointer;font:inherit;color:var(--gold);
+  border:1px solid rgba(var(--fc-rgb),0.35);
+  background:linear-gradient(135deg, rgba(var(--fc-rgb),0.16), rgba(14,8,30,0.85) 70%);
+  box-shadow:inset 3px 0 0 var(--fc);
+  transition:transform .15s ease, box-shadow .2s ease, opacity .25s ease, border-color .2s ease;
+}
+.sp-cell:hover{transform:translateY(-2px);border-color:var(--fc);box-shadow:inset 3px 0 0 var(--fc), 0 8px 22px rgba(0,0,0,0.4), 0 0 18px rgba(var(--fc-rgb),0.35);}
+.sp-name{font-family:'Cormorant Garamond', serif;font-weight:600;font-size:16.5px;line-height:1.15;}
+.sp-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sp-room{
+  font-style:normal;font-family:'IBM Plex Mono', monospace;font-weight:600;font-size:10.5px;color:var(--fc);
+  border:1px solid rgba(var(--fc-rgb),0.55);border-radius:8px;padding:1px 7px;background:rgba(10,6,23,0.5);
+}
+.sp-teacher{font-family:'Cormorant Garamond', serif;font-style:italic;font-size:13px;color:var(--gold-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.sp-go{position:absolute;top:7px;right:9px;font-size:12px;color:var(--fc);opacity:0;transition:opacity .2s ease;}
+.sp-cell:hover .sp-go{opacity:0.9;}
+.sp-cell.today{border-color:rgba(var(--fc-rgb),0.6);}
+.sp-cell.now{border-color:var(--ether);box-shadow:inset 3px 0 0 var(--fc), 0 0 0 2px var(--ether), 0 0 22px rgba(73,217,201,0.45);}
+.sp-cell.now::after{
+  content:"jetzt";position:absolute;bottom:7px;right:9px;font-family:'IBM Plex Mono', monospace;font-size:8.5px;letter-spacing:0.14em;
+  text-transform:uppercase;color:#120a24;background:var(--ether);border-radius:6px;padding:1px 6px;
+}
+.sp-grid.hl .sp-cell{opacity:0.28;}
+.sp-grid.hl .sp-cell.match{opacity:1;border-color:var(--fc);box-shadow:inset 3px 0 0 var(--fc), 0 0 20px rgba(var(--fc-rgb),0.45);}
+.sp-cell.flash{animation:spFlash 1.6s ease-out 0.35s 2;}
+@media (max-width:1000px){
+  .sp-faecher{grid-template-columns:repeat(2, minmax(0,1fr));}
+}
+@media (max-width:760px){
+  .sp-scroll{padding:8px;}
+  .sp-grid{grid-template-columns:70px repeat(5, minmax(132px,1fr));min-width:760px;}
+  .sp-corner,.sp-time{position:sticky;left:0;z-index:1;background:#150c2b;}
+  .sp-time span{font-size:9px;text-align:center;}
+}
+@media (prefers-reduced-motion: reduce){
+  .sp-cell.flash{animation:none;}
+}
+/* Web-App: der Plan sitzt im Layout-Rahmen, nicht über die ganze Fensterbreite */
+.sp-wrap{width:auto;margin-left:0;}
+.sp-go{display:none;}
