@@ -637,3 +637,24 @@ public class ZirkelVersuchZeile
     public string Was { get; set; } = "";
     public string Wert { get; set; } = "";
 }
+
+// ------------------------------------------------------------------ Ätherwaffen
+
+/// <summary>Ätherwaffen: Kategorie, Altar, Arsenal und Chronik (JS: renderArmory).</summary>
+public class WaffenViewModel
+{
+    public WaffenRegeln.Kategorie Kategorie { get; set; } = null!;
+    public WaffenRegeln.Waffe[] Arsenal => WaffenRegeln.Waffen[Kategorie.Art];
+
+    /// <summary>Zuletzt beschworene Waffe dieser Kategorie (null = noch keine).</summary>
+    public WaffenRegeln.Waffe? Letzte { get; set; }
+
+    /// <summary>Gerade beschworen: Platz im Arsenal, für die Glücksrad-Animation.</summary>
+    public int? Neu { get; set; }
+
+    public List<Waffenwurf> Chronik { get; set; } = new();
+    public bool DarfBeschwoeren { get; set; }
+}
+
+/// <summary>Karte einer Waffe auf dem Altar (JS: weaponCardHtml). Vergangen = "zuletzt beschworen".</summary>
+public record WaffenKarte(WaffenRegeln.Kategorie Kategorie, WaffenRegeln.Waffe Waffe, bool Vergangen);
