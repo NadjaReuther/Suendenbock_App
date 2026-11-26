@@ -658,3 +658,60 @@ public class WaffenViewModel
 
 /// <summary>Karte einer Waffe auf dem Altar (JS: weaponCardHtml). Vergangen = "zuletzt beschworen".</summary>
 public record WaffenKarte(WaffenRegeln.Kategorie Kategorie, WaffenRegeln.Waffe Waffe, bool Vergangen);
+
+// =====================================================================
+// Schuljahr · Questbrett (JS: MODS.missionen)
+// =====================================================================
+
+/// <summary>Das Brett im Ostflügel und das Ermittlungsbuch.</summary>
+public class QuestbrettViewModel
+{
+    /// <summary>Die Hauptquest am Brett (erste aktive), null = kein Aushang.</summary>
+    public QuestZeile? Haupt { get; set; }
+
+    /// <summary>Alle Quests fürs Buch: erst die aktiven in Brett-Reihenfolge, dann die erledigten.</summary>
+    public List<QuestZeile> Buch { get; set; } = new();
+
+    /// <summary>Anzahl der laufenden Nebenquests (aktiv, aber nicht am Brett).</summary>
+    public int Nebenquests { get; set; }
+
+    /// <summary>Im Buch aufgeschlagener Fall (JS: MS.sel).</summary>
+    public int? AuswahlId { get; set; }
+
+    /// <summary>Buch nach dem Neuladen gleich offen lassen (z. B. nach Abhaken im Buch).</summary>
+    public bool BuchOffen { get; set; }
+
+    /// <summary>Gerade geklärter Hinweis, der rechts frisch angepinnt wird (JS: MS.pinned).</summary>
+    public int? FrischId { get; set; }
+
+    public bool DarfBearbeiten { get; set; }
+    public bool IstSpielleitung { get; set; }
+}
+
+public class QuestZeile
+{
+    public int Id { get; set; }
+    public int Nummer { get; set; }
+
+    /// <summary>Römische Nummer für das Buch (JS: mRoman).</summary>
+    public string Roemisch { get; set; } = "";
+    public string Titel { get; set; } = "";
+    public string? Ziel { get; set; }
+    public string? Notiz { get; set; }
+    public string? StartText { get; set; }
+    public string? EndeText { get; set; }
+    public string? VerfallenText { get; set; }
+    public bool Erledigt { get; set; }
+    public bool IstHaupt { get; set; }
+    public List<QuestHinweisZeile> Hinweise { get; set; } = new();
+
+    public int Offen => Hinweise.Count(h => !h.Erledigt);
+    public int Geklaert => Hinweise.Count(h => h.Erledigt);
+}
+
+public class QuestHinweisZeile
+{
+    public int Id { get; set; }
+    public string Text { get; set; } = "";
+    public bool Erledigt { get; set; }
+}

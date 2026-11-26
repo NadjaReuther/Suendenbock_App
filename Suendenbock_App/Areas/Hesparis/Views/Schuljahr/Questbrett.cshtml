@@ -1,0 +1,385 @@
+@model QuestbrettViewModel
+@{
+    ViewData["Title"] = "Questbrett";
+    ViewData["Bereich"] = "Missionen";
+    var haupt = Model.Haupt;
+    var darf = Model.DarfBearbeiten;
+
+    // Kessel auf dem Gesucht-Plakat (JS: M_CAULDRON)
+    const string kessel = "<svg class=\"mf-kit\" viewBox=\"0 0 120 90\" aria-hidden=\"true\"><path d=\"M20 34h80l-8 40a10 10 0 0 1-10 8H38a10 10 0 0 1-10-8z\" fill=\"none\" stroke=\"#2a1a10\" stroke-width=\"3\"/><path d=\"M14 34h92M40 82l-6 6M80 82l6 6\" stroke=\"#2a1a10\" stroke-width=\"3\" stroke-linecap=\"round\"/><path d=\"M44 26c0-8 8-8 8-16M60 26c0-8 8-8 8-16M76 26c0-8 8-8 8-16\" fill=\"none\" stroke=\"#7a2e3a\" stroke-width=\"2.5\" stroke-linecap=\"round\"/></svg>";
+
+    // Zeile unter dem Plakat: wie viele Hinweise noch hängen
+    string HinweisStand(QuestZeile q)
+    {
+        if (q.Hinweise.Count == 0)
+        {
+            return "Noch keine Hinweise. Links einen anheften.";
+        }
+        if (q.Offen > 0)
+        {
+            return "Hinweise zum Abreißen · " + q.Offen + " hängen noch";
+        }
+        return "Alle Hinweise geklärt";
+    }
+
+    // Kopfzeile eines Falls im Buch: "Fall III · läuft seit 3. September" oder "Fall III · 3. – 9. September"
+    string FallKopf(QuestZeile q)
+    {
+        if (q.Erledigt)
+        {
+            return "Fall " + q.Roemisch + " · " + q.StartText + " – " + q.EndeText;
+        }
+        return "Fall " + q.Roemisch + " · läuft seit " + q.StartText;
+    }
+
+    string Status(QuestZeile q)
+    {
+        if (q.Erledigt) return "erledigt";
+        if (q.IstHaupt) return "am Brett";
+        return "läuft";
+    }
+
+    string StatusKlasse(QuestZeile q)
+    {
+        if (q.Erledigt) return "mf-st done";
+        if (q.IstHaupt) return "mf-st main";
+        return "mf-st";
+    }
+
+    var buchKlasse = "mf-book";
+    if (!Model.BuchOffen)
+    {
+        buchKlasse += " is-zu";
+    }
+}
+
+<div class="md-wrap md-missionen">
+    <div class="mf-full">
+        <div class="mf-torch l" aria-hidden="true"></div><div class="mf-torch r" aria-hidden="true"></div>
+        <div class="mf-head">
+            <div class="armory-eyebrow">Schuljahr · Questbrett</div>
+            <h2 class="armory-title">Das Brett im Ostflügel</h2>
+        </div>
+
+        <div class="mf-board">
+            @* ------------------------------------------------ links: Notizen und neuer Hinweis *@
+            <div class="mf-col mf-left">
+                @if (haupt != null && darf)
+                {
+                    <form class="mf-form" asp-action="QuestNotiz" method="post" data-notiz>
+                        <input type="hidden" name="id" value="@haupt.Id" />
+                        <label class="mf-notes">
+                            <span class="mf-pin teal"></span><span class="mf-lbl">Notizen der Gruppe</span>
+                            <textarea name="notiz" rows="6" maxlength="3000" placeholder="Was wisst ihr schon? Wen verdächtigt ihr?">@haupt.Notiz</textarea>
+                        </label>
+                    </form>
+                    <form class="mf-sticky" asp-action="HinweisAnheften" method="post">
+                        <input type="hidden" name="id" value="@haupt.Id" />
+                        <span class="mf-pin"></span><span class="mf-lbl">Hinweis anheften</span>
+                        <input name="text" maxlength="160" placeholder="neue Spur oder Frage …" required aria-label="Neuer Hinweis" autocomplete="off" />
+                        <button type="submit" class="mf-stickybtn">anheften</button>
+                    </form>
+                }
+                else if (haupt != null && !string.IsNullOrEmpty(haupt.Notiz))
+                {
+                    @* Nur ansehen: Notizen als Zettel ohne Eingabe *@
+                    <div class="mf-notes">
+                        <span class="mf-pin teal"></span><span class="mf-lbl">Notizen der Gruppe</span>
+                        <textarea rows="6" readonly>@haupt.Notiz</textarea>
+                    </div>
+                }
+            </div>
+
+            @* ------------------------------------------------ Mitte: die Hauptquest *@
+            <div class="mf-col mf-mid">
+                @if (haupt != null)
+                {
+                    <div class="mf-poster">
+                        <span class="mf-nail l"></span><span class="mf-nail r"></span>
+                        <span class="mf-kicker">Hauptquest · seit @haupt.StartText</span>
+                        <span class="mf-wanted">Gesucht</span>
+                        @Html.Raw(kessel)
+                        <h3 class="mf-title">@haupt.Titel</h3>
+                        @if (!string.IsNullOrEmpty(haupt.Ziel))
+                        {
+                            <p class="mf-ziel">@haupt.Ziel</p>
+                        }
+                        <span class="mf-left-n">@HinweisStand(haupt)</span>
+                        @if (darf)
+                        {
+                            <form class="mf-form" asp-action="QuestAbschliessen" method="post">
+                                <input type="hidden" name="id" value="@haupt.Id" />
+                                <button type="submit" class="mf-seal" data-zweistufig data-frage="Wirklich versiegeln?"><span>H</span>Quest versiegeln und abschließen</button>
+                            </form>
+                        }
+                    </div>
+                    @if (haupt.Hinweise.Count > 0)
+                    {
+                        <div class="mf-tabs">
+                            @foreach (var x in haupt.Hinweise)
+                            {
+                                var klasse = "mf-tab";
+                                var aria = "Abreißen: " + x.Text;
+                                if (x.Erledigt)
+                                {
+                                    klasse += " torn";
+                                    aria = "Wieder anheften: " + x.Text;
+                                }
+                                <form class="mf-form" asp-action="HinweisUmschalten" method="post">
+                                    <input type="hidden" name="id" value="@haupt.Id" />
+                                    <input type="hidden" name="hinweisId" value="@x.Id" />
+                                    <button type="submit" class="@klasse" aria-label="@aria" disabled="@(!darf)"><span>@x.Text</span></button>
+                                </form>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="mf-poster mf-blank">
+                        <span class="mf-wanted">Kein Aushang</span>
+                        <p class="mf-ziel">
+                            Gerade hängt keine Quest am Brett.
+                            @if (Model.IstSpielleitung)
+                            {
+                                @:Rechts eine neue anschlagen.
+                            }
+                            else
+                            {
+                                @:Die Spielleitung schlägt die nächste an.
+                            }
+                        </p>
+                    </div>
+                }
+            </div>
+
+            @* ------------------------------------------------ rechts: geklärte Zettel und neue Quest *@
+            <div class="mf-col mf-right">
+                @if (haupt != null)
+                {
+                    <span class="mf-badge">Geklärt · @haupt.Geklaert von @haupt.Hinweise.Count</span>
+                    var k = 0;
+                    foreach (var x in haupt.Hinweise.Where(h => h.Erledigt))
+                    {
+                        var klasse = "mf-pinned";
+                        if (Model.FrischId == x.Id)
+                        {
+                            klasse += " fresh";
+                        }
+                        var drehung = k % 2 == 1 ? "1.6deg" : "-1.8deg";
+                        k++;
+                        <form class="mf-form" asp-action="HinweisUmschalten" method="post">
+                            <input type="hidden" name="id" value="@haupt.Id" />
+                            <input type="hidden" name="hinweisId" value="@x.Id" />
+                            <button type="submit" class="@klasse" style="--r:@drehung" aria-label="@x.Text wieder ans Plakat" disabled="@(!darf)"><span class="mf-pin green"></span>@x.Text</button>
+                        </form>
+                    }
+                }
+                @if (Model.Nebenquests > 0)
+                {
+                    <span class="mf-badge dim">Nebenquests · @Model.Nebenquests im Buch</span>
+                }
+                @if (Model.IstSpielleitung)
+                {
+                    <div class="sl-only">
+                        <button type="button" class="mf-newbtn" data-mnew>+ Neue Quest anschlagen</button>
+                        <form class="mf-newq" asp-action="QuestAnschlagen" method="post" hidden>
+                            <span class="mf-lbl">Neue Quest anschlagen</span>
+                            <input name="titel" maxlength="80" required placeholder="Titel, z. B. Das verschwundene Braukit" aria-label="Titel" autocomplete="off" />
+                            <input name="ziel" maxlength="160" placeholder="Ziel: Was soll erreicht werden?" aria-label="Ziel" autocomplete="off" />
+                            <div class="mf-row">
+                                <button type="submit" class="btn-primary">Anschlagen</button>
+                                <button type="button" class="icon-btn" data-mnew-zu>Abbrechen</button>
+                            </div>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* ------------------------------------------------ das Buch in der Ecke *@
+        <button type="button" class="mf-peek" data-mbook="1" aria-label="Ermittlungsbuch aufschlagen">
+            <span class="mf-peekframe"><b>Ermittlungs&shy;buch</b><em>@Model.Buch.Count @(Model.Buch.Count == 1 ? "Fall" : "Fälle")</em></span><span class="mf-ribbon"></span>
+        </button>
+        <span class="mf-peekhint" aria-hidden="true">alle Quests ›</span>
+
+        @* ------------------------------------------------ das aufgeschlagene Buch (Auf-/Zuklappen im Browser) *@
+        <div class="mf-backdrop" data-mbook="0" hidden="@(!Model.BuchOffen)"></div>
+        <div class="@buchKlasse" role="dialog" aria-label="Ermittlungsbuch" hidden="@(!Model.BuchOffen)">
+            <div class="mf-page mf-toc">
+                <span class="mf-kicker">Ermittlungsbuch der Gruppe</span>
+                <h3>Inhalt</h3>
+                @if (Model.Buch.Count > 0)
+                {
+                    foreach (var q in Model.Buch)
+                    {
+                        var klasse = "mf-tocrow";
+                        if (q.Id == Model.AuswahlId)
+                        {
+                            klasse += " on";
+                        }
+                        <button type="button" class="@klasse" data-msel="@q.Id">
+                            <span class="mf-no">@q.Roemisch</span>
+                            <span><b>@q.Titel</b><em>@q.StartText@(q.EndeText != null ? " – " + q.EndeText : "")</em></span>
+                            <span class="@StatusKlasse(q)">@Status(q)</span>
+                        </button>
+                    }
+                }
+                else
+                {
+                    <p class="mf-empty">Noch keine Fälle.</p>
+                }
+                <p class="mf-foot">Abgeschlossene Quests bleiben hier. Am Brett hängt immer nur die Hauptquest.</p>
+            </div>
+            <div class="mf-gutter"></div>
+
+            @if (Model.Buch.Count == 0)
+            {
+                <div class="mf-page mf-case">
+                    <p class="mf-empty">Hier stehen die Fälle, sobald die Spielleitung die erste Quest anschlägt.</p>
+                </div>
+            }
+            @foreach (var q in Model.Buch)
+            {
+                <div class="mf-page mf-case" data-fall="@q.Id" hidden="@(q.Id != Model.AuswahlId)">
+                    <span class="mf-kicker">@FallKopf(q)</span>
+                    <h3>@q.Titel</h3>
+                    @if (!string.IsNullOrEmpty(q.Ziel))
+                    {
+                        <p class="mf-bziel">Ziel: @q.Ziel</p>
+                    }
+                    <span class="mf-lbl">Spuren und Fragen</span>
+                    @if (q.Hinweise.Count > 0)
+                    {
+                        foreach (var x in q.Hinweise)
+                        {
+                            var zeile = "mf-line";
+                            if (x.Erledigt)
+                            {
+                                zeile += " done";
+                            }
+                            <div class="@zeile">
+                                <form class="mf-form" asp-action="HinweisUmschalten" method="post">
+                                    <input type="hidden" name="id" value="@q.Id" />
+                                    <input type="hidden" name="hinweisId" value="@x.Id" />
+                                    <input type="hidden" name="buch" value="true" />
+                                    <button type="submit" class="mf-check" disabled="@(q.Erledigt || !darf)" aria-label="@(x.Erledigt ? "wieder öffnen" : "abhaken")"><svg viewBox="0 0 26 26" aria-hidden="true"><path d="M4 14c3 2 5 5 7 8 3-8 7-14 12-19" /></svg></button>
+                                </form>
+                                <span>@x.Text</span>
+                                @if (!q.Erledigt && darf)
+                                {
+                                    <form class="mf-form" asp-action="HinweisEntfernen" method="post">
+                                        <input type="hidden" name="id" value="@q.Id" />
+                                        <input type="hidden" name="hinweisId" value="@x.Id" />
+                                        <button type="submit" class="icon-btn" aria-label="Hinweis entfernen">✕</button>
+                                    </form>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="mf-empty">Keine Spuren eingetragen.</p>
+                    }
+                    @if (q.Erledigt)
+                    {
+                        <span class="mf-stamp">Abgeschlossen</span>
+                        @if (!string.IsNullOrEmpty(q.VerfallenText))
+                        {
+                            <p class="mf-hand">@q.VerfallenText</p>
+                        }
+                    }
+                    @if (!string.IsNullOrEmpty(q.Notiz))
+                    {
+                        <p class="mf-hand mf-pre">@q.Notiz</p>
+                    }
+                    @if (!q.Erledigt && !q.IstHaupt && darf)
+                    {
+                        <form class="mf-form" asp-action="AlsHauptquest" method="post">
+                            <input type="hidden" name="id" value="@q.Id" />
+                            <button type="submit" class="btn-primary mf-tomain">Als Hauptquest ans Brett hängen</button>
+                        </form>
+                    }
+                </div>
+            }
+            <button type="button" class="mf-close" data-mbook="0">Buch zuklappen</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // Das Brett geht über die ganze Fensterbreite (JS: mFit)
+            function mFit() {
+                var el = document.querySelector('.mf-full'); if (!el) return;
+                var docW = document.documentElement.clientWidth;
+                el.style.marginLeft = '0px'; el.style.width = '';
+                var r = el.getBoundingClientRect(); if (!r.width) return;
+                el.style.marginLeft = (-r.left) + 'px'; el.style.width = docW + 'px';
+                el.style.minHeight = Math.max(620, window.innerHeight - (r.top + window.scrollY)) + 'px';
+            }
+            window.addEventListener('resize', mFit);
+            mFit(); setTimeout(mFit, 700);
+
+            // Ermittlungsbuch auf- und zuklappen, Fälle blättern
+            var buch = document.querySelector('.mf-book'), hinter = document.querySelector('.mf-backdrop');
+            function buchZeigen(offen, mitSchwung) {
+                buch.hidden = !offen; hinter.hidden = !offen;
+                buch.classList.toggle('is-zu', !offen);
+                buch.classList.remove('opening');
+                if (offen && mitSchwung) { void buch.offsetWidth; buch.classList.add('opening'); }
+            }
+            document.querySelectorAll('[data-mbook]').forEach(function (k) {
+                k.addEventListener('click', function () { buchZeigen(k.dataset.mbook === '1', true); });
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !buch.hidden) buchZeigen(false);
+            });
+            document.querySelectorAll('[data-msel]').forEach(function (zeile) {
+                zeile.addEventListener('click', function () {
+                    document.querySelectorAll('[data-msel]').forEach(function (z) { z.classList.toggle('on', z === zeile); });
+                    document.querySelectorAll('.mf-case[data-fall]').forEach(function (s) { s.hidden = s.dataset.fall !== zeile.dataset.msel; });
+                });
+            });
+
+            // Neue Quest: Zettel aufklappen (nur Spielleitung)
+            var neuKnopf = document.querySelector('[data-mnew]'), neuForm = document.querySelector('.mf-newq');
+            if (neuKnopf && neuForm) {
+                neuKnopf.addEventListener('click', function () {
+                    neuKnopf.hidden = true; neuForm.hidden = false; neuForm.querySelector('input[name=titel]').focus();
+                });
+                neuForm.querySelector('[data-mnew-zu]').addEventListener('click', function () {
+                    neuForm.hidden = true; neuKnopf.hidden = false;
+                });
+            }
+
+            // Versiegeln: erst nachfragen (JS: mdArm)
+            document.querySelectorAll('[data-zweistufig]').forEach(function (knopf) {
+                var alt = knopf.innerHTML;
+                knopf.addEventListener('click', function (e) {
+                    if (knopf.classList.contains('armed')) return;
+                    e.preventDefault();
+                    knopf.classList.add('armed');
+                    knopf.textContent = knopf.dataset.frage;
+                    setTimeout(function () { if (knopf.isConnected) { knopf.classList.remove('armed'); knopf.innerHTML = alt; } }, 2800);
+                });
+            });
+
+            // Notizen der Gruppe beim Tippen im Hintergrund speichern
+            var notizForm = document.querySelector('[data-notiz]');
+            if (notizForm) {
+                var feld = notizForm.querySelector('textarea'), uhr = null, zuletzt = feld.value;
+                function speichern() {
+                    clearTimeout(uhr);
+                    if (feld.value === zuletzt) return;
+                    zuletzt = feld.value;
+                    fetch(notizForm.action, { method: 'POST', body: new FormData(notizForm), headers: { 'X-Requested-With': 'fetch' } });
+                }
+                feld.addEventListener('input', function () { clearTimeout(uhr); uhr = setTimeout(speichern, 800); });
+                feld.addEventListener('blur', speichern);
+                notizForm.addEventListener('submit', function (e) { e.preventDefault(); speichern(); });
+            }
+        })();
+    </script>
+}

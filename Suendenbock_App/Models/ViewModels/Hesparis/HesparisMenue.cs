@@ -52,7 +52,7 @@ public static class HesparisMenue
         }),
         new("Schuljahr", "❧", new Eintrag[]
         {
-            new("Missionen", "Questbrett", "✠", null, null),
+            new("Missionen", "Questbrett", "✠", "Schuljahr", "Questbrett", MitFigur: false),
             new("Hefte", "Protokollhefte", "✎", null, null),
             new("Protokoll", "Tagebuch", "❧", null, null),
             new("Wertung", "Akademie-Wertung", "♛", null, null),
