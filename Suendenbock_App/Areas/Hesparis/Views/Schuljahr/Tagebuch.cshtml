@@ -1,0 +1,284 @@
+@model TagebuchViewModel
+@{
+    ViewData["Title"] = "Tagebuch";
+    ViewData["Bereich"] = "Protokoll";
+    var en = Model.Auswahl;
+    int n = Model.Ausgaben.Count;
+    var darf = Model.DarfBearbeiten;
+    bool formular = (en == null || Model.Bearbeiten) && darf;
+    int nr = en?.Nummer ?? n + 1;
+    int? auswahlId = en?.Id;
+
+    // Kopfzeile rechts: "Ausgabe Nr. 3 von 5" / "Neue Ausgabe Nr. 6" / "Erste Ausgabe"
+    string Ausgabenzeile()
+    {
+        if (en != null) return "Ausgabe Nr. " + nr + " von " + n;
+        if (n > 0) return "Neue Ausgabe Nr. " + nr;
+        return "Erste Ausgabe";
+    }
+
+    string spieltagZeile = (en != null ? en.Spieltag : Model.Spieltag) is string s && s.Length > 0 ? "Im Spiel: " + s : "";
+
+    // Wer war dabei: beim Neusetzen alle, beim Überarbeiten wie gespeichert
+    bool Dabei(int figurId) => en == null || en.Dabei.Contains(figurId);
+
+    string formKopf = Model.Bearbeiten && en != null
+        ? "Ausgabe Nr. " + nr + " überarbeiten"
+        : (n > 0 ? "Neue Ausgabe setzen" : "Noch ist keine Ausgabe erschienen. Schreibt die erste!");
+
+    // Abbrechen: zurück zur Ausgabe bzw. zur neuesten
+    string? abbrechen = null;
+    if (Model.Bearbeiten && en != null)
+    {
+        abbrechen = Url.Action("Tagebuch", new { ausgabe = en.Id });
+    }
+    else if (en == null && n > 0)
+    {
+        abbrechen = Url.Action("Tagebuch");
+    }
+
+    var paperKlasse = "bo-paper";
+    var artKlasse = "bo-art";
+    if (en != null && Model.FrischAusgabeId == en.Id)
+    {
+        artKlasse += " fresh";
+    }
+}
+
+<div id="boWrap">
+    <div class="@paperKlasse">
+        <div class="bo-top"><span>Das Tagebuch eurer Sitzungen</span><span>@Ausgabenzeile()</span></div>
+        <div class="bo-mast">Der Hesparis-Bote</div>
+        <div class="bo-rule"></div>
+        <div class="bo-dateline"><span>@(en != null ? en.Datum : Model.HeuteDatum)</span><span>@spieltagZeile</span></div>
+
+        <div class="bo-cols">
+            <div class="bo-main">
+                @if (formular)
+                {
+                    var aktion = Model.Bearbeiten && en != null ? "AusgabeSpeichern" : "AusgabeDrucken";
+                    <form class="bo-form" id="boForm" asp-action="@aktion" method="post" autocomplete="off">
+                        @if (Model.Bearbeiten && en != null)
+                        {
+                            <input type="hidden" name="id" value="@en.Id" />
+                        }
+                        <div class="bo-formhead">@formKopf</div>
+                        <input type="text" id="boTitle" name="titel" maxlength="80" placeholder="Schlagzeile, z. B. Streit im Kräutergarten" value="@(Model.Bearbeiten ? en?.Titel : "")" aria-label="Schlagzeile" />
+                        <textarea id="boText" name="text" rows="9" maxlength="4000" placeholder="Was ist passiert?" aria-label="Bericht">@(Model.Bearbeiten ? en?.Text : "")</textarea>
+                        <div class="bo-formrow">
+                            <span class="bo-lbl">Dabei</span>
+                            <div class="bo-who" role="group" aria-label="Wer war dabei?">
+                                @foreach (var f in Model.Figuren)
+                                {
+                                    var an = Dabei(f.Id);
+                                    <button type="button" class="@(an ? "bo-whoc on" : "bo-whoc")" data-wer="@f.Id" aria-pressed="@(an ? "true" : "false")" style="--pc:@f.Aussehen.Farbe">@f.Name</button>
+                                }
+                            </div>
+                        </div>
+                        <div class="bo-formrow">
+                            <span class="bo-hint">@(Model.Bearbeiten ? "" : "Spieltag: " + Model.Spieltag + " · Strg + Enter zum Eintragen")</span>
+                            @if (abbrechen != null)
+                            {
+                                <a class="bo-btn" href="@abbrechen" data-abbrechen>Abbrechen</a>
+                            }
+                            <button type="submit" class="bo-press">@(Model.Bearbeiten ? "Speichern" : "In Druck geben")</button>
+                        </div>
+                    </form>
+                }
+                else if (en != null)
+                {
+                    <article class="@artKlasse">
+                        <h2 class="@(string.IsNullOrEmpty(en.Titel) ? "bo-head untitled" : "bo-head")">@(string.IsNullOrEmpty(en.Titel) ? "Ohne Schlagzeile" : en.Titel)</h2>
+                        <div class="bo-sub">Bericht von der Sitzung am @en.Datum, @en.Uhrzeit Uhr@(en.Ueberarbeitet ? " · überarbeitet" : "")</div>
+                        <div class="bo-tags">
+                            @foreach (var f in Model.Figuren)
+                            {
+                                <span class="@(en.Dabei.Contains(f.Id) ? "bo-tag" : "bo-tag away")">@f.Name</span>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(en.Text))
+                        {
+                            <div class="@(en.Text.Length > 600 ? "bo-body cols" : "bo-body")">@en.Text</div>
+                        }
+                        else
+                        {
+                            <div class="bo-body empty">Kein Bericht, nur eine Schlagzeile.</div>
+                        }
+                        @if (darf)
+                        {
+                            <div class="bo-acts">
+                                <a class="bo-btn" asp-action="Tagebuch" asp-route-ausgabe="@en.Id" asp-route-bearbeiten="true">✎ Artikel bearbeiten</a>
+                                <form class="bo-inline" asp-action="AusgabeEinstampfen" method="post">
+                                    <input type="hidden" name="id" value="@en.Id" />
+                                    <button type="submit" class="bo-btn" data-zweistufig data-frage="Wirklich?">✕ Einstampfen</button>
+                                </form>
+                            </div>
+                        }
+                    </article>
+                }
+                else
+                {
+                    <div class="bo-none">Noch ist keine Ausgabe erschienen.</div>
+                }
+
+                @* ------------------------------------------------ Archiv *@
+                <div class="bo-arch">
+                    <div class="bo-archhead">
+                        <span>Alle Ausgaben · @(n == 1 ? "1 Ausgabe" : n + " Ausgaben")</span>
+                        @if (en != null && darf)
+                        {
+                            <a class="bo-press sm" asp-action="Tagebuch" asp-route-neu="true">+ Neue Ausgabe</a>
+                        }
+                    </div>
+                    @if (n > 0)
+                    {
+                        <div class="bo-archgrid">
+                            @foreach (var e in Model.Ausgaben)
+                            {
+                                var an = e.Id == auswahlId;
+                                <a class="@(an ? "bo-old on" : "bo-old")" asp-action="Tagebuch" asp-route-ausgabe="@e.Id" aria-current="@(an ? "true" : null)">
+                                    <span>Nr. @e.Nummer · @e.DatumKurz@(e.Spieltag != null ? " · Spieltag " + e.Spieltag : "")</span>
+                                    <b>@(string.IsNullOrEmpty(e.Titel) ? "Ohne Schlagzeile" : e.Titel)</b>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="bo-none">Das Archiv ist noch leer.</div>
+                    }
+                </div>
+            </div>
+
+            @* ------------------------------------------------ Kleinanzeigen = To-dos *@
+            <aside class="bo-side">
+                <div class="bo-sidehead">Kleinanzeigen</div>
+                <div class="bo-sidesub">Gesucht für die nächste Sitzung · @Model.Offen.Count offen</div>
+                @if (darf)
+                {
+                    <form class="bo-adform" id="boAdForm" asp-action="AnzeigeAufgeben" method="post" autocomplete="off">
+                        <input type="hidden" name="ausgabe" value="@auswahlId" />
+                        <input type="hidden" name="erledigt" value="@(Model.ErledigtOffen ? "true" : "false")" data-erledigt-feld />
+                        <input type="hidden" name="prio" value="normal" id="boAdPrio" />
+                        <input type="text" id="boAdInput" name="text" maxlength="140" placeholder="Anzeige aufgeben: Was ist zu tun?" aria-label="Neue Aufgabe" />
+                        <div class="bo-prios" role="radiogroup" aria-label="Priorität">
+                            <button type="button" class="bo-pchip p-hoch" data-bonprio="hoch" role="radio" aria-checked="false">Dringend</button>
+                            <button type="button" class="bo-pchip p-normal on" data-bonprio="normal" role="radio" aria-checked="true">Gesucht</button>
+                            <button type="button" class="bo-pchip p-spaeter" data-bonprio="spaeter" role="radio" aria-checked="false">Irgendwann</button>
+                            <button type="submit" class="bo-press sm">Aufgeben</button>
+                        </div>
+                    </form>
+                }
+                <div class="bo-ads">
+                    @if (Model.Offen.Count > 0)
+                    {
+                        foreach (var t in Model.Offen)
+                        {
+                            <partial name="_Kleinanzeige" model="@(new KleinanzeigeTeil(t, Model.FrischAnzeigeId == t.Id, darf, auswahlId, Model.ErledigtOffen))" />
+                        }
+                    }
+                    else
+                    {
+                        <div class="bo-none">@(Model.HatAnzeigen ? "Alles erledigt. Gut gemacht!" : "Keine Anzeigen, vorerst.")</div>
+                    }
+                </div>
+                @if (Model.Erledigt.Count > 0)
+                {
+                    <button type="button" class="bo-donetog" data-bodone aria-expanded="@(Model.ErledigtOffen ? "true" : "false")">Erledigt (@Model.Erledigt.Count) <span data-pfeil>@(Model.ErledigtOffen ? "▴" : "▾")</span></button>
+                    <div class="bo-ads" data-erledigt-liste hidden="@(!Model.ErledigtOffen)">
+                        @foreach (var t in Model.Erledigt)
+                        {
+                            <partial name="_Kleinanzeige" model="@(new KleinanzeigeTeil(t, false, darf, auswahlId, Model.ErledigtOffen))" />
+                        }
+                    </div>
+                }
+            </aside>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var wrap = document.getElementById('boWrap');
+
+            // Wer war dabei: Chips an/aus, beim Absenden als Felder mitschicken
+            wrap.querySelectorAll('[data-wer]').forEach(function (c) {
+                c.addEventListener('click', function () {
+                    var an = c.classList.toggle('on');
+                    c.setAttribute('aria-pressed', an ? 'true' : 'false');
+                });
+            });
+            var form = document.getElementById('boForm');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    var t = form.querySelector('[name=titel]').value.trim(), x = form.querySelector('[name=text]').value.trim();
+                    if (!t && !x) { e.preventDefault(); return; }
+                    form.querySelectorAll('input[name=wer]').forEach(function (i) { i.remove(); });
+                    form.querySelectorAll('[data-wer].on').forEach(function (c) {
+                        var i = document.createElement('input'); i.type = 'hidden'; i.name = 'wer'; i.value = c.dataset.wer; form.appendChild(i);
+                    });
+                });
+                // Strg + Enter druckt
+                form.querySelector('textarea').addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); form.requestSubmit(); }
+                });
+                if (location.search.indexOf('neu=') >= 0) form.querySelector('#boTitle').focus();
+                if (location.search.indexOf('bearbeiten=') >= 0) form.querySelector('#boText').focus();
+            }
+            // Esc bricht Überarbeiten / Neusetzen ab
+            var abbr = wrap.querySelector('[data-abbrechen]');
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && abbr) location.href = abbr.href;
+            });
+
+            // Priorität für die neue Anzeige wählen
+            var prioFeld = document.getElementById('boAdPrio');
+            wrap.querySelectorAll('[data-bonprio]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    prioFeld.value = b.dataset.bonprio;
+                    wrap.querySelectorAll('[data-bonprio]').forEach(function (c) {
+                        var an = c === b; c.classList.toggle('on', an); c.setAttribute('aria-checked', an ? 'true' : 'false');
+                    });
+                });
+            });
+            var adInput = document.getElementById('boAdInput');
+            if (adInput && location.search.indexOf('frischAnzeige=') >= 0) adInput.focus();
+
+            // Abhaken: kurz wegrutschen lassen, dann speichern (JS: .checking, 520 ms)
+            wrap.querySelectorAll('[data-bocheck]').forEach(function (b) {
+                b.closest('form').addEventListener('submit', function (e) {
+                    if (b.getAttribute('aria-pressed') === 'true') return;
+                    e.preventDefault();
+                    var f = this;
+                    b.closest('.bo-ad').classList.add('checking'); b.disabled = true;
+                    var ruhig = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    setTimeout(function () { f.submit(); }, ruhig ? 0 : 520);
+                });
+            });
+
+            // Liste "Erledigt" auf- und zuklappen, Zustand bei allen Formularen mitgeben
+            var tog = wrap.querySelector('[data-bodone]'), liste = wrap.querySelector('[data-erledigt-liste]');
+            if (tog && liste) {
+                tog.addEventListener('click', function () {
+                    liste.hidden = !liste.hidden;
+                    tog.setAttribute('aria-expanded', liste.hidden ? 'false' : 'true');
+                    tog.querySelector('[data-pfeil]').textContent = liste.hidden ? '▾' : '▴';
+                    wrap.querySelectorAll('[data-erledigt-feld]').forEach(function (i) { i.value = liste.hidden ? 'false' : 'true'; });
+                });
+            }
+
+            // Löschen erst nach Nachfrage (wie Questbrett / Trankküche)
+            wrap.querySelectorAll('[data-zweistufig]').forEach(function (knopf) {
+                var alt = knopf.innerHTML;
+                knopf.addEventListener('click', function (e) {
+                    if (knopf.classList.contains('armed')) return;
+                    e.preventDefault();
+                    knopf.classList.add('armed');
+                    knopf.textContent = knopf.dataset.frage;
+                    setTimeout(function () { if (knopf.isConnected) { knopf.classList.remove('armed'); knopf.innerHTML = alt; } }, 2800);
+                });
+            });
+        })();
+    </script>
+}

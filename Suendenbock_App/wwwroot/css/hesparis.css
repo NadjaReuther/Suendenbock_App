@@ -1893,3 +1893,99 @@ a.cat-card{text-decoration:none;color:inherit !important;}
 .mf-tab:disabled:hover{transform:none;}
 .mf-notes textarea[readonly]{cursor:default;}
 .mf-pre{white-space:pre-line;}
+
+/* =========================================================================
+   Schuljahr · Tagebuch „Der Hesparis-Bote“ (aus der hesparis.html übernommen)
+   ========================================================================= */
+/* ---- Protokoll: Der Hesparis-Bote ---- */
+#boWrap{max-width:1240px;margin:0 auto;padding:0 18px 40px;}
+.bo-paper{position:relative;box-sizing:border-box;padding:22px 34px 30px;color:#1c1408;border-radius:2px;
+  background:radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.35), transparent 60%), radial-gradient(rgba(80,60,30,0.08) 1px, transparent 1.5px), #ece2c8;background-size:auto, 5px 5px, auto;
+  box-shadow:0 30px 60px rgba(0,0,0,0.6);transform:rotate(-0.25deg);}
+.bo-paper.enter{animation:boPress .6s cubic-bezier(.3,.7,.2,1) both;}
+.bo-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:'IBM Plex Mono', monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;}
+.bo-mast{text-align:center;font-family:'UnifrakturMaguntia', 'Cinzel Decorative', serif;font-size:clamp(40px,6vw,66px);line-height:1.05;margin:4px 0 2px;}
+.bo-rule{border-top:3px double #1c1408;}
+.bo-dateline{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:4px 0;border-bottom:1px solid #1c1408;font-family:'Cormorant Garamond', serif;font-style:italic;font-size:16px;}
+.bo-cols{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;margin-top:16px;}
+@media (max-width:900px){ .bo-cols{grid-template-columns:minmax(0,1fr);} .bo-paper{padding:18px 18px 24px;transform:none;} }
+.bo-main{min-width:0;}
+.bo-art.fresh{animation:boPress .7s cubic-bezier(.3,.7,.2,1) both;}
+.bo-head{margin:0;font-family:'Cormorant Garamond', serif;font-weight:700;font-size:clamp(30px,4vw,46px);line-height:1.02;letter-spacing:-0.01em;color:#1c1408;}
+.bo-head.untitled{font-style:italic;color:#5c4632;}
+.bo-sub{font-family:'Cormorant Garamond', serif;font-style:italic;font-size:17px;margin:6px 0 10px;}
+.bo-tags{margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;}
+.bo-tag{padding:1px 7px;border:1px solid #1c1408;font-family:'IBM Plex Mono', monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;}
+.bo-tag.away{opacity:.35;text-decoration:line-through;}
+.bo-body.cols{column-count:2;column-gap:26px;column-rule:1px solid #8a7a5a;}
+.bo-body{font-family:'EB Garamond', serif;font-size:17px;line-height:1.5;text-align:justify;hyphens:auto;white-space:pre-line;}
+.bo-body::first-letter{font-family:'Cormorant Garamond', serif;font-weight:700;font-size:3.1em;float:left;line-height:.85;margin:4px 6px 0 0;}
+.bo-body.empty{column-count:1;font-style:italic;color:#5c4632;}
+.bo-body.empty::first-letter{font:inherit;float:none;margin:0;}
+@media (max-width:640px){ .bo-body.cols{column-count:1;} }
+.bo-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.bo-btn{min-height:34px;padding:0 12px;border:1px solid #1c1408;background:transparent;color:#1c1408;font-family:'IBM Plex Mono', monospace;font-size:11px;letter-spacing:.04em;cursor:pointer;border-radius:0;}
+.bo-btn:hover{background:rgba(0,0,0,0.06);}
+.bo-btn.armed{background:#8e2a1f;border-color:#8e2a1f;color:#fff0e8;}
+.bo-press{min-height:40px;padding:0 18px;border:none;background:#1c1408;color:#ece2c8;font-family:'IBM Plex Mono', monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border-radius:0;}
+.bo-press:hover{background:#3a2a1a;}
+.bo-press.sm{min-height:32px;padding:0 12px;font-size:10.5px;}
+.bo-form{display:flex;flex-direction:column;gap:10px;}
+.bo-formhead{font-family:'Cormorant Garamond', serif;font-weight:700;font-size:26px;}
+.bo-form input[type=text]{width:100%;box-sizing:border-box;border:none;border-bottom:2px solid #1c1408;border-radius:0;background:transparent;font-family:'Cormorant Garamond', serif;font-weight:700;font-size:34px;padding:4px 0;outline:none;color:#1c1408;}
+.bo-form textarea{width:100%;box-sizing:border-box;border:1px solid #8a7a5a;border-radius:0;background:rgba(255,255,255,0.4);font-family:'EB Garamond', serif;font-size:17px;line-height:1.5;padding:10px 12px;resize:vertical;color:#1c1408;outline:none;}
+.bo-form textarea:focus,.bo-form input[type=text]:focus{box-shadow:0 0 0 3px rgba(28,20,8,0.12);}
+.bo-formrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.bo-formrow .bo-press{margin-left:auto;}
+.bo-formrow .bo-btn + .bo-press{margin-left:0;}
+.bo-formrow .bo-hint{flex:1;}
+.bo-lbl{font-family:'IBM Plex Mono', monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;}
+.bo-hint{font-family:'IBM Plex Mono', monospace;font-size:10.5px;color:#5c4632;}
+.bo-who{display:flex;gap:6px;flex-wrap:wrap;}
+.bo-whoc{min-height:34px;padding:0 12px;border:1px solid #1c1408;background:transparent;color:#1c1408;font-family:'IBM Plex Mono', monospace;font-size:11px;cursor:pointer;text-decoration:line-through;opacity:.55;border-radius:0;}
+.bo-whoc.on{text-decoration:none;opacity:1;box-shadow:inset 0 -4px 0 var(--pc);}
+.bo-arch{margin-top:20px;border-top:3px double #1c1408;padding-top:6px;}
+.bo-archhead{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:'IBM Plex Mono', monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;}
+.bo-archgrid{display:grid;grid-template-columns:repeat(auto-fill, minmax(200px,1fr));gap:0 18px;max-height:230px;overflow-y:auto;}
+.bo-old{display:block;width:100%;padding:7px 4px;border:none;border-top:1px solid #8a7a5a;background:transparent;text-align:left;cursor:pointer;color:#1c1408;border-radius:0;}
+.bo-old span{display:block;font-family:'IBM Plex Mono', monospace;font-size:10px;}
+.bo-old b{display:block;font-family:'Cormorant Garamond', serif;font-weight:700;font-size:18px;line-height:1.15;}
+.bo-old:hover b{text-decoration:underline;}
+.bo-old.on{background:rgba(0,0,0,0.07);}
+.bo-none{padding:8px 0;font-family:'Cormorant Garamond', serif;font-style:italic;font-size:16px;color:#5c4632;}
+.bo-side{border-left:1px solid #1c1408;padding-left:22px;min-width:0;}
+@media (max-width:900px){ .bo-side{border-left:none;border-top:3px double #1c1408;padding:10px 0 0;} }
+.bo-sidehead{text-align:center;font-family:'Cormorant Garamond', serif;font-weight:700;font-size:26px;border-bottom:3px double #1c1408;padding-bottom:4px;}
+.bo-sidesub{text-align:center;font-family:'Cormorant Garamond', serif;font-style:italic;font-size:15px;margin:4px 0 8px;}
+.bo-adform input{width:100%;box-sizing:border-box;height:38px;border:1px solid #1c1408;border-radius:0;background:rgba(255,255,255,0.45);font-family:'EB Garamond', serif;font-size:15px;padding:0 8px;color:#1c1408;outline:none;}
+.bo-prios{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0 4px;align-items:center;}
+.bo-pchip{min-height:30px;padding:0 8px;border:1px solid #1c1408;background:transparent;color:#1c1408;font-family:'IBM Plex Mono', monospace;font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:0;}
+.bo-pchip.on{background:#1c1408;color:#ece2c8;}
+.bo-prios .bo-press{margin-left:auto;}
+.bo-ads{display:flex;flex-direction:column;}
+.bo-ad{position:relative;display:flex;gap:8px;align-items:flex-start;padding:9px 0;border-bottom:1px dotted #8a7a5a;transition:opacity .4s, transform .4s;}
+.bo-ad.fresh{animation:boPress .5s cubic-bezier(.3,.7,.2,1) both;}
+.bo-ad.checking{opacity:.4;transform:translateX(8px);}
+.bo-ad .bo-adtxt{flex:1;min-width:0;font-family:'EB Garamond', serif;font-size:15.5px;line-height:1.3;overflow-wrap:anywhere;}
+.bo-ad.done .bo-adtxt{color:#7a6a4a;text-decoration:line-through;padding-right:70px;}
+.bo-box{flex:none;width:24px;height:24px;margin-top:1px;border:1.5px solid #1c1408;border-radius:0;background:transparent;color:#1c1408;font-size:14px;cursor:pointer;padding:0;}
+.bo-prio{border:none;background:transparent;padding:0;font-family:'IBM Plex Mono', monospace;font-weight:500;font-size:10px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:#1c1408;text-decoration:underline dotted;}
+.bo-ad.p-hoch .bo-prio{color:#8e2a1f;}
+.bo-ad.p-spaeter .bo-prio{color:#3a5a8a;}
+.bo-ad .bo-btn{min-height:26px;padding:0 7px;border-color:transparent;}
+.bo-ad .bo-btn:hover{border-color:#1c1408;}
+.bo-stamp{position:absolute;right:34px;top:8px;padding:1px 6px;border:2px solid #8e2a1f;color:#8e2a1f;font-family:'IBM Plex Mono', monospace;font-weight:600;font-size:10px;letter-spacing:.12em;text-transform:uppercase;transform:rotate(-8deg);}
+.bo-donetog{margin-top:10px;width:100%;min-height:34px;border:1px dashed #1c1408;background:transparent;font-family:'IBM Plex Mono', monospace;font-size:11px;letter-spacing:.06em;cursor:pointer;color:#1c1408;border-radius:0;}
+@keyframes boPress{from{opacity:0;transform:translateY(14px) scale(0.985)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){ .bo-paper,.bo-art,.bo-ad{animation:none !important;transition:none !important;} }
+
+/* Tagebuch: Anpassungen für die Web-App (Formulare und Links statt data-*-Knöpfen) */
+/* In der HTML sitzt das Blatt in .wrap (max. 1000px, 20px Rand) */
+#boWrap{max-width:960px;}
+.bo-inline{display:contents;}
+#boWrap a.bo-btn,#boWrap a.bo-press,#boWrap a.bo-old{text-decoration:none;}
+#boWrap a.bo-btn,#boWrap a.bo-press{display:inline-flex;align-items:center;}
+#boWrap a.bo-btn,#boWrap a.bo-old{color:#1c1408;}
+#boWrap a.bo-press{color:#ece2c8;}
+.bo-box:disabled,.bo-prio:disabled{cursor:default;}
+.bo-ads[hidden]{display:none;}

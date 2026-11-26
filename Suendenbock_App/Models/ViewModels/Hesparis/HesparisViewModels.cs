@@ -715,3 +715,77 @@ public class QuestHinweisZeile
     public string Text { get; set; } = "";
     public bool Erledigt { get; set; }
 }
+
+// =====================================================================
+// Schuljahr · Tagebuch „Der Hesparis-Bote“ (JS: renderProtokoll)
+// =====================================================================
+
+public class TagebuchViewModel
+{
+    /// <summary>Alle Ausgaben, neueste zuerst. Nr. zählt von der ältesten an.</summary>
+    public List<AusgabeZeile> Ausgaben { get; set; } = new();
+
+    /// <summary>Aufgeschlagene Ausgabe; null = neue Ausgabe setzen (auch, wenn es noch keine gibt).</summary>
+    public AusgabeZeile? Auswahl { get; set; }
+
+    /// <summary>Die Auswahl wird gerade überarbeitet.</summary>
+    public bool Bearbeiten { get; set; }
+
+    /// <summary>Gerade gedruckt, kommt mit Schwung herein (JS: protoFresh).</summary>
+    public int? FrischAusgabeId { get; set; }
+
+    /// <summary>Datumszeile über dem Blatt, wenn keine Ausgabe offen ist (heute, im Geschichtsjahr).</summary>
+    public string HeuteDatum { get; set; } = "";
+
+    /// <summary>Spieltag im Kalender wie "14. Oktober".</summary>
+    public string Spieltag { get; set; } = "";
+
+    /// <summary>Spielfiguren für „Dabei“ in ihren Farben.</summary>
+    public List<FigurChip> Figuren { get; set; } = new();
+
+    public List<AnzeigeZeile> Offen { get; set; } = new();
+    public List<AnzeigeZeile> Erledigt { get; set; } = new();
+
+    /// <summary>Kleinanzeigen gibt es überhaupt (für "Alles erledigt" statt "Keine Anzeigen").</summary>
+    public bool HatAnzeigen => Offen.Count > 0 || Erledigt.Count > 0;
+    public int? FrischAnzeigeId { get; set; }
+    public bool ErledigtOffen { get; set; }
+
+    public bool DarfBearbeiten { get; set; }
+}
+
+public class AusgabeZeile
+{
+    public int Id { get; set; }
+    public int Nummer { get; set; }
+    public string? Titel { get; set; }
+    public string? Text { get; set; }
+
+    /// <summary>"Donnerstag, 26. November 1818" (JS: boDay).</summary>
+    public string Datum { get; set; } = "";
+
+    /// <summary>"19:42" (JS: boTime).</summary>
+    public string Uhrzeit { get; set; } = "";
+
+    /// <summary>"26. Nov." fürs Archiv.</summary>
+    public string DatumKurz { get; set; } = "";
+
+    /// <summary>Spieltag wie "14. Oktober" (JS: boSpiel).</summary>
+    public string? Spieltag { get; set; }
+    public bool Ueberarbeitet { get; set; }
+    public HashSet<int> Dabei { get; set; } = new();
+}
+
+public class AnzeigeZeile
+{
+    public int Id { get; set; }
+    public string Text { get; set; } = "";
+
+    /// <summary>"hoch", "normal" oder "spaeter" (CSS-Klasse p-…).</summary>
+    public string Prio { get; set; } = "normal";
+    public string PrioText { get; set; } = "";
+    public bool Erledigt { get; set; }
+}
+
+/// <summary>Daten für das Teil _Kleinanzeige: die Anzeige plus Zustand der Seite für die Rücksprünge.</summary>
+public record KleinanzeigeTeil(AnzeigeZeile Zeile, bool Frisch, bool Darf, int? Ausgabe, bool ErledigtOffen);

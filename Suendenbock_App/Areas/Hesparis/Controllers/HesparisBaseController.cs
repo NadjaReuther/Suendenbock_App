@@ -136,6 +136,30 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             return await includes(query).FirstOrDefaultAsync(f => f.Id == id.Value);
         }
 
+        /// <summary>Figurenknöpfe mit Farbe aus dem Sonderzauber (JS: mdPlayers / plCol). Aus dem MagieController hierher verschoben, das Tagebuch braucht die Farben auch.</summary>
+        protected async Task<List<FigurChip>> FigurChipsAsync(int kampagneId, int? aktivId = null)
+        {
+            var figuren = await _context.Spielfiguren
+                .Where(f => f.KampagneId == kampagneId && f.HesparisCharakter != null)
+                .Include(f => f.HesparisCharakter)
+                .OrderBy(f => f.Position)
+                .ToListAsync();
+            var sonderzauber = await _context.Sonderzauber.ToListAsync();
+
+            return figuren.Select(f =>
+            {
+                var name = f.HesparisCharakter!.Anzeigename;
+                var zauber = sonderzauber.FirstOrDefault(z => z.Person == name);
+                return new FigurChip
+                {
+                    Id = f.Id,
+                    Name = name,
+                    Aussehen = HesparisSigille.Fuer(zauber?.Code),
+                    Aktiv = f.Id == aktivId,
+                };
+            }).ToList();
+        }
+
         protected IActionResult KeineFigur() => View("KeineKampagne");
 
         protected Spielfigur StandardFigur(List<Spielfigur> figuren)

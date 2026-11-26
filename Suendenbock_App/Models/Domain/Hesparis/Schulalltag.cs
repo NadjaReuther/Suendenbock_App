@@ -235,6 +235,9 @@ public class ProtokollEintrag : IKampagnenDaten
     public string? Text { get; set; }
     public DateTime ErstelltAm { get; set; }
 
+    /// <summary>Zuletzt überarbeitet (JS: edited).</summary>
+    public DateTime? BearbeitetAm { get; set; }
+
     /// <summary>Spieltag, an dem es passiert ist (JS: spiel).</summary>
     public DateOnly? Spieltag { get; set; }
 
@@ -259,6 +262,9 @@ public class Aufgabe : IKampagnenDaten
     public Prioritaet Prioritaet { get; set; } = Prioritaet.Normal;
     public bool Erledigt { get; set; }
     public DateTime ErstelltAm { get; set; }
+
+    /// <summary>Wann abgehakt, für die Reihenfolge unter „Erledigt“ (JS: doneTs).</summary>
+    public DateTime? ErledigtAm { get; set; }
 }
 
 /// <summary>Mission/Auftrag der Gruppe (JS: missionen).</summary>
