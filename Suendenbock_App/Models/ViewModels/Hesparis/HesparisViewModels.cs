@@ -500,3 +500,140 @@ public class BrauZeile
     public string Ergebnis { get; set; } = "";
     public string Text { get; set; } = "";
 }
+
+// ------------------------------------------------------------------ Zirkel der Priore
+
+/// <summary>Zirkel der Priore: Brett, Rückseite zum Raten, Notizen, Mordfall (JS: MODS.zirkel).</summary>
+public class ZirkelViewModel
+{
+    /// <summary>Gewählte Magie 1–12.</summary>
+    public int Nr { get; set; }
+    public ZirkelRegeln.Magie Magie => ZirkelRegeln.MagieVon(Nr);
+
+    public bool IstSpielleitung { get; set; }
+    public bool DarfRaten { get; set; }
+
+    /// <summary>Brett beim Laden schon gewendet (nach einem Rateversuch).</summary>
+    public bool Wenden { get; set; }
+
+    public ZirkelSpalte Prior { get; set; } = null!;
+    public ZirkelSpalte Sekundant { get; set; } = null!;
+
+    /// <summary>Daten für das gezeichnete Brett (zirkel.js), als JSON.</summary>
+    public string BrettJson { get; set; } = "{}";
+
+    // Spielleitung: Geheimes zu Prior und Sekundant der gewählten Magie
+    public ZirkelPerson PriorPerson { get; set; } = null!;
+    public ZirkelPerson SekundantPerson { get; set; } = null!;
+
+    /// <summary>Alle 24 Personen als Auswahl ("7|p" → "Prior des Lichts · Aldric Morn").</summary>
+    public List<(string Wert, string Text)> Personen { get; set; } = new();
+
+    public List<ZirkelNotizZeile> Notizen { get; set; } = new();
+    public List<FigurChip> Figuren { get; set; } = new();
+
+    /// <summary>null = Spieler sehen den Fall noch nicht (kein Toter hinterlegt).</summary>
+    public ZirkelFallViewModel? Fall { get; set; }
+
+    // Spielleitung: Fehlversuche
+    public List<ZirkelVersuchZeile> Versuche { get; set; } = new();
+    public int AktiveSperren { get; set; }
+}
+
+public class ZirkelSpalte
+{
+    public ZirkelSeite Seite { get; set; }
+    public string Titel { get; set; } = "";
+    public string Genitiv { get; set; } = "";
+
+    /// <summary>Bekannter Name (für Spieler nur gefundene Teile).</summary>
+    public string Name { get; set; } = "";
+    public List<ZirkelZeile> Zeilen { get; set; } = new();
+}
+
+/// <summary>Ein ratbares Feld auf der Rückseite (JS: zkPlRow / zkSlRow).</summary>
+public class ZirkelZeile
+{
+    public string Feld { get; set; } = "";
+    public string Name { get; set; } = "";
+    public string Typ { get; set; } = "text";
+
+    /// <summary>Hinterlegte Wahrheit (roh, nur für die Spielleitung).</summary>
+    public string? Wahrheit { get; set; }
+    public bool HatWahrheit => !string.IsNullOrEmpty(Wahrheit);
+
+    /// <summary>Offiziell gefunden: Spieler sehen den Wert.</summary>
+    public bool Gefunden { get; set; }
+    public string Anzeige { get; set; } = "";
+
+    /// <summary>Noch gesperrt nach einem Fehlversuch (Sekunden), mit dem verworfenen Versuch.</summary>
+    public int SperrSekunden { get; set; }
+    public string? LetzterVersuch { get; set; }
+
+    /// <summary>"ok" oder "bad" direkt nach einem Versuch.</summary>
+    public string? Rueckmeldung { get; set; }
+
+    /// <summary>Schlüssel wie im JavaScript, z. B. "7|p|vn".</summary>
+    public string Schluessel { get; set; } = "";
+}
+
+public class ZirkelNotizZeile
+{
+    public int Id { get; set; }
+    public string Typ { get; set; } = "";
+    public string Zu { get; set; } = "";
+    public string Von { get; set; } = "";
+    public string Text { get; set; } = "";
+    public bool Bestaetigt { get; set; }
+}
+
+public class ZirkelFallViewModel
+{
+    public ZirkelFallStufe Tot { get; set; } = null!;
+    public ZirkelFallStufe Moerder { get; set; } = null!;
+    public bool MotivOffen { get; set; }
+    public bool MoerderGeloest { get; set; }
+    public string? Motiv { get; set; }
+
+    // Spielleitung: Lösung
+    public bool HatToten { get; set; }
+    public int? TotNr { get; set; }
+    public string? MoerderWert { get; set; }
+    public int MaxVersuche { get; set; }
+}
+
+/// <summary>Eine Frage im Mordfall (JS: zkStep).</summary>
+public class ZirkelFallStufe
+{
+    public string Frage { get; set; } = "";
+    public string Titel { get; set; } = "";
+    public bool Geloest { get; set; }
+    public bool Offen { get; set; }
+    public bool HatLoesung { get; set; }
+    public string Antwort { get; set; } = "";
+    public int Rest { get; set; }
+    public int Max { get; set; }
+
+    /// <summary>"1 Versuch" bzw. "3 Versuche".</summary>
+    public string RestText
+    {
+        get
+        {
+            if (Rest == 1)
+            {
+                return "1 Versuch";
+            }
+            return Rest + " Versuche";
+        }
+    }
+    public int SperrSekunden { get; set; }
+    public string? Rueckmeldung { get; set; }
+    public List<(string Wert, string Text)> Optionen { get; set; } = new();
+}
+
+public class ZirkelVersuchZeile
+{
+    public string Tag { get; set; } = "";
+    public string Was { get; set; } = "";
+    public string Wert { get; set; } = "";
+}

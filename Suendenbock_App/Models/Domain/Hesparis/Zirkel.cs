@@ -1,8 +1,9 @@
 namespace Suendenbock_App.Models.Domain.Hesparis;
 
 /// <summary>
-/// Person im Zirkel-Rätsel (JS: zirkel.el[nr].p bzw. .s). Zwölf Paare,
-/// je mit Prior/Paar-Seite und Spiegel-Seite.
+/// Person im Zirkel-Rätsel (JS: zirkel.el[nr].p bzw. .s). Zwölf Magien,
+/// je mit Prior und Sekundant. Die Felder sind die Wahrheit, die die Spielleitung hinterlegt;
+/// mehrere richtige Schreibweisen werden mit | getrennt.
 /// </summary>
 public class ZirkelPerson : IKampagnenDaten
 {
@@ -21,10 +22,24 @@ public class ZirkelPerson : IKampagnenDaten
     /// <summary>Schachfigur, z. B. springer, bauer.</summary>
     public string? Figur { get; set; }
     public string? Beruf { get; set; }
+
+    // ---- Nur für die Spielleitung (JS: treue, dient, status, sln) ----
+
+    /// <summary>treu, schwankend, korrumpiert, Verräter.</summary>
+    public string? Treue { get; set; }
+
+    /// <summary>Wem die Person wirklich dient: Platz und Seite einer anderen Person.</summary>
+    public int? DientNr { get; set; }
+    public ZirkelSeite? DientSeite { get; set; }
+
+    /// <summary>aktiv, zurückgezogen, verschollen (nur beim Prior).</summary>
+    public string? Status { get; set; }
+    public string? GeheimeNotiz { get; set; }
 }
 
 /// <summary>
 /// Rätselstand je Feld (JS: zirkel.found["nr|seite|feld"] und zirkel.lock[…]).
+/// Die beiden Fragen des Mordfalls stehen hier mit Nr 0 und Feld "tot" bzw. "moe".
 /// </summary>
 public class ZirkelFeld : IKampagnenDaten
 {
@@ -64,7 +79,7 @@ public class ZirkelNotiz : IKampagnenDaten
     public Kampagne Kampagne { get; set; } = null!;
     public int Nr { get; set; }
 
-    /// <summary>Zu wem: Paar- oder Spiegelseite (JS: r).</summary>
+    /// <summary>Zu wem: Prior oder Sekundant (JS: r).</summary>
     public ZirkelSeite? Seite { get; set; }
     public string? Typ { get; set; }
 

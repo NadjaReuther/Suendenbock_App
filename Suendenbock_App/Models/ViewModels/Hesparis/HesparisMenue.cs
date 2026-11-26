@@ -29,7 +29,7 @@ public static class HesparisMenue
             new("Waffen", "Ätherwaffen", "⚔", null, null),
             new("Sonder", "Sonderzauber", "☾", "Magie", "Sonderzauber"),
             new("Brauen", "Trankküche", "⚗", "Magie", "Trankkueche"),
-            new("Zirkel", "Zirkel der Priore", "✺", null, null),
+            new("Zirkel", "Zirkel der Priore", "✺", "Zirkel", "Index", MitFigur: false),
         }),
         new("Alltag", "▦", new Eintrag[]
         {

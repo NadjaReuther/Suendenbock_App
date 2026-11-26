@@ -37,7 +37,8 @@ public enum EffektDauerArt
 }
 
 /// <summary>Seite einer Person im Zirkel-Rätsel.</summary>
-public enum ZirkelSeite { Paar, Spiegel }
+/// <summary>Prior (JS: p) oder Sekundant (JS: s) einer Magie im Zirkel.</summary>
+public enum ZirkelSeite { Prior, Sekundant }
 
 /// <summary>
 /// Wirkung eines Gegenstands, einer Ware oder eines Trankes (JS: <c>fx</c>).

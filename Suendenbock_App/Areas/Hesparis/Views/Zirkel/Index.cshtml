@@ -1,0 +1,612 @@
+@model ZirkelViewModel
+@{
+    ViewData["Title"] = "Zirkel der Priore";
+    ViewData["Bereich"] = "Zirkel";
+    var m = Model.Magie;
+    var sl = Model.IstSpielleitung;
+
+    // Brett schon gewendet anzeigen (nach einem Rateversuch oder Speichern)
+    var flipKlasse = "zk-flip";
+    string? rueckseiteVersteckt = "true";
+    if (Model.Wenden)
+    {
+        flipKlasse += " on flat";
+        rueckseiteVersteckt = null;
+    }
+
+    int vorher = Model.Nr - 1;
+    if (vorher < 1)
+    {
+        vorher = 12;
+    }
+    int nachher = Model.Nr + 1;
+    if (nachher > 12)
+    {
+        nachher = 1;
+    }
+}
+
+@functions {
+    // Eingabefeld je nach Art: freier Text oder Auswahl (JS: zkInput)
+    private Microsoft.AspNetCore.Html.IHtmlContent Eingabe(string typ, string name, string? wert, string platzhalter, string label)
+    {
+        var sb = new System.Text.StringBuilder();
+        string E(string? t) => System.Net.WebUtility.HtmlEncode(t ?? "");
+        if (typ == "text")
+        {
+            sb.Append("<input type=\"text\" name=\"" + E(name) + "\" value=\"" + E(wert) + "\" maxlength=\"80\" autocomplete=\"off\" spellcheck=\"false\" placeholder=\"" + E(platzhalter) + "\" aria-label=\"" + E(label) + "\">");
+            return new Microsoft.AspNetCore.Html.HtmlString(sb.ToString());
+        }
+
+        var optionen = new List<(string Wert, string Text)>();
+        if (typ == "ge") optionen = ZirkelRegeln.Geschlechter.Select(g => (g, g)).ToList();
+        if (typ == "fig") optionen = ZirkelRegeln.Figuren.Select(f => (f.Key, f.Value.Name)).ToList();
+        if (typ == "mag") optionen = ZirkelRegeln.Magien.Select(x => (x.Nr.ToString(), x.Name)).ToList();
+        if (typ == "treue") optionen = ZirkelRegeln.Treue.Select(g => (g, g)).ToList();
+        if (typ == "status") optionen = ZirkelRegeln.Status.Select(g => (g, g)).ToList();
+
+        sb.Append("<select name=\"" + E(name) + "\" aria-label=\"" + E(label) + "\"><option value=\"\">" + E(platzhalter) + "</option>");
+        foreach (var (w, t) in optionen)
+        {
+            var sel = "";
+            if (w == wert)
+            {
+                sel = " selected";
+            }
+            sb.Append("<option value=\"" + E(w) + "\"" + sel + ">" + E(t) + "</option>");
+        }
+        sb.Append("</select>");
+        return new Microsoft.AspNetCore.Html.HtmlString(sb.ToString());
+    }
+}
+
+<div class="md-wrap zk-wrap">
+    <div class="md-head">
+        <div>
+            <div class="armory-eyebrow">Magie · Der Zirkel</div>
+            <h1 class="armory-title">Der Zirkel der Priore</h1>
+            <p class="armory-sub">Zwölf Magien, ein Kreislauf. Keine besteht ohne die nächste. Wer ihre Priore und Sekundanten sind, müsst ihr erst herausfinden.</p>
+        </div>
+        <div class="zk-phase" style="--zc:@m.Farbe">
+            @foreach (var phase in ZirkelRegeln.Phasen)
+            {
+                if (phase == m.Phase)
+                {
+                    <span class="on">@phase</span>
+                }
+                else
+                {
+                    <span>@phase</span>
+                }
+            }
+        </div>
+    </div>
+
+    @* ------------------------------------------------------------ Brett *@
+    <div class="zk-stage" style="--zk-aura:@ZirkelRegeln.Rgba(m.Farbe, 0.2);--zc:@m.Farbe">
+        <div class="@flipKlasse">
+            <div class="zk-face zk-front">
+                <svg id="zkSvg" viewBox="0 140 1376 572" role="img" aria-label="Das gläserne Brett der zwölf Magien. Gewählt: @m.Name"
+                     data-url="@Url.Action("Index")"></svg>
+                <a class="zk-nav prev" data-zgo asp-action="Index" asp-route-nr="@vorher" aria-label="Vorherige Magie">‹</a>
+                <a class="zk-nav next" data-zgo asp-action="Index" asp-route-nr="@nachher" aria-label="Nächste Magie">›</a>
+                <div class="zk-tip">Figur anklicken holt sie nach vorn · nochmal klicken wendet das Brett</div>
+            </div>
+
+            <div class="zk-face zk-back" aria-hidden="@rueckseiteVersteckt">
+                <div class="zk-disc" style="--zc:@m.Farbe;--zg:@ZirkelRegeln.Rgba(m.Farbe, 0.55)">
+                    <div class="zk-dhead">
+                        <i class="zk-sigil" aria-hidden="true"></i>
+                        <b class="zk-cv huge">@m.Name.ToUpperInvariant()</b>
+                        <span class="zk-motto">Was eingeritzt ist, gilt</span>
+                    </div>
+                    <div class="zk-cols">
+                        @foreach (var spalte in new[] { Model.Prior, Model.Sekundant })
+                        {
+                            var seite = ZirkelRegeln.Kurz(spalte.Seite);
+                            var spaltenKlasse = "zk-col r";
+                            if (spalte.Seite == ZirkelSeite.Prior)
+                            {
+                                spaltenKlasse = "zk-col l";
+                            }
+                            <div class="@spaltenKlasse">
+                                <div class="zk-colhd">
+                                    <span class="zk-cv big">@spalte.Titel</span>
+                                    <span class="zk-colsub">
+                                        @spalte.Genitiv
+                                        @if (spalte.Name != "")
+                                        {
+                                            <text> · <b>@spalte.Name</b></text>
+                                        }
+                                    </span>
+                                </div>
+                                @if (spalte.Seite == ZirkelSeite.Prior)
+                                {
+                                    <div class="zk-ln"><span class="zk-cv">Magie</span><div class="zk-gold">@m.Name</div></div>
+                                }
+
+                                @if (sl)
+                                {
+                                    @* Spielleitung: Wahrheit eintragen, "offiziell" = Spieler sehen es schon *@
+                                    <form asp-action="WahrheitSpeichern" method="post">
+                                        <input type="hidden" name="nr" value="@Model.Nr" />
+                                        <input type="hidden" name="seite" value="@seite" />
+                                        @foreach (var z in spalte.Zeilen)
+                                        {
+                                            <div class="zk-ln">
+                                                <span class="zk-cv">@z.Name</span>
+                                                <div class="zk-carve">
+                                                    @Eingabe(z.Typ, "werte[" + z.Feld + "]", z.Wahrheit, "eintragen", z.Name)
+                                                    <label class="zk-offtog" title="Für die Spieler offiziell eingetragen">
+                                                        @if (z.Gefunden)
+                                                        {
+                                                            <input type="checkbox" name="offiziell" value="@z.Feld" checked />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input type="checkbox" name="offiziell" value="@z.Feld" />
+                                                        }
+                                                        offiziell
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                        <button type="submit" class="zk-ritz zk-save">Speichern</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    @foreach (var z in spalte.Zeilen)
+                                    {
+                                        var zeilenKlasse = "zk-ln";
+                                        if (z.Rueckmeldung == "ok")
+                                        {
+                                            zeilenKlasse += " zk-okflash";
+                                        }
+                                        else if (z.Rueckmeldung == "bad")
+                                        {
+                                            zeilenKlasse += " zk-bad";
+                                        }
+                                        <div class="@zeilenKlasse">
+                                            <span class="zk-cv">@z.Name</span>
+                                            @if (z.Gefunden)
+                                            {
+                                                <div class="zk-gold">@z.Anzeige</div>
+                                            }
+                                            else if (!z.HatWahrheit || !Model.DarfRaten)
+                                            {
+                                                <div class="zk-groove zk-hid">noch verborgen</div>
+                                            }
+                                            else if (z.SperrSekunden > 0)
+                                            {
+                                                <div class="zk-groove zk-locked">
+                                                    @if (z.LetzterVersuch != null)
+                                                    {
+                                                        <s>@z.LetzterVersuch</s><em>verworfen</em>
+                                                    }
+                                                    else
+                                                    {
+                                                        <em>versiegelt</em>
+                                                    }
+                                                    <b class="zk-seal" title="Gesperrt"><span data-zlock="@z.SperrSekunden">@ZirkelRegeln.Uhr(z.SperrSekunden)</span></b>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <form class="zk-carve" asp-action="Raten" method="post">
+                                                    <input type="hidden" name="nr" value="@Model.Nr" />
+                                                    <input type="hidden" name="seite" value="@seite" />
+                                                    <input type="hidden" name="feld" value="@z.Feld" />
+                                                    @Eingabe(z.Typ, "wert", null, "einritzen …", z.Name)
+                                                    <button type="submit" class="zk-ritz">Ritzen</button>
+                                                </form>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            if (spalte.Seite == ZirkelSeite.Prior)
+                            {
+                                <div class="zk-rille" aria-hidden="true"></div>
+                            }
+                        }
+                    </div>
+                    <button type="button" class="zk-turn" data-zunflip>Brett wenden</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ------------------------------------------------------------ Magie wählen *@
+    <div class="zk-chips" role="tablist" aria-label="Magie wählen">
+        @foreach (var x in ZirkelRegeln.Magien)
+        {
+            var klasse = "zk-chip";
+            if (x.Nr == Model.Nr)
+            {
+                klasse += " on";
+            }
+            <a class="@klasse" role="tab" data-zgo asp-action="Index" asp-route-nr="@x.Nr" style="--c:@x.Farbe"><i></i>@x.Name</a>
+        }
+    </div>
+
+    <details class="zk-legend">
+        <summary>Was die Figuren bedeuten</summary>
+        <ul>
+            @foreach (var (schluessel, figur) in ZirkelRegeln.Figuren)
+            {
+                <li>
+                    <svg viewBox="0 0 40 56" aria-hidden="true"><path d="@ZirkelRegeln.FigurPfad[schluessel]" fill="#e7d6a3" stroke="#5c5541" stroke-width="1.2"></path></svg>
+                    <div><b>@figur.Name</b>@figur.Bedeutung</div>
+                </li>
+            }
+        </ul>
+    </details>
+
+    @* ------------------------------------------------------------ Spielleitung: Geheimes *@
+    @if (sl)
+    {
+        <section class="md-card zk-secret">
+            <div class="rg-lbl" style="color:var(--ember)">Spielleitung · Geheimes zu @m.Name</div>
+            <form asp-action="GeheimesSpeichern" method="post">
+                <input type="hidden" name="nr" value="@Model.Nr" />
+                <div class="zk-secgrid">
+                    @foreach (var (person, praefix, titel) in new[] { (Model.PriorPerson, "prior", "Prior"), (Model.SekundantPerson, "sekundant", "Sekundant") })
+                    {
+                        var selbst = person.Nr + "|" + ZirkelRegeln.Kurz(person.Seite);
+                        string? dient = null;
+                        if (person.DientNr != null && person.DientSeite != null)
+                        {
+                            dient = person.DientNr + "|" + ZirkelRegeln.Kurz(person.DientSeite.Value);
+                        }
+                        <div>
+                            <div class="rg-lbl">@titel @m.Genitiv</div>
+                            <label class="md-field"><span>Treue</span>@Eingabe("treue", praefix + "Treue", person.Treue, "– wählen –", "Treue")</label>
+                            <label class="md-field">
+                                <span>Dient wirklich</span>
+                                <select name="@(praefix)Dient">
+                                    <option value="">– niemandem sonst –</option>
+                                    @foreach (var (wert, text) in Model.Personen.Where(p => p.Wert != selbst))
+                                    {
+                                        if (wert == dient)
+                                        {
+                                            <option value="@wert" selected>@text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@wert">@text</option>
+                                        }
+                                    }
+                                </select>
+                            </label>
+                            @if (person.Seite == ZirkelSeite.Prior)
+                            {
+                                <label class="md-field"><span>Status</span>@Eingabe("status", "priorStatus", person.Status, "– wählen –", "Status")</label>
+                            }
+                            <label class="md-field"><span>Geheime Notiz</span><textarea rows="2" maxlength="2000" name="@(praefix)Notiz">@person.GeheimeNotiz</textarea></label>
+                        </div>
+                    }
+                </div>
+                <div class="md-row"><button type="submit" class="btn-primary">Speichern</button></div>
+            </form>
+            <p class="md-hint">Namen und Berufe auf der Unterseite: mehrere richtige Schreibweisen mit | trennen, z. B. Aldric | Aldrik oder Schmied | Schmiedin. Kleine Tippfehler erkennt die Seite selbst.</p>
+        </section>
+    }
+
+    @* ------------------------------------------------------------ Notizen und Mordfall *@
+    @{
+        var lowKlasse = "zk-low";
+        if (Model.Fall == null)
+        {
+            lowKlasse += " solo";
+        }
+    }
+    <div class="@lowKlasse">
+        <section class="md-card zk-notes">
+            <div class="rg-lbl">Notizen und Gerüchte · @m.Name</div>
+            @if (Model.Notizen.Count == 0)
+            {
+                <p class="md-empty">Noch nichts notiert.</p>
+            }
+            @foreach (var n in Model.Notizen)
+            {
+                <div class="zk-note">
+                    <div class="md-row-between">
+                        <span class="zk-nmeta">@n.Typ · @n.Zu · @n.Von</span>
+                        @if (n.Bestaetigt)
+                        {
+                            <span class="md-tag good">bestätigt</span>
+                        }
+                        else
+                        {
+                            <span class="md-tag zk-u">unbestätigt</span>
+                        }
+                    </div>
+                    <p>@n.Text</p>
+                    @if (sl)
+                    {
+                        <div class="zk-nact">
+                            <form asp-action="NotizBestaetigen" method="post" class="inline">
+                                <input type="hidden" name="id" value="@n.Id" /><input type="hidden" name="nr" value="@Model.Nr" />
+                                @if (n.Bestaetigt)
+                                {
+                                    <button type="submit" class="icon-btn">Bestätigung zurücknehmen</button>
+                                }
+                                else
+                                {
+                                    <button type="submit" class="icon-btn">Bestätigen</button>
+                                }
+                            </form>
+                            <form asp-action="NotizLoeschen" method="post" class="inline">
+                                <input type="hidden" name="id" value="@n.Id" /><input type="hidden" name="nr" value="@Model.Nr" />
+                                <button type="submit" class="icon-btn" data-zweistufig data-frage="Wirklich löschen?">Löschen</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            }
+            <form asp-action="NotizSchreiben" method="post" class="md-nsform">
+                <input type="hidden" name="nr" value="@Model.Nr" />
+                <div class="zk-nrow">
+                    <select name="seite" aria-label="Zu wem"><option value="p">zum Prior</option><option value="s">zum Sekundanten</option></select>
+                    <select name="typ" aria-label="Art"><option>Notiz</option><option>Gerücht</option></select>
+                </div>
+                <select name="spielfigurId" aria-label="Von wem">
+                    @foreach (var f in Model.Figuren)
+                    {
+                        if (f.Aktiv)
+                        {
+                            <option value="@f.Id" selected>@f.Name</option>
+                        }
+                        else
+                        {
+                            <option value="@f.Id">@f.Name</option>
+                        }
+                    }
+                </select>
+                <textarea name="text" rows="2" maxlength="600" required placeholder="Was habt ihr gehört oder gesehen?" aria-label="Text"></textarea>
+                <button type="submit" class="btn-primary">Eintragen</button>
+            </form>
+        </section>
+
+        @if (Model.Fall != null)
+        {
+            var fall = Model.Fall;
+            <section class="md-card zk-mord">
+                <div class="md-row-between">
+                    <div><div class="rg-lbl">Der Fall</div><h3 class="zk-mh">Ein Prior wurde ermordet</h3></div>
+                    @if (sl && !fall.HatToten)
+                    {
+                        <span class="md-tag">noch kein Fall hinterlegt</span>
+                    }
+                </div>
+                <p class="zk-mtext">Einer der zwölf ist tot. Niemand weiß, wer. Und jemand aus dem Zirkel hat ihn getötet.</p>
+                <div class="zk-steps">
+                    @foreach (var stufe in new[] { fall.Tot, fall.Moerder })
+                    {
+                        var klasse = "zk-step";
+                        if (stufe.Geloest) klasse += " done";
+                        if (!stufe.Offen) klasse += " closed";
+                        if (stufe.Rueckmeldung == "ok") klasse += " zk-okflash";
+                        if (stufe.Rueckmeldung == "bad") klasse += " zk-bad";
+                        <div class="@klasse">
+                            <h4>@stufe.Titel</h4>
+                            @if (stufe.Geloest)
+                            {
+                                <div class="zk-ans">@stufe.Antwort</div>
+                                <p class="md-hint">Offiziell festgestellt.</p>
+                            }
+                            else if (!stufe.Offen)
+                            {
+                                <p class="zk-muted">Erst wenn feststeht, wer tot ist.</p>
+                            }
+                            else if (!stufe.HatLoesung)
+                            {
+                                <p class="zk-muted">Die Spielleitung hat hier noch nichts hinterlegt.</p>
+                            }
+                            else
+                            {
+                                <div class="zk-pips" title="Verbleibende Versuche">
+                                    @for (int i = 0; i < Math.Max(stufe.Max, stufe.Rest); i++)
+                                    {
+                                        if (i < stufe.Rest)
+                                        {
+                                            <i class="on"></i>
+                                        }
+                                        else
+                                        {
+                                            <i></i>
+                                        }
+                                    }
+                                    <span>@stufe.RestText</span>
+                                </div>
+                                if (stufe.Rest <= 0)
+                                {
+                                    <p class="zk-muted">Keine Versuche mehr. Die Spielleitung kann neue vergeben.</p>
+                                }
+                                else if (stufe.SperrSekunden > 0)
+                                {
+                                    <div class="zk-lock"><span aria-hidden="true">⧗</span>gesperrt noch <b data-zlock="@stufe.SperrSekunden">@ZirkelRegeln.Uhr(stufe.SperrSekunden)</b></div>
+                                }
+                                else if (Model.DarfRaten)
+                                {
+                                    <form asp-action="FallRaten" method="post">
+                                        <input type="hidden" name="nr" value="@Model.Nr" />
+                                        <input type="hidden" name="frage" value="@stufe.Frage" />
+                                        <select name="wert" aria-label="@stufe.Titel">
+                                            <option value="">– wählen –</option>
+                                            @foreach (var (wert, text) in stufe.Optionen)
+                                            {
+                                                <option value="@wert">@text</option>
+                                            }
+                                        </select>
+                                        <button type="submit" class="btn-primary">Benennen</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <p class="zk-muted">Noch offen.</p>
+                                }
+                            }
+                            @if (stufe.Rueckmeldung == "ok")
+                            {
+                                <div class="zk-msg ok" role="status">Richtig.</div>
+                            }
+                            else if (stufe.Rueckmeldung == "bad")
+                            {
+                                if (stufe.Rest > 0)
+                                {
+                                    <div class="zk-msg bad" role="status">Falsch. Noch @stufe.RestText, 5 Minuten gesperrt.</div>
+                                }
+                                else
+                                {
+                                    <div class="zk-msg bad" role="status">Falsch. Noch @stufe.RestText.</div>
+                                }
+                            }
+                        </div>
+                    }
+
+                    @{
+                        var motivKlasse = "zk-step";
+                        if (fall.MotivOffen) motivKlasse += " done";
+                        if (!fall.MoerderGeloest) motivKlasse += " closed";
+                    }
+                    <div class="@motivKlasse">
+                        <h4>3 · Warum?</h4>
+                        @if (fall.MotivOffen && !string.IsNullOrEmpty(fall.Motiv))
+                        {
+                            <p class="zk-motiv">@fall.Motiv</p>
+                        }
+                        else if (fall.MoerderGeloest)
+                        {
+                            <p class="zk-muted">Das Motiv deckt die Spielleitung auf.</p>
+                        }
+                        else
+                        {
+                            <p class="zk-muted">Erst wenn der Täter feststeht.</p>
+                        }
+                    </div>
+                </div>
+
+                @if (sl)
+                {
+                    <div class="zk-slm">
+                        <div class="rg-lbl">Spielleitung · Lösung</div>
+                        <form asp-action="FallSpeichern" method="post">
+                            <input type="hidden" name="nr" value="@Model.Nr" />
+                            <div class="zk-slgrid">
+                                <label class="md-field">
+                                    <span>Tot ist</span>
+                                    <select name="tot">
+                                        <option value="">– niemand –</option>
+                                        @foreach (var x in ZirkelRegeln.Magien)
+                                        {
+                                            var text = Model.Personen.First(p => p.Wert == x.Nr + "|p").Text;
+                                            if (fall.TotNr == x.Nr)
+                                            {
+                                                <option value="@x.Nr" selected>@text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@x.Nr">@text</option>
+                                            }
+                                        }
+                                    </select>
+                                </label>
+                                <label class="md-field">
+                                    <span>Mörder</span>
+                                    <select name="moe">
+                                        <option value="">– niemand –</option>
+                                        @foreach (var (wert, text) in Model.Personen)
+                                        {
+                                            if (wert == fall.MoerderWert)
+                                            {
+                                                <option value="@wert" selected>@text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@wert">@text</option>
+                                            }
+                                        }
+                                    </select>
+                                </label>
+                                <label class="md-field"><span>Versuche je Stufe</span><input type="number" min="1" max="9" name="max" value="@fall.MaxVersuche" /></label>
+                                <label class="md-field zk-wide"><span>Motiv</span><textarea rows="2" maxlength="2000" name="motiv">@fall.Motiv</textarea></label>
+                            </div>
+                            <div class="md-row"><button type="submit" class="btn-primary">Lösung speichern</button></div>
+                        </form>
+                        <div class="md-row">
+                            @{
+                                var motivKnopf = "Motiv aufdecken";
+                                if (fall.MotivOffen)
+                                {
+                                    motivKnopf = "Motiv verbergen";
+                                }
+                            }
+                            @foreach (var (aktion, text) in new[] { ("tot", "+1 Versuch · Stufe 1"), ("moe", "+1 Versuch · Stufe 2"), ("entsperren", "Sperren im Fall aufheben"), ("motiv", motivKnopf) })
+                            {
+                                <form asp-action="FallAktion" method="post" class="inline">
+                                    <input type="hidden" name="nr" value="@Model.Nr" /><input type="hidden" name="aktion" value="@aktion" />
+                                    <button type="submit" class="icon-btn">@text</button>
+                                </form>
+                            }
+                            <form asp-action="FallAktion" method="post" class="inline">
+                                <input type="hidden" name="nr" value="@Model.Nr" /><input type="hidden" name="aktion" value="zuruecksetzen" />
+                                <button type="submit" class="icon-btn" data-zweistufig data-frage="Wirklich zurücksetzen?">Fall zurücksetzen</button>
+                            </form>
+                        </div>
+                        <p class="md-hint">Die Spieler sehen den Fall erst, wenn hier ein Toter eingetragen ist. Eine neue Versuchszahl füllt beide Stufen neu auf.</p>
+                    </div>
+                }
+            </section>
+        }
+    </div>
+
+    @* ------------------------------------------------------------ Spielleitung: Fehlversuche *@
+    @if (sl)
+    {
+        <section class="md-card zk-slcard">
+            <div class="md-row-between">
+                <div class="rg-lbl">
+                    Spielleitung · Fehlversuche
+                    @if (Model.AktiveSperren > 0)
+                    {
+                        <text> · @Model.AktiveSperren gesperrt</text>
+                    }
+                </div>
+                <div class="md-row" style="margin:0">
+                    <form asp-action="SperrenAufheben" method="post" class="inline">
+                        <input type="hidden" name="nr" value="@Model.Nr" />
+                        <button type="submit" class="icon-btn">Alle Sperren aufheben</button>
+                    </form>
+                    @if (Model.Versuche.Count > 0)
+                    {
+                        <form asp-action="VersucheLeeren" method="post" class="inline">
+                            <input type="hidden" name="nr" value="@Model.Nr" />
+                            <button type="submit" class="icon-btn" data-zweistufig data-frage="Wirklich leeren?">Liste leeren</button>
+                        </form>
+                    }
+                </div>
+            </div>
+            @if (Model.Versuche.Count == 0)
+            {
+                <p class="md-empty">Noch keine Fehlversuche.</p>
+            }
+            else
+            {
+                <ul class="zk-log">
+                    @foreach (var v in Model.Versuche)
+                    {
+                        <li><span>@v.Tag</span><span>@v.Was</span><b>@v.Wert</b></li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+</div>
+
+@section Scripts {
+    @* Daten für das Brett; das Skript zeichnet und dreht es *@
+    <script type="application/json" id="zkDaten">@Html.Raw(Model.BrettJson)</script>
+    <script src="~/js/hesparis-zirkel.js" asp-append-version="true"></script>
+}
