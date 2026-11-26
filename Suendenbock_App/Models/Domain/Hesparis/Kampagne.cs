@@ -31,6 +31,12 @@ public class Kampagne
     /// <summary>Brauen nur mit Freigabe der Spielleitung (JS: brewLock).</summary>
     public bool BrauenGesperrt { get; set; }
 
+    /// <summary>Schlüsselwort für die Archivtür, null = "Sekretariat" (JS: archiv.schluessel).</summary>
+    public string? ArchivSchluessel { get; set; }
+
+    /// <summary>Zettel am Türrahmen des Archivs (JS: archiv.hinweis).</summary>
+    public string? ArchivHinweis { get; set; }
+
     /// <summary>Notiz am Schulladen (JS: shopNote).</summary>
     public string? LadenNotiz { get; set; }
 
