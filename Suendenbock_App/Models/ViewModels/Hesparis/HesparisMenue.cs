@@ -47,7 +47,7 @@ public static class HesparisMenue
             new("Lehrer", "Lehrkräfte", "✒", null, null),
             new("Laden", "Schulladen", "⚖", null, null),
             new("Kranken", "Krankenflügel", "✚", null, null),
-            new("Archiv", "Archiv", "▤", null, null),
+            new("Archiv", "Archiv", "▤", "Archiv", "Index", MitFigur: false),
             new("Charakter", "Charaktere", "⚉", "Charakter", "Index", MitFigur: false, NurGott: true),
         }),
         new("Schuljahr", "❧", new Eintrag[]
