@@ -5099,6 +5099,10 @@ namespace Suendenbock_App.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("EndeText")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int>("KampagneId")
                         .HasColumnType("int");
 
@@ -5106,6 +5110,9 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Nummer")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Position")
                         .HasColumnType("int");
 
                     b.Property<string>("StartText")
@@ -5119,6 +5126,10 @@ namespace Suendenbock_App.Migrations
 
                     b.Property<string>("Titel")
                         .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("VerfallenText")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 

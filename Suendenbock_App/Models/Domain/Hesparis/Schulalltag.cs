@@ -276,6 +276,15 @@ public class Mission : IKampagnenDaten
     public string? Notiz { get; set; }
     public string? StartText { get; set; }
 
+    /// <summary>Tag des Abschlusses wie "3. September" (JS: end).</summary>
+    public string? EndeText { get; set; }
+
+    /// <summary>Reihenfolge am Brett: die erste aktive Quest ist die Hauptquest (JS: Reihenfolge in state.missionen).</summary>
+    public int Position { get; set; }
+
+    /// <summary>Beim Abschließen verfallenes Nachsitzen, z. B. "Nachsitzen verfallen: Elma, Levi" (JS: decay).</summary>
+    public string? VerfallenText { get; set; }
+
     public ICollection<MissionHinweis> Hinweise { get; set; } = new List<MissionHinweis>();
 }
 

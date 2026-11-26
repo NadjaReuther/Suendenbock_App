@@ -388,6 +388,23 @@ public static class HesparisRegeln
         }
         return liste;
     }
+
+    // ---------------------------------------------------------------- Schuljahr
+
+    private static readonly string[] Roemische =
+        { "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX" };
+
+    /// <summary>Römische Zahl für die Fälle im Ermittlungsbuch, ab 21 normale Ziffern (JS: mRoman).</summary>
+    public static string Roemisch(int n) => n >= 1 && n <= Roemische.Length ? Roemische[n - 1] : n.ToString();
+
+    private static readonly string[] MonateLang =
+    {
+        "Januar", "Februar", "März", "April", "Mai", "Juni",
+        "Juli", "August", "September", "Oktober", "November", "Dezember",
+    };
+
+    /// <summary>Kalenderdatum wie "3. September" (JS: kalFmt).</summary>
+    public static string TagUndMonat(DateOnly tag) => tag.Day + ". " + MonateLang[tag.Month - 1];
 }
 
 /// <summary>Ein Bonus auf ein Talent, egal woher (Magiestufe, AG, Tasche, Wirkung).</summary>
