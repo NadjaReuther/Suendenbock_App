@@ -160,6 +160,9 @@
 
         // Meldung anzeigen (SweetAlert, sonst einfacher Hinweis)
         function notify(icon, title, text, autoClose) {
+            // Immer auch direkt auf der Seite, falls das Pop-up auf dem Gerät nicht erscheint
+            statusTitle.textContent = title;
+            if (text) statusDescription.textContent = text;
             if (window.Swal) {
                 return Swal.fire(autoClose
                     ? { icon, title, text, timer: 2000, showConfirmButton: false }
@@ -193,10 +196,6 @@
             if (el) el.textContent += ' · Fehler: ' + (e.reason && e.reason.message ? e.reason.message : e.reason);
         });
 
-        // Falls das Skript gar nicht geladen wurde: sagen statt still nichts tun
-        if (!window.pushManager) {
-            toggleBtn.addEventListener('click', () => alert('Die Benachrichtigungen konnten nicht geladen werden. Bitte die Seite neu laden.'));
-        }
 
         async function updateUI() {
             const isSubscribed = window.pushManager.isSubscribed;
@@ -251,10 +250,20 @@
         }
 
         toggleBtn.addEventListener('click', async () => {
+            // Tipp sofort sichtbar quittieren
+            statusDescription.textContent = 'Tipp erkannt …';
+            if (!window.pushManager) {
+                statusTitle.textContent = 'Nicht geladen';
+                statusDescription.textContent = 'Die Benachrichtigungen konnten nicht geladen werden (push-notifications.js fehlt).';
+                showDiagnose();
+                return;
+            }
             const isSubscribed = window.pushManager.isSubscribed;
 
             // Geht auf diesem Gerät nicht: Erklärung anzeigen statt still nichts zu tun
-            const support = window.pushManager.getSupportStatus();
+            let support;
+            try { support = window.pushManager.getSupportStatus(); }
+            catch (e) { await notify('error', 'Fehler', 'Gerät lässt sich nicht prüfen: ' + e.message); return; }
             if (!isSubscribed && !support.supported) {
                 await notify('info', 'So aktivierst du Benachrichtigungen', support.message);
                 return;
