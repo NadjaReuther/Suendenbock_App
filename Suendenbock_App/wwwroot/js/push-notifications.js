@@ -190,7 +190,8 @@ class PushNotificationManager {
 
             // WICHTIG fürs iPhone: Die Erlaubnis-Abfrage muss direkt aus dem Tipp kommen,
             // also VOR jedem anderen await. Sonst zeigt Safari keine Abfrage an.
-            const permission = await Notification.requestPermission();
+            const permission = await this.withTimeout(Notification.requestPermission(), 30000,
+                'Das iPhone hat die Erlaubnis-Abfrage nicht angezeigt (Zeitüberschreitung).');
 
             if (permission !== 'granted') {
                 console.log('Benachrichtigungsberechtigung abgelehnt');
