@@ -138,6 +138,7 @@
                 und auf iOS 16.4+ (Safari). Stelle sicher, dass Benachrichtigungen für diese
                 Website in deinen Browser-Einstellungen erlaubt sind.
             </p>
+            <p id="pushDiagnose" style="font-size:.75rem;opacity:.7;margin-top:.5rem;word-break:break-word"></p>
         </div>
     </div>
 </div>
@@ -173,6 +174,18 @@
             await window.pushManager.init();
             await updateUI();
             await loadPreferences();
+        }
+
+        // Gerätebericht unten in der Info-Box (hilft, wenn es auf einem Gerät klemmt)
+        async function showDiagnose() {
+            const el = document.getElementById('pushDiagnose');
+            if (!el || !window.pushManager) return;
+            try { el.textContent = 'Gerät: ' + await window.pushManager.getDiagnose(); } catch (e) { el.textContent = 'Gerät: ' + e.message; }
+        }
+
+        // Falls das Skript gar nicht geladen wurde: sagen statt still nichts tun
+        if (!window.pushManager) {
+            toggleBtn.addEventListener('click', () => alert('Die Benachrichtigungen konnten nicht geladen werden. Bitte die Seite neu laden.'));
         }
 
         async function updateUI() {
@@ -270,6 +283,7 @@
             } finally {
                 toggleBtn.innerHTML = originalHtml;
                 await updateUI();
+                showDiagnose();
             }
         });
 
@@ -325,6 +339,7 @@
         });
 
         // Initialisiere Seite
-        initPage();
+        showDiagnose();
+        if (window.pushManager) initPage().finally(showDiagnose);
     </script>
 }
