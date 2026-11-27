@@ -166,4 +166,106 @@ public static class AlltagRegeln
         }
         return tag.Year - 1;
     }
+
+    // ------------------------------------------------------------------ Essensplan
+
+    public static readonly string[] Wochentage = { "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag" };
+
+    /// <summary>Die drei Mahlzeiten mit Farbe (JS: ESS_SLOTS). Reihenfolge wie das Enum Mahlzeit.</summary>
+    public static readonly (Mahlzeit Mahlzeit, string Name, string Farbe)[] Mahlzeiten =
+    {
+        (Mahlzeit.Fruehstueck, "Frühstück", "#e8c98a"),
+        (Mahlzeit.Mittag, "Mittag", "#f0c060"),
+        (Mahlzeit.Abendbrot, "Abendbrot", "#c98a4a"),
+    };
+
+    /// <summary>Arten von Gerichten für den Filter der Spielleitung (JS: ESS_KIND).</summary>
+    public static readonly (string Code, string Name)[] Gerichtarten =
+    {
+        ("heal", "Heilen"),
+        ("tal", "Talente"),
+        ("kurios", "Kurios"),
+    };
+
+    /// <summary>Farbe der Suppe im Kessel je Gericht (JS: ESS_DISHES, letzte Spalte).</summary>
+    public static readonly Dictionary<string, string> GerichtFarben = new()
+    {
+        ["haferbrei"] = "#e8c98a",
+        ["beerenbrei"] = "#c96a8a",
+        ["milchbroetchen"] = "#f0d9a8",
+        ["ruehrei"] = "#f0d060",
+        ["pflaumenmus"] = "#8a4a6a",
+        ["waffeln"] = "#e0b060",
+        ["hirobrot"] = "#d9a24a",
+        ["wachtee"] = "#b8a37a",
+        ["griesbrei"] = "#f6e6c8",
+        ["linsen"] = "#8a5a2a",
+        ["puffer"] = "#d9a24a",
+        ["frikassee"] = "#f0c060",
+        ["griessuppe"] = "#f0d9a8",
+        ["fischsuppe"] = "#8ab8a0",
+        ["vortag"] = "#7a5a3a",
+        ["braten"] = "#8a3a1a",
+        ["mittwochsreis"] = "#f6eed8",
+        ["gulasch"] = "#c0402a",
+        ["klosterbrot"] = "#6a8a5a",
+        ["nebelpastete"] = "#9a9ab8",
+        ["kaesebrot"] = "#e8c060",
+        ["gemuesesuppe"] = "#8ab060",
+        ["brotzeit"] = "#c98a4a",
+        ["bratkartoffeln"] = "#d9a24a",
+        ["pfannkuchen"] = "#f0c070",
+        ["grillabend"] = "#c0602a",
+        ["kuchen"] = "#c08060",
+        ["sternensuppe"] = "#4a5a9a",
+        ["traumtee"] = "#ad8ff7",
+        ["glimmmilch"] = "#49d9c9",
+    };
+
+    /// <summary>Speiseplan der ersten Woche, Montag bis Sonntag (JS: essenData, def).</summary>
+    public static readonly string[][] PlanStandard =
+    {
+        new[] { "haferbrei", "linsen", "kaesebrot" },
+        new[] { "pflaumenmus", "puffer", "gemuesesuppe" },
+        new[] { "ruehrei", "frikassee", "brotzeit" },
+        new[] { "milchbroetchen", "griessuppe", "bratkartoffeln" },
+        new[] { "beerenbrei", "fischsuppe", "pfannkuchen" },
+        new[] { "waffeln", "vortag", "grillabend" },
+        new[] { "hirobrot", "braten", "kuchen" },
+    };
+
+    /// <summary>Wie weit man im Essensplan blättern darf: eine Woche zurück, drei vor.</summary>
+    public const int EssenWocheMin = -1;
+    public const int EssenWocheMax = 3;
+
+    /// <summary>0 = Montag … 6 = Sonntag (JS: essToday).</summary>
+    public static int Wochentag(DateOnly tag) => ((int)tag.DayOfWeek + 6) % 7;
+
+    /// <summary>Montag der Woche (JS: essMonday).</summary>
+    public static DateOnly Montag(DateOnly tag) => tag.AddDays(-Wochentag(tag));
+
+    /// <summary>"29. September – 5. Oktober" oder "1. – 7. September" (JS: essWeekLabel).</summary>
+    public static string WochenText(DateOnly montag)
+    {
+        var sonntag = montag.AddDays(6);
+        string anfang = montag.Day + ".";
+        if (montag.Month != sonntag.Month)
+        {
+            anfang = montag.Day + ". " + Monate[montag.Month - 1];
+        }
+        return anfang + " – " + Datum(sonntag);
+    }
+
+    /// <summary>Schulregel des Rates "Mensa zum halben Preis" (JS: essPrice).</summary>
+    public static int Preis(int preis, bool halberPreis)
+    {
+        if (halberPreis)
+        {
+            return (preis + 1) / 2;
+        }
+        return preis;
+    }
+
+    /// <summary>Gerichte mit LP-Heilung wirken sofort; alles andere (und "+8 LP und …") wirkt bis morgen (JS: essBuy).</summary>
+    public static bool WirktWeiter(Gericht g) => (g.Lebenspunkte ?? 0) == 0 || (g.Wirkung ?? "").Contains("und");
 }

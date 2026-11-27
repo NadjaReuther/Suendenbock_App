@@ -346,7 +346,9 @@ public static class HesparisRegeln
     public static string GeldText(int kerzen)
     {
         if (kerzen == 0) return "0 Kerzen";
-        var teile = MuenzenAufteilen(Math.Abs(kerzen)).Where(m => m.Anzahl > 0).Select(m => m.Anzahl + " " + m.Name);
+        // Mehrzahl wie JS: COIN_PL – nur die Kerze ändert sich ("3 Kerzen")
+        var teile = MuenzenAufteilen(Math.Abs(kerzen)).Where(m => m.Anzahl > 0)
+            .Select(m => m.Anzahl + " " + (m.Anzahl != 1 && m.Name == "Kerze" ? "Kerzen" : m.Name));
         return (kerzen < 0 ? "−" : "") + string.Join(", ", teile);
     }
 
