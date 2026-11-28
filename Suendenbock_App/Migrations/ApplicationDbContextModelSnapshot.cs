@@ -3803,8 +3803,8 @@ namespace Suendenbock_App.Migrations
                     b.Property<string>("Sagt")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Wichtig")
-                        .HasColumnType("bit");
+                    b.Property<int>("Wichtig")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -3912,6 +3912,14 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ArchivHinweis")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("ArchivSchluessel")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
 
                     b.Property<bool>("BrauenGesperrt")
                         .HasColumnType("bit");
@@ -5467,6 +5475,9 @@ namespace Suendenbock_App.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("SchreiberSpielfigurId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Schuljahr")
                         .HasColumnType("int");
 
                     b.Property<string>("Titel")

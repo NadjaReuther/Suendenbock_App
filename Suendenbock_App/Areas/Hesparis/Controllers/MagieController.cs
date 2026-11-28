@@ -37,7 +37,8 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
 
             int abschnitt = HesparisRegeln.Abschnitt(abschluesse);
             int maxStufe = HesparisRegeln.MaxStufe(abschnitt);
-            int gesamt = HesparisRegeln.PunkteGesamt(figur, abschluesse);
+            int heftZehntel = HesparisRegeln.HeftZehntel(await HeftNotenAsync(figur));
+            int gesamt = HesparisRegeln.PunkteGesamt(figur, abschluesse, heftZehntel);
             int verbraucht = HesparisRegeln.PunkteVerbraucht(figur, faecher.Select(f => f.Id));
             int frei = gesamt - verbraucht;
             bool fertig = HesparisRegeln.Bestanden(abschluesse.FirstOrDefault(a => a.Abschnitt == "dom")?.Wert);
@@ -52,6 +53,8 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
                 PunkteVerbraucht = verbraucht,
                 Bonuspunkte = figur.Bonuspunkte,
                 AbschlussPunkte = HesparisRegeln.AbschlussZehntel(abschluesse) / 10,
+                HeftZehntel = heftZehntel,
+                RestZehntel = (HesparisRegeln.AbschlussZehntel(abschluesse) + heftZehntel) % 10,
                 Faecher = faecher.Select(f => new StufenFach
                 {
                     Id = f.Id,
@@ -163,7 +166,8 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
 
             var abschluesse = await _context.SchuljahrAbschnitte.Where(a => a.SpielfigurId == id).ToListAsync();
             var alleFaecher = await _context.Faecher.Select(f => f.Id).ToListAsync();
-            int frei = HesparisRegeln.PunkteGesamt(figur, abschluesse) - HesparisRegeln.PunkteVerbraucht(figur, alleFaecher);
+            int heftZehntel = HesparisRegeln.HeftZehntel(await HeftNotenAsync(figur));
+            int frei = HesparisRegeln.PunkteGesamt(figur, abschluesse, heftZehntel) - HesparisRegeln.PunkteVerbraucht(figur, alleFaecher);
             int maxStufe = HesparisRegeln.MaxStufe(HesparisRegeln.Abschnitt(abschluesse));
 
             if (!HesparisRegeln.KannWaehlen(figur, fachId, stufe, maxStufe, frei))

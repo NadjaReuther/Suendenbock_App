@@ -1,0 +1,157 @@
+@model ProtokollheftViewModel
+@{
+    var a = Model.Heft!;
+    var h = a.Heft;
+    ViewData["Title"] = "Abgabe · Heft " + h.Nummer;
+    ViewData["Bereich"] = "Hefte";
+    var darf = Model.DarfBearbeiten;
+    var sch = a.Schreiber;
+    var abschnitte = ProtokollheftRegeln.Abschnitte;
+    int dn = a.Fertig;
+    bool alleAbschnitte = dn == abschnitte.Length;
+    bool alleHaken = ProtokollheftRegeln.Checks.All(c => a.Check(c.Schluessel));
+    bool bereit = alleAbschnitte && alleHaken && sch != null;
+    bool jeder = a.Erfuellt(abschnitte.First(s => s.Schluessel == "gelernt"));
+    bool ablauf = a.Erfuellt(abschnitte.First(s => s.Schluessel == "ablauf"));
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-schuljahr.css" asp-append-version="true" />
+}
+
+<div class="md-wrap" id="md-hefte">
+    <div class="@(Model.Animieren ? "ph-root ph-anim" : "ph-root")">
+        <div class="ph-top">
+            <a class="ph-back" asp-action="Heft" asp-route-id="@h.Id">‹ Zum Heft</a>
+            <div>
+                <div class="armory-eyebrow">Protokollheft Nr. @h.Nummer · @a.Status</div>
+                <h2 class="armory-title">@a.Titel</h2>
+            </div>
+            <div class="ph-actions">
+                <a class="ph-ghost" asp-action="Lesen" asp-route-id="@h.Id">Ganzes Heft lesen</a>
+                <button type="button" class="ph-ghost" data-kopieren>Als Text kopieren</button>
+            </div>
+        </div>
+
+        <div class="ph-spread">
+            @* ------------------------------------------------ links: vor der Abgabe *@
+            <section class="ph-page l">
+                <div class="ph-pno">Letzte Seite</div>
+                <div class="ph-h">@("Vor der Abgabe")@Html.Raw(ProtokollheftRegeln.Unterstrich())</div>
+                <div class="ph-ck auto">@Html.Raw(ProtokollheftRegeln.Haken(alleAbschnitte))<span>Alle 12 Abschnitte erfüllt</span><span class="why">@dn / @abschnitte.Length</span></div>
+                <div class="ph-ck auto">@Html.Raw(ProtokollheftRegeln.Haken(ablauf))<span>Ablauf mit mindestens 6 Uhrzeiten</span><span class="why">automatisch</span></div>
+                <div class="ph-ck auto">@Html.Raw(ProtokollheftRegeln.Haken(jeder))<span>Jeder hat Abschnitt 11 selbst ergänzt</span><span class="why">automatisch</span></div>
+                @foreach (var (schluessel, text) in ProtokollheftRegeln.Checks)
+                {
+                    var an = a.Check(schluessel);
+                    <form class="ph-inline" asp-action="Check" asp-route-id="@h.Id" method="post">
+                        <input type="hidden" name="schluessel" value="@schluessel" />
+                        <button type="submit" class="ph-ck" aria-pressed="@(an ? "true" : "false")" disabled="@(!darf)">@Html.Raw(ProtokollheftRegeln.Haken(an, Model.Frisch == "ck|" + schluessel))<span>@text</span><span class="why">antippen</span></button>
+                    </form>
+                }
+                @if (!alleAbschnitte)
+                {
+                    var offen = Enumerable.Range(0, abschnitte.Length).Where(i => !a.Erfuellt(abschnitte[i]))
+                        .Select(i => "<a class=\"ph-link\" href=\"" + Url.Action("Abschnitt", new { id = h.Id, k = i }) + "\">" + System.Net.WebUtility.HtmlEncode((i + 1) + ". " + abschnitte[i].Titel) + "</a>");
+                    <div class="ph-line" style="flex-wrap:wrap">Noch offen:&nbsp;@Html.Raw(string.Join(", ", offen))</div>
+                }
+                <div class="ph-f2" style="margin-top:34px;column-gap:30px">
+                    <div>
+                        <div class="ph-sig">@if (sch != null) {@sch.Name} else {<span style="color:var(--red);font-style:normal;font-weight:400;font-size:22px">Schriftführer fehlt</span>}</div>
+                        <div class="ph-sigline">Schriftführer/in</div>
+                    </div>
+                    <div>
+                        <div class="ph-sig" style="font-style:normal;font-weight:400">@a.AbgegebenText</div>
+                        <div class="ph-sigline">Datum der Abgabe</div>
+                    </div>
+                </div>
+                @if (h.AbgegebenAm.HasValue)
+                {
+                    <span class="@(Model.Frisch == "abgabe" ? "ph-stamp fresh" : "ph-stamp")" style="--r:-9deg;right:44px;bottom:110px;font-size:13px;color:#2a6fc4">Eingegangen<br><span style="font-size:18px">@a.AbgegebenText</span></span>
+                    @if (string.IsNullOrEmpty(h.Note) && darf)
+                    {
+                        <div class="ph-line" style="margin-top:34px">
+                            <form class="ph-inline" asp-action="Zuruecknehmen" asp-route-id="@h.Id" method="post"><button type="submit" class="ph-link" data-zweistufig data-frage="Wirklich zurücknehmen?">Abgabe zurücknehmen</button></form>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div style="margin-top:34px">
+                        <form class="ph-inline" asp-action="Abgeben" asp-route-id="@h.Id" method="post"><button type="submit" class="ph-btn gold" disabled="@(!bereit || !darf)">Heft abgeben</button></form>
+                        @if (!bereit)
+                        {
+                            <div class="ph-red" style="font-size:19px;line-height:28px;margin-top:8px">Erst wenn alles abgehakt ist und ein Schriftführer feststeht, kann das Heft abgegeben werden.</div>
+                        }
+                    </div>
+                }
+            </section>
+
+            @* ------------------------------------------------ rechts: Bewertung der Lehrkraft *@
+            <section class="ph-page r">
+                <div class="ph-pno">Bewertung der Lehrkraft</div>
+                @if (!h.AbgegebenAm.HasValue)
+                {
+                    <div class="ph-wait"><span style="font-size:44px">✎</span>Hier trägt @(h.Lehrer ?? "die Lehrkraft") die Note ein,<br>sobald das Heft abgegeben ist.</div>
+                }
+                else
+                {
+                    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+                        <div style="flex:1 1 220px;min-width:0">
+                            <div class="ph-red" style="font-size:30px;font-weight:700">Bewertung:</div>
+                            @if (!string.IsNullOrEmpty(h.Rueckmeldung))
+                            {
+                                <div class="ph-red" style="font-size:24px;white-space:pre-wrap;overflow-wrap:anywhere">@h.Rueckmeldung</div>
+                            }
+                            else if (string.IsNullOrEmpty(h.Note))
+                            {
+                                <div class="ph-red" style="font-size:22px;opacity:.6">wartet auf die Lehrkraft …</div>
+                            }
+                        </div>
+                        @if (!string.IsNullOrEmpty(h.Note))
+                        {
+                            <div class="@(Model.Frisch == "note" ? "ph-big fresh" : "ph-big")">@h.Note<svg viewBox="0 0 170 150" aria-hidden="true"><ellipse cx="86" cy="78" rx="72" ry="62" transform="rotate(-10 86 78)" /></svg></div>
+                        }
+                    </div>
+                    @if (!string.IsNullOrEmpty(h.Note) && !string.IsNullOrEmpty(h.Lehrer))
+                    {
+                        <div class="ph-line"><span style="font-family:'Caveat',cursive;font-weight:700;font-style:italic;color:var(--red);font-size:24px">@h.Lehrer</span></div>
+                    }
+                    @if (Model.IstSpielleitung)
+                    {
+                        <div class="sl-only" style="margin-top:20px">
+                            <div class="ph-mute">Note eintragen (Spielleitung)</div>
+                            <div class="ph-grs">
+                                @foreach (var n in ProtokollheftRegeln.Noten)
+                                {
+                                    var an = h.Note == n;
+                                    <form class="ph-inline" asp-action="Note" asp-route-id="@h.Id" method="post"><input type="hidden" name="note" value="@n" /><button type="submit" class="@(an ? "ph-gr on" : "ph-gr")" aria-pressed="@(an ? "true" : "false")">@n</button></form>
+                                }
+                            </div>
+                            <label class="ph-mute" for="phfb" style="display:block;margin-top:10px">Rückmeldung</label>
+                            <textarea id="phfb" class="ph-fb" data-feld="rueckmeldung" rows="3" maxlength="600" placeholder="Was war gut, was fehlt?">@h.Rueckmeldung</textarea>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(h.Note))
+                    {
+                        <div class="ph-mute" style="min-height:34px;display:flex;align-items:flex-end;padding-bottom:6px;margin-top:20px">Die Note gilt für alle</div>
+                        <div class="ph-f2" style="column-gap:30px">
+                            @for (int i = 0; i < a.Team.Count; i++)
+                            {
+                                var m = a.Team[i];
+                                <div class="ph-who" style="--i:@i"><span class="ph-ink" style="--pc:@m.Farbe">@m.Name</span><b>@h.Note</b></div>
+                            }
+                        </div>
+                        <div class="ph-line"><span class="ph-mute" style="padding-bottom:8px;text-transform:none;letter-spacing:0;font-size:11px">→ steht im Zeugnis und bringt allen @HesparisRegeln.ZehntelText(Model.NotenZehntel) freie Punkte für die Magiestufen</span></div>
+                        <span class="@(Model.Frisch == "note" ? "ph-stamp fresh" : "ph-stamp")" style="--r:8deg;right:50px;bottom:44px;font-size:16px;color:var(--red)">Geprüft</span>
+                    }
+                }
+            </section>
+        </div>
+        <textarea id="phText" hidden>@Model.AlsText</textarea>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_HeftSkript" model="Model" />
+}

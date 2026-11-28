@@ -1,0 +1,104 @@
+@model ArchivViewModel
+@{
+    ViewData["Title"] = "Archiv";
+    ViewData["Bereich"] = "Archiv";
+    var sl = Model.IstSpielleitung;
+    var falsch = TempData["Error"] != null;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-archiv.css" asp-append-version="true" />
+}
+
+@* Die Tür vor dem Archiv: nur wer das Schlüsselwort kennt, kommt hinein (JS: arDoorHtml) *@
+<div class="md-wrap" id="md-archiv">
+    <div class="ar-full ar-doorpage">
+        <div class="ar-doorstage">
+            <div class="@(falsch ? "ar-door wrong" : "ar-door")" aria-hidden="true">
+                <span class="ar-dpanel a"></span><span class="ar-dpanel b"></span><span class="ar-dpanel c"></span><span class="ar-dpanel d"></span>
+                <span class="ar-plate">ARCHIV<small>Zutritt nur mit Erlaubnis des Sekretariats</small></span>
+                <span class="ar-lock"><span class="ar-hole"></span></span>
+            </div>
+            <form class="ar-keyform" asp-action="Oeffnen" method="post" data-arkey>
+                <div class="armory-eyebrow">Verwaltung · zweiter Flur · letzte Tür</div>
+                <h2 class="armory-title">Verschlossen</h2>
+                <p class="ar-keytxt">Die Tür zum Archiv ist abgeschlossen. Wer den Schlüssel hat, weiß das Wort, das ihn dreht.</p>
+                @if (!string.IsNullOrEmpty(Model.Hinweis))
+                {
+                    <div class="ar-hint"><span>Auf einem Zettel am Türrahmen</span>@Html.Raw(System.Net.WebUtility.HtmlEncode(Model.Hinweis).Replace("\n", "<br>"))</div>
+                }
+                <label class="ar-keylbl"><span>Schlüsselwort</span><input name="schluessel" autocomplete="off" spellcheck="false" maxlength="60" placeholder="…" aria-label="Schlüsselwort" autofocus /></label>
+                <button type="submit" class="btn-primary ar-turn">Schlüssel drehen</button>
+                <p class="ar-keymsg" aria-live="polite">@(falsch ? "Der Schlüssel passt nicht." : "")</p>
+                @if (sl)
+                {
+                    <button type="submit" class="icon-btn ar-slin" formaction="@Url.Action("OhneSchluessel")" formnovalidate>Spielleitung: ohne Schlüssel hinein</button>
+                }
+            </form>
+        </div>
+        @if (sl)
+        {
+            <details class="ar-katsl ar-keysl">
+                <summary>Spielleitung · Schlüssel</summary>
+                <form id="arTuerForm" asp-action="Tuer" method="post" hidden></form>
+                <div class="ar-katlist">
+                    <label class="ar-krow"><span>Schlüsselwort</span><input data-tuer="schluessel" maxlength="60" value="@Model.Schluessel" /></label>
+                    <label class="ar-krow"><span>Hinweis am Türrahmen (optional)</span><textarea data-tuer="hinweis" rows="2" maxlength="300" placeholder="leer = kein Zettel">@Model.Hinweis</textarea></label>
+                    <p class="md-hint">Groß- und Kleinschreibung ist egal. Die Tür bleibt offen, bis jemand sie im Archiv wieder abschließt oder der Browser geschlossen wird. Ändert ihr das Schlüsselwort, ist sie für alle anderen wieder zu.</p>
+                </div>
+            </details>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // Volle Fensterbreite (JS: arFit)
+            function arFit() {
+                var el = document.querySelector('.ar-full'); if (!el) return;
+                var docW = document.documentElement.clientWidth;
+                el.style.marginLeft = '0px'; el.style.width = '';
+                var r = el.getBoundingClientRect(); if (!r.width) return;
+                el.style.marginLeft = (-r.left) + 'px'; el.style.width = docW + 'px';
+                el.style.minHeight = Math.max(680, window.innerHeight - (r.top + window.scrollY)) + 'px';
+            }
+            window.addEventListener('resize', arFit); arFit(); setTimeout(arFit, 700);
+
+            // Schlüssel drehen: im Hintergrund prüfen, dann dreht sich die Tür (JS: data-arkey)
+            var form = document.querySelector('[data-arkey]'), tuer = document.querySelector('.ar-door'), msg = document.querySelector('.ar-keymsg'), dreht = false;
+            form.addEventListener('submit', function (e) {
+                if (e.submitter && e.submitter.hasAttribute('formaction')) return; // Spielleitung ohne Schlüssel
+                e.preventDefault(); if (dreht) return;
+                fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'X-Requested-With': 'fetch' } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (d) {
+                        if (d.passt) {
+                            dreht = true; tuer.classList.remove('wrong'); tuer.classList.add('turning');
+                            msg.textContent = 'Klick. Die Tür gibt nach …'; msg.classList.add('ok');
+                            setTimeout(function () { location.href = location.pathname; }, 1300);
+                        } else {
+                            tuer.classList.remove('wrong'); void tuer.offsetWidth; tuer.classList.add('wrong');
+                            msg.textContent = 'Der Schlüssel passt nicht.';
+                            var i = form.querySelector('[name=schluessel]'); i.select(); i.focus();
+                        }
+                    });
+            });
+
+            // Spielleitung: Schlüsselwort und Zettel beim Tippen speichern
+            var tf = document.getElementById('arTuerForm');
+            document.querySelectorAll('[data-tuer]').forEach(function (el) {
+                var uhr = null;
+                function senden(neuLaden) {
+                    clearTimeout(uhr);
+                    var fd = new FormData(tf); fd.append('feld', el.dataset.tuer); fd.append('wert', el.value);
+                    fetch(tf.action, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'fetch' } })
+                        .then(function () { if (neuLaden) location.reload(); });
+                }
+                el.addEventListener('input', function () { clearTimeout(uhr); uhr = setTimeout(function () { senden(false); }, 600); });
+                // Zettel geändert: neu zeichnen (JS: mdRender bei change)
+                el.addEventListener('change', function () { senden(el.dataset.tuer === 'hinweis'); });
+            });
+        })();
+    </script>
+}

@@ -43,6 +43,13 @@ public static partial class HesparisModell
 
         mb.Entity<ArchivDokument>(e => e.ToTable("ArchivDokumente"));
 
+        // Archivtür: Schlüsselwort (JS: maxlength 60) und Zettel am Türrahmen (JS: maxlength 300)
+        mb.Entity<Kampagne>(e =>
+        {
+            e.Property(x => x.ArchivSchluessel).HasMaxLength(60);
+            e.Property(x => x.ArchivHinweis).HasMaxLength(300);
+        });
+
         mb.Entity<ArchivDokumentKategorie>(e =>
         {
             e.ToTable("ArchivDokumentKategorien");

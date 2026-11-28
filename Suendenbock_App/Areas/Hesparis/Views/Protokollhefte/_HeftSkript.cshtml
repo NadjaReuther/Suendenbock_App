@@ -1,0 +1,105 @@
+@model ProtokollheftViewModel
+@* Gemeinsames Skript aller Heftseiten: Speichern beim Tippen, Wortzähler, Nachfragen, Kopieren, Drucken *@
+@if (Model.Heft != null)
+{
+    <form id="phFeldForm" asp-action="Feld" asp-route-id="@Model.Heft.Heft.Id" method="post" hidden></form>
+}
+<script>
+    (function () {
+        var wrap = document.getElementById('md-hefte');
+        var feldForm = document.getElementById('phFeldForm');
+
+        // ---- Wortzähler mit Ring (JS: phMeterHtml) ----
+        function ring(n, min) {
+            var p = Math.min(1, min ? n / min : 0), c = 100.5;
+            return '<svg viewBox="0 0 40 40" width="32" height="32" aria-hidden="true"><circle cx="20" cy="20" r="16" fill="none" stroke="rgba(34,48,106,0.18)" stroke-width="4"/><circle cx="20" cy="20" r="16" fill="none" stroke="' + (p >= 1 ? '#2a8a3a' : '#c9862b') + '" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + (p * c).toFixed(1) + ' ' + c + '" transform="rotate(-90 20 20)"/></svg>';
+        }
+        function zaehler(el, n) {
+            if (!el) return;
+            var min = +el.dataset.phmeter, unit = el.dataset.unit || 'Wörtern', fertig = n >= min;
+            el.classList.toggle('done', fertig);
+            el.innerHTML = ring(n, min) + '<span>' + (fertig ? '✓ ' + n + ' ' + unit.replace('Wörtern', 'Wörter') + ', geschafft' : n + ' von ' + min + ' ' + unit) + '</span>';
+        }
+        function woerter(s) { return (String(s || '').trim().match(/\S+/g) || []).length; }
+
+        // ---- Felder speichern beim Tippen (JS: phSave, 350 ms) ----
+        var offen = new Map();   // Feld -> Zeitgeber, solange noch nicht gesichert
+        function senden(el, bleibt) {
+            clearTimeout(offen.get(el)); offen.delete(el);
+            var fd = new FormData(feldForm);
+            fd.append('feld', el.dataset.feld);
+            fd.append('wert', el.value);
+            return fetch(feldForm.action, { method: 'POST', body: fd, keepalive: !!bleibt, headers: { 'X-Requested-With': 'fetch' } });
+        }
+        function allesSichern(bleibt) { return Promise.all(Array.from(offen.keys()).map(function (el) { return senden(el, bleibt); })); }
+        if (wrap && feldForm) {
+            wrap.querySelectorAll('[data-feld]').forEach(function (el) {
+                el.addEventListener('input', function () {
+                    clearTimeout(offen.get(el));
+                    offen.set(el, setTimeout(function () { senden(el); }, 500));
+                    if (el.hasAttribute('data-zaehlt')) zaehler(el.closest('[data-zaehlbereich]').querySelector('[data-phmeter]'), woerter(el.value));
+                    // Steckbrief: Anfangsbuchstabe aufs Foto
+                    if (/:name$/.test(el.dataset.feld) && el.closest('.ph-steck')) {
+                        var fo = el.closest('.ph-steck').querySelector('.ph-foto');
+                        if (fo) fo.textContent = ((el.value || '?').trim()[0] || '?').toUpperCase();
+                    }
+                });
+                el.addEventListener('change', function () {
+                    // Uhrzeit im Ablauf geändert: neu sortieren (JS: mdRender nach change auf t)
+                    var p = senden(el);
+                    if (el.hasAttribute('data-neu-laden')) p.then(function () { location.reload(); });
+                });
+            });
+            // Vor jedem Klick auf einen Knopf erst offene Eingaben sichern, damit beim Neuladen nichts fehlt
+            wrap.addEventListener('submit', function (e) {
+                if (!offen.size) return;
+                e.preventDefault();
+                var f = e.target;
+                allesSichern().then(function () { f.submit(); });
+            });
+            // beim Verlassen der Seite (Link, Zurück) ebenfalls
+            window.addEventListener('pagehide', function () { if (offen.size) allesSichern(true); });
+        }
+        if (wrap) {
+            // ---- Klassenliste durchsuchen (JS: data-phsearch) ----
+            var suche = wrap.querySelector('[data-phsearch]');
+            if (suche) suche.addEventListener('input', function () {
+                var q = suche.value.trim().toLowerCase();
+                wrap.querySelectorAll('.ph-cl').forEach(function (b) { b.hidden = !!q && b.dataset.name.indexOf(q) < 0; });
+            });
+
+            // ---- Erst nachfragen (JS: mdArm) ----
+            wrap.querySelectorAll('[data-zweistufig]').forEach(function (knopf) {
+                var alt = knopf.innerHTML;
+                knopf.addEventListener('click', function (e) {
+                    if (knopf.classList.contains('armed')) return;
+                    e.preventDefault();
+                    knopf.classList.add('armed');
+                    knopf.textContent = knopf.dataset.frage;
+                    setTimeout(function () { if (knopf.isConnected) { knopf.classList.remove('armed'); knopf.innerHTML = alt; } }, 2800);
+                });
+            });
+
+            // ---- Als Text kopieren (JS: phCopy) ----
+            wrap.querySelectorAll('[data-kopieren]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    var t = document.getElementById('phText').value;
+                    var fertig = function () { var o = b.textContent; b.textContent = '✓ kopiert'; setTimeout(function () { if (b.isConnected) b.textContent = o; }, 1600); };
+                    var notfall = function () { var ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) { } ta.remove(); fertig(); };
+                    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(fertig, notfall); else notfall();
+                });
+            });
+
+            // ---- Drucken: nur das Heft (JS: ph-printing) ----
+            wrap.querySelectorAll('[data-drucken]').forEach(function (b) {
+                b.addEventListener('click', function () {
+                    document.body.classList.add('ph-printing');
+                    var aus = function () { document.body.classList.remove('ph-printing'); window.removeEventListener('afterprint', aus); };
+                    window.addEventListener('afterprint', aus);
+                    window.print(); setTimeout(aus, 1500);
+                });
+            });
+
+        }
+    })();
+</script>

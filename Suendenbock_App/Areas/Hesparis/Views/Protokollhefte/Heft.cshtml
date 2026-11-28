@@ -1,0 +1,113 @@
+@model ProtokollheftViewModel
+@{
+    var a = Model.Heft!;
+    var h = a.Heft;
+    ViewData["Title"] = "Protokollheft " + h.Nummer;
+    ViewData["Bereich"] = "Hefte";
+    var darf = Model.DarfBearbeiten;
+    var sch = a.Schreiber;
+    int nx = a.Naechster;
+    int dn = a.Fertig;
+    var abschnitte = ProtokollheftRegeln.Abschnitte;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-schuljahr.css" asp-append-version="true" />
+}
+
+<div class="md-wrap" id="md-hefte">
+    <div class="@(Model.Animieren ? "ph-root ph-anim" : "ph-root")">
+        <div class="ph-top">
+            <a class="ph-back" asp-action="Index">‹ Alle Hefte</a>
+            <div>
+                <div class="armory-eyebrow">Protokollheft Nr. @h.Nummer · @a.Status</div>
+                <h2 class="armory-title">@a.Titel</h2>
+            </div>
+            <div class="ph-actions">
+                @if (a.AbgabeHinweis is string due)
+                {
+                    <span class="@(a.AbgabeUeberfaellig ? "ph-due late" : "ph-due")">@due</span>
+                }
+                <a class="ph-ghost" asp-action="Lesen" asp-route-id="@h.Id">Ganzes Heft lesen</a>
+                <a class="ph-ghost" asp-action="Deckblatt" asp-route-id="@h.Id">Deckblatt bearbeiten</a>
+                @if (Model.IstSpielleitung)
+                {
+                    <form class="ph-inline" asp-action="Loeschen" asp-route-id="@h.Id" method="post"><button type="submit" class="ph-ghost sl-only" data-zweistufig data-frage="Wirklich löschen?">Heft löschen</button></form>
+                }
+            </div>
+        </div>
+
+        <div class="ph-spread">
+            @* ------------------------------------------------ links: Arbeitsauftrag, Team, Notizen *@
+            <section class="ph-page l">
+                <div class="ph-pno">Seite 1 · Arbeitsauftrag</div>
+                <div class="ph-slip"><span class="ph-tape" style="top:-12px;left:-18px;transform:rotate(-30deg)"></span><span class="ph-tape" style="bottom:-12px;right:-18px;transform:rotate(-30deg)"></span><small>Akademie Hesparis · @(h.Lehrer ?? "Lehrkraft offen")@(string.IsNullOrEmpty(h.Ort) ? "" : " · " + h.Ort)</small>@if (!string.IsNullOrEmpty(h.Auftrag)) {@h.Auftrag} else {<span style="color:#888">Noch kein Auftragstext. Über „Deckblatt bearbeiten“ eintragen.</span>}@if (h.Schwerpunkte.Count > 0) {@("\n\nAchtet besonders auf: " + string.Join(", ", ProtokollheftRegeln.Achtet.Where(x => h.Schwerpunkte.Any(s => s.Text == x))) + ".")}</div>
+                <div class="ph-h">@("Wer ist dabei?")@Html.Raw(ProtokollheftRegeln.Unterstrich())</div>
+                <div class="ph-line" style="flex-wrap:wrap;column-gap:16px;margin-bottom:26px">
+                    @foreach (var m in a.Team)
+                    {
+                        <span class="ph-ink" style="--pc:@m.Farbe">@m.Kurz@(m.Schluessel == sch?.Schluessel ? " ✎" : "")@(m.AusDerKlasse ? " (+1)" : "")</span>
+                    }
+                    @if (a.Begleiter == null)
+                    {
+                        <span style="color:rgba(34,48,106,0.5)">+1 fehlt noch</span>
+                    }
+                </div>
+                <div class="ph-h" id="notizen">@("Notizen unterwegs")@Html.Raw(ProtokollheftRegeln.Unterstrich(1.4))</div>
+                @foreach (var n in a.NotizenSortiert)
+                {
+                    <div class="ph-line">
+                        <span class="ph-mono" style="flex:none;width:100px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--red);padding-bottom:6px">@(n.Datum.HasValue ? ProtokollheftRegeln.DatumKurz(n.Datum.Value) : "–")@(string.IsNullOrEmpty(n.Uhrzeit) ? "" : " " + n.Uhrzeit)</span>
+                        <span style="flex:1;min-width:0;overflow-wrap:anywhere">@n.Text</span>
+                        @if (darf)
+                        {
+                            <form class="ph-inline" asp-action="NotizLoeschen" asp-route-id="@h.Id" method="post"><input type="hidden" name="notizId" value="@n.Id" /><button type="submit" class="ph-x-btn" aria-label="Notiz löschen" data-zweistufig data-frage="Löschen?">✕</button></form>
+                        }
+                    </div>
+                }
+                @if (darf)
+                {
+                    <form class="ph-nform" asp-action="NotizNeu" asp-route-id="@h.Id" method="post" autocomplete="off">
+                        <input type="time" name="uhrzeit" aria-label="Uhrzeit" />
+                        <input type="text" name="text" maxlength="200" placeholder="schnell etwas notieren …" aria-label="Neue Notiz" required autofocus="@(Context.Request.Query.ContainsKey("ruhig") && h.Notizen.Count > 0)" />
+                        <button type="submit">+ notieren</button>
+                    </form>
+                }
+            </section>
+
+            @* ------------------------------------------------ rechts: Inhalt *@
+            <section class="ph-page r">
+                <partial name="_Reiter" model="(h.Id, (int?)null)" />
+                <div class="ph-pno">Seite 2 · Inhalt</div>
+                <div class="ph-h">@("Unser Protokoll")@Html.Raw(ProtokollheftRegeln.Unterstrich(0.6))</div>
+                @for (int i = 0; i < abschnitte.Length; i++)
+                {
+                    var s = abschnitte[i];
+                    var ok = a.Erfuellt(s);
+                    var klasse = "ph-toc";
+                    if (i == nx) klasse += " ph-hl";
+                    if (!ok && i != nx) klasse += " off";
+                    <a class="@klasse" asp-action="Abschnitt" asp-route-id="@h.Id" asp-route-k="@i">
+                        <b>@(i + 1)</b><span>@s.Titel@(i == nx && sch != null ? " ✎" : "")</span>
+                        <i>@if (ok) {<text>✓</text>} else if (i == nx) {<span style="color:#c9862b">…</span>}</i>
+                    </a>
+                }
+                @if (!h.AbgegebenAm.HasValue && nx >= 0 && sch != null)
+                {
+                    <div class="ph-sticky" style="position:absolute;right:30px;bottom:70px;width:190px;transform:rotate(4deg)">@sch.Kurz, du bist bei Abschnitt @(nx + 1). Noch @(abschnitte.Length - dn) offen, du schaffst das!</div>
+                }
+            </section>
+        </div>
+        <div class="ph-actions" style="justify-content:flex-end;margin:22px 34px 0 0">
+            @if (nx >= 0)
+            {
+                <a class="ph-btn gold" asp-action="Abschnitt" asp-route-id="@h.Id" asp-route-k="@nx">✎ Bei Abschnitt @(nx + 1) weiterschreiben</a>
+            }
+            <a class="ph-btn" asp-action="Abgabe" asp-route-id="@h.Id">@(!string.IsNullOrEmpty(h.Note) ? "Bewertung ansehen →" : h.AbgegebenAm.HasValue ? "Abgabe ansehen →" : "Zur Abgabe →")</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_HeftSkript" model="Model" />
+}

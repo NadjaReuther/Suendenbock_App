@@ -1,0 +1,12 @@
+@model (int HeftId, int? Abschnitt)
+@* Farbige Reiter am rechten Heftrand: Anfang, Unterwegs, Auswertung (JS: phTabs) *@
+@{
+    var abschnitte = ProtokollheftRegeln.Abschnitte;
+    int? gruppe = Model.Abschnitt.HasValue ? abschnitte[Model.Abschnitt.Value].Gruppe : null;
+}
+@for (int g = 0; g < ProtokollheftRegeln.Gruppen.Length; g++)
+{
+    var (name, farbe) = ProtokollheftRegeln.Gruppen[g];
+    int erster = Array.FindIndex(abschnitte, s => s.Gruppe == g);
+    <a class="@(gruppe == g ? "ph-tab on" : "ph-tab")" style="top:@(70 + g * 92)px;background:@farbe" asp-action="Abschnitt" asp-route-id="@Model.HeftId" asp-route-k="@erster">@name</a>
+}

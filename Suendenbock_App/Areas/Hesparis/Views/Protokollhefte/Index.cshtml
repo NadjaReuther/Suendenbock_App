@@ -1,0 +1,131 @@
+@model ProtokollheftViewModel
+@{
+    ViewData["Title"] = "Protokollhefte";
+    ViewData["Bereich"] = "Hefte";
+    var sl = Model.IstSpielleitung;
+    var anzahl = ProtokollheftRegeln.Abschnitte.Length;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-schuljahr.css" asp-append-version="true" />
+}
+
+<div class="md-wrap" id="md-hefte">
+    <div class="ph-root ph-anim">
+        <div class="ph-top">
+            <div>
+                <div class="armory-eyebrow">Schuljahr · Außeneinsätze</div>
+                <h2 class="armory-title">Unsere Protokollhefte</h2>
+                <p class="armory-sub">Ein Heft pro Auftrag. Fünf von uns und immer ein Mitschüler.</p>
+            </div>
+            @if (sl)
+            {
+                <div class="ph-actions">
+                    <form class="ph-inline" asp-action="Neu" method="post"><button type="submit" class="ph-btn sl-only">+ Neues Heft anlegen</button></form>
+                </div>
+            }
+        </div>
+
+        @if (Model.Regal.Count == 0)
+        {
+            <div class="ph-below">
+                <div class="ph-page" style="min-height:340px">
+                    <div class="ph-h">@("Noch kein Heft im Regal")@Html.Raw(ProtokollheftRegeln.Unterstrich())</div>
+                    <div class="ph-line" style="margin-top:34px">Sobald die Schule einen Auftrag verteilt, kommt hier das erste Protokollheft hin.</div>
+                    <div class="ph-line">@(sl ? "Oben rechts „Neues Heft anlegen“ antippen." : "Die Spielleitung legt das Heft an.")</div>
+                </div>
+            </div>
+        }
+        else
+        {
+            @* ------------------------------------------------ das Regal *@
+            <div class="ph-shelf">
+                @if (sl)
+                {
+                    <form class="ph-inline" asp-action="Neu" method="post"><button type="submit" class="ph-cnew sl-only" style="--i:0">+ neues Heft</button></form>
+                }
+                @{ var i = 0; }
+                @foreach (var a in Model.Regal)
+                {
+                    i++;
+                    var st = a.Status;
+                    var dn = a.Fertig;
+                    <a class="@(st == "unterwegs" ? "ph-cover hot" : "ph-cover")" style="--cv:@a.Umschlag;--i:@i" asp-action="Heft" asp-route-id="@a.Heft.Id">
+                        <span class="ph-label"><small>Protokollheft · Nr. @a.Heft.Nummer</small><b>@a.Titel</b><em>@a.Heft.Lehrer@(a.Schreiber != null ? " · ✎ " + a.Schreiber.Kurz : "")</em></span>
+                        @if (st == "benotet")
+                        {
+                            <span class="ph-cgrade">@a.Heft.Note<svg viewBox="0 0 56 56" aria-hidden="true"><ellipse cx="28" cy="29" rx="24" ry="22" fill="none" stroke="#c62f2f" stroke-width="2.5" transform="rotate(-8 28 29)" /></svg></span>
+                        }
+                        else if (st == "abgegeben")
+                        {
+                            <span class="ph-cstamp">Abgegeben</span>
+                        }
+                        else if (st == "neu")
+                        {
+                            <span class="ph-cstamp">Neu</span>
+                        }
+                        else
+                        {
+                            <span class="ph-cprog">Abschnitt @dn von @anzahl@(a.Begleiter != null ? " · mit " + a.Begleiter.Kurz : "")</span>
+                            <span class="ph-cbar"><i style="width:@(Math.Round(dn * 100.0 / anzahl))%"></i></span>
+                        }
+                    </a>
+                }
+            </div>
+
+            @* ------------------------------------------------ Inhaltsverzeichnis aller Hefte *@
+            <div class="ph-below">
+                <div class="ph-page">
+                    <div class="ph-h" style="margin-bottom:6px">@("Inhaltsverzeichnis")@Html.Raw(ProtokollheftRegeln.Unterstrich())</div>
+                    <div class="ph-row head" role="presentation"><span>Auftrag</span><span>Stand</span><span style="text-align:center">Note</span></div>
+                    @foreach (var a in Model.Regal)
+                    {
+                        var st = a.Status;
+                        <a class="@(a == Model.NaechsteAbgabe ? "ph-row ph-hl" : "ph-row")" asp-action="Heft" asp-route-id="@a.Heft.Id">
+                            <span class="dots"><b>Nr. @a.Heft.Nummer · @a.Titel</b><i></i></span>
+                            <span class="ph-st" style="color:@ProtokollheftRegeln.StatusFarbe(st)">@(st == "unterwegs" ? "Abschn. " + a.Fertig + "/" + anzahl : st)</span>
+                            <span class="gr">@a.Heft.Note</span>
+                        </a>
+                    }
+                    <div class="ph-row head" role="presentation" style="margin-top:34px;cursor:default">
+                        <span>Schnitt der Gruppe</span><span></span>
+                        <span class="gr" style="font-family:'Caveat',cursive;font-size:30px;letter-spacing:0">@(Model.Gruppenschnitt.HasValue ? HesparisRegeln.NotenBuchstabe(Model.Gruppenschnitt.Value) : "–")</span>
+                    </div>
+                </div>
+                <div class="ph-stickies">
+                    <div class="ph-sticky">
+                        <span class="ph-mute">Schon mitgekommen</span>
+                        @foreach (var (name, mal) in Model.SchonDabei)
+                        {
+                            @name<text> · </text>@(mal)<text>×</text><br />
+                        }
+                        <span style="color:#8a7428">@Model.NochNieDabei noch nie dabei</span>
+                    </div>
+                    @if (Model.NaechsteAbgabe is HeftAnsicht n)
+                    {
+                        <div class="ph-sticky blue">
+                            <span class="ph-mute">Nicht vergessen</span>
+                            Heft @n.Heft.Nummer abgeben
+                            @if (n.AbgabeUeberfaellig)
+                            {
+                                <b>war am @HeftAnsicht.Datum(n.Heft.Abgabe)</b><text>!</text>
+                            }
+                            else
+                            {
+                                <text>bis </text><b>@HeftAnsicht.Datum(n.Heft.Abgabe)</b><text>!</text>
+                            }
+                            @if (n.Schreiber != null)
+                            {
+                                <br />@n.Schreiber.Kurz<text> schreibt.</text>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_HeftSkript" model="Model" />
+}

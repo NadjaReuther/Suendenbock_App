@@ -160,6 +160,49 @@ namespace Suendenbock_App.Areas.Hesparis.Controllers
             }).ToList();
         }
 
+        /// <summary>
+        /// Noten der Protokollhefte, bei denen die Figur dabei war (JS: phNoten / sjHeftZ).
+        /// schuljahr: nur Hefte dieses Schuljahres (fürs Zeugnis), null = alle (für die Freipunkte).
+        /// </summary>
+        protected async Task<List<string?>> HeftNotenAsync(Spielfigur figur, int? schuljahr = null)
+        {
+            return await _context.Protokollhefte
+                .Where(h => h.KampagneId == figur.KampagneId && !h.Entwurf && h.Note != null)
+                .Where(h => !h.Fehlend.Any(f => f.SpielfigurId == figur.Id))
+                .Where(h => schuljahr == null || h.Schuljahr == schuljahr)
+                .Select(h => h.Note)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Termine der Akademie; beim ersten Öffnen die Termine aus der HTML anlegen.
+        /// Aus dem AlltagController hierher verschoben: auch die Protokollhefte brauchen das, bevor sie
+        /// ihren ersten Abgabetermin eintragen (sonst gäbe es danach keine Standardtermine mehr).
+        /// </summary>
+        protected async Task<List<KalenderTermin>> TermineLadenAsync(Kampagne kampagne)
+        {
+            var termine = await _context.KalenderTermine
+                .Where(t => t.KampagneId == kampagne.Id)
+                .OrderBy(t => t.Datum)
+                .ToListAsync();
+            if (termine.Count > 0) return termine;
+
+            int jahr = AlltagRegeln.Schuljahresbeginn(kampagne.Spieltag);
+            foreach (var (monat, tag, titel, typ) in AlltagRegeln.TermineStandard)
+            {
+                int j = jahr;
+                if (monat < 9)
+                {
+                    j = jahr + 1;
+                }
+                var t = new KalenderTermin { KampagneId = kampagne.Id, Datum = new DateOnly(j, monat, tag), Titel = titel, Typ = typ };
+                _context.KalenderTermine.Add(t);
+                termine.Add(t);
+            }
+            await _context.SaveChangesAsync();
+            return termine.OrderBy(t => t.Datum).ToList();
+        }
+
         protected IActionResult KeineFigur() => View("KeineKampagne");
 
         protected Spielfigur StandardFigur(List<Spielfigur> figuren)
