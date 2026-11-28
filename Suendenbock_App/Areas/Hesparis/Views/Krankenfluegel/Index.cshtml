@@ -1,0 +1,384 @@
+@model KrankenfluegelViewModel
+@{
+    ViewData["Title"] = "Krankenflügel";
+    ViewData["Bereich"] = "Kranken";
+    var sl = Model.IstSpielleitung;
+    var heute = HesparisRegeln.TagUndMonat(Model.Heute);
+    var f = Model.Betten[Model.Bett];
+    int n = Model.Buch.Count;
+    var freie = Enumerable.Range(0, KrankenfluegelRegeln.Betten).Where(i => Model.Betten[i] == null).ToList();
+
+    string Bettname(KrankenZeile z) => z.Name.Split(' ')[0];
+    string Ort(Krankheitsfall x) => x.Bett.HasValue ? "Bett " + (x.Bett + 1) : "auf dem Flur";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-krankenfluegel.css" asp-append-version="true" />
+}
+
+<div class="md-wrap" id="md-kranken">
+    <div class="kf-full">
+        <div class="kf-head">
+            <div><div class="armory-eyebrow">Verwaltung · erster Stock</div><h2 class="armory-title">Der Krankenflügel</h2></div>
+            <span class="kf-today">@heute · @(Model.Belegt > 0 ? Model.Belegt + " von " + KrankenfluegelRegeln.Betten + " Betten belegt" : "alle Betten frei")</span>
+        </div>
+
+        @* ------------------------------------------------ die Bettenreihe *@
+        <div class="kf-ward">
+            <div class="kf-row">
+                @for (int i = 0; i < KrankenfluegelRegeln.Betten; i++)
+                {
+                    var z = Model.Betten[i];
+                    var on = i == Model.Bett;
+                    var a = z?.Aussehen ?? KrankenfluegelRegeln.Frei;
+                    var klasse = "kf-bed";
+                    if (on) klasse += " on";
+                    if (z != null) klasse += " occ";
+                    var br = (3 + i * 0.4).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    <div class="kf-slot">
+                        <span class="kf-win" aria-hidden="true"></span><span class="kf-beam" aria-hidden="true"></span>
+                        <a class="@klasse" asp-action="Index" asp-route-bett="@i" style="--pc:@a.Farbe;--pc-rgb:@a.Rgb;--br:@(br)s" aria-current="@(on ? "true" : null)" aria-label="Bett @(i + 1)@(z != null ? ": " + z.Name : ", frei")">
+                            <span class="kf-post l"></span><span class="kf-post r"></span><span class="kf-mat"></span><span class="kf-pillow"></span>
+                            @if (z != null)
+                            {
+                                <span class="kf-headf">@z.Name[..1]</span><span class="kf-blanket"></span>
+                            }
+                            <span class="kf-chart"><b>@(z != null ? Bettname(z) : "frei")</b><em>@(z != null ? (z.Rest > 0 ? "noch " + KrankenfluegelRegeln.Tage(z.Rest) : "kann gehen") : "Bett " + (i + 1))</em></span>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* ------------------------------------------------ das Krankenblatt unter dem gewählten Bett *@
+        @if (f != null)
+        {
+            var x = f.Fall;
+            int max = Math.Max(1, x.Tage ?? 1);
+            <section class="kf-plate" style="--pc:@f.Aussehen.Farbe;--pc-rgb:@f.Aussehen.Rgb">
+                <div class="kf-pl">
+                    <span class="kf-eyebrow">Bett @(Model.Bett + 1) · @KrankenfluegelRegeln.Symbol(x.Art) @x.Art · seit @HesparisRegeln.TagUndMonat(x.Aufnahme)</span>
+                    <h3 class="kf-name">@f.Name</h3>
+                    @if (!string.IsNullOrEmpty(x.Diagnose))
+                    {
+                        <span class="kf-dx">@x.Diagnose</span>
+                    }
+                    @if (!string.IsNullOrEmpty(x.Notiz))
+                    {
+                        <p class="kf-note">@x.Notiz</p>
+                    }
+                    @if (sl && x.Simuliert)
+                    {
+                        <span class="kf-fake sl-only">Die Schwester glaubt kein Wort.</span>
+                    }
+                </div>
+                <div class="kf-pr">
+                    <dl class="kf-facts">
+                        <div><dt>Behandlung</dt><dd>@(x.Behandlung ?? "–")</dd></div>
+                        <div><dt>Folgen</dt><dd class="kf-malus">@(x.Malus ?? "–")</dd></div>
+                        <div><dt>Noch</dt><dd>@(f.Rest > 0 ? KrankenfluegelRegeln.Tage(f.Rest) : "gesund, kann entlassen werden")</dd></div>
+                    </dl>
+                    <div class="kf-dots" aria-hidden="true">
+                        @for (int k = 0; k < Math.Min(max, 14); k++)
+                        {
+                            <i class="@(k < max - f.Rest ? "ok" : "")"></i>
+                        }
+                    </div>
+                    <div class="kf-acts">
+                        <button type="button" class="kf-btn" data-kfbook="@x.Id">im Aufnahmebuch</button>
+                        @if (sl)
+                        {
+                            <span class="rg-step sl-only">
+                                <form class="kf-inline" asp-action="Tage" method="post"><input type="hidden" name="id" value="@x.Id" /><input type="hidden" name="aenderung" value="-1" /><button type="submit" aria-label="einen Tag weniger">−</button></form>
+                                <b>@KrankenfluegelRegeln.Tage(x.Tage ?? 0)</b>
+                                <form class="kf-inline" asp-action="Tage" method="post"><input type="hidden" name="id" value="@x.Id" /><input type="hidden" name="aenderung" value="1" /><button type="submit" aria-label="einen Tag mehr">+</button></form>
+                            </span>
+                            <form class="kf-inline" asp-action="Entlassen" method="post"><input type="hidden" name="id" value="@x.Id" /><button type="submit" class="kf-btn go sl-only" data-zweistufig data-frage="wirklich entlassen?">@f.Name entlassen</button></form>
+                        }
+                    </div>
+                </div>
+            </section>
+        }
+        else
+        {
+            <section class="kf-plate empty">
+                <div class="kf-pl">
+                    <span class="kf-eyebrow">Bett @(Model.Bett + 1) · frei</span>
+                    <h3 class="kf-name">Frisch bezogen</h3>
+                    <p class="kf-note">Die Schwester hat die Decke glattgestrichen. Noch.</p>
+                </div>
+                <div class="kf-pr">
+                    <div class="kf-acts">
+                        @if (sl)
+                        {
+                            <a class="kf-btn go sl-only" asp-action="Index" asp-route-bett="@Model.Bett" asp-route-neu="true" asp-route-neuBett="@Model.Bett">Jemanden in Bett @(Model.Bett + 1) legen</a>
+                        }
+                    </div>
+                </div>
+            </section>
+        }
+
+        @* ------------------------------------------------ das Buch in der Ecke *@
+        <button type="button" class="kf-peek" data-kfbook="1" aria-label="Aufnahmebuch aufschlagen"><span class="kf-peekframe"><b>Aufnahme&shy;buch</b><em>@n @(n == 1 ? "Eintrag" : "Einträge")</em></span><span class="kf-cross">✚</span></button>
+        <span class="kf-peekhint" aria-hidden="true">alle Patienten ›</span>
+
+        @* ------------------------------------------------ das aufgeschlagene Buch (Auf-/Zuklappen und Blättern im Browser) *@
+        <div class="kf-backdrop" data-kfbook="0" hidden="@(!Model.BuchOffen)"></div>
+        <div class="kf-book" role="dialog" aria-label="Aufnahmebuch" hidden="@(!Model.BuchOffen)">
+            <div class="kf-page kf-list">
+                <span class="kf-kicker">Krankenflügel · Aufnahmebuch</span>
+                <div class="kf-ltop">
+                    <h3>Alle Patienten</h3>
+                    @if (sl)
+                    {
+                        <button type="button" class="kf-newbtn sl-only" data-kfsel="neu">+ Neuaufnahme</button>
+                    }
+                </div>
+                <div class="kf-lhead"><span>Datum</span><span>Name</span><span>Grund</span><span>Tage</span></div>
+                @if (n > 0)
+                {
+                    foreach (var z in Model.Buch)
+                    {
+                        var x = z.Fall;
+                        var klasse = "kf-lrow";
+                        if (!Model.Formular && x.Id == Model.AuswahlId) klasse += " on";
+                        if (x.Entlassung.HasValue) klasse += " out";
+                        <button type="button" class="@klasse" data-kfsel="@x.Id">
+                            <span class="kf-ld">@KrankenfluegelRegeln.Kurz(x.Aufnahme)</span><span class="kf-ln" style="color:@z.Aussehen.Farbe">@z.Name</span>
+                            <span class="kf-lg">@KrankenfluegelRegeln.Symbol(x.Art) @(x.Diagnose ?? x.Art)</span><span class="kf-lt">@(x.Tage ?? 0) T</span>
+                            @if (x.Entlassung.HasValue)
+                            {
+                                <span class="kf-lstamp">entlassen @KrankenfluegelRegeln.Kurz(x.Entlassung.Value)</span>
+                            }
+                            else
+                            {
+                                <span class="kf-lbed">@Ort(x)</span>
+                            }
+                            @if (sl && x.Simuliert)
+                            {
+                                <span class="kf-lfake sl-only">Simulant?</span>
+                            }
+                        </button>
+                    }
+                }
+                else
+                {
+                    <p class="kf-empty">Noch niemand eingeliefert. Die Seiten sind leer und riechen nach Desinfektion.</p>
+                }
+            </div>
+            <div class="kf-gutter"></div>
+
+            @* ---- rechte Seite: Neuaufnahme (Gott) *@
+            @if (sl)
+            {
+                <div class="kf-page kf-case" data-fall="neu" hidden="@(!Model.Formular)">
+                    <span class="kf-kicker">Neuaufnahme · @heute</span>
+                    <h3>Wer kommt rein?</h3>
+                    @if (freie.Count == 0)
+                    {
+                        <p class="kf-empty">Alle sechs Betten sind belegt. Erst jemanden entlassen.</p>
+                    }
+                    else
+                    {
+                        var vor = Model.FormularBett is int fb && freie.Contains(fb) ? fb : freie[0];
+                        <form class="kf-form" asp-action="Aufnehmen" method="post" autocomplete="off">
+                            <label class="kf-f">
+                                <span>Patient</span>
+                                <select name="patient" data-patient>
+                                    @foreach (var p in Model.Figuren)
+                                    {
+                                        <option value="@p.Id">@p.Name</option>
+                                    }
+                                    <option value="x">jemand anderes …</option>
+                                </select>
+                            </label>
+                            <label class="kf-f kf-other"><span>Name</span><input name="name" maxlength="50" placeholder="nur bei jemand anderem" /></label>
+                            <div class="kf-f">
+                                <span>Was ist passiert?</span>
+                                <div class="kf-kinds">
+                                    @for (int i = 0; i < KrankenfluegelRegeln.Arten.Length; i++)
+                                    {
+                                        var (art, sym) = KrankenfluegelRegeln.Arten[i];
+                                        <label class="kf-kind"><input type="radio" name="art" value="@art" checked="@(i == 0)" /><span>@sym @art</span></label>
+                                    }
+                                </div>
+                            </div>
+                            <label class="kf-f"><span>Diagnose</span><input name="diagnose" maxlength="80" placeholder="z. B. Verbrennung am Unterarm" /></label>
+                            <label class="kf-f"><span>Behandlung</span><input name="behandlung" maxlength="80" placeholder="z. B. Brandsalbe, zweimal täglich" /></label>
+                            <label class="kf-f"><span>Folgen</span><input name="folgen" maxlength="80" placeholder="z. B. −10 auf Fingerfertigkeit" /></label>
+                            <div class="kf-frow">
+                                <label class="kf-f"><span>Tage im Bett</span><input name="tage" type="number" min="0" max="60" value="2" /></label>
+                                <label class="kf-f">
+                                    <span>Bett</span>
+                                    <select name="bett">
+                                        @foreach (var i in freie)
+                                        {
+                                            <option value="@i" selected="@(i == vor)">Bett @(i + 1)</option>
+                                        }
+                                    </select>
+                                </label>
+                            </div>
+                            <label class="kf-f"><span>Notiz</span><textarea name="notiz" rows="2" maxlength="400" placeholder="Wie ist es passiert? Was sagt die Schwester?"></textarea></label>
+                            <label class="kf-check"><input type="checkbox" name="simuliert" value="true" /> Die Schwester glaubt kein Wort (nur für die Spielleitung)</label>
+                            <button type="submit" class="kf-submit">Ins Buch eintragen</button>
+                        </form>
+                    }
+                </div>
+            }
+
+            @* ---- rechte Seite: ein Eintrag *@
+            @if (n == 0)
+            {
+                <div class="kf-page kf-case" data-fall="leer" hidden="@Model.Formular">
+                    <p class="kf-empty">Hier steht, wer wann und warum im Krankenflügel lag.</p>
+                </div>
+            }
+            @foreach (var z in Model.Buch)
+            {
+                var x = z.Fall;
+                <div class="kf-page kf-case" data-fall="@x.Id" hidden="@(Model.Formular || x.Id != Model.AuswahlId)">
+                    <span class="kf-kicker">Eintrag · aufgenommen am @HesparisRegeln.TagUndMonat(x.Aufnahme)</span>
+                    <h3>@z.Name</h3>
+                    <div class="kf-fields">
+                        <span>Grund</span><span class="kf-hand">@KrankenfluegelRegeln.Symbol(x.Art) @x.Art</span>
+                        @foreach (var (feld, titel, wert) in new[] { ("diagnose", "Diagnose", x.Diagnose), ("behandlung", "Behandlung", x.Behandlung), ("folgen", "Folgen", x.Malus) })
+                        {
+                            <span>@titel</span>
+                            if (sl)
+                            {
+                                <input class="kf-edit" data-kfe="@x.Id" data-feld="@feld" maxlength="80" value="@wert" placeholder="@titel" />
+                            }
+                            else
+                            {
+                                <span class="kf-hand">@(wert ?? "–")</span>
+                            }
+                        }
+                        <span>Dauer</span><span class="kf-hand">@KrankenfluegelRegeln.Tage(x.Tage ?? 0)@(x.Entlassung.HasValue ? "" : " · noch " + KrankenfluegelRegeln.Tage(z.Rest))</span>
+                        <span>Notiz</span>
+                        @if (sl)
+                        {
+                            <textarea class="kf-edit" data-kfe="@x.Id" data-feld="notiz" rows="3" maxlength="400" placeholder="Notiz">@x.Notiz</textarea>
+                        }
+                        else
+                        {
+                            <span class="kf-hand">@(x.Notiz ?? "–")</span>
+                        }
+                    </div>
+                    @if (sl)
+                    {
+                        <label class="kf-check sl-only"><input type="checkbox" data-kfe="@x.Id" data-feld="simuliert" checked="@x.Simuliert" /> Die Schwester glaubt kein Wort</label>
+                    }
+                    @if (!string.IsNullOrEmpty(x.Quelle))
+                    {
+                        <span class="kf-src">eingeliefert vom @(x.Quelle == "glimrack" ? "Glimrack-Feld" : "Duellplatz")</span>
+                    }
+                    @if (x.Entlassung.HasValue)
+                    {
+                        <span class="kf-stamp">Entlassen · @HesparisRegeln.TagUndMonat(x.Entlassung.Value)</span>
+                    }
+                    else
+                    {
+                        <span class="kf-stamp in">@Ort(x)</span>
+                    }
+                    @if (sl)
+                    {
+                        <div class="kf-bacts sl-only">
+                            @if (!x.Entlassung.HasValue)
+                            {
+                                <form class="kf-inline" asp-action="Entlassen" method="post"><input type="hidden" name="id" value="@x.Id" /><input type="hidden" name="buch" value="true" /><button type="submit" class="kf-btn go" data-zweistufig data-frage="wirklich entlassen?">entlassen</button></form>
+                            }
+                            <form class="kf-inline" asp-action="Loeschen" method="post"><input type="hidden" name="id" value="@x.Id" /><button type="submit" class="kf-btn" data-zweistufig data-frage="wirklich löschen?">Eintrag löschen</button></form>
+                        </div>
+                    }
+                </div>
+            }
+            <button type="button" class="kf-close" data-kfbook="0">Buch zuklappen</button>
+        </div>
+    </div>
+    @if (sl)
+    {
+        <form id="kfFeldForm" asp-action="Feld" method="post" hidden></form>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            // Volle Fensterbreite (JS: kfFit)
+            function kfFit() {
+                var el = document.querySelector('.kf-full'); if (!el) return;
+                var docW = document.documentElement.clientWidth;
+                el.style.marginLeft = '0px'; el.style.width = '';
+                var r = el.getBoundingClientRect(); if (!r.width) return;
+                el.style.marginLeft = (-r.left) + 'px'; el.style.width = docW + 'px';
+                el.style.minHeight = Math.max(680, window.innerHeight - (r.top + window.scrollY)) + 'px';
+            }
+            window.addEventListener('resize', kfFit); kfFit(); setTimeout(kfFit, 700);
+
+            // Aufnahmebuch auf/zu und blättern (JS: data-kfbook, data-kfsel, data-kfnew)
+            var buch = document.querySelector('.kf-book'), hinter = document.querySelector('.kf-backdrop');
+            function blaettern(fall) {
+                var seiten = buch.querySelectorAll('.kf-case[data-fall]');
+                var ziel = Array.prototype.find.call(seiten, function (s) { return s.dataset.fall === String(fall); });
+                if (!ziel) ziel = seiten[seiten.length - 1];
+                seiten.forEach(function (s) { s.hidden = s !== ziel; });
+                buch.querySelectorAll('.kf-lrow').forEach(function (r) { r.classList.toggle('on', ziel && r.dataset.kfsel === ziel.dataset.fall); });
+            }
+            function zeigen(offen, mitSchwung) {
+                buch.hidden = !offen; hinter.hidden = !offen;
+                buch.classList.remove('opening');
+                if (offen && mitSchwung) { void buch.offsetWidth; buch.classList.add('opening'); }
+            }
+            document.querySelectorAll('[data-kfbook]').forEach(function (k) {
+                k.addEventListener('click', function () {
+                    var v = k.dataset.kfbook;
+                    if (v === '0') { zeigen(false); return; }
+                    var warZu = buch.hidden;
+                    if (v !== '1') blaettern(v);
+                    else if (buch.querySelector('.kf-case[data-fall="neu"]:not([hidden])')) blaettern(buch.querySelector('.kf-lrow') ? buch.querySelectorAll('.kf-lrow')[buch.querySelectorAll('.kf-lrow').length - 1].dataset.kfsel : 'leer');
+                    zeigen(true, warZu);
+                });
+            });
+            document.querySelectorAll('[data-kfsel]').forEach(function (r) {
+                r.addEventListener('click', function () { blaettern(r.dataset.kfsel); });
+            });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !buch.hidden) zeigen(false); });
+            if (!buch.hidden && location.search.indexOf('neu=') >= 0) { var p = buch.querySelector('[data-patient]'); if (p) p.focus(); }
+
+            // "jemand anderes": dann braucht es einen Namen
+            var pat = document.querySelector('[data-patient]'), anders = document.querySelector('.kf-other input');
+            if (pat && anders) {
+                function name() { anders.required = pat.value === 'x'; }
+                pat.addEventListener('change', name); name();
+            }
+
+            // Spielleitung: Diagnose, Behandlung, Folgen, Notiz beim Tippen speichern; "glaubt kein Wort" sofort
+            var ff = document.getElementById('kfFeldForm');
+            document.querySelectorAll('[data-kfe]').forEach(function (el) {
+                var uhr = null;
+                function senden(neuLaden) {
+                    clearTimeout(uhr);
+                    var fd = new FormData(ff); fd.append('id', el.dataset.kfe); fd.append('feld', el.dataset.feld);
+                    fd.append('wert', el.type === 'checkbox' ? (el.checked ? 'true' : 'false') : el.value);
+                    fetch(ff.action, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'fetch' } })
+                        .then(function () { if (neuLaden) { var u = new URL(location.href); u.searchParams.set('buch', 'true'); u.searchParams.set('fall', el.dataset.kfe); u.searchParams.delete('neu'); location.href = u; } });
+                }
+                if (el.type === 'checkbox') { el.addEventListener('change', function () { senden(true); }); return; }
+                el.addEventListener('input', function () { clearTimeout(uhr); uhr = setTimeout(function () { senden(false); }, 500); });
+                el.addEventListener('change', function () { senden(false); });
+            });
+
+            // Erst nachfragen (JS: mdArm)
+            document.querySelectorAll('[data-zweistufig]').forEach(function (knopf) {
+                var alt = knopf.innerHTML;
+                knopf.addEventListener('click', function (e) {
+                    if (knopf.classList.contains('armed')) return;
+                    e.preventDefault();
+                    knopf.classList.add('armed');
+                    knopf.textContent = knopf.dataset.frage;
+                    setTimeout(function () { if (knopf.isConnected) { knopf.classList.remove('armed'); knopf.innerHTML = alt; } }, 2800);
+                });
+            });
+        })();
+    </script>
+}
