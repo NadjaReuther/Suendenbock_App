@@ -35,7 +35,7 @@ public static class HesparisMenue
         {
             new("Stundenplan", "Stundenplan", "▦", "Alltag", "Stundenplan", MitFigur: false),
             new("Kalender", "Kalender", "☼", "Alltag", "Kalender", MitFigur: false),
-            new("Essen", "Essensplan", "♨", null, null),
+            new("Essen", "Essensplan", "♨", "Alltag", "Essensplan", MitFigur: false),
             new("Ags", "AGs", "⚘", null, null),
             new("Nachsitzen", "Nachsitzen", "⧗", null, null),
         }),

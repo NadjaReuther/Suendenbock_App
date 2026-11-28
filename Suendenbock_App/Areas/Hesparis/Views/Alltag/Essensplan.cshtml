@@ -1,0 +1,293 @@
+@model EssensplanViewModel
+@{
+    ViewData["Title"] = "Essensplan";
+    ViewData["Bereich"] = "Essen";
+
+    // Überschrift: "Montag, 3. September · Heute im Kessel"
+    string zusatz = " · Vorschau";
+    if (Model.TagIstHeute)
+    {
+        zusatz = " · Heute im Kessel";
+    }
+    else if (Model.TagDatum < Model.Heute)
+    {
+        zusatz = " · vorbei";
+    }
+
+    string wochenName = "In " + Model.Woche + " Wochen";
+    if (Model.Woche == 0)
+    {
+        wochenName = "Diese Woche";
+    }
+    else if (Model.Woche == 1)
+    {
+        wochenName = "Nächste Woche";
+    }
+    else if (Model.Woche == -1)
+    {
+        wochenName = "Letzte Woche";
+    }
+    string wochenText = AlltagRegeln.WochenText(Model.Montag);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/hesparis-alltag.css" asp-append-version="true" />
+}
+
+<div class="md-wrap">
+<div class="es-board">
+    <section class="es-hall">
+        @* ------------------------------------------------------------ Kopf: Woche und Tage *@
+        <div class="es-head">
+            <div>
+                <div class="armory-eyebrow">Speisesaal · Essensausgabe</div>
+                <h1 class="armory-title">@AlltagRegeln.Wochentage[Model.Tag], @AlltagRegeln.Datum(Model.TagDatum)@zusatz</h1>
+            </div>
+            <div class="es-weeknav">
+                @if (Model.Woche <= AlltagRegeln.EssenWocheMin)
+                {
+                    <button type="button" class="es-wk" disabled aria-label="Woche zurück">‹</button>
+                }
+                else
+                {
+                    <a class="es-wk" asp-action="Essensplan" asp-route-woche="@(Model.Woche - 1)" asp-route-tag="@Model.Tag" aria-label="Woche zurück">‹</a>
+                }
+                <span class="es-wkl">@wochenName<b>@wochenText</b></span>
+                @if (Model.Woche >= AlltagRegeln.EssenWocheMax)
+                {
+                    <button type="button" class="es-wk" disabled aria-label="Woche vor">›</button>
+                }
+                else
+                {
+                    <a class="es-wk" asp-action="Essensplan" asp-route-woche="@(Model.Woche + 1)" asp-route-tag="@Model.Tag" aria-label="Woche vor">›</a>
+                }
+
+                <div class="es-days" role="tablist">
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var datum = Model.Montag.AddDays(i);
+                        string klasse = "es-day";
+                        if (i == Model.Tag) { klasse += " on"; }
+                        if (datum == Model.Heute) { klasse += " today"; }
+                        if (datum < Model.Heute) { klasse += " past"; }
+                        <a role="tab" aria-selected="@(i == Model.Tag ? "true" : "false")" class="@klasse" asp-action="Essensplan" asp-route-woche="@Model.Woche" asp-route-tag="@i">
+                            <b>@AlltagRegeln.Wochentage[i].Substring(0, 2)</b><em>@(datum.Day).@(datum.Month).</em>
+                            @if (datum == Model.Heute)
+                            {
+                                <i>heute</i>
+                            }
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* ------------------------------------------------------------ Drei Kessel *@
+        <div class="es-pots">
+            @foreach (var k in Model.Kessel)
+            {
+                string topf = "es-pot";
+                if (Model.TagIstHeute)
+                {
+                    topf = "es-pot hot";
+                }
+                <div class="@topf" style="--food:@k.Farbe">
+                    <div class="es-steam"><svg viewBox="0 0 160 120" aria-hidden="true"><path d="M40 115 C 20 90 60 70 40 40 C 30 25 45 10 40 0 M80 115 C 60 85 100 65 80 30 M120 115 C 100 90 140 70 120 40" /></svg></div>
+                    <div class="es-kessel"></div>
+                    <div class="es-card">
+                        <div class="es-slot">@k.Name</div>
+                        <div class="es-dish">@k.Gericht.Name</div>
+                        <div class="es-fx">✦ @k.Gericht.Wirkung</div>
+                        <div class="es-price">
+                            ● @HesparisRegeln.GeldText(k.Preis)
+                            @if (k.Preis != k.Gericht.Preis)
+                            {
+                                <s style="opacity:.55">@HesparisRegeln.GeldText(k.Gericht.Preis)</s>
+                            }
+                        </div>
+                    </div>
+
+                    @if (Model.TagIstHeute)
+                    {
+                        @* Figur antippen = kaufen *@
+                        <form class="es-q" asp-action="EssenKaufen" method="post">
+                            <input type="hidden" name="mahlzeit" value="@k.Mahlzeit" />
+                            <input type="hidden" name="woche" value="@Model.Woche" />
+                            <input type="hidden" name="tag" value="@Model.Tag" />
+                            @foreach (var g in k.Gaeste)
+                            {
+                                string klasse = "es-who";
+                                string zeichen = "+";
+                                string titel = g.Name + ": kaufen, hat " + HesparisRegeln.GeldText(g.Geld);
+                                if (g.Gegessen)
+                                {
+                                    klasse = "es-who ate";
+                                    zeichen = "✓";
+                                    titel = g.Name + ": hat gegessen";
+                                }
+                                else if (g.ZuWenigGeld)
+                                {
+                                    klasse = "es-who poor";
+                                    zeichen = "–";
+                                    titel = g.Name + ": zu wenig Geld (" + HesparisRegeln.GeldText(g.Geld) + ")";
+                                }
+                                bool aus = g.Gegessen || g.ZuWenigGeld || !g.Darf;
+                                <button type="submit" class="@klasse" style="--pc:@g.Farbe" name="figurId" value="@g.FigurId" title="@titel" disabled="@aus"><span>@zeichen</span>@g.Name</button>
+                            }
+                        </form>
+                    }
+                    else if (Model.TagDatum < Model.Heute)
+                    {
+                        <div class="es-q es-note">Schon vorbei.</div>
+                    }
+                    else
+                    {
+                        <div class="es-q es-note">Kaufen erst am @AlltagRegeln.Wochentage[Model.Tag], @AlltagRegeln.Datum(Model.TagDatum).</div>
+                    }
+                </div>
+            }
+        </div>
+
+        @* ------------------------------------------------------------ Theke: was heute wirkt *@
+        <div class="es-counter">
+            <div class="es-buffs">
+                <span class="es-bl">Wirkt heute</span>
+                @if (Model.Wirkungen.Count == 0)
+                {
+                    <span class="es-none">Noch niemand hat heute gegessen.</span>
+                }
+                @foreach (var w in Model.Wirkungen)
+                {
+                    <span class="es-buff" style="--pc:@w.Farbe"><b>@w.Name</b> @w.Text</span>
+                }
+            </div>
+            <span class="es-hint">Figur antippen zum Kaufen. Geld wird abgezogen, LP gibt es sofort, Effekte gelten bis zum nächsten Tag.</span>
+        </div>
+    </section>
+</div>
+
+@if (Model.IstSpielleitung)
+{
+    @* ------------------------------------------------------------ Spielleitung: Speiseplan *@
+    <details class="kp-sl es-sl" id="es-sl" open="@Model.Verwalten">
+        <summary>Spielleitung · Speiseplan für @wochenText</summary>
+        <div class="kp-sl-in es-sl-in">
+            <div class="es-grid">
+                <span class="es-gl">Woche</span>
+                @for (int i = 0; i < 7; i++)
+                {
+                    var datum = Model.Montag.AddDays(i);
+                    string klasse = "es-gh";
+                    if (datum == Model.Heute)
+                    {
+                        klasse = "es-gh on";
+                    }
+                    <span class="@klasse">@AlltagRegeln.Wochentage[i].Substring(0, 2) @(datum.Day).@(datum.Month).</span>
+                }
+                @foreach (var (mahlzeit, name, _) in AlltagRegeln.Mahlzeiten)
+                {
+                    int m = (int)mahlzeit;
+                    <span class="es-gl">@name</span>
+                    @for (int t = 0; t < 7; t++)
+                    {
+                        var g = Model.Plan[t][m];
+                        string klasse = "es-cell";
+                        if (Model.Feld is (int ft, int fm) && ft == t && fm == m)
+                        {
+                            klasse = "es-cell on";
+                        }
+                        <a class="@klasse" asp-action="Essensplan" asp-route-woche="@Model.Woche" asp-route-tag="@Model.Tag" asp-route-feld="@(t + "-" + m)" asp-route-art="@Model.Art" asp-fragment="es-sl">
+                            <b>@(g?.Name ?? "–")</b>
+                            <em>@g?.Wirkung</em>
+                            <i>
+                                @if (g != null)
+                                {
+                                    @HesparisRegeln.GeldText(AlltagRegeln.Preis(g.Preis, Model.HalberPreis))
+                                }
+                            </i>
+                        </a>
+                    }
+                }
+            </div>
+
+            <div class="es-side">
+                @if (Model.Feld is (int pt, int pm))
+                {
+                    string feld = pt + "-" + pm;
+                    var aktuell = Model.Plan[pt][pm];
+                    <div class="rg-lbl">@AlltagRegeln.Wochentage[pt], @AlltagRegeln.Datum(Model.Montag.AddDays(pt)) · @AlltagRegeln.Mahlzeiten[pm].Name wählen</div>
+                    <div class="es-kinds">
+                        @{
+                            var arten = new List<(string Code, string Name)> { ("alle", "Alle") };
+                            arten.AddRange(AlltagRegeln.Gerichtarten);
+                        }
+                        @foreach (var (code, name) in arten)
+                        {
+                            string klasse = "ag-kat";
+                            if (Model.Art == code)
+                            {
+                                klasse = "ag-kat active";
+                            }
+                            <a class="@klasse" asp-action="Essensplan" asp-route-woche="@Model.Woche" asp-route-tag="@Model.Tag" asp-route-feld="@feld" asp-route-art="@code" asp-fragment="es-sl">@name</a>
+                        }
+                    </div>
+                    <div class="es-cat">
+                        <form asp-action="GerichtSetzen" method="post">
+                            <input type="hidden" name="woche" value="@Model.Woche" />
+                            <input type="hidden" name="tag" value="@pt" />
+                            <input type="hidden" name="mahlzeit" value="@pm" />
+                            <input type="hidden" name="art" value="@Model.Art" />
+                            @foreach (var g in Model.Auswahl)
+                            {
+                                string klasse = "es-opt";
+                                if (aktuell?.Code == g.Code)
+                                {
+                                    klasse = "es-opt on";
+                                }
+                                <button type="submit" class="@klasse" name="code" value="@g.Code"><b>@g.Name</b><i>@HesparisRegeln.GeldText(g.Preis)</i><em>✦ @g.Wirkung</em></button>
+                            }
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <p class="md-empty">Ein Feld links antippen, dann hier ein Gericht wählen.</p>
+                }
+
+                <div class="es-actions">
+                    <form asp-action="SpeiseplanWuerfeln" method="post">
+                        <input type="hidden" name="woche" value="@Model.Woche" />
+                        <input type="hidden" name="art" value="@Model.Art" />
+                        <button type="submit" class="icon-btn">⁂ Woche @wochenText würfeln</button>
+                    </form>
+                    @if (Model.Feld is (int wt, int wm))
+                    {
+                        <form asp-action="SpeiseplanWuerfeln" method="post">
+                            <input type="hidden" name="woche" value="@Model.Woche" />
+                            <input type="hidden" name="feld" value="@(wt + "-" + wm)" />
+                            <input type="hidden" name="art" value="@Model.Art" />
+                            <button type="submit" class="icon-btn">⁂ Dieses Feld würfeln</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        </div>
+    </details>
+}
+</div>
+
+@section Scripts {
+    <script>
+        // Speisesaal so hoch wie das Fenster (JS: esFit)
+        (function () {
+            function fit() {
+                var b = document.querySelector('.es-board'); if (!b) return;
+                if (window.innerWidth <= 760) { b.style.height = ''; return; }
+                var top = b.getBoundingClientRect().top + window.scrollY;
+                b.style.height = Math.max(520, window.innerHeight - top - 46) + 'px';
+            }
+            fit();
+            window.addEventListener('resize', fit);
+        })();
+    </script>
+}
