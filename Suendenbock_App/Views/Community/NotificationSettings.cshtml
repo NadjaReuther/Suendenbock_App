@@ -173,7 +173,29 @@
         }
 
         // Warte bis pushManager initialisiert ist
+        // Manche iPhones haben noch eine alte push-notifications.js im Speicher (ohne getSupportStatus).
+        // Dann die aktuelle Fassung am Speicher vorbei holen und ausführen.
+        function pushManagerAktuell() {
+            return !!(window.pushManager && typeof window.pushManager.getSupportStatus === 'function');
+        }
+        async function pushManagerSicherstellen() {
+            if (pushManagerAktuell()) return true;
+            try {
+                // Auch den gespeicherten Eintrag unter der versionierten Adresse erneuern
+                const tag = document.querySelector('script[src*="push-notifications.js"]');
+                if (tag) { try { await fetch(tag.src, { cache: 'reload', credentials: 'same-origin' }); } catch (e) { } }
+                const antwort = await fetch('/js/push-notifications.js?frisch=' + Date.now(), { cache: 'reload', credentials: 'same-origin' });
+                const code = await antwort.text();
+                (new Function(code))();
+                console.log('push-notifications.js neu geladen (alte Fassung im Speicher)');
+            } catch (e) {
+                console.error('push-notifications.js ließ sich nicht neu laden:', e);
+            }
+            return pushManagerAktuell();
+        }
+
         async function initPage() {
+            await pushManagerSicherstellen();
             await window.pushManager.init();
             await updateUI();
             await loadPreferences();
@@ -182,7 +204,8 @@
         // Gerätebericht unten in der Info-Box (hilft, wenn es auf einem Gerät klemmt)
         async function showDiagnose() {
             const el = document.getElementById('pushDiagnose');
-            if (!el || !window.pushManager) return;
+            if (!el) return;
+            if (!pushManagerAktuell()) { el.textContent = 'Gerät: alte Fassung von push-notifications.js im Speicher'; return; }
             try { el.textContent = 'Gerät: ' + await window.pushManager.getDiagnose(); } catch (e) { el.textContent = 'Gerät: ' + e.message; }
         }
 
@@ -252,9 +275,10 @@
         toggleBtn.addEventListener('click', async () => {
             // Tipp sofort sichtbar quittieren
             statusDescription.textContent = 'Tipp erkannt …';
-            if (!window.pushManager) {
+            if (!pushManagerAktuell()) {
                 statusTitle.textContent = 'Nicht geladen';
-                statusDescription.textContent = 'Die Benachrichtigungen konnten nicht geladen werden (push-notifications.js fehlt).';
+                statusDescription.textContent = 'Die Benachrichtigungen sind auf diesem Gerät noch in einer alten Fassung gespeichert. Bitte die App ganz schließen (vom unteren Rand hochwischen) und neu öffnen.';
+                pushManagerSicherstellen();
                 showDiagnose();
                 return;
             }
@@ -359,6 +383,6 @@
 
         // Initialisiere Seite
         showDiagnose();
-        if (window.pushManager) initPage().finally(showDiagnose);
+        initPage().finally(showDiagnose);
     </script>
 }
