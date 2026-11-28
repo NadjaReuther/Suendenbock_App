@@ -11,9 +11,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Warte bis pushManager initialisiert ist
-    if (window.pushManager) {
+    if (window.sbPush) {
         try {
-            await window.pushManager.init();
+            await window.sbPush.init();
             updateBellIcon();
 
             // Update alle 30 Sekunden (falls Status sich ändert)
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function updateBellIcon() {
         try {
-            const isSubscribed = window.pushManager && window.pushManager.isSubscribed;
+            const isSubscribed = window.sbPush && window.sbPush.isSubscribed;
 
             if (isSubscribed) {
                 // Aktiv - goldene Glocke

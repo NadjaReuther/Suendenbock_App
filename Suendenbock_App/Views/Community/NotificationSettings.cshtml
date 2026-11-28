@@ -173,30 +173,13 @@
         }
 
         // Warte bis pushManager initialisiert ist
-        // Manche iPhones haben noch eine alte push-notifications.js im Speicher (ohne getSupportStatus).
-        // Dann die aktuelle Fassung am Speicher vorbei holen und ausführen.
+        // Unser Objekt heißt window.sbPush (window.pushManager gehört auf dem iPhone Safari selbst)
         function pushManagerAktuell() {
-            return !!(window.pushManager && typeof window.pushManager.getSupportStatus === 'function');
-        }
-        async function pushManagerSicherstellen() {
-            if (pushManagerAktuell()) return true;
-            try {
-                // Auch den gespeicherten Eintrag unter der versionierten Adresse erneuern
-                const tag = document.querySelector('script[src*="push-notifications.js"]');
-                if (tag) { try { await fetch(tag.src, { cache: 'reload', credentials: 'same-origin' }); } catch (e) { } }
-                const antwort = await fetch('/js/push-notifications.js?frisch=' + Date.now(), { cache: 'reload', credentials: 'same-origin' });
-                const code = await antwort.text();
-                (new Function(code))();
-                console.log('push-notifications.js neu geladen (alte Fassung im Speicher)');
-            } catch (e) {
-                console.error('push-notifications.js ließ sich nicht neu laden:', e);
-            }
-            return pushManagerAktuell();
+            return !!(window.sbPush && typeof window.sbPush.getSupportStatus === 'function');
         }
 
         async function initPage() {
-            await pushManagerSicherstellen();
-            await window.pushManager.init();
+            await window.sbPush.init();
             await updateUI();
             await loadPreferences();
         }
@@ -205,8 +188,8 @@
         async function showDiagnose() {
             const el = document.getElementById('pushDiagnose');
             if (!el) return;
-            if (!pushManagerAktuell()) { el.textContent = 'Gerät: alte Fassung von push-notifications.js im Speicher'; return; }
-            try { el.textContent = 'Gerät: ' + await window.pushManager.getDiagnose(); } catch (e) { el.textContent = 'Gerät: ' + e.message; }
+            if (!pushManagerAktuell()) { el.textContent = 'Gerät: push-notifications.js nicht geladen'; return; }
+            try { el.textContent = 'Gerät: ' + await window.sbPush.getDiagnose(); } catch (e) { el.textContent = 'Gerät: ' + e.message; }
         }
 
         // Jeder Skriptfehler auf der Seite landet sichtbar im Gerätebericht
@@ -221,8 +204,8 @@
 
 
         async function updateUI() {
-            const isSubscribed = window.pushManager.isSubscribed;
-            const support = window.pushManager.getSupportStatus();
+            const isSubscribed = window.sbPush.isSubscribed;
+            const support = window.sbPush.getSupportStatus();
             toggleBtn.disabled = false;
 
             if (!isSubscribed && !support.supported) {
@@ -260,7 +243,7 @@
 
         async function loadPreferences() {
             try {
-                const prefs = await window.pushManager.getPreferences();
+                const prefs = await window.sbPush.getPreferences();
                 document.getElementById('notifyForumThreads').checked = prefs.notifyForumThreads;
                 document.getElementById('notifyForumReplies').checked = prefs.notifyForumReplies;
                 document.getElementById('notifyNews').checked = prefs.notifyNews;
@@ -277,16 +260,15 @@
             statusDescription.textContent = 'Tipp erkannt …';
             if (!pushManagerAktuell()) {
                 statusTitle.textContent = 'Nicht geladen';
-                statusDescription.textContent = 'Die Benachrichtigungen sind auf diesem Gerät noch in einer alten Fassung gespeichert. Bitte die App ganz schließen (vom unteren Rand hochwischen) und neu öffnen.';
-                pushManagerSicherstellen();
+                statusDescription.textContent = 'Die Benachrichtigungen konnten nicht geladen werden. Bitte die App ganz schließen und neu öffnen.';
                 showDiagnose();
                 return;
             }
-            const isSubscribed = window.pushManager.isSubscribed;
+            const isSubscribed = window.sbPush.isSubscribed;
 
             // Geht auf diesem Gerät nicht: Erklärung anzeigen statt still nichts zu tun
             let support;
-            try { support = window.pushManager.getSupportStatus(); }
+            try { support = window.sbPush.getSupportStatus(); }
             catch (e) { await notify('error', 'Fehler', 'Gerät lässt sich nicht prüfen: ' + e.message); return; }
             if (!isSubscribed && !support.supported) {
                 await notify('info', 'So aktivierst du Benachrichtigungen', support.message);
@@ -301,14 +283,14 @@
             try {
                 if (isSubscribed) {
                     // Deaktivieren
-                    const result = await window.pushManager.unsubscribe();
+                    const result = await window.sbPush.unsubscribe();
                     if (result.success) {
                         await notify('success', 'Deaktiviert', result.message, true);
                         await updateUI();
                     }
                 } else {
                     // Aktivieren
-                    const result = await window.pushManager.subscribe();
+                    const result = await window.sbPush.subscribe();
                     if (result.success) {
                         // Banner permanent verstecken nach erfolgreicher Aktivierung
                         localStorage.setItem('notificationBannerDismissed', 'true');
@@ -341,7 +323,7 @@
             };
 
             try {
-                const result = await window.pushManager.updatePreferences(preferences);
+                const result = await window.sbPush.updatePreferences(preferences);
                 if (result.success) {
                     await Swal.fire({
                         icon: 'success',
@@ -362,7 +344,7 @@
 
         testBtn.addEventListener('click', async () => {
             try {
-                const result = await window.pushManager.sendTestNotification();
+                const result = await window.sbPush.sendTestNotification();
                 if (result.success) {
                     await Swal.fire({
                         icon: 'success',

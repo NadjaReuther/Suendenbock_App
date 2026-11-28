@@ -408,13 +408,15 @@ class PushNotificationManager {
 }
 
 // Globale Instanz
-window.pushManager = new PushNotificationManager();
+// Nicht window.pushManager: Safari (iOS 18.4+, Declarative Web Push) hat dort ein eigenes,
+// schreibgeschütztes PushManager-Objekt. Die Zuweisung wurde auf dem iPhone still ignoriert.
+window.sbPush = new PushNotificationManager();
 
 // Auto-Initialisierung wenn Seite geladen ist
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        window.pushManager.init();
+        window.sbPush.init();
     });
 } else {
-    window.pushManager.init();
+    window.sbPush.init();
 }
