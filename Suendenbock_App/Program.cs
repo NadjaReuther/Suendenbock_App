@@ -145,7 +145,19 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+// Skripte und Styles immer beim Server nachfragen (kostet nur ein 304), sonst behalten
+// iPhones alte Fassungen, z. B. eine push-notifications.js ohne getSupportStatus.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var name = ctx.File.Name;
+        if (name.EndsWith(".js", StringComparison.OrdinalIgnoreCase) || name.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
+        {
+            ctx.Context.Response.Headers.CacheControl = "no-cache";
+        }
+    }
+});
 
 app.UseRouting();
 
