@@ -198,12 +198,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const isOnSettingsPage = window.location.pathname.includes('/NotificationSettings');
 
     // Zeige Banner nur wenn nicht dismissed, nicht auf Settings-Seite und Push Manager verfügbar
-    if (!bannerDismissed && !isOnSettingsPage && window.pushManager) {
+    if (!bannerDismissed && !isOnSettingsPage && window.sbPush) {
         // Warte 2 Sekunden bevor Banner erscheint (damit nicht sofort nervt)
         setTimeout(async () => {
             // Prüfe ob bereits abonniert
-            await window.pushManager.init();
-            if (!window.pushManager.isSubscribed) {
+            await window.sbPush.init();
+            if (!window.sbPush.isSubscribed) {
                 banner.style.display = 'block';
             }
         }, 2000);
