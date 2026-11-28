@@ -7,6 +7,59 @@ class PushNotificationManager {
         this.isSubscribed = false;
         this.publicKey = null;
         this._initPromise = null;
+        this.lastError = null;
+    }
+
+    /**
+     * Wartet höchstens ms Millisekunden auf promise. Auf dem iPhone bleibt
+     * navigator.serviceWorker.ready manchmal für immer hängen, dann soll der Knopf nicht still stehen.
+     */
+    withTimeout(promise, ms, text) {
+        return Promise.race([
+            promise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error(text)), ms))
+        ]);
+    }
+
+    /**
+     * Wartet, bis der Hintergrunddienst aktiv ist (ohne navigator.serviceWorker.ready).
+     */
+    waitForActive(registration, ms) {
+        const worker = registration.active || registration.waiting || registration.installing;
+        if (registration.active) return Promise.resolve(registration);
+        return this.withTimeout(new Promise((resolve) => {
+            if (!worker) { navigator.serviceWorker.ready.then(resolve); return; }
+            worker.addEventListener('statechange', () => {
+                if (worker.state === 'activated') resolve(registration);
+            });
+        }), ms, 'Der Hintergrunddienst startet nicht (Zeitüberschreitung).');
+    }
+
+    /**
+     * Kurzer Gerätebericht für die Einstellungsseite (zum Abfotografieren, wenn es klemmt).
+     */
+    async getDiagnose() {
+        const ua = navigator.userAgent || '';
+        const ios = ua.match(/OS (\d+)[_.](\d+)/);
+        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const standalone = window.navigator.standalone === true ||
+            (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+        let sw = 'nicht verfügbar';
+        if ('serviceWorker' in navigator) {
+            try {
+                const reg = await this.withTimeout(navigator.serviceWorker.getRegistration('/'), 3000, 'Zeitüberschreitung');
+                sw = !reg ? 'nicht registriert' : reg.active ? 'aktiv' : reg.waiting ? 'wartet' : reg.installing ? 'installiert gerade' : 'unbekannt';
+            } catch (e) { sw = 'Fehler: ' + e.message; }
+        }
+        return [
+            isIOS ? ('iOS ' + (ios ? ios[1] + '.' + ios[2] : '?')) : 'kein iPhone',
+            'Home-Bildschirm: ' + (standalone ? 'ja' : 'nein'),
+            'Erlaubnis: ' + ('Notification' in window ? Notification.permission : 'fehlt'),
+            'Push: ' + ('PushManager' in window ? 'ja' : 'nein'),
+            'Dienst: ' + sw,
+            'Abo: ' + (this.isSubscribed ? 'ja' : 'nein'),
+            this.lastError ? 'Letzter Fehler: ' + this.lastError : null
+        ].filter(Boolean).join(' · ');
     }
 
     /**
@@ -70,14 +123,16 @@ class PushNotificationManager {
             }
 
             // Registriere Service Worker
-            this.swRegistration = await navigator.serviceWorker.register('/sw.js');
+            this.swRegistration = await this.withTimeout(
+                navigator.serviceWorker.register('/sw.js', { scope: '/' }),
+                10000, 'Der Hintergrunddienst lässt sich nicht registrieren (Zeitüberschreitung).');
             console.log('Service Worker registriert:', this.swRegistration);
 
-            // Warte auf Aktivierung
-            await navigator.serviceWorker.ready;
+            // Warte auf Aktivierung (höchstens 10 Sekunden statt für immer)
+            await this.waitForActive(this.swRegistration, 10000);
 
             // Lade VAPID Public Key
-            await this.loadPublicKey();
+            await this.withTimeout(this.loadPublicKey(), 10000, 'Der Server antwortet nicht (Schlüssel).');
 
             // Prüfe aktuellen Subscription-Status
             await this.checkSubscriptionStatus();
@@ -85,6 +140,9 @@ class PushNotificationManager {
             return true;
         } catch (error) {
             console.error('Fehler bei Push-Init:', error);
+            this.lastError = error && error.message ? error.message : String(error);
+            // Beim nächsten Versuch neu starten statt das hängende Ergebnis zu behalten
+            this._initPromise = null;
             return false;
         }
     }
@@ -94,7 +152,7 @@ class PushNotificationManager {
      */
     async loadPublicKey() {
         try {
-            const response = await fetch('/api/push/vapid-public-key');
+            const response = await fetch('/api/push/vapid-public-key', { credentials: 'same-origin' });
             const data = await response.json();
             this.publicKey = data.publicKey;
             console.log('VAPID Public Key geladen');
@@ -132,7 +190,8 @@ class PushNotificationManager {
 
             // WICHTIG fürs iPhone: Die Erlaubnis-Abfrage muss direkt aus dem Tipp kommen,
             // also VOR jedem anderen await. Sonst zeigt Safari keine Abfrage an.
-            const permission = await Notification.requestPermission();
+            const permission = await this.withTimeout(Notification.requestPermission(), 30000,
+                'Das iPhone hat die Erlaubnis-Abfrage nicht angezeigt (Zeitüberschreitung).');
 
             if (permission !== 'granted') {
                 console.log('Benachrichtigungsberechtigung abgelehnt');
@@ -140,9 +199,9 @@ class PushNotificationManager {
             }
 
             // Falls die Vorbereitung im Hintergrund noch läuft (schnell getippt): darauf warten
-            await this.init();
-            if (!this.swRegistration) {
-                return { success: false, message: 'Der Hintergrunddienst konnte nicht gestartet werden. Bitte die App einmal schließen und neu öffnen.' };
+            const bereit = await this.init();
+            if (!bereit || !this.swRegistration || !this.swRegistration.active) {
+                return { success: false, message: 'Der Hintergrunddienst konnte nicht gestartet werden. Bitte die App ganz schließen (vom unteren Rand hochwischen) und über das Icon neu öffnen.' + (this.lastError ? ' (' + this.lastError + ')' : '') };
             }
 
             // Prüfe ob Public Key geladen wurde
@@ -155,10 +214,15 @@ class PushNotificationManager {
             }
 
             // Erstelle Subscription
-            const subscription = await this.swRegistration.pushManager.subscribe({
+            // Ein altes Abo mit anderem Schlüssel blockiert auf dem iPhone ein neues: erst entfernen
+            const alt = await this.swRegistration.pushManager.getSubscription();
+            if (alt) {
+                try { await alt.unsubscribe(); } catch (e) { console.warn('Altes Abo ließ sich nicht entfernen:', e); }
+            }
+            const subscription = await this.withTimeout(this.swRegistration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: this.urlBase64ToUint8Array(this.publicKey)
-            });
+            }), 15000, 'Apple antwortet nicht (Zeitüberschreitung beim Anmelden).');
 
             console.log('Push-Subscription erstellt:', subscription);
 
@@ -172,6 +236,7 @@ class PushNotificationManager {
             return result;
         } catch (error) {
             console.error('Fehler beim Abonnieren:', error);
+            this.lastError = (error && (error.name ? error.name + ': ' : '') + (error.message || '')) || String(error);
             return {
                 success: false,
                 message: 'Fehler beim Aktivieren: ' + (error.message || 'Unbekannter Fehler')
